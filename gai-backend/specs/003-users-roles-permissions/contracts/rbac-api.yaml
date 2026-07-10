@@ -1,0 +1,386 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend — RBAC API (Permissions & Roles)
+  version: 2.0.0
+  description: |
+    Catálogo de permissões e papéis (sistema + customizados por organization).
+
+    Modelo unificado em tabela `roles`:
+    - `type=SYSTEM`: papéis de plataforma (`PLATFORM_ADMIN`, `ORG_ADMIN`) — atribuídos via `user_role_assignments`
+    - `type=ORGANIZATION`: papéis customizados por organization
+
+    Permissões efetivas são resolvidas pela união dos papéis ativos atribuídos ao usuário.
+
+    - `PLATFORM_ADMIN`: gerencia papéis em qualquer organization
+    - `ORG_ADMIN`: gerencia papéis apenas na própria organization
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local (Docker Compose)
+  - url: /api/v1
+    description: Relative base path
+
+tags:
+  - name: Permissions
+    description: Catálogo global (somente leitura)
+  - name: OrgRoles
+    description: Papéis customizados (roles.type=ORGANIZATION)
+
+paths:
+  /permissions:
+    get:
+      tags: [Permissions]
+      summary: Listar catálogo de permissões
+      operationId: listPermissions
+      description: |
+        Retorna todas as permissões disponíveis para composição da matriz.
+        Filtro opcional por `scope`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            $ref: '#/components/schemas/PermissionScope'
+      responses:
+        '200':
+          description: Lista de permissões
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionResponse'
+              example:
+                - id: 1
+                  key: users:read
+                  resource: users
+                  action: read
+                  scope: ORGANIZATION
+                  description: Listar e consultar usuários da organization
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /organizations/{organizationId}/roles:
+    get:
+      tags: [OrgRoles]
+      summary: Listar papéis customizados da organization
+      operationId: listOrgRoles
+      description: |
+        Retorna papéis com `type=ORGANIZATION` da organization informada.
+        Papéis de sistema (PLATFORM_ADMIN, ORG_ADMIN) não aparecem neste endpoint.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - name: include_inactive
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Papéis customizados da organization
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrgRoleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [OrgRoles]
+      summary: Criar papel customizado
+      operationId: createOrgRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrgRoleRequest'
+            example:
+              name: Auditor
+              description: Acesso somente leitura
+              permission_ids: [3, 5]
+      responses:
+        '201':
+          description: Papel criado (roles.type=ORGANIZATION)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /organizations/{organizationId}/roles/{roleId}:
+    get:
+      tags: [OrgRoles]
+      summary: Consultar papel customizado
+      operationId: getOrgRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '200':
+          description: Detalhes do papel com permissões
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [OrgRoles]
+      summary: Atualizar papel customizado
+      operationId: updateOrgRole
+      description: |
+        Atualiza nome, descrição e/ou conjunto de permissões.
+        Usuários com este papel atribuído passam a ter as novas permissões na próxima request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrgRoleRequest'
+      responses:
+        '200':
+          description: Papel atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    delete:
+      tags: [OrgRoles]
+      summary: Desativar papel customizado
+      operationId: deactivateOrgRole
+      description: |
+        Soft-disable (`is_active=false`). Falha com 409 se houver atribuições ativas
+        a este papel em `user_role_assignments`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrganizationId'
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '204':
+          description: Papel desativado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Papel ainda atribuído a usuários ativos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: UUID
+
+  parameters:
+    OrganizationId:
+      name: organizationId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    RoleId:
+      name: roleId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  schemas:
+    PermissionScope:
+      type: string
+      enum: [PLATFORM, ORGANIZATION]
+
+    PermissionResponse:
+      type: object
+      required: [id, key, resource, action, scope, description]
+      properties:
+        id:
+          type: integer
+          format: int64
+        key:
+          type: string
+          example: users:read
+        resource:
+          type: string
+        action:
+          type: string
+        scope:
+          $ref: '#/components/schemas/PermissionScope'
+        description:
+          type: string
+
+    CreateOrgRoleRequest:
+      type: object
+      required: [name, permission_ids]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 255
+        permission_ids:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+            format: int64
+
+    UpdateOrgRoleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 255
+        permission_ids:
+          type: array
+          minItems: 1
+          items:
+            type: integer
+            format: int64
+        is_active:
+          type: boolean
+
+    OrgRoleResponse:
+      type: object
+      required: [id, organization_id, name, is_active, permissions, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID na tabela roles (type=ORGANIZATION)
+        organization_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  responses:
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Sem permissão
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflito
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

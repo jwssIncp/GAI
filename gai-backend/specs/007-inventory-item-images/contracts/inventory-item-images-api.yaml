@@ -1,0 +1,330 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Inventory Item Images API
+  version: 1.0.0
+  description: |
+    Metadados e URLs pre-assinadas para imagens de itens inventariados.
+
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+
+tags:
+  - name: Inventory Item Images
+    description: Imagens vinculadas a itens inventariados
+
+paths:
+  /projects/{projectId}/inventory-items/{itemId}/images/upload-url:
+    post:
+      tags: [Inventory Item Images]
+      summary: Solicitar URL pre-assinada de upload
+      operationId: createInventoryItemImageUploadUrl
+      description: Requer `inventory-item-images:create`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInventoryItemImageUploadRequest'
+      responses:
+        '201':
+          description: Upload URL criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemImageUploadUrlResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /projects/{projectId}/inventory-items/{itemId}/images:
+    get:
+      tags: [Inventory Item Images]
+      summary: Listar imagens do item
+      operationId: listProjectInventoryItemImages
+      description: Requer `inventory-item-images:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/InventoryItemImageStatus' }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemImageListResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /projects/{projectId}/inventory-items/{itemId}/images/{imageId}:
+    get:
+      tags: [Inventory Item Images]
+      summary: Consultar metadados da imagem
+      operationId: getProjectInventoryItemImage
+      description: Requer `inventory-item-images:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+        - $ref: '#/components/parameters/ImageId'
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemImageOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /projects/{projectId}/inventory-items/{itemId}/images/{imageId}/confirm-upload:
+    post:
+      tags: [Inventory Item Images]
+      summary: Confirmar upload da imagem
+      operationId: confirmInventoryItemImageUpload
+      description: Requer `inventory-item-images:update`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+        - $ref: '#/components/parameters/ImageId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmInventoryItemImageUploadRequest'
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemImageOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /projects/{projectId}/inventory-items/{itemId}/images/{imageId}/download-url:
+    post:
+      tags: [Inventory Item Images]
+      summary: Gerar URL pre-assinada de visualizacao/download
+      operationId: createInventoryItemImageDownloadUrl
+      description: Requer `inventory-item-images:download`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+        - $ref: '#/components/parameters/ImageId'
+      responses:
+        '200':
+          description: Download URL criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemImageDownloadUrlResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /projects/{projectId}/inventory-items/{itemId}/images/{imageId}/remove:
+    post:
+      tags: [Inventory Item Images]
+      summary: Remover imagem logicamente
+      operationId: removeInventoryItemImage
+      description: Requer `inventory-item-images:remove`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+        - $ref: '#/components/parameters/ImageId'
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemImageOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /inventory-item-images/{id}:
+    get:
+      tags: [Inventory Item Images]
+      summary: Consultar imagem globalmente
+      operationId: getInventoryItemImage
+      description: Requer `inventory-item-images:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GlobalImageId'
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemImageOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /inventory-item-images/{id}/download-url:
+    post:
+      tags: [Inventory Item Images]
+      summary: Gerar URL de download globalmente
+      operationId: createInventoryItemImageDownloadUrlGlobal
+      description: Requer `inventory-item-images:download`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GlobalImageId'
+      responses:
+        '200':
+          description: Download URL criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemImageDownloadUrlResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    InventoryItemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    ImageId:
+      name: imageId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    GlobalImageId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INTERNAL_ERROR] }
+        message: { type: string }
+    InventoryItemImageStatus:
+      type: string
+      enum: [pending_upload, uploaded, failed, removed]
+    CreateInventoryItemImageUploadRequest:
+      type: object
+      required: [original_name, mime_type, size_bytes]
+      properties:
+        original_name: { type: string, minLength: 1, maxLength: 255 }
+        mime_type: { type: string, enum: [image/jpeg, image/jpg, image/png, image/webp] }
+        size_bytes: { type: integer, minimum: 1 }
+        checksum: { type: string, maxLength: 128, nullable: true }
+    ConfirmInventoryItemImageUploadRequest:
+      type: object
+      properties:
+        checksum: { type: string, maxLength: 128, nullable: true }
+        size_bytes: { type: integer, minimum: 1, nullable: true }
+    InventoryItemImageResponse:
+      type: object
+      required: [id, organization_id, inventory_item_id, storage_provider, original_name, mime_type, size_bytes, status, created_at, updated_at]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        inventory_item_id: { type: integer, format: int64 }
+        storage_provider: { type: string }
+        original_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        checksum: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/InventoryItemImageStatus' }
+        uploaded_by_id: { type: integer, format: int64, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    InventoryItemImageUploadUrlResponse:
+      type: object
+      required: [image, upload_url, expires_in_seconds]
+      properties:
+        image: { $ref: '#/components/schemas/InventoryItemImageResponse' }
+        upload_url: { type: string, format: uri }
+        expires_in_seconds: { type: integer }
+    InventoryItemImageDownloadUrlResponse:
+      type: object
+      required: [image, download_url, expires_in_seconds]
+      properties:
+        image: { $ref: '#/components/schemas/InventoryItemImageResponse' }
+        download_url: { type: string, format: uri }
+        expires_in_seconds: { type: integer }
+    InventoryItemImageListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/InventoryItemImageResponse' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+  responses:
+    InventoryItemImageOk:
+      description: Inventory item image retornada
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/InventoryItemImageResponse' }
+    Unauthorized:
+      description: Token ausente ou invalido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Autenticado sem permissao suficiente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Registro nao encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Dados invalidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: Regra de negocio violada
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }

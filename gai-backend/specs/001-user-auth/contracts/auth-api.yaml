@@ -1,0 +1,426 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend — Authentication API
+  version: 2.0.0
+  description: |
+    Login, logout, sessão e recuperação de senha.
+
+    **Contrato canônico** para geração do frontend. Deve permanecer sincronizado com
+    `@nestjs/swagger` em runtime (`/api/docs`).
+
+    ## Modelo de erro
+
+    ```json
+    { "code": "<ErrorCode>", "message": "...", "details": [{ "field": "...", "message": "..." }] }
+    ```
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local (Docker Compose)
+  - url: /api/v1
+    description: Relative base path
+
+tags:
+  - name: Auth
+    description: Autenticação, sessão e recuperação de senha
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Autenticar usuário
+      operationId: login
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Credenciais válidas, conta ativa, org ativa (se houver) | 200 | — | Sessão criada + token |
+        | 2 | Campos inválidos / senha curta | 400 | VALIDATION_ERROR | `details[]` |
+        | 3 | Usuário inexistente, senha errada, conta inativa ou org inativa | 401 | UNAUTHORIZED | Mensagem genérica |
+        | 4 | Conta bloqueada por tentativas | 423 | ACCOUNT_LOCKED | — |
+        | 5 | Rate limit excedido | 429 | — | Throttler NestJS |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              identifier: platform.admin
+              password: Admin@123456
+      responses:
+        '200':
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                access_token: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                expires_at: '2026-06-18T03:00:00.000Z'
+                user:
+                  id: 1
+                  login: platform.admin
+                  email: admin@gai.local
+                  status: ACTIVE
+                  organization_id: null
+                  role_assignments:
+                    - assignment_id: 1
+                      role_id: 1
+                      role_key: PLATFORM_ADMIN
+                      role_name: Platform Administrator
+                      role_type: SYSTEM
+                      organization_id: null
+                      assigned_at: '2026-06-19T22:00:35.811Z'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidCredentials'
+        '423':
+          $ref: '#/components/responses/AccountLocked'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Encerrar sessão
+      operationId: logout
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Token válido | 204 | — | Sessão revogada |
+        | 2 | Token ausente / inválido / expirado | 401 | UNAUTHORIZED | — |
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Sessão encerrada (sem body)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Dados do usuário autenticado
+      operationId: getCurrentUser
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Token válido | 200 | — | Dados do usuário |
+        | 2 | Token ausente / inválido / expirado | 401 | UNAUTHORIZED | — |
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuário autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/password-reset/request:
+    post:
+      tags: [Auth]
+      summary: Solicitar recuperação de senha
+      operationId: requestPasswordReset
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | E-mail válido (cadastrado ou não) | 200 | — | Resposta genérica (anti-enumeração) |
+        | 2 | E-mail com formato inválido | 400 | VALIDATION_ERROR | `details[]` |
+        | 3 | Rate limit excedido | 429 | — | Throttler NestJS |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+            example:
+              email: user@gai.local
+      responses:
+        '200':
+          description: Resposta genérica (sempre 200 para e-mails válidos)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetRequestResponse'
+              example:
+                message: If the email is registered, you will receive recovery instructions.
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/password-reset/confirm:
+    post:
+      tags: [Auth]
+      summary: Confirmar nova senha
+      operationId: confirmPasswordReset
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Token válido + senha atende política | 200 | — | Senha redefinida, sessões revogadas |
+        | 2 | Senha curta ou fora da política | 400 | VALIDATION_ERROR | `details[]` |
+        | 3 | Token inválido, expirado ou já usado | 401 | UNAUTHORIZED | — |
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+            example:
+              token: reset-token-from-email
+              new_password: NewPass@123
+      responses:
+        '200':
+          description: Senha redefinida com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetConfirmResponse'
+              example:
+                message: Password reset successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/InvalidResetToken'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+      description: Token de sessão retornado por POST /auth/login
+
+  schemas:
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - UNAUTHORIZED
+        - FORBIDDEN
+        - NOT_FOUND
+        - CONFLICT
+        - ACCOUNT_LOCKED
+        - INTERNAL_ERROR
+
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    UserRole:
+      type: string
+      enum: [PLATFORM_ADMIN, ORG_ADMIN, ORG_USER]
+      description: Chave de papel de sistema (resolvida via role_assignments, não campo direto em user)
+
+    RoleType:
+      type: string
+      enum: [SYSTEM, ORGANIZATION]
+
+    RoleAssignment:
+      type: object
+      required: [assignment_id, role_id, role_name, role_type, assigned_at]
+      properties:
+        assignment_id:
+          type: integer
+          format: int64
+        role_id:
+          type: integer
+          format: int64
+        role_key:
+          type: string
+          nullable: true
+          description: Preenchido para papéis SYSTEM
+        role_name:
+          type: string
+        role_type:
+          $ref: '#/components/schemas/RoleType'
+        organization_id:
+          type: integer
+          format: int64
+          nullable: true
+        assigned_at:
+          type: string
+          format: date-time
+
+    UserStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE, LOCKED]
+
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          description: E-mail ou nome de usuário (login)
+          example: platform.admin
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: Admin@123456
+
+    CurrentUserResponse:
+      type: object
+      required: [id, login, email, status, role_assignments]
+      properties:
+        id:
+          type: integer
+          format: int64
+        login:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        organization_id:
+          type: integer
+          format: int64
+          nullable: true
+        role_assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleAssignment'
+
+    LoginResponse:
+      type: object
+      required: [access_token, expires_at, user]
+      properties:
+        access_token:
+          type: string
+          format: uuid
+          description: ID da sessão (Bearer token)
+        expires_at:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/CurrentUserResponse'
+
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@gai.local
+
+    PasswordResetRequestResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: If the email is registered, you will receive recovery instructions.
+
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, new_password]
+      properties:
+        token:
+          type: string
+          description: Token recebido por e-mail
+        new_password:
+          type: string
+          format: password
+          minLength: 8
+          description: Mín. 8 chars, maiúscula, minúscula, número e caractere especial
+
+    PasswordResetConfirmResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Password reset successfully
+
+  responses:
+    Unauthorized:
+      description: Token ausente, expirado ou sessão inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Unauthorized
+
+    InvalidCredentials:
+      description: Credenciais inválidas (mensagem genérica anti-enumeração)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Invalid credentials
+
+    AccountLocked:
+      description: Conta bloqueada temporariamente por tentativas de login
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: ACCOUNT_LOCKED
+            message: Account temporarily locked due to failed login attempts
+
+    InvalidResetToken:
+      description: Token de recuperação inválido ou expirado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Invalid or expired reset token
+
+    ValidationError:
+      description: Dados de entrada inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidEmail:
+              summary: E-mail inválido
+              value:
+                code: VALIDATION_ERROR
+                message: Validation failed
+                details:
+                  - field: email
+                    message: email must be an email
+            weakPassword:
+              summary: Senha fora da política
+              value:
+                code: VALIDATION_ERROR
+                message: Password must include uppercase, lowercase, number and special character

@@ -1,0 +1,561 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend — Users API
+  version: 2.0.0
+  description: |
+    CRUD de usuários (perfil + vínculo organizacional) e atribuição de papéis.
+
+    - **Perfil**: login, email, senha, `organization_id` — sem papel embutido
+    - **Autorização**: `role_assignments[]` agregado nas respostas; mutações via endpoints dedicados
+
+    Escopo de gestão:
+    - `PLATFORM_ADMIN`: gestão global
+    - `ORG_ADMIN`: gestão apenas da própria organization
+
+    IDs numéricos (`int64`). Contrato canônico para geração do frontend.
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local (Docker Compose)
+  - url: /api/v1
+    description: Relative base path
+
+tags:
+  - name: Users
+    description: Gestão de perfil de usuários
+  - name: User Role Assignments
+    description: Atribuição e revogação de papéis
+
+paths:
+  /users:
+    post:
+      tags: [Users]
+      summary: Cadastrar usuário (perfil)
+      operationId: createUser
+      description: |
+        Cria usuário com dados de perfil apenas. Papéis devem ser atribuídos
+        separadamente via `POST /users/{userId}/role-assignments`.
+
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code |
+        |---|----------|------|------|
+        | 1 | Dados válidos, ator no escopo | 201 | — |
+        | 2 | Validação falhou | 400 | VALIDATION_ERROR |
+        | 3 | Não autenticado | 401 | UNAUTHORIZED |
+        | 4 | Role/permissão insuficiente | 403 | FORBIDDEN |
+        | 5 | login/email duplicado | 409 | CONFLICT |
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              platformUser:
+                summary: Usuário de plataforma (sem organization)
+                value:
+                  login: suporte.gai
+                  email: suporte@gai.local
+                  password: Senha@123456
+              orgUser:
+                summary: Usuário vinculado à organization
+                value:
+                  login: joao.silva
+                  email: joao@empresa.com.br
+                  password: Senha@123456
+                  organization_id: 1
+      responses:
+        '201':
+          description: Usuário criado (sem papéis atribuídos)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    get:
+      tags: [Users]
+      summary: Listar usuários (paginado)
+      operationId: listUsers
+      description: |
+        PLATFORM_ADMIN: todos os usuários (filtro opcional por `organization_id`).
+        ORG_ADMIN: apenas usuários da própria organization.
+        Filtro `role` aplica-se aos papéis de sistema atribuídos (via atribuições).
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Filtro (PLATFORM_ADMIN only)
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserStatus'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/SystemRoleKey'
+          description: Filtra por papel de sistema atribuído
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Busca por login ou email
+      responses:
+        '200':
+          description: Página de usuários com role_assignments agregados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Consultar usuário por ID
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Detalhes do usuário com papéis atribuídos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Users]
+      summary: Atualizar perfil do usuário
+      operationId: updateUser
+      description: |
+        Atualiza email, senha e/ou `organization_id`. Papéis NÃO são alterados
+        por este endpoint — use role-assignments.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /users/{id}/deactivate:
+    post:
+      tags: [Users]
+      summary: Desativar usuário
+      operationId: deactivateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Usuário desativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Último PLATFORM_ADMIN ativo (via atribuição)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{id}/activate:
+    post:
+      tags: [Users]
+      summary: Reativar usuário
+      operationId: activateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Usuário reativado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{userId}/role-assignments:
+    get:
+      tags: [User Role Assignments]
+      summary: Listar papéis atribuídos ao usuário
+      operationId: listUserRoleAssignments
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: Atribuições ativas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleAssignmentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [User Role Assignments]
+      summary: Atribuir papel ao usuário
+      operationId: assignUserRole
+      description: |
+        Registra atribuição em `user_role_assignments`. Valida escopo:
+        ORG_ADMIN não pode atribuir papéis de plataforma nem de outra organization.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignUserRoleRequest'
+            example:
+              role_id: 3
+      responses:
+        '201':
+          description: Papel atribuído
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleAssignmentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /users/{userId}/role-assignments/{assignmentId}:
+    delete:
+      tags: [User Role Assignments]
+      summary: Revogar atribuição de papel
+      operationId: revokeUserRoleAssignment
+      description: |
+        Desativa atribuição (`is_active=false`). Falha com 409 se for a última
+        atribuição ativa de PLATFORM_ADMIN no sistema.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '204':
+          description: Atribuição revogada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Último PLATFORM_ADMIN ativo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: UUID
+
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    SystemRoleKey:
+      type: string
+      enum: [PLATFORM_ADMIN, ORG_ADMIN, ORG_USER]
+      description: Chave de papel de sistema (atribuído via user_role_assignments)
+
+    RoleType:
+      type: string
+      enum: [SYSTEM, ORGANIZATION]
+
+    UserStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE, LOCKED]
+
+    CreateUserRequest:
+      type: object
+      required: [login, email, password]
+      properties:
+        login:
+          type: string
+          minLength: 3
+          maxLength: 100
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        organization_id:
+          type: integer
+          format: int64
+          description: Opcional; omitir para usuário de plataforma
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        organization_id:
+          type: integer
+          format: int64
+        password:
+          type: string
+          minLength: 8
+
+    AssignUserRoleRequest:
+      type: object
+      required: [role_id]
+      properties:
+        role_id:
+          type: integer
+          format: int64
+          description: ID do papel no catálogo roles
+
+    RoleAssignmentResponse:
+      type: object
+      required: [assignment_id, role_id, role_name, role_type, assigned_at]
+      properties:
+        assignment_id:
+          type: integer
+          format: int64
+        role_id:
+          type: integer
+          format: int64
+        role_key:
+          type: string
+          nullable: true
+          description: Preenchido para papéis SYSTEM (ex. PLATFORM_ADMIN)
+        role_name:
+          type: string
+        role_type:
+          $ref: '#/components/schemas/RoleType'
+        organization_id:
+          type: integer
+          format: int64
+          nullable: true
+        assigned_at:
+          type: string
+          format: date-time
+
+    UserResponse:
+      type: object
+      required: [id, login, email, status, role_assignments, created_at, updated_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+        login:
+          type: string
+        email:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        organization_id:
+          type: integer
+          format: int64
+          nullable: true
+        role_assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleAssignmentResponse'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PaginationMeta:
+      type: object
+      required: [page, page_size, total, total_pages]
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  responses:
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Sem permissão
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Conflito (duplicidade ou regra de negócio)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

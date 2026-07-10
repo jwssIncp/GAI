@@ -1,0 +1,444 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Projects API
+  version: 1.2.0
+  description: |
+    CRUD e controle de status de projects operacionais por organization.
+
+    Todas as respostas de erro seguem `ErrorResponse`:
+
+    ```json
+    { "code": "<ErrorCode>", "message": "...", "details": [{ "field": "...", "message": "..." }] }
+    ```
+
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+
+tags:
+  - name: Projects
+    description: Projetos de inventario patrimonial
+
+paths:
+  /projects:
+    post:
+      tags: [Projects]
+      summary: Criar project
+      operationId: createProject
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condicao | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Dados validos e organization ativa | 201 | - | Project criado em `draft` |
+        | 2 | Organization inativa | 409 | CONFLICT | InactiveOrganization |
+        | 3 | `end_date` anterior a `start_date` | 400 | VALIDATION_ERROR | InvalidDateRange |
+        | 4 | Token ausente ou invalido | 401 | UNAUTHORIZED | - |
+        | 5 | Sem `projects:create` | 403 | FORBIDDEN | - |
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: Project criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/InactiveOrganization'
+
+    get:
+      tags: [Projects]
+      summary: Listar projects (paginado)
+      operationId: listProjects
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condicao | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Query valida | 200 | - | Pagina de projects |
+        | 2 | Sem resultados | 200 | - | `items: []` |
+        | 3 | `page_size` > 100 | 400 | VALIDATION_ERROR | - |
+        | 4 | Sem `projects:read` | 403 | FORBIDDEN | - |
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: company_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ProjectStatus'
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectListResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /projects/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    get:
+      tags: [Projects]
+      summary: Consultar project
+      operationId: getProject
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Project encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Projects]
+      summary: Atualizar project
+      operationId: updateProject
+      description: |
+        Bloqueia mutacoes em `inactive`, `finished`, `cancelled` e `archived`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          description: Project atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectMutationBlocked'
+
+  /projects/{id}/deactivate:
+    post:
+      tags: [Projects]
+      summary: Desativar project
+      operationId: deactivateProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{id}/reactivate:
+    post:
+      tags: [Projects]
+      summary: Reativar project
+      operationId: reactivateProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{id}/finish:
+    post:
+      tags: [Projects]
+      summary: Finalizar project
+      operationId: finishProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{id}/cancel:
+    post:
+      tags: [Projects]
+      summary: Cancelar project
+      operationId: cancelProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{id}/archive:
+    post:
+      tags: [Projects]
+      summary: Arquivar project
+      operationId: archiveProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+
+  parameters:
+    ProjectId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    ErrorCode:
+      type: string
+      enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INTERNAL_ERROR]
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field: { type: string }
+        message: { type: string }
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+    ProjectStatus:
+      type: string
+      enum: [draft, active, paused, inactive, finished, cancelled, archived]
+    CreateProjectRequest:
+      type: object
+      required: [organization_id, company_id, name]
+      properties:
+        organization_id:
+          type: integer
+          format: int64
+        company_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        settings:
+          type: object
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        settings:
+          type: object
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+    ProjectResponse:
+      type: object
+      required: [id, organization_id, name, status, created_at, updated_at]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        company_id: { type: integer, format: int64, nullable: true }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        finished_at: { type: string, format: date-time, nullable: true }
+        settings: { type: object, nullable: true }
+        metadata: { type: object, nullable: true }
+        created_by_id: { type: integer, format: int64, nullable: true }
+        updated_by_id: { type: integer, format: int64, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    ProjectListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectResponse'
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+
+  responses:
+    ProjectOk:
+      description: Project retornado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProjectResponse'
+    Unauthorized:
+      description: Token ausente ou invalido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Autenticado sem permissao suficiente
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Project nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationError:
+      description: Dados invalidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InactiveOrganization:
+      description: Organization inativa
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: CONFLICT
+            message: Project cannot be created for inactive organization
+    ProjectMutationBlocked:
+      description: Mutacao bloqueada pelo status atual
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: CONFLICT
+            message: Project status blocks this operation

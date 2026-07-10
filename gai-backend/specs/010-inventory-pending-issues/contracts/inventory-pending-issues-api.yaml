@@ -1,0 +1,228 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Inventory Pending Issues API
+  version: 1.0.0
+  description: Pendencias, divergencias e furos de placa por project.
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+tags:
+  - name: Inventory Pending Issues
+paths:
+  /projects/{projectId}/pending-issues:
+    post:
+      tags: [Inventory Pending Issues]
+      summary: Criar pendencia manual
+      operationId: createInventoryPendingIssue
+      description: Requer `inventory-pending-issues:create`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateInventoryPendingIssueRequest' }
+      responses:
+        '201':
+          description: Pendencia criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryPendingIssue' }
+    get:
+      tags: [Inventory Pending Issues]
+      summary: Listar pendencias
+      operationId: listInventoryPendingIssues
+      description: Requer `inventory-pending-issues:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/InventoryPendingIssueType' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/InventoryPendingIssueStatus' } }
+        - { name: severity, in: query, schema: { $ref: '#/components/schemas/InventoryPendingIssueSeverity' } }
+        - { name: inventory_item_id, in: query, schema: { type: integer, format: int64 } }
+        - { name: accounting_item_id, in: query, schema: { type: integer, format: int64 } }
+        - { name: plate, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryPendingIssueList' }
+  /projects/{projectId}/pending-issues/generate:
+    post:
+      tags: [Inventory Pending Issues]
+      summary: Gerar pendencias automaticamente
+      operationId: generateInventoryPendingIssues
+      description: Requer `inventory-pending-issues:generate`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      responses:
+        '201':
+          description: Resultado da geracao
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenerateInventoryPendingIssuesResponse' }
+  /projects/{projectId}/pending-issues/{id}:
+    get:
+      tags: [Inventory Pending Issues]
+      summary: Consultar pendencia
+      operationId: getInventoryPendingIssue
+      description: Requer `inventory-pending-issues:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/IssueId' }
+      responses:
+        '200':
+          description: Pendencia
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryPendingIssue' }
+    patch:
+      tags: [Inventory Pending Issues]
+      summary: Atualizar pendencia
+      operationId: updateInventoryPendingIssue
+      description: Requer `inventory-pending-issues:update`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/IssueId' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateInventoryPendingIssueRequest' }
+      responses:
+        '200':
+          description: Pendencia atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryPendingIssue' }
+  /projects/{projectId}/pending-issues/{id}/resolve:
+    post:
+      tags: [Inventory Pending Issues]
+      summary: Resolver pendencia
+      operationId: resolveInventoryPendingIssue
+      description: Requer `inventory-pending-issues:resolve`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/IssueId' }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveInventoryPendingIssueRequest' }
+      responses:
+        '200': { description: Pendencia resolvida }
+  /projects/{projectId}/pending-issues/{id}/ignore:
+    post:
+      tags: [Inventory Pending Issues]
+      summary: Ignorar pendencia
+      operationId: ignoreInventoryPendingIssue
+      description: Requer `inventory-pending-issues:ignore`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/IssueId' }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveInventoryPendingIssueRequest' }
+      responses:
+        '200': { description: Pendencia ignorada }
+  /projects/{projectId}/pending-issues/{id}/cancel:
+    post:
+      tags: [Inventory Pending Issues]
+      summary: Cancelar pendencia
+      operationId: cancelInventoryPendingIssue
+      description: Requer `inventory-pending-issues:cancel`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/IssueId' }
+      responses:
+        '200': { description: Pendencia cancelada }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: session-token }
+  parameters:
+    ProjectId: { name: projectId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    IssueId: { name: id, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+  schemas:
+    InventoryPendingIssueType:
+      type: string
+      enum: [missing_plate, accounting_item_not_found, physical_item_without_accounting_match, plate_divergence, description_divergence, location_divergence, duplicated_item, manual_issue, other]
+    InventoryPendingIssueStatus:
+      type: string
+      enum: [open, in_review, resolved, ignored, cancelled]
+    InventoryPendingIssueSeverity:
+      type: string
+      enum: [low, medium, high, critical]
+    CreateInventoryPendingIssueRequest:
+      type: object
+      required: [type, title]
+      properties:
+        inventory_item_id: { type: integer, format: int64, nullable: true }
+        accounting_item_id: { type: integer, format: int64, nullable: true }
+        type: { $ref: '#/components/schemas/InventoryPendingIssueType' }
+        severity: { $ref: '#/components/schemas/InventoryPendingIssueSeverity' }
+        title: { type: string, maxLength: 255 }
+        description: { type: string, nullable: true }
+        old_value: { type: object, nullable: true }
+        new_value: { type: object, nullable: true }
+        metadata: { type: object, nullable: true }
+    UpdateInventoryPendingIssueRequest:
+      type: object
+      properties:
+        type: { $ref: '#/components/schemas/InventoryPendingIssueType' }
+        status: { $ref: '#/components/schemas/InventoryPendingIssueStatus' }
+        severity: { $ref: '#/components/schemas/InventoryPendingIssueSeverity' }
+        title: { type: string, maxLength: 255 }
+        description: { type: string, nullable: true }
+        old_value: { type: object, nullable: true }
+        new_value: { type: object, nullable: true }
+        metadata: { type: object, nullable: true }
+    ResolveInventoryPendingIssueRequest:
+      type: object
+      properties:
+        resolution_notes: { type: string, nullable: true }
+    InventoryPendingIssue:
+      allOf:
+        - $ref: '#/components/schemas/CreateInventoryPendingIssueRequest'
+        - type: object
+          required: [id, organization_id, project_id, type, status, severity, title, created_at, updated_at]
+          properties:
+            id: { type: integer, format: int64 }
+            organization_id: { type: integer, format: int64 }
+            project_id: { type: integer, format: int64 }
+            status: { $ref: '#/components/schemas/InventoryPendingIssueStatus' }
+            resolution_notes: { type: string, nullable: true }
+            resolved_by_id: { type: integer, format: int64, nullable: true }
+            resolved_at: { type: string, format: date-time, nullable: true }
+            ignored_by_id: { type: integer, format: int64, nullable: true }
+            ignored_at: { type: string, format: date-time, nullable: true }
+            created_by_id: { type: integer, format: int64, nullable: true }
+            updated_by_id: { type: integer, format: int64, nullable: true }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+            deleted_at: { type: string, format: date-time, nullable: true }
+    InventoryPendingIssueList:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/InventoryPendingIssue' } }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    GenerateInventoryPendingIssuesResponse:
+      type: object
+      required: [created, skipped]
+      properties:
+        created: { type: integer }
+        skipped: { type: integer }

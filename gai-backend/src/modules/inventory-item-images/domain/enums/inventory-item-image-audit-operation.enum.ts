@@ -1,0 +1,6 @@
+export enum InventoryItemImageAuditOperation {
+  CREATE_UPLOAD_URL = 'CREATE_UPLOAD_URL',
+  CONFIRM_UPLOAD = 'CONFIRM_UPLOAD',
+  REMOVE = 'REMOVE',
+  DOWNLOAD_URL = 'DOWNLOAD_URL',
+}

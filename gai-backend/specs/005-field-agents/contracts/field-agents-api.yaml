@@ -1,0 +1,414 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Field Agents API
+  version: 1.0.0
+  description: |
+    Cadastro de inventariantes e vinculos com projects.
+
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+
+tags:
+  - name: Field Agents
+    description: Inventariantes por organization
+  - name: Project Field Agents
+    description: Vinculos entre projects e inventariantes
+
+paths:
+  /field-agents:
+    post:
+      tags: [Field Agents]
+      summary: Criar field agent
+      operationId: createFieldAgent
+      description: Requer `field-agents:create`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFieldAgentRequest'
+      responses:
+        '201': { $ref: '#/components/responses/FieldAgentOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      tags: [Field Agents]
+      summary: Listar field agents (paginado)
+      operationId: listFieldAgents
+      description: Requer `field-agents:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: organization_id
+          in: query
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/FieldAgentStatus' }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldAgentListResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /field-agents/{id}:
+    parameters:
+      - $ref: '#/components/parameters/FieldAgentId'
+    get:
+      tags: [Field Agents]
+      summary: Consultar field agent
+      operationId: getFieldAgent
+      description: Requer `field-agents:read`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Field Agents]
+      summary: Atualizar field agent
+      operationId: updateFieldAgent
+      description: Requer `field-agents:update`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFieldAgentRequest'
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /field-agents/{id}/deactivate:
+    post:
+      tags: [Field Agents]
+      summary: Desativar field agent
+      operationId: deactivateFieldAgent
+      description: Requer `field-agents:deactivate`.
+      parameters:
+        - $ref: '#/components/parameters/FieldAgentId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /field-agents/{id}/reactivate:
+    post:
+      tags: [Field Agents]
+      summary: Reativar field agent
+      operationId: reactivateFieldAgent
+      description: Requer `field-agents:reactivate`.
+      parameters:
+        - $ref: '#/components/parameters/FieldAgentId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /projects/{projectId}/field-agents:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      tags: [Project Field Agents]
+      summary: Vincular field agent ao project
+      operationId: assignProjectFieldAgent
+      description: Requer `project-field-agents:assign`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignProjectFieldAgentRequest'
+      responses:
+        '201': { $ref: '#/components/responses/ProjectFieldAgentOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+    get:
+      tags: [Project Field Agents]
+      summary: Listar field agents do project
+      operationId: listProjectFieldAgents
+      description: Requer `project-field-agents:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/ProjectFieldAgentStatus' }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFieldAgentListResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /projects/{projectId}/field-agents/{assignmentId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/AssignmentId'
+    patch:
+      tags: [Project Field Agents]
+      summary: Atualizar vinculo de field agent
+      operationId: updateProjectFieldAgent
+      description: Requer `project-field-agents:update`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectFieldAgentRequest'
+      responses:
+        '200': { $ref: '#/components/responses/ProjectFieldAgentOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{projectId}/field-agents/{assignmentId}/remove:
+    post:
+      tags: [Project Field Agents]
+      summary: Remover vinculo de field agent
+      operationId: removeProjectFieldAgent
+      description: Requer `project-field-agents:remove`; remocao logica por status `finished`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/AssignmentId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectFieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+  parameters:
+    FieldAgentId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INTERNAL_ERROR] }
+        message: { type: string }
+        details:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+    FieldAgentStatus:
+      type: string
+      enum: [active, inactive, blocked]
+    ProjectFieldAgentStatus:
+      type: string
+      enum: [active, inactive, finished]
+    CreateFieldAgentRequest:
+      type: object
+      required: [organization_id, name]
+      properties:
+        organization_id: { type: integer, format: int64, minimum: 1 }
+        user_id: { type: integer, format: int64, minimum: 1, nullable: true }
+        name: { type: string, minLength: 2, maxLength: 255 }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, maxLength: 50, nullable: true }
+        document: { type: string, maxLength: 50, nullable: true }
+        metadata: { type: object, nullable: true }
+    UpdateFieldAgentRequest:
+      type: object
+      properties:
+        user_id: { type: integer, format: int64, minimum: 1, nullable: true }
+        name: { type: string, minLength: 2, maxLength: 255 }
+        email: { type: string, format: email, nullable: true }
+        phone: { type: string, maxLength: 50, nullable: true }
+        document: { type: string, maxLength: 50, nullable: true }
+        metadata: { type: object, nullable: true }
+    FieldAgentResponse:
+      type: object
+      required: [id, organization_id, name, status, created_at, updated_at]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        user_id: { type: integer, format: int64, nullable: true }
+        name: { type: string }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        document: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/FieldAgentStatus' }
+        metadata: { type: object, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    FieldAgentListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/FieldAgentResponse' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    AssignProjectFieldAgentRequest:
+      type: object
+      required: [field_agent_id]
+      properties:
+        field_agent_id: { type: integer, format: int64, minimum: 1 }
+        role: { type: string, maxLength: 100, nullable: true }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        notes: { type: string, nullable: true }
+    UpdateProjectFieldAgentRequest:
+      type: object
+      properties:
+        role: { type: string, maxLength: 100, nullable: true }
+        status: { $ref: '#/components/schemas/ProjectFieldAgentStatus' }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        notes: { type: string, nullable: true }
+    ProjectFieldAgentResponse:
+      type: object
+      required: [id, organization_id, project_id, field_agent_id, status, created_at, updated_at]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        field_agent_id: { type: integer, format: int64 }
+        role: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/ProjectFieldAgentStatus' }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        notes: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ProjectFieldAgentListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ProjectFieldAgentResponse' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+  responses:
+    FieldAgentOk:
+      description: Field agent retornado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/FieldAgentResponse' }
+    ProjectFieldAgentOk:
+      description: Vinculo retornado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ProjectFieldAgentResponse' }
+    Unauthorized:
+      description: Token ausente ou invalido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Autenticado sem permissao suficiente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Registro nao encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Dados invalidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Conflict:
+      description: Conflito de negocio ou escopo
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ProjectMutationBlocked:
+      description: Project nao permite vinculo operacional
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          example:
+            code: CONFLICT
+            message: Project status blocks this operation

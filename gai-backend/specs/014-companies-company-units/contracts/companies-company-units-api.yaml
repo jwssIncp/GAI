@@ -1,0 +1,458 @@
+openapi: 3.0.3
+info:
+  title: GAI Companies & Company Units API
+  version: 1.0.0
+paths:
+  /companies:
+    post:
+      summary: Create company
+      description: Requires companies:create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyRequest'
+      responses:
+        '201':
+          description: Created company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+    get:
+      summary: List companies
+      description: Requires companies:read.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CompanyStatus'
+        - name: document
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated companies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyListResponse'
+  /companies/{id}:
+    get:
+      summary: Get company
+      description: Requires companies:read.
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+    patch:
+      summary: Update company
+      description: Requires companies:update.
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyRequest'
+      responses:
+        '200':
+          description: Updated company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+  /companies/{id}/deactivate:
+    post:
+      summary: Deactivate company
+      description: Requires companies:deactivate.
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Deactivated company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+  /companies/{id}/reactivate:
+    post:
+      summary: Reactivate company
+      description: Requires companies:reactivate.
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Reactivated company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+  /companies/{companyId}/units:
+    post:
+      summary: Create company unit
+      description: Requires company-units:create.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompanyUnitRequest'
+      responses:
+        '201':
+          description: Created unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitResponse'
+    get:
+      summary: List company units
+      description: Requires company-units:read.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CompanyUnitStatus'
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated units
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitListResponse'
+  /companies/{companyId}/units/{unitId}:
+    get:
+      summary: Get company unit
+      description: Requires company-units:read.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/unitId'
+      responses:
+        '200':
+          description: Unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitResponse'
+    patch:
+      summary: Update company unit
+      description: Requires company-units:update.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/unitId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompanyUnitRequest'
+      responses:
+        '200':
+          description: Updated unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitResponse'
+  /companies/{companyId}/units/{unitId}/deactivate:
+    post:
+      summary: Deactivate company unit
+      description: Requires company-units:deactivate.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/unitId'
+      responses:
+        '200':
+          description: Deactivated unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitResponse'
+  /companies/{companyId}/units/{unitId}/reactivate:
+    post:
+      summary: Reactivate company unit
+      description: Requires company-units:reactivate.
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+        - $ref: '#/components/parameters/unitId'
+      responses:
+        '200':
+          description: Reactivated unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyUnitResponse'
+  /projects/{projectId}/units:
+    post:
+      summary: Assign unit to project
+      description: Requires project-units:assign.
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignProjectUnitRequest'
+      responses:
+        '201':
+          description: Assigned project unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectUnitResponse'
+    get:
+      summary: List project units
+      description: Requires project-units:read.
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+      responses:
+        '200':
+          description: Project units
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectUnitListResponse'
+  /projects/{projectId}/units/{unitId}/remove:
+    post:
+      summary: Remove unit from project
+      description: Requires project-units:remove.
+      parameters:
+        - $ref: '#/components/parameters/projectId'
+        - $ref: '#/components/parameters/unitId'
+      responses:
+        '200':
+          description: Removed project unit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectUnitResponse'
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    companyId:
+      name: companyId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    unitId:
+      name: unitId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    projectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    page_size:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+  schemas:
+    CompanyStatus:
+      type: string
+      enum: [active, inactive, blocked]
+    CompanyUnitStatus:
+      type: string
+      enum: [active, inactive]
+    CreateCompanyRequest:
+      type: object
+      required: [organization_id, name]
+      properties:
+        organization_id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        corporate_name:
+          type: string
+          nullable: true
+        document:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    UpdateCompanyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        corporate_name:
+          type: string
+          nullable: true
+        document:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    CompanyResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        name: { type: string }
+        corporate_name: { type: string, nullable: true }
+        document: { type: string, nullable: true }
+        status:
+          $ref: '#/components/schemas/CompanyStatus'
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+        created_by_id: { type: integer, format: int64, nullable: true }
+        updated_by_id: { type: integer, format: int64, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    CompanyListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyResponse'
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    CreateCompanyUnitRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        code: { type: string, nullable: true }
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    UpdateCompanyUnitRequest:
+      type: object
+      properties:
+        name: { type: string }
+        code: { type: string, nullable: true }
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    CompanyUnitResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        company_id: { type: integer, format: int64 }
+        name: { type: string }
+        code: { type: string, nullable: true }
+        status:
+          $ref: '#/components/schemas/CompanyUnitStatus'
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+        created_by_id: { type: integer, format: int64, nullable: true }
+        updated_by_id: { type: integer, format: int64, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    CompanyUnitListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyUnitResponse'
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    AssignProjectUnitRequest:
+      type: object
+      required: [company_unit_id]
+      properties:
+        company_unit_id: { type: integer, format: int64 }
+    ProjectUnitResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        company_unit_id: { type: integer, format: int64 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ProjectUnitListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectUnitResponse'

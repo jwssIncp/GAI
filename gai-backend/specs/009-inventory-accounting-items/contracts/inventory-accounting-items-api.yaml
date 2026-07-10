@@ -1,0 +1,270 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Inventory Accounting Items API
+  version: 1.0.0
+  description: Importacao e manutencao da base contabil por project.
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+tags:
+  - name: Inventory Accounting Items
+paths:
+  /projects/{projectId}/accounting-imports:
+    post:
+      tags: [Inventory Accounting Items]
+      summary: Importar base contabil XLSX
+      operationId: importAccountingItems
+      description: Requer `inventory-accounting-items:import`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Batch criado/processado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountingImportBatch' }
+    get:
+      tags: [Inventory Accounting Items]
+      summary: Listar batches
+      operationId: listAccountingImportBatches
+      description: Requer `inventory-accounting-items:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountingImportBatchList' }
+  /projects/{projectId}/accounting-imports/{batchId}:
+    get:
+      tags: [Inventory Accounting Items]
+      summary: Consultar batch
+      operationId: getAccountingImportBatch
+      description: Requer `inventory-accounting-items:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/BatchId'
+      responses:
+        '200':
+          description: Batch
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountingImportBatch' }
+  /projects/{projectId}/accounting-imports/{batchId}/errors:
+    get:
+      tags: [Inventory Accounting Items]
+      summary: Relatorio de erros do batch
+      operationId: getAccountingImportErrors
+      description: Requer `inventory-accounting-items:export-errors`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/BatchId'
+      responses:
+        '200':
+          description: Erros por linha
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/ImportError' }
+  /projects/{projectId}/inventory-accounting-items:
+    get:
+      tags: [Inventory Accounting Items]
+      summary: Listar itens contabeis
+      operationId: listInventoryAccountingItems
+      description: Requer `inventory-accounting-items:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - { name: plate, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/InventoryAccountingItemStatus' } }
+        - { name: base_code, in: query, schema: { type: string } }
+        - { name: investor_code, in: query, schema: { type: string } }
+        - { name: description, in: query, schema: { type: string } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryAccountingItemList' }
+  /projects/{projectId}/inventory-accounting-items/{id}:
+    get:
+      tags: [Inventory Accounting Items]
+      summary: Consultar item contabil
+      operationId: getInventoryAccountingItem
+      description: Requer `inventory-accounting-items:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryAccountingItem' }
+    patch:
+      tags: [Inventory Accounting Items]
+      summary: Atualizar item contabil
+      operationId: updateInventoryAccountingItem
+      description: Requer `inventory-accounting-items:update`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryAccountingItemInput' }
+      responses:
+        '200':
+          description: Item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryAccountingItem' }
+  /projects/{projectId}/inventory-accounting-items/{id}/deactivate:
+    post:
+      tags: [Inventory Accounting Items]
+      summary: Desativar item contabil
+      operationId: deactivateInventoryAccountingItem
+      description: Requer `inventory-accounting-items:deactivate`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryAccountingItem' }
+  /projects/{projectId}/inventory-accounting-items/{id}/reactivate:
+    post:
+      tags: [Inventory Accounting Items]
+      summary: Reativar item contabil
+      operationId: reactivateInventoryAccountingItem
+      description: Requer `inventory-accounting-items:reactivate`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryAccountingItem' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: session-token }
+  parameters:
+    ProjectId: { name: projectId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    ItemId: { name: id, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    BatchId: { name: batchId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+  schemas:
+    InventoryAccountingItemStatus:
+      type: string
+      enum: [pending, matched, divergent, not_found, ignored, inactive]
+    AccountingImportBatchStatus:
+      type: string
+      enum: [pending, processing, finished, failed, cancelled]
+    InventoryAccountingItemInput:
+      type: object
+      properties:
+        plate: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        accounting_account_description: { type: string, nullable: true }
+        location: { type: string, nullable: true }
+        acquisition_date: { type: string, format: date, nullable: true }
+        acquisition_value: { type: string, pattern: '^\\d{1,13}(\\.\\d{1,2})?$', nullable: true }
+        base_code: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/InventoryAccountingItemStatus' }
+        investor_code: { type: string, nullable: true }
+        note_1: { type: string, nullable: true }
+        note_2: { type: string, nullable: true }
+        new_inventory_plate: { type: string, nullable: true }
+        inventory_description: { type: string, nullable: true }
+        inventory_location: { type: string, nullable: true }
+        metadata: { type: object, nullable: true }
+    InventoryAccountingItem:
+      allOf:
+        - $ref: '#/components/schemas/InventoryAccountingItemInput'
+        - type: object
+          required: [id, organization_id, project_id, status, created_at, updated_at]
+          properties:
+            id: { type: integer, format: int64 }
+            organization_id: { type: integer, format: int64 }
+            project_id: { type: integer, format: int64 }
+            imported_by_id: { type: integer, format: int64, nullable: true }
+            import_batch_id: { type: integer, format: int64, nullable: true }
+            created_at: { type: string, format: date-time }
+            updated_at: { type: string, format: date-time }
+            deleted_at: { type: string, format: date-time, nullable: true }
+    InventoryAccountingItemList:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/InventoryAccountingItem' } }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    AccountingImportBatch:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        original_file_name: { type: string }
+        status: { $ref: '#/components/schemas/AccountingImportBatchStatus' }
+        total_rows: { type: integer }
+        processed_rows: { type: integer }
+        success_rows: { type: integer }
+        failed_rows: { type: integer }
+        error_report_path: { type: string, nullable: true }
+        started_at: { type: string, format: date-time, nullable: true }
+        finished_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    AccountingImportBatchList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/AccountingImportBatch' } }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    ImportError:
+      type: object
+      required: [row, errors]
+      properties:
+        row: { type: integer }
+        errors: { type: array, items: { type: string } }

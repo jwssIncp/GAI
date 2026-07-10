@@ -1,0 +1,275 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Payments & Expenses API
+  version: 1.0.0
+  description: |
+    Pagamentos, despesas e comprovantes por project.
+    Campos calculados de pagamento incluem `daily_total` e `final_amount`.
+    Exportacao futura requer `payments:export`.
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+tags:
+  - name: Payments
+  - name: Expenses
+paths:
+  /projects/{projectId}/payments:
+    post:
+      tags: [Payments]
+      summary: Criar pagamento
+      operationId: createFieldAgentPayment
+      description: Requer `payments:create`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentInput' }
+      responses:
+        '201': { description: Pagamento criado }
+    get:
+      tags: [Payments]
+      summary: Listar pagamentos
+      operationId: listFieldAgentPayments
+      description: Requer `payments:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: field_agent_id, in: query, schema: { type: integer, format: int64 } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/PaymentStatus' } }
+        - { name: state, in: query, schema: { type: string } }
+        - { name: start_date, in: query, schema: { type: string, format: date } }
+        - { name: end_date, in: query, schema: { type: string, format: date } }
+        - { name: payment_date, in: query, schema: { type: string, format: date } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Lista paginada }
+  /projects/{projectId}/payments/summary:
+    get:
+      tags: [Payments]
+      summary: Resumo de pagamentos
+      operationId: summarizeFieldAgentPayments
+      description: Requer `payments:read`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      responses:
+        '200': { description: Totais consolidados }
+  /projects/{projectId}/payments/{id}:
+    get:
+      tags: [Payments]
+      summary: Consultar pagamento
+      description: Requer `payments:read`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Pagamento }
+    patch:
+      tags: [Payments]
+      summary: Atualizar pagamento
+      description: Requer `payments:update`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentInput' }
+      responses:
+        '200': { description: Pagamento atualizado }
+  /projects/{projectId}/payments/{id}/approve:
+    post:
+      tags: [Payments]
+      summary: Aprovar pagamento
+      description: Requer `payments:approve`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Pagamento aprovado } }
+  /projects/{projectId}/payments/{id}/mark-as-paid:
+    post:
+      tags: [Payments]
+      summary: Marcar pagamento como pago
+      description: Requer `payments:mark-as-paid`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MarkAsPaidRequest' }
+      responses: { '200': { description: Pagamento pago } }
+  /projects/{projectId}/payments/{id}/cancel:
+    post:
+      tags: [Payments]
+      summary: Cancelar pagamento
+      description: Requer `payments:cancel`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Pagamento cancelado } }
+  /projects/{projectId}/expenses:
+    post:
+      tags: [Expenses]
+      summary: Criar despesa
+      description: Requer `expenses:create`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExpenseInput' }
+      responses: { '201': { description: Despesa criada } }
+    get:
+      tags: [Expenses]
+      summary: Listar despesas
+      description: Requer `expenses:read`.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/ProjectId' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: field_agent_id, in: query, schema: { type: integer, format: int64 } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ExpenseStatus' } }
+        - { name: start_date, in: query, schema: { type: string, format: date } }
+        - { name: end_date, in: query, schema: { type: string, format: date } }
+        - { name: search, in: query, schema: { type: string } }
+      responses: { '200': { description: Lista paginada } }
+  /projects/{projectId}/expenses/{id}:
+    get:
+      tags: [Expenses]
+      summary: Consultar despesa
+      description: Requer `expenses:read`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Despesa } }
+    patch:
+      tags: [Expenses]
+      summary: Atualizar despesa
+      description: Requer `expenses:update`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExpenseInput' }
+      responses: { '200': { description: Despesa atualizada } }
+  /projects/{projectId}/expenses/{id}/approve:
+    post:
+      tags: [Expenses]
+      summary: Aprovar despesa
+      description: Requer `expenses:approve`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Despesa aprovada } }
+  /projects/{projectId}/expenses/{id}/reject:
+    post:
+      tags: [Expenses]
+      summary: Rejeitar despesa
+      description: Requer `expenses:reject`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectExpenseRequest' }
+      responses: { '200': { description: Despesa rejeitada } }
+  /projects/{projectId}/expenses/{id}/mark-as-paid:
+    post:
+      tags: [Expenses]
+      summary: Marcar despesa como paga
+      description: Requer `expenses:mark-as-paid`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Despesa paga } }
+  /projects/{projectId}/expenses/{id}/cancel:
+    post:
+      tags: [Expenses]
+      summary: Cancelar despesa
+      description: Requer `expenses:cancel`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/Id' }]
+      responses: { '200': { description: Despesa cancelada } }
+  /projects/{projectId}/expenses/{expenseId}/attachments/upload-url:
+    post:
+      tags: [Expenses]
+      summary: Criar URL de upload de comprovante
+      description: Requer `expenses:upload-attachment`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/ExpenseId' }]
+      responses: { '201': { description: URL de upload } }
+  /projects/{projectId}/expenses/{expenseId}/attachments/{attachmentId}/confirm-upload:
+    post:
+      tags: [Expenses]
+      summary: Confirmar upload
+      description: Requer `expenses:upload-attachment`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/ExpenseId' }, { $ref: '#/components/parameters/AttachmentId' }]
+      responses: { '200': { description: Upload confirmado } }
+  /projects/{projectId}/expenses/{expenseId}/attachments:
+    get:
+      tags: [Expenses]
+      summary: Listar comprovantes
+      description: Requer `expenses:read`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/ExpenseId' }]
+      responses: { '200': { description: Comprovantes } }
+  /projects/{projectId}/expenses/{expenseId}/attachments/{attachmentId}/download-url:
+    post:
+      tags: [Expenses]
+      summary: Criar URL de download
+      description: Requer `expenses:download-attachment`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/ExpenseId' }, { $ref: '#/components/parameters/AttachmentId' }]
+      responses: { '200': { description: URL de download } }
+  /projects/{projectId}/expenses/{expenseId}/attachments/{attachmentId}/remove:
+    post:
+      tags: [Expenses]
+      summary: Remover comprovante
+      description: Requer `expenses:upload-attachment`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/ProjectId' }, { $ref: '#/components/parameters/ExpenseId' }, { $ref: '#/components/parameters/AttachmentId' }]
+      responses: { '200': { description: Comprovante removido } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: session-token }
+  parameters:
+    ProjectId: { name: projectId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    Id: { name: id, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    ExpenseId: { name: expenseId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    AttachmentId: { name: attachmentId, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+  schemas:
+    PaymentStatus: { type: string, enum: [pending, approved, paid, cancelled] }
+    ExpenseStatus: { type: string, enum: [pending, approved, rejected, paid, cancelled] }
+    PaymentInput:
+      type: object
+      required: [field_agent_id, start_date, end_date, daily_rate]
+      properties:
+        field_agent_id: { type: integer, format: int64 }
+        state: { type: string, nullable: true }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        payment_date: { type: string, format: date, nullable: true }
+        daily_rate: { type: string }
+        additional_amount: { type: string }
+        discount_amount: { type: string }
+        notes: { type: string, nullable: true }
+        metadata: { type: object, nullable: true }
+    ExpenseInput:
+      type: object
+      required: [description, expense_date, amount]
+      properties:
+        field_agent_id: { type: integer, format: int64, nullable: true }
+        description: { type: string }
+        reason: { type: string, nullable: true }
+        expense_date: { type: string, format: date }
+        amount: { type: string }
+        metadata: { type: object, nullable: true }
+    MarkAsPaidRequest:
+      type: object
+      properties:
+        payment_date: { type: string, format: date, nullable: true }
+    RejectExpenseRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }

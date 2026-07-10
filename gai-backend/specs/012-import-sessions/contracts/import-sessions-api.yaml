@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: GAI Import Sessions API
+  version: 1.0.0
+paths:
+  /projects/{projectId}/import-sessions:
+    post:
+      summary: Criar sessao de importacao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:create
+      responses:
+        '201': { description: Sessao criada }
+    get:
+      summary: Listar sessoes de importacao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:read
+      responses:
+        '200': { description: Lista paginada }
+  /projects/{projectId}/import-sessions/{sessionId}:
+    get:
+      summary: Consultar sessao por id
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:read
+      responses:
+        '200': { description: Sessao }
+  /projects/{projectId}/import-sessions/by-uuid/{sessionUuid}:
+    get:
+      summary: Consultar sessao por session_uuid
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:read
+      responses:
+        '200': { description: Sessao }
+  /projects/{projectId}/import-sessions/{sessionId}/finish:
+    post:
+      summary: Finalizar recebimento da sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:finish
+      responses:
+        '200': { description: Sessao finalizada ou em processamento }
+  /projects/{projectId}/import-sessions/{sessionId}/cancel:
+    post:
+      summary: Cancelar sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:cancel
+      responses:
+        '200': { description: Sessao cancelada }
+  /projects/{projectId}/import-sessions/{sessionId}/retry:
+    post:
+      summary: Reprocessar payloads com erro da sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-sessions:retry
+      responses:
+        '200': { description: Retry solicitado }
+  /projects/{projectId}/import-sessions/{sessionId}/payloads:
+    post:
+      summary: Receber payload idempotente
+      security: [{ bearerAuth: [] }]
+      x-permission: import-payloads:create
+      responses:
+        '201': { description: Payload recebido ou resultado idempotente }
+        '409': { description: Payload reenviado com checksum divergente }
+    get:
+      summary: Listar payloads da sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-payloads:read
+      responses:
+        '200': { description: Lista paginada }
+  /projects/{projectId}/import-sessions/{sessionId}/payloads/{payloadId}:
+    get:
+      summary: Consultar payload
+      security: [{ bearerAuth: [] }]
+      x-permission: import-payloads:read
+      responses:
+        '200': { description: Payload }
+  /projects/{projectId}/import-sessions/{sessionId}/payloads/{payloadId}/reprocess:
+    post:
+      summary: Reprocessar payload com erro
+      security: [{ bearerAuth: [] }]
+      x-permission: import-payloads:reprocess
+      responses:
+        '200': { description: Payload reprocessado }
+  /projects/{projectId}/import-sessions/{sessionId}/errors:
+    get:
+      summary: Listar erros da sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-errors:read
+      responses:
+        '200': { description: Erros paginados }
+  /projects/{projectId}/import-sessions/{sessionId}/payloads/{payloadId}/errors:
+    get:
+      summary: Listar erros de um payload
+      security: [{ bearerAuth: [] }]
+      x-permission: import-errors:read
+      responses:
+        '200': { description: Erros paginados }
+  /projects/{projectId}/import-sessions/{sessionId}/files/upload-url:
+    post:
+      summary: Criar URL de upload para arquivo bruto
+      security: [{ bearerAuth: [] }]
+      x-permission: import-files:create
+      responses:
+        '201': { description: URL assinada }
+  /projects/{projectId}/import-sessions/{sessionId}/files/{fileId}/confirm-upload:
+    post:
+      summary: Confirmar upload de arquivo bruto
+      security: [{ bearerAuth: [] }]
+      x-permission: import-files:create
+      responses:
+        '200': { description: Arquivo confirmado }
+  /projects/{projectId}/import-sessions/{sessionId}/files:
+    get:
+      summary: Listar arquivos da sessao
+      security: [{ bearerAuth: [] }]
+      x-permission: import-files:read
+      responses:
+        '200': { description: Arquivos }
+  /projects/{projectId}/import-sessions/{sessionId}/files/{fileId}/download-url:
+    post:
+      summary: Criar URL de download de arquivo bruto
+      security: [{ bearerAuth: [] }]
+      x-permission: import-files:download
+      responses:
+        '200': { description: URL assinada }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    ImportSession:
+      type: object
+      properties:
+        id: { type: integer }
+        session_uuid: { type: string }
+        type:
+          type: string
+          enum: [mobile_sync, inventory_items_import, accounting_items_import, images_import, raw_backup_import, incremental_sync]
+        source:
+          type: string
+          enum: [mobile_app, web_admin, api_client, system, migration]
+        status:
+          type: string
+          enum: [open, receiving, processing, finished, failed, cancelled, expired]
+    ImportPayload:
+      type: object
+      properties:
+        payload_number: { type: integer }
+        idempotency_key: { type: string }
+        checksum: { type: string }
+        status:
+          type: string
+          enum: [received, processing, processed, failed, duplicated, ignored]
+    ImportFile:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending_upload, uploaded, processed, failed, removed]

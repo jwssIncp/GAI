@@ -1,0 +1,371 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend - Inventory Items API
+  version: 1.0.0
+  description: |
+    Cadastro e consulta de bens patrimoniais inventariados por project.
+
+servers:
+  - url: http://localhost:3000/api/v1
+  - url: /api/v1
+
+tags:
+  - name: Inventory Items
+    description: Itens inventariados por project e organization
+
+paths:
+  /projects/{projectId}/inventory-items:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      tags: [Inventory Items]
+      summary: Criar inventory item
+      operationId: createInventoryItem
+      description: Requer `inventory-items:create`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInventoryItemRequest'
+      responses:
+        '201': { $ref: '#/components/responses/InventoryItemOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+    get:
+      tags: [Inventory Items]
+      summary: Listar inventory items do project
+      operationId: listProjectInventoryItems
+      description: Requer `inventory-items:read`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/InventoryItemStatus' }
+        - name: old_plate
+          in: query
+          schema: { type: string }
+        - name: new_plate
+          in: query
+          schema: { type: string }
+        - name: description
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemListResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /projects/{projectId}/inventory-items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/InventoryItemId'
+    get:
+      tags: [Inventory Items]
+      summary: Consultar inventory item do project
+      operationId: getProjectInventoryItem
+      description: Requer `inventory-items:read`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Inventory Items]
+      summary: Atualizar inventory item
+      operationId: updateInventoryItem
+      description: Requer `inventory-items:update`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInventoryItemRequest'
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemOk' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{projectId}/inventory-items/{id}/deactivate:
+    post:
+      tags: [Inventory Items]
+      summary: Desativar inventory item
+      operationId: deactivateInventoryItem
+      description: Requer `inventory-items:deactivate`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /projects/{projectId}/inventory-items/{id}/reactivate:
+    post:
+      tags: [Inventory Items]
+      summary: Reativar inventory item
+      operationId: reactivateInventoryItem
+      description: Requer `inventory-items:reactivate`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/InventoryItemId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+
+  /inventory-items:
+    get:
+      tags: [Inventory Items]
+      summary: Listar inventory items globalmente
+      operationId: listInventoryItems
+      description: Requer `inventory-items:read`; usuarios de organization recebem somente a propria organization.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: organization_id
+          in: query
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: project_id
+          in: query
+          schema: { type: integer, format: int64, minimum: 1 }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/InventoryItemStatus' }
+        - name: old_plate
+          in: query
+          schema: { type: string }
+        - name: new_plate
+          in: query
+          schema: { type: string }
+        - name: description
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItemListResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /inventory-items/{id}:
+    parameters:
+      - $ref: '#/components/parameters/InventoryItemId'
+    get:
+      tags: [Inventory Items]
+      summary: Consultar inventory item globalmente
+      operationId: getInventoryItem
+      description: Requer `inventory-items:read`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/InventoryItemOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    InventoryItemId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INTERNAL_ERROR] }
+        message: { type: string }
+        details:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+    InventoryItemStatus:
+      type: string
+      enum: [pending, evaluated, divergent, not_found, duplicated, removed, inactive]
+    CreateInventoryItemRequest:
+      type: object
+      properties:
+        external_item_id: { type: string, maxLength: 100, nullable: true }
+        sequence: { type: string, maxLength: 50, nullable: true }
+        old_plate: { type: string, maxLength: 100, nullable: true }
+        new_plate: { type: string, maxLength: 100, nullable: true }
+        unit_text: { type: string, maxLength: 255, nullable: true }
+        address_text: { type: string, nullable: true }
+        location_text: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        brand: { type: string, maxLength: 100, nullable: true }
+        model: { type: string, maxLength: 100, nullable: true }
+        serial_number: { type: string, maxLength: 100, nullable: true }
+        capacity: { type: string, maxLength: 100, nullable: true }
+        year: { type: integer, minimum: 1900, maximum: 2100, nullable: true }
+        notes: { type: string, nullable: true }
+        source: { type: string, maxLength: 50, nullable: true }
+        used_value: { type: string, pattern: '^\\d{1,13}(\\.\\d{1,2})?$', nullable: true }
+        new_value: { type: string, pattern: '^\\d{1,13}(\\.\\d{1,2})?$', nullable: true }
+        status: { $ref: '#/components/schemas/InventoryItemStatus' }
+        metadata: { type: object, nullable: true }
+    UpdateInventoryItemRequest:
+      type: object
+      properties:
+        external_item_id: { type: string, maxLength: 100, nullable: true }
+        sequence: { type: string, maxLength: 50, nullable: true }
+        old_plate: { type: string, maxLength: 100, nullable: true }
+        new_plate: { type: string, maxLength: 100, nullable: true }
+        unit_text: { type: string, maxLength: 255, nullable: true }
+        address_text: { type: string, nullable: true }
+        location_text: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        brand: { type: string, maxLength: 100, nullable: true }
+        model: { type: string, maxLength: 100, nullable: true }
+        serial_number: { type: string, maxLength: 100, nullable: true }
+        capacity: { type: string, maxLength: 100, nullable: true }
+        year: { type: integer, minimum: 1900, maximum: 2100, nullable: true }
+        notes: { type: string, nullable: true }
+        source: { type: string, maxLength: 50, nullable: true }
+        used_value: { type: string, pattern: '^\\d{1,13}(\\.\\d{1,2})?$', nullable: true }
+        new_value: { type: string, pattern: '^\\d{1,13}(\\.\\d{1,2})?$', nullable: true }
+        status: { $ref: '#/components/schemas/InventoryItemStatus' }
+        metadata: { type: object, nullable: true }
+    InventoryItemResponse:
+      type: object
+      required: [id, organization_id, project_id, status, created_at, updated_at]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        external_item_id: { type: string, nullable: true }
+        sequence: { type: string, nullable: true }
+        old_plate: { type: string, nullable: true }
+        new_plate: { type: string, nullable: true }
+        unit_text: { type: string, nullable: true }
+        address_text: { type: string, nullable: true }
+        location_text: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        brand: { type: string, nullable: true }
+        model: { type: string, nullable: true }
+        serial_number: { type: string, nullable: true }
+        capacity: { type: string, nullable: true }
+        year: { type: integer, nullable: true }
+        notes: { type: string, nullable: true }
+        source: { type: string, nullable: true }
+        used_value: { type: string, nullable: true }
+        new_value: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/InventoryItemStatus' }
+        metadata: { type: object, nullable: true }
+        created_by_id: { type: integer, format: int64, nullable: true }
+        updated_by_id: { type: integer, format: int64, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    InventoryItemListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/InventoryItemResponse' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+  responses:
+    InventoryItemOk:
+      description: Inventory item retornado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/InventoryItemResponse' }
+    Unauthorized:
+      description: Token ausente ou invalido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    Forbidden:
+      description: Autenticado sem permissao suficiente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Registro nao encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ValidationError:
+      description: Dados invalidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    ProjectMutationBlocked:
+      description: Project nao permite mutacao operacional
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          example:
+            code: CONFLICT
+            message: Project status blocks this operation

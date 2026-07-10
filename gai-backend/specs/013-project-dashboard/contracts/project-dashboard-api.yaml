@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: GAI Project Dashboard API
+  version: 1.0.0
+paths:
+  /projects/{projectId}/summary:
+    get:
+      summary: Consultar resumo consolidado do project
+      security: [{ bearerAuth: [] }]
+      x-permission: projects:read
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/IncludeFinancial'
+        - $ref: '#/components/parameters/IncludeImports'
+        - $ref: '#/components/parameters/IncludeExports'
+        - $ref: '#/components/parameters/IncludeRecentActivity'
+      responses:
+        '200':
+          description: Project summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSummaryResponse'
+        '401': { description: Usuario nao autenticado }
+        '403': { description: Usuario sem permissao ou fora do escopo da organization }
+        '404': { description: Project nao encontrado }
+  /projects/{projectId}/dashboard:
+    get:
+      summary: Alias de leitura do resumo consolidado do project
+      security: [{ bearerAuth: [] }]
+      x-permission: projects:read
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/IncludeFinancial'
+        - $ref: '#/components/parameters/IncludeImports'
+        - $ref: '#/components/parameters/IncludeExports'
+        - $ref: '#/components/parameters/IncludeRecentActivity'
+      responses:
+        '200':
+          description: Project dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSummaryResponse'
+        '401': { description: Usuario nao autenticado }
+        '403': { description: Usuario sem permissao ou fora do escopo da organization }
+        '404': { description: Project nao encontrado }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: integer, format: int64 }
+    IncludeFinancial:
+      name: include_financial
+      in: query
+      required: false
+      schema: { type: boolean, default: false }
+    IncludeImports:
+      name: include_imports
+      in: query
+      required: false
+      schema: { type: boolean, default: false }
+    IncludeExports:
+      name: include_exports
+      in: query
+      required: false
+      schema: { type: boolean, default: false }
+    IncludeRecentActivity:
+      name: include_recent_activity
+      in: query
+      required: false
+      schema: { type: boolean, default: false }
+  schemas:
+    ProjectSummaryResponse:
+      type: object
+      required: [project, inventory, images, accounting, pending_issues, field_agents]
+      properties:
+        project:
+          $ref: '#/components/schemas/ProjectSummaryProject'
+        inventory:
+          $ref: '#/components/schemas/ProjectInventorySummary'
+        images:
+          $ref: '#/components/schemas/ProjectImagesSummary'
+        accounting:
+          $ref: '#/components/schemas/ProjectAccountingSummary'
+        pending_issues:
+          $ref: '#/components/schemas/ProjectPendingIssuesSummary'
+        field_agents:
+          $ref: '#/components/schemas/ProjectFieldAgentsSummary'
+        financial:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/ProjectFinancialSummary' }]
+        imports:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/ProjectImportsSummary' }]
+        exports:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/ProjectExportsSummary' }]
+        recent_activity:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/ProjectRecentActivitySummary' }]
+    ProjectSummaryProject:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        status: { type: string }
+        organization_id: { type: integer, format: int64 }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+        created_at: { type: string, format: date-time }
+    ProjectInventorySummary:
+      type: object
+      properties:
+        total_items: { type: integer }
+        evaluated_items: { type: integer }
+        pending_items: { type: integer }
+        divergent_items: { type: integer }
+        not_found_items: { type: integer }
+        duplicated_items: { type: integer }
+        removed_items: { type: integer }
+        inactive_items: { type: integer }
+        progress_percentage: { type: number }
+    ProjectImagesSummary:
+      type: object
+      properties:
+        total_images: { type: integer }
+        uploaded_images: { type: integer }
+        pending_upload_images: { type: integer }
+        removed_images: { type: integer }
+    ProjectAccountingSummary:
+      type: object
+      properties:
+        total_accounting_items: { type: integer }
+        matched_accounting_items: { type: integer }
+        divergent_accounting_items: { type: integer }
+        not_found_accounting_items: { type: integer }
+        ignored_accounting_items: { type: integer }
+    ProjectPendingIssuesSummary:
+      type: object
+      properties:
+        total_pending_issues: { type: integer }
+        open_pending_issues: { type: integer }
+        in_review_pending_issues: { type: integer }
+        resolved_pending_issues: { type: integer }
+        ignored_pending_issues: { type: integer }
+        cancelled_pending_issues: { type: integer }
+        critical_pending_issues: { type: integer }
+        high_pending_issues: { type: integer }
+        medium_pending_issues: { type: integer }
+        low_pending_issues: { type: integer }
+    ProjectFieldAgentsSummary:
+      type: object
+      properties:
+        total_field_agents: { type: integer }
+        active_field_agents: { type: integer }
+        inactive_field_agents: { type: integer }
+        finished_field_agents: { type: integer }
+    ProjectFinancialSummary:
+      type: object
+      properties:
+        total_payments: { type: integer }
+        pending_payments: { type: integer }
+        approved_payments: { type: integer }
+        paid_payments: { type: integer }
+        cancelled_payments: { type: integer }
+        total_payment_amount: { type: string, example: '5000.00' }
+        total_expenses: { type: integer }
+        pending_expenses: { type: integer }
+        approved_expenses: { type: integer }
+        paid_expenses: { type: integer }
+        rejected_expenses: { type: integer }
+        cancelled_expenses: { type: integer }
+        total_expense_amount: { type: string, example: '1200.00' }
+        financial_total_amount: { type: string, example: '6200.00' }
+    ProjectImportsSummary:
+      type: object
+      properties:
+        total_import_sessions: { type: integer }
+        open_import_sessions: { type: integer }
+        processing_import_sessions: { type: integer }
+        finished_import_sessions: { type: integer }
+        failed_import_sessions: { type: integer }
+        cancelled_import_sessions: { type: integer }
+        expired_import_sessions: { type: integer }
+    ProjectExportsSummary:
+      type: object
+      properties:
+        total_export_jobs: { type: integer }
+        pending_export_jobs: { type: integer }
+        processing_export_jobs: { type: integer }
+        finished_export_jobs: { type: integer }
+        failed_export_jobs: { type: integer }
+        cancelled_export_jobs: { type: integer }
+        expired_export_jobs: { type: integer }
+    ProjectRecentActivitySummary:
+      type: object
+      properties:
+        last_inventory_item_created_at: { type: string, format: date-time, nullable: true }
+        last_inventory_item_updated_at: { type: string, format: date-time, nullable: true }
+        last_import_finished_at: { type: string, format: date-time, nullable: true }
+        last_export_finished_at: { type: string, format: date-time, nullable: true }
+        last_pending_issue_created_at: { type: string, format: date-time, nullable: true }
+        last_payment_updated_at: { type: string, format: date-time, nullable: true }

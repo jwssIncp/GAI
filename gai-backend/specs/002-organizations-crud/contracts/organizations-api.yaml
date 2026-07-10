@@ -1,0 +1,612 @@
+openapi: 3.1.0
+info:
+  title: GAI Backend — Organizations API
+  version: 1.1.0
+  description: |
+    CRUD de organizations (tenants). Requer autenticação com role `PLATFORM_ADMIN`.
+
+    **Contrato canônico** para geração do frontend. Deve permanecer sincronizado com
+    `@nestjs/swagger` em runtime (`/api/docs`).
+
+    ## Modelo de erro
+
+    Todas as respostas de erro seguem `ErrorResponse`:
+
+    ```json
+    { "code": "<ErrorCode>", "message": "...", "details": [{ "field": "...", "message": "..." }] }
+    ```
+
+    `details` é opcional e presente em erros de validação (`VALIDATION_ERROR`).
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local (Docker Compose)
+  - url: /api/v1
+    description: Relative base path
+
+tags:
+  - name: Organizations
+    description: Gestão de tenants do GAI (PLATFORM_ADMIN)
+
+paths:
+  /organizations:
+    post:
+      tags: [Organizations]
+      summary: Cadastrar organization
+      operationId: createOrganization
+      description: |
+        **Fluxos paralelos (mutuamente exclusivos por request):**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Dados válidos, CNPJ único, PLATFORM_ADMIN | 201 | — | Organization criada (ACTIVE) |
+        | 2 | Campo obrigatório ausente / formato inválido | 400 | VALIDATION_ERROR | Rejeição com `details[]` |
+        | 3 | CNPJ com dígitos verificadores inválidos | 400 | VALIDATION_ERROR | `details[].field = cnpj` |
+        | 4 | Token ausente ou sessão inválida | 401 | UNAUTHORIZED | — |
+        | 5 | Token válido, role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+        | 6 | CNPJ já cadastrado (ativo ou inativo) | 409 | CONFLICT | — |
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRequest'
+            examples:
+              complete:
+                summary: Cadastro completo
+                value:
+                  legal_name: Empresa Exemplo Ltda
+                  trade_name: Exemplo
+                  cnpj: '11222333000181'
+                  contact_email: contato@exemplo.com.br
+                  contact_phone: '11999998888'
+              minimal:
+                summary: Apenas obrigatórios
+                value:
+                  legal_name: Empresa Mínima Ltda
+                  cnpj: '11222333000181'
+      responses:
+        '201':
+          description: Organization criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+              example:
+                id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                legal_name: Empresa Exemplo Ltda
+                trade_name: Exemplo
+                cnpj: '11222333000181'
+                contact_email: contato@exemplo.com.br
+                contact_phone: '11999998888'
+                status: ACTIVE
+                created_at: '2026-06-17T12:00:00.000Z'
+                updated_at: '2026-06-17T12:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/CnpjConflict'
+
+    get:
+      tags: [Organizations]
+      summary: Listar organizations (paginado)
+      operationId: listOrganizations
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | PLATFORM_ADMIN, query válida | 200 | — | Página de organizations |
+        | 2 | Nenhuma organization cadastrada | 200 | — | `items: []`, `total_items: 0` |
+        | 3 | `page_size` > 100 | 400 | VALIDATION_ERROR | Limite excedido |
+        | 4 | Token ausente / inválido | 401 | UNAUTHORIZED | — |
+        | 5 | Role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: status
+          in: query
+          description: Filtrar por status
+          schema:
+            $ref: '#/components/schemas/OrganizationStatus'
+        - name: search
+          in: query
+          description: Busca parcial em razão social, nome fantasia ou CNPJ
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+          example: Exemplo
+      responses:
+        '200':
+          description: Lista paginada (pode ser vazia)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationListResponse'
+              examples:
+                withResults:
+                  summary: Com resultados
+                  value:
+                    items:
+                      - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                        legal_name: Empresa Exemplo Ltda
+                        trade_name: Exemplo
+                        cnpj: '11222333000181'
+                        contact_email: contato@exemplo.com.br
+                        contact_phone: null
+                        status: ACTIVE
+                        created_at: '2026-06-17T12:00:00.000Z'
+                        updated_at: '2026-06-17T12:00:00.000Z'
+                    page: 1
+                    page_size: 20
+                    total_items: 1
+                    total_pages: 1
+                empty:
+                  summary: Sem organizations
+                  value:
+                    items: []
+                    page: 1
+                    page_size: 20
+                    total_items: 0
+                    total_pages: 0
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /organizations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OrganizationId'
+
+    get:
+      tags: [Organizations]
+      summary: Consultar organization por ID
+      operationId: getOrganization
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | ID existe, PLATFORM_ADMIN | 200 | — | Organization retornada |
+        | 2 | ID inexistente (UUID válido) | 404 | NOT_FOUND | — |
+        | 3 | Token ausente / inválido | 401 | UNAUTHORIZED | — |
+        | 4 | Role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Organization encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Organizations]
+      summary: Atualizar organization
+      operationId: updateOrganization
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Campos editáveis válidos, org existe | 200 | — | Organization atualizada + auditoria |
+        | 2 | Body vazio ou sem alterações | 200 | — | Retorna estado atual (no-op) |
+        | 3 | Tentativa de alterar `cnpj` | 400 | VALIDATION_ERROR | CNPJ imutável |
+        | 4 | Campo com formato inválido | 400 | VALIDATION_ERROR | `details[]` |
+        | 5 | ID inexistente | 404 | NOT_FOUND | — |
+        | 6 | Token ausente / inválido | 401 | UNAUTHORIZED | — |
+        | 7 | Role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRequest'
+            example:
+              trade_name: Exemplo Atualizado
+              contact_email: novo@exemplo.com.br
+      responses:
+        '200':
+          description: Organization atualizada (ou inalterada)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /organizations/{id}/deactivate:
+    parameters:
+      - $ref: '#/components/parameters/OrganizationId'
+    post:
+      tags: [Organizations]
+      summary: Desativar organization
+      operationId: deactivateOrganization
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Org ACTIVE | 200 | — | Status → INACTIVE + auditoria |
+        | 2 | Org já INACTIVE | 409 | CONFLICT | Sem efeito colateral |
+        | 3 | ID inexistente | 404 | NOT_FOUND | — |
+        | 4 | Token ausente / inválido | 401 | UNAUTHORIZED | — |
+        | 5 | Role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Organization desativada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+              example:
+                id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                legal_name: Empresa Exemplo Ltda
+                trade_name: Exemplo
+                cnpj: '11222333000181'
+                contact_email: null
+                contact_phone: null
+                status: INACTIVE
+                created_at: '2026-06-17T12:00:00.000Z'
+                updated_at: '2026-06-17T12:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/AlreadyInactive'
+
+  /organizations/{id}/activate:
+    parameters:
+      - $ref: '#/components/parameters/OrganizationId'
+    post:
+      tags: [Organizations]
+      summary: Reativar organization
+      operationId: activateOrganization
+      description: |
+        **Fluxos paralelos:**
+
+        | # | Condição | HTTP | code | Resultado |
+        |---|----------|------|------|-----------|
+        | 1 | Org INACTIVE | 200 | — | Status → ACTIVE + auditoria |
+        | 2 | Org já ACTIVE | 409 | CONFLICT | Sem efeito colateral |
+        | 3 | ID inexistente | 404 | NOT_FOUND | — |
+        | 4 | Token ausente / inválido | 401 | UNAUTHORIZED | — |
+        | 5 | Role ≠ PLATFORM_ADMIN | 403 | FORBIDDEN | — |
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Organization reativada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResponse'
+              example:
+                id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                legal_name: Empresa Exemplo Ltda
+                trade_name: Exemplo
+                cnpj: '11222333000181'
+                contact_email: null
+                contact_phone: null
+                status: ACTIVE
+                created_at: '2026-06-17T12:00:00.000Z'
+                updated_at: '2026-06-17T12:45:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/AlreadyActive'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+      description: Token de sessão retornado por POST /auth/login
+
+  parameters:
+    OrganizationId:
+      name: id
+      in: path
+      required: true
+      description: UUID v4 da organization
+      schema:
+        type: string
+        format: uuid
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: page_size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - UNAUTHORIZED
+        - FORBIDDEN
+        - NOT_FOUND
+        - CONFLICT
+        - INTERNAL_ERROR
+      description: Código de erro normalizado retornado pelo HttpExceptionFilter
+
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+          description: Nome do campo com erro (snake_case, alinhado ao JSON da API)
+          example: cnpj
+        message:
+          type: string
+          example: CNPJ must contain exactly 14 digits
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    OrganizationStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+      description: Status operacional da organization
+
+    CreateOrganizationRequest:
+      type: object
+      required: [legal_name, cnpj]
+      properties:
+        legal_name:
+          type: string
+          minLength: 2
+          maxLength: 255
+          description: Razão social
+          example: Empresa Exemplo Ltda
+        trade_name:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Nome fantasia (opcional)
+          example: Exemplo
+        cnpj:
+          type: string
+          pattern: '^\d{14}$'
+          description: CNPJ com 14 dígitos, sem máscara; validado por dígitos verificadores
+          example: '11222333000181'
+        contact_email:
+          type: string
+          format: email
+          nullable: true
+          example: contato@exemplo.com.br
+        contact_phone:
+          type: string
+          minLength: 10
+          maxLength: 20
+          nullable: true
+          example: '11999998888'
+        status:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationStatus'
+          default: ACTIVE
+          description: Status inicial (default ACTIVE)
+
+    UpdateOrganizationRequest:
+      type: object
+      description: |
+        Campos editáveis. `cnpj` NÃO é aceito — envio resulta em 400 VALIDATION_ERROR.
+      properties:
+        legal_name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        trade_name:
+          type: string
+          maxLength: 255
+          nullable: true
+        contact_email:
+          type: string
+          format: email
+          nullable: true
+        contact_phone:
+          type: string
+          minLength: 10
+          maxLength: 20
+          nullable: true
+
+    OrganizationResponse:
+      type: object
+      required: [id, legal_name, cnpj, status, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        legal_name:
+          type: string
+        trade_name:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+          pattern: '^\d{14}$'
+        contact_email:
+          type: string
+          format: email
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OrganizationStatus'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    OrganizationListResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationResponse'
+        page:
+          type: integer
+          minimum: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total_items:
+          type: integer
+          minimum: 0
+        total_pages:
+          type: integer
+          minimum: 0
+
+  responses:
+    Unauthorized:
+      description: Token ausente, expirado ou sessão inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: UNAUTHORIZED
+            message: Unauthorized
+
+    Forbidden:
+      description: Autenticado mas sem role PLATFORM_ADMIN
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: FORBIDDEN
+            message: Forbidden resource
+
+    NotFound:
+      description: Organization não encontrada para o ID informado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: NOT_FOUND
+            message: Organization not found
+
+    ValidationError:
+      description: Dados de entrada inválidos (class-validator ou domínio)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missingField:
+              summary: Campo obrigatório ausente
+              value:
+                code: VALIDATION_ERROR
+                message: Validation failed
+                details:
+                  - field: legal_name
+                    message: legal_name must be longer than or equal to 2 characters
+            invalidCnpj:
+              summary: CNPJ inválido
+              value:
+                code: VALIDATION_ERROR
+                message: Invalid CNPJ
+                details:
+                  - field: cnpj
+                    message: Invalid CNPJ check digits
+            cnpjImmutable:
+              summary: Tentativa de alterar CNPJ
+              value:
+                code: VALIDATION_ERROR
+                message: CNPJ cannot be changed after creation
+
+    CnpjConflict:
+      description: CNPJ já cadastrado (organization ativa ou inativa)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: CONFLICT
+            message: Organization with this CNPJ already exists
+
+    AlreadyInactive:
+      description: Organization já está inativa
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: CONFLICT
+            message: Organization is already inactive
+
+    AlreadyActive:
+      description: Organization já está ativa
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: CONFLICT
+            message: Organization is already active
