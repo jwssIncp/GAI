@@ -41,7 +41,10 @@ Indexes:
 
 - `idx_project_field_agents_project_status (project_id, status)`
 - `idx_project_field_agents_agent_status (field_agent_id, status)`
-- `uq_project_field_agents_active (project_id, field_agent_id, status)`
+- `uq_project_field_agents_active_key (active_assignment_key)`, onde a coluna gerada
+  contém `organization_id:project_id:field_agent_id` somente para status `active` e
+  `NULL` para os demais status. Assim, apenas um vínculo ativo é permitido e o
+  histórico de vínculos inativos/finalizados permanece livre.
 
 ## field_agent_audit_logs
 

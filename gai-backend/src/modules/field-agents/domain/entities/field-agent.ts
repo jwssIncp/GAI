@@ -125,6 +125,27 @@ export class FieldAgent {
     return this.changeStatus(FieldAgentStatus.ACTIVE);
   }
 
+  block(): Record<string, { before: unknown; after: unknown }> {
+    if (this.props.status === FieldAgentStatus.BLOCKED) {
+      throw new Error('Field agent is already blocked');
+    }
+    return this.changeStatus(FieldAgentStatus.BLOCKED);
+  }
+
+  unblock(): Record<string, { before: unknown; after: unknown }> {
+    if (this.props.status !== FieldAgentStatus.BLOCKED) {
+      throw new Error('Only blocked field agents can be unblocked');
+    }
+    return this.changeStatus(FieldAgentStatus.ACTIVE);
+  }
+
+  softDelete(at: Date): Record<string, { before: unknown; after: unknown }> {
+    if (this.props.deletedAt) throw new Error('Field agent is already deleted');
+    const before = this.props.deletedAt;
+    this.props.deletedAt = at;
+    return { deleted_at: { before, after: at } };
+  }
+
   toProps(): FieldAgentProps {
     return { ...this.props };
   }

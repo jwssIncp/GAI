@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
+import { ApiError } from '@/api/http';
 import { FieldAgentsPage } from './FieldAgentsPage';
 import { ProjectFieldAgentsPanel } from './ProjectFieldAgentsPanel';
 import type { CurrentUser, FieldAgent, PaginatedItems, ProjectFieldAgent } from '@/types/api';
@@ -15,9 +16,13 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   deactivate: vi.fn(),
   reactivate: vi.fn(),
+  block: vi.fn(),
+  unblock: vi.fn(),
+  delete: vi.fn(),
   projectList: vi.fn(),
   assign: vi.fn(),
   remove: vi.fn(),
+  projectUpdate: vi.fn(),
 }));
 
 vi.mock('@/api/endpoints', () => ({
@@ -28,11 +33,15 @@ vi.mock('@/api/endpoints', () => ({
     update: mocks.update,
     deactivate: mocks.deactivate,
     reactivate: mocks.reactivate,
+    block: mocks.block,
+    unblock: mocks.unblock,
+    delete: mocks.delete,
   },
   projectFieldAgentsApi: {
     list: mocks.projectList,
     assign: mocks.assign,
     remove: mocks.remove,
+    update: mocks.projectUpdate,
   },
 }));
 
@@ -45,7 +54,8 @@ const platformUser: CurrentUser = {
   role_assignments: [{ assignment_id: 1, role_id: 1, role_key: 'PLATFORM_ADMIN', role_name: 'Platform', role_type: 'SYSTEM', organization_id: null, assigned_at: '2026-01-01T00:00:00.000Z' }],
 };
 
-const orgUser: CurrentUser = { ...platformUser, role_assignments: [{ assignment_id: 2, role_id: 3, role_key: 'ORG_USER', role_name: 'User', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' }] };
+const orgAdmin: CurrentUser = { ...platformUser, organization_id: 1, role_assignments: [{ assignment_id: 2, role_id: 2, role_key: 'ORG_ADMIN', role_name: 'Admin', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' }] };
+const orgUser: CurrentUser = { ...orgAdmin, role_assignments: [{ assignment_id: 3, role_id: 3, role_key: 'ORG_USER', role_name: 'User', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' }] };
 
 const agent: FieldAgent = {
   id: 7,
@@ -65,7 +75,7 @@ function page(items: FieldAgent[], overrides: Partial<PaginatedItems<FieldAgent>
   return { items, page: 1, page_size: 20, total_items: items.length, total_pages: items.length ? 1 : 0, ...overrides };
 }
 
-function renderWithProviders(ui: React.ReactElement, user: CurrentUser = platformUser) {
+function renderWithProviders(ui: React.ReactElement, user: CurrentUser = orgAdmin) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = {
     user,
@@ -92,6 +102,8 @@ describe('FieldAgentsPage', () => {
     mocks.get.mockResolvedValue(agent);
     mocks.create.mockResolvedValue(agent);
     mocks.deactivate.mockResolvedValue({ ...agent, status: 'inactive' });
+    mocks.delete.mockResolvedValue(undefined);
+    mocks.projectUpdate.mockResolvedValue({});
     mocks.projectList.mockResolvedValue({ items: [], page: 1, page_size: 10, total_items: 0, total_pages: 0 });
   });
 
@@ -123,8 +135,34 @@ describe('FieldAgentsPage', () => {
     renderWithProviders(<FieldAgentsPage />);
     await userEvent.click(await screen.findByRole('button', { name: /novo inventariante/i }));
     await userEvent.click(screen.getByRole('button', { name: /salvar inventariante/i }));
-    expect(await screen.findByText('Informe a organization')).toBeInTheDocument();
-    expect(screen.getByText('Nome deve ter pelo menos 2 caracteres')).toBeInTheDocument();
+    expect(await screen.findByText('Nome deve ter pelo menos 2 caracteres')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/organization/i)).not.toBeInTheDocument();
+  });
+
+  it('normaliza documento e telefone sem enviar organization_id', async () => {
+    renderWithProviders(<FieldAgentsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: /novo inventariante/i }));
+    await userEvent.type(screen.getByLabelText('Nome'), 'Maria Teste');
+    await userEvent.type(screen.getByLabelText('CPF/CNPJ'), '52998224725');
+    await userEvent.type(screen.getByLabelText('Telefone'), '+55 11 99999-8888');
+    await userEvent.click(screen.getByRole('button', { name: /salvar inventariante/i }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Maria Teste', document: '52998224725', phone: '11999998888',
+    })));
+    expect(mocks.create.mock.calls[0][0]).not.toHaveProperty('organization_id');
+  });
+
+  it('mostra conflito de documento no campo e preserva o formulario', async () => {
+    mocks.create.mockRejectedValueOnce(new ApiError(409, {
+      code: 'CONFLICT', message: 'Documento duplicado', details: [{ field: 'document', message: 'CPF/CNPJ já cadastrado' }],
+    }));
+    renderWithProviders(<FieldAgentsPage />);
+    await userEvent.click(await screen.findByRole('button', { name: /novo inventariante/i }));
+    await userEvent.type(screen.getByLabelText('Nome'), 'Maria Teste');
+    await userEvent.type(screen.getByLabelText('CPF/CNPJ'), '52998224725');
+    await userEvent.click(screen.getByRole('button', { name: /salvar inventariante/i }));
+    expect(await screen.findByText('CPF/CNPJ já cadastrado')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome')).toHaveValue('Maria Teste');
   });
 
   it('oculta botao de criar sem permissao', async () => {
@@ -141,6 +179,14 @@ describe('FieldAgentsPage', () => {
     await waitFor(() => expect(mocks.deactivate).toHaveBeenCalledWith(7));
   });
 
+  it('exclui inventariante somente apos confirmacao', async () => {
+    renderWithProviders(<FieldAgentsPage />);
+    await userEvent.click(await screen.findByLabelText('Excluir inventariante'));
+    expect(screen.getByText('Excluir inventariante')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(mocks.delete).toHaveBeenCalledWith(7));
+  });
+
   it('paginacao chama API com page/page_size', async () => {
     mocks.list.mockResolvedValue(page([agent], { total_items: 30, total_pages: 2 }));
     renderWithProviders(<FieldAgentsPage />);
@@ -154,5 +200,17 @@ describe('FieldAgentsPage', () => {
     renderWithProviders(<ProjectFieldAgentsPanel projectId={10} />);
     expect(await screen.findByText('Inventariante #7')).toBeInTheDocument();
     expect(screen.getByText('Lider')).toBeInTheDocument();
+  });
+
+  it('trata conflito ao reativar vinculo e mantem o formulario aberto', async () => {
+    const assignment: ProjectFieldAgent = { id: 9, organization_id: 1, project_id: 10, field_agent_id: 7, role: 'Lider', status: 'inactive', start_date: null, end_date: null, notes: null, created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z' };
+    mocks.projectList.mockResolvedValue({ items: [assignment], page: 1, page_size: 10, total_items: 1, total_pages: 1 });
+    mocks.projectUpdate.mockRejectedValueOnce(new ApiError(409, { code: 'CONFLICT', message: 'O inventariante já possui vínculo ativo com este projeto.' }));
+    renderWithProviders(<ProjectFieldAgentsPanel projectId={10} />);
+    await userEvent.click(await screen.findByLabelText('Editar vinculo'));
+    await userEvent.selectOptions(screen.getByLabelText('Status'), 'active');
+    await userEvent.click(screen.getByRole('button', { name: 'Atualizar vínculo' }));
+    expect(await screen.findByText('O inventariante já possui vínculo ativo com este projeto.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Status')).toHaveValue('active');
   });
 });

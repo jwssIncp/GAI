@@ -157,6 +157,27 @@ export const PERMISSION_SEEDS: Array<{
     description: 'Reativar inventariantes da organization',
   },
   {
+    key: 'field-agents:block',
+    resource: 'field-agents',
+    action: 'block',
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Bloquear inventariantes da organization',
+  },
+  {
+    key: 'field-agents:unblock',
+    resource: 'field-agents',
+    action: 'unblock',
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Desbloquear inventariantes da organization',
+  },
+  {
+    key: 'field-agents:delete',
+    resource: 'field-agents',
+    action: 'delete',
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Excluir inventariantes logicamente',
+  },
+  {
     key: 'project-field-agents:assign',
     resource: 'project-field-agents',
     action: 'assign',

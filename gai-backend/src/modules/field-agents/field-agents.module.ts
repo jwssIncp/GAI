@@ -7,6 +7,7 @@ import { ProjectsModule } from '../projects/projects.module';
 import { FieldAgentScopeService } from './application/services/field-agent-scope.service';
 import { AssignProjectFieldAgentUseCase } from './application/use-cases/assign-project-field-agent.use-case';
 import { CreateFieldAgentUseCase } from './application/use-cases/create-field-agent.use-case';
+import { DeleteFieldAgentUseCase } from './application/use-cases/delete-field-agent.use-case';
 import { GetFieldAgentUseCase } from './application/use-cases/get-field-agent.use-case';
 import { ListFieldAgentsUseCase } from './application/use-cases/list-field-agents.use-case';
 import { ListProjectFieldAgentsUseCase } from './application/use-cases/list-project-field-agents.use-case';
@@ -38,6 +39,7 @@ import { ProjectFieldAgentsController } from './presentation/project-field-agent
   providers: [
     FieldAgentScopeService,
     CreateFieldAgentUseCase,
+    DeleteFieldAgentUseCase,
     ListFieldAgentsUseCase,
     GetFieldAgentUseCase,
     UpdateFieldAgentUseCase,

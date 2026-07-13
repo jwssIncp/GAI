@@ -149,6 +149,9 @@ export const fieldAgentsApi = {
   update: (id: number, payload: UpdateFieldAgentRequest) => api.patch<FieldAgent>(`/field-agents/${id}`, payload).then((r) => r.data),
   deactivate: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/deactivate`).then((r) => r.data),
   reactivate: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/reactivate`).then((r) => r.data),
+  block: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/block`).then((r) => r.data),
+  unblock: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/unblock`).then((r) => r.data),
+  delete: (id: number) => api.delete<void>(`/field-agents/${id}`).then((r) => r.data),
 };
 
 export const projectFieldAgentsApi = {

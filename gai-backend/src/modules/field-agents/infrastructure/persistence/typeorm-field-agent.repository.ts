@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
 import { FieldAgent } from '../../domain/entities/field-agent';
 import { ProjectFieldAgent } from '../../domain/entities/project-field-agent';
@@ -14,6 +14,7 @@ import {
 import { FieldAgentAuditLogEntity } from './field-agent-audit-log.entity';
 import { FieldAgentEntity } from './field-agent.entity';
 import { ProjectFieldAgentEntity } from './project-field-agent.entity';
+import { ActiveAssignmentExistsError } from '../../application/errors/field-agent-conflict';
 
 @Injectable()
 export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
@@ -44,17 +45,48 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
   }
 
   async hasActiveAssignment(
+    organizationId: number,
     projectId: number,
     fieldAgentId: number,
+    excludeAssignmentId?: number,
   ): Promise<boolean> {
     const count = await this.assignmentRepo.count({
       where: {
+        organizationId,
         projectId,
         fieldAgentId,
         status: ProjectFieldAgentStatus.ACTIVE,
+        ...(excludeAssignmentId ? { id: Not(excludeAssignmentId) } : {}),
       },
     });
     return count > 0;
+  }
+
+  async findConflict(
+    organizationId: number,
+    values: { email?: string | null; document?: string | null },
+    excludeFieldAgentId?: number,
+  ): Promise<'email' | 'document' | null> {
+    const id = excludeFieldAgentId ? Not(excludeFieldAgentId) : undefined;
+    if (
+      values.email &&
+      (await this.fieldAgentRepo.exists({
+        where: { organizationId, email: values.email, ...(id ? { id } : {}) },
+      }))
+    )
+      return 'email';
+    if (
+      values.document &&
+      (await this.fieldAgentRepo.exists({
+        where: {
+          organizationId,
+          document: values.document,
+          ...(id ? { id } : {}),
+        },
+      }))
+    )
+      return 'document';
+    return null;
   }
 
   async list(
@@ -151,6 +183,53 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         changes: audit.changes,
       });
 
+      return this.toAssignmentDomain(saved);
+    });
+  }
+
+  async saveAssignmentEnsuringUniqueActive(
+    assignment: ProjectFieldAgent,
+    audit: FieldAgentAuditEntry,
+  ): Promise<ProjectFieldAgent> {
+    return this.assignmentRepo.manager.transaction(async (manager) => {
+      if (assignment.status === ProjectFieldAgentStatus.ACTIVE) {
+        const fieldAgentRepo = manager.getRepository(FieldAgentEntity);
+        const lock =
+          manager.connection.options.type === 'mysql'
+            ? { mode: 'pessimistic_write' as const }
+            : undefined;
+        await fieldAgentRepo.findOne({
+          where: {
+            id: assignment.fieldAgentId,
+            organizationId: assignment.organizationId,
+          },
+          ...(lock ? { lock } : {}),
+        });
+        const assignmentRepo = manager.getRepository(ProjectFieldAgentEntity);
+        const duplicate = await assignmentRepo.count({
+          where: {
+            organizationId: assignment.organizationId,
+            projectId: assignment.projectId,
+            fieldAgentId: assignment.fieldAgentId,
+            status: ProjectFieldAgentStatus.ACTIVE,
+            ...(assignment.id > 0 ? { id: Not(assignment.id) } : {}),
+          },
+        });
+        if (duplicate > 0) throw new ActiveAssignmentExistsError();
+      }
+
+      const repo = manager.getRepository(ProjectFieldAgentEntity);
+      const auditRepo = manager.getRepository(FieldAgentAuditLogEntity);
+      const saved = await repo.save(this.toAssignmentEntity(assignment));
+      await auditRepo.save({
+        organizationId: audit.organizationId,
+        fieldAgentId: audit.fieldAgentId,
+        projectFieldAgentId: audit.projectFieldAgentId || saved.id,
+        projectId: audit.projectId ?? saved.projectId,
+        operation: audit.operation,
+        performedBy: audit.performedBy,
+        changes: audit.changes,
+      });
       return this.toAssignmentDomain(saved);
     });
   }

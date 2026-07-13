@@ -6,20 +6,20 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Matches,
   MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
 import { JsonRecord } from '../../domain/entities/field-agent';
+import {
+  IsBrazilianDocument,
+  IsBrazilianPhone,
+  NormalizeOptionalDocument,
+  NormalizeOptionalEmail,
+  NormalizeOptionalPhone,
+} from '../validation/field-agent.validators';
 
 export class CreateFieldAgentDto {
-  @ApiProperty({ type: 'integer', format: 'int64' })
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  organization_id!: number;
-
   @ApiPropertyOptional({ type: 'integer', format: 'int64', nullable: true })
   @IsOptional()
   @Type(() => Number)
@@ -34,22 +34,26 @@ export class CreateFieldAgentDto {
   name!: string;
 
   @ApiPropertyOptional({ format: 'email', nullable: true })
+  @NormalizeOptionalEmail()
   @IsOptional()
   @IsEmail()
   @MaxLength(255)
   email?: string | null;
 
   @ApiPropertyOptional({ maxLength: 50, nullable: true })
+  @NormalizeOptionalPhone()
   @IsOptional()
   @IsString()
   @MaxLength(50)
+  @IsBrazilianPhone()
   phone?: string | null;
 
   @ApiPropertyOptional({ maxLength: 50, nullable: true })
+  @NormalizeOptionalDocument()
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  @Matches(/^[A-Za-z0-9.\-/]+$/)
+  @IsBrazilianDocument()
   document?: string | null;
 
   @ApiPropertyOptional({

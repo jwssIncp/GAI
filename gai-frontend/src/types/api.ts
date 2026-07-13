@@ -291,7 +291,6 @@ export type FieldAgent = {
 };
 
 export type CreateFieldAgentRequest = {
-  organization_id: number;
   user_id?: number | null;
   name: string;
   email?: string | null;
@@ -300,7 +299,7 @@ export type CreateFieldAgentRequest = {
   metadata?: Record<string, unknown> | null;
 };
 
-export type UpdateFieldAgentRequest = Omit<Partial<CreateFieldAgentRequest>, 'organization_id'>;
+export type UpdateFieldAgentRequest = Partial<CreateFieldAgentRequest>;
 
 export type ProjectFieldAgentStatus = 'active' | 'inactive' | 'finished';
 export type ProjectFieldAgent = {

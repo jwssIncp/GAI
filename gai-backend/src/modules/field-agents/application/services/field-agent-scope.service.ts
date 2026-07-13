@@ -9,29 +9,17 @@ export interface FieldAgentActorContext {
 
 @Injectable()
 export class FieldAgentScopeService {
-  resolveOrganizationForCreate(
-    actor: FieldAgentActorContext,
-    requestedOrganizationId: number,
-  ): number {
-    if (actor.systemRoles.includes(UserRole.PLATFORM_ADMIN)) {
-      return requestedOrganizationId;
-    }
+  resolveOrganizationForCreate(actor: FieldAgentActorContext): number {
     if (actor.organizationId === null) {
       throw this.forbidden();
     }
-    if (actor.organizationId === requestedOrganizationId) {
-      return requestedOrganizationId;
-    }
-    throw this.forbidden();
+    return actor.organizationId;
   }
 
   resolveOrganizationFilter(
     actor: FieldAgentActorContext,
     requestedOrganizationId?: number,
   ): number | undefined {
-    if (actor.systemRoles.includes(UserRole.PLATFORM_ADMIN)) {
-      return requestedOrganizationId;
-    }
     if (actor.organizationId === null) {
       throw this.forbidden();
     }
@@ -48,9 +36,6 @@ export class FieldAgentScopeService {
     actor: FieldAgentActorContext,
     organizationId: number,
   ): void {
-    if (actor.systemRoles.includes(UserRole.PLATFORM_ADMIN)) {
-      return;
-    }
     if (actor.organizationId !== organizationId) {
       throw this.forbidden();
     }

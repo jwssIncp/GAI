@@ -50,15 +50,15 @@ export function DrawerForm({ open, onOpenChange, title, children }: { open: bool
   );
 }
 
-export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void }) {
+export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, busy = false }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void; busy?: boolean }) {
   return (
     <ModalForm open={open} onOpenChange={onOpenChange} title={title}>
       <p className="text-sm text-muted-foreground">{description}</p>
       <div className="mt-7 flex flex-col-reverse justify-end gap-2 sm:flex-row">
-        <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+        <Button type="button" variant="secondary" disabled={busy} onClick={() => onOpenChange(false)}>
           Cancelar
         </Button>
-        <Button type="button" variant="danger" onClick={onConfirm}>
+        <Button type="button" variant="danger" loading={busy} disabled={busy} onClick={onConfirm}>
           Confirmar
         </Button>
       </div>

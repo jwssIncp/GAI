@@ -21,7 +21,7 @@ paths:
       tags: [Field Agents]
       summary: Criar field agent
       operationId: createFieldAgent
-      description: Requer `field-agents:create`.
+      description: Requer `field-agents:create`. A organization e obtida exclusivamente da sessao autenticada.
       security:
         - bearerAuth: []
       requestBody:
@@ -103,6 +103,18 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
 
+    delete:
+      tags: [Field Agents]
+      summary: Excluir field agent logicamente
+      operationId: deleteFieldAgent
+      description: Requer `field-agents:delete`; preenche `deleted_at` e o registro deixa de aparecer nas consultas normais.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Excluido logicamente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /field-agents/{id}/deactivate:
     post:
       tags: [Field Agents]
@@ -130,6 +142,47 @@ paths:
         - $ref: '#/components/parameters/FieldAgentId'
       security:
         - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /field-agents/{id}/block:
+    post:
+      tags: [Field Agents]
+      summary: Bloquear field agent
+      operationId: blockFieldAgent
+      description: Requer `field-agents:block`. Um inventariante bloqueado nao pode receber novos vinculos ativos.
+      parameters: [{ $ref: '#/components/parameters/FieldAgentId' }]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/FieldAgentOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Field Agents]
+      summary: Excluir field agent logicamente
+      operationId: deleteFieldAgent
+      description: Requer `field-agents:delete`; preenche `deleted_at` e o registro deixa de aparecer nas consultas normais.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Excluido logicamente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /field-agents/{id}/unblock:
+    post:
+      tags: [Field Agents]
+      summary: Desbloquear field agent
+      operationId: unblockFieldAgent
+      description: Requer `field-agents:unblock`.
+      parameters: [{ $ref: '#/components/parameters/FieldAgentId' }]
+      security: [{ bearerAuth: [] }]
       responses:
         '200': { $ref: '#/components/responses/FieldAgentOk' }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -280,14 +333,13 @@ components:
       enum: [active, inactive, finished]
     CreateFieldAgentRequest:
       type: object
-      required: [organization_id, name]
+      required: [name]
       properties:
-        organization_id: { type: integer, format: int64, minimum: 1 }
         user_id: { type: integer, format: int64, minimum: 1, nullable: true }
         name: { type: string, minLength: 2, maxLength: 255 }
         email: { type: string, format: email, nullable: true }
-        phone: { type: string, maxLength: 50, nullable: true }
-        document: { type: string, maxLength: 50, nullable: true }
+        phone: { type: string, pattern: '^[0-9]{10,11}$', description: Telefone brasileiro normalizado, com DDD e 8 ou 9 digitos, nullable: true }
+        document: { type: string, pattern: '^[0-9]{11}([0-9]{3})?$', description: CPF ou CNPJ normalizado e com digitos verificadores validos, nullable: true }
         metadata: { type: object, nullable: true }
     UpdateFieldAgentRequest:
       type: object
@@ -295,8 +347,8 @@ components:
         user_id: { type: integer, format: int64, minimum: 1, nullable: true }
         name: { type: string, minLength: 2, maxLength: 255 }
         email: { type: string, format: email, nullable: true }
-        phone: { type: string, maxLength: 50, nullable: true }
-        document: { type: string, maxLength: 50, nullable: true }
+        phone: { type: string, pattern: '^[0-9]{10,11}$', nullable: true }
+        document: { type: string, pattern: '^[0-9]{11}([0-9]{3})?$', nullable: true }
         metadata: { type: object, nullable: true }
     FieldAgentResponse:
       type: object

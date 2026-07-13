@@ -21,6 +21,11 @@ import {
 import { ProjectFieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import { AssignProjectFieldAgentDto } from '../dto/project-field-agent.dto';
 import {
+  ActiveAssignmentExistsError,
+  activeAssignmentConflict,
+  isActiveAssignmentDuplicate,
+} from '../errors/field-agent-conflict';
+import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from '../services/field-agent-scope.service';
@@ -73,12 +78,13 @@ export class AssignProjectFieldAgentUseCase {
       });
     }
     if (
-      await this.repository.hasActiveAssignment(projectId, dto.field_agent_id)
+      await this.repository.hasActiveAssignment(
+        project.organizationId,
+        projectId,
+        dto.field_agent_id,
+      )
     ) {
-      throw new ConflictException({
-        code: 'CONFLICT',
-        message: 'Field agent is already active in this project',
-      });
+      throw activeAssignmentConflict();
     }
 
     const now = new Date();
@@ -101,19 +107,33 @@ export class AssignProjectFieldAgentUseCase {
       throw this.validation(error);
     }
 
-    const saved = await this.repository.saveAssignmentWithAudit(assignment, {
-      organizationId: assignment.organizationId,
-      fieldAgentId: assignment.fieldAgentId,
-      projectFieldAgentId: 0,
-      projectId: assignment.projectId,
-      operation: FieldAgentAuditOperation.ASSIGN_TO_PROJECT,
-      performedBy: actor.id,
-      changes: {
-        field_agent_id: { before: null, after: assignment.fieldAgentId },
-        project_id: { before: null, after: assignment.projectId },
-        status: { before: null, after: assignment.status },
-      },
-    });
+    let saved: ProjectFieldAgent;
+    try {
+      saved = await this.repository.saveAssignmentEnsuringUniqueActive(
+        assignment,
+        {
+          organizationId: assignment.organizationId,
+          fieldAgentId: assignment.fieldAgentId,
+          projectFieldAgentId: 0,
+          projectId: assignment.projectId,
+          operation: FieldAgentAuditOperation.ASSIGN_TO_PROJECT,
+          performedBy: actor.id,
+          changes: {
+            field_agent_id: { before: null, after: assignment.fieldAgentId },
+            project_id: { before: null, after: assignment.projectId },
+            status: { before: null, after: assignment.status },
+          },
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof ActiveAssignmentExistsError ||
+        isActiveAssignmentDuplicate(error)
+      ) {
+        throw activeAssignmentConflict();
+      }
+      throw error;
+    }
 
     this.logger.info({
       operation: 'ASSIGN_PROJECT_FIELD_AGENT',

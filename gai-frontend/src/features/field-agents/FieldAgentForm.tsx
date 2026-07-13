@@ -5,10 +5,12 @@ import { FormField } from '@/components/base/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { CreateFieldAgentRequest, FieldAgent, UpdateFieldAgentRequest } from '@/types/api';
+import { ApiError } from '@/api/http';
+import { maskDocument, maskPhone } from './brazilianContact';
 
 type Props =
-  | { mode: 'create'; busy: boolean; onSubmit: (payload: CreateFieldAgentRequest) => void; initial?: never }
-  | { mode: 'edit'; busy: boolean; onSubmit: (payload: UpdateFieldAgentRequest) => void; initial: FieldAgent };
+  | { mode: 'create'; busy: boolean; onSubmit: (payload: CreateFieldAgentRequest) => Promise<void>; initial?: never }
+  | { mode: 'edit'; busy: boolean; onSubmit: (payload: UpdateFieldAgentRequest) => Promise<void>; initial: FieldAgent };
 
 export function FieldAgentForm(props: Props) {
   const defaults =
@@ -20,7 +22,7 @@ export function FieldAgentForm(props: Props) {
           phone: props.initial.phone ?? '',
           document: props.initial.document ?? '',
         }
-      : { organization_id: '', user_id: '', name: '', email: '', phone: '', document: '' };
+      : { user_id: '', name: '', email: '', phone: '', document: '' };
   const form = useForm<FieldAgentFormValues | FieldAgentEditValues>({
     resolver: zodResolver(props.mode === 'create' ? fieldAgentFormSchema : fieldAgentEditSchema),
     defaultValues: defaults,
@@ -29,15 +31,18 @@ export function FieldAgentForm(props: Props) {
   return (
     <form
       className="grid gap-4"
-      onSubmit={form.handleSubmit((values) => {
-        props.onSubmit(removeUndefined(values as unknown as CreateFieldAgentRequest | UpdateFieldAgentRequest) as never);
+      onSubmit={form.handleSubmit(async (values) => {
+        form.clearErrors();
+        try {
+          await props.onSubmit(removeUndefined(values as unknown as CreateFieldAgentRequest | UpdateFieldAgentRequest) as never);
+        } catch (error) {
+          const apiError = error as ApiError;
+          const detail = apiError.details?.find(({ field }) => field === 'email' || field === 'document');
+          if (detail) form.setError(detail.field as 'email' | 'document', { message: detail.message });
+          else form.setError('root', { message: apiError.message || 'Não foi possível salvar o inventariante' });
+        }
       })}
     >
-      {props.mode === 'create' ? (
-        <FormField label="Organization ID" error={(form.formState.errors as any).organization_id?.message}>
-          <Input type="number" min={1} {...form.register('organization_id' as const)} />
-        </FormField>
-      ) : null}
       <FormField label="Nome" error={form.formState.errors.name?.message as string | undefined}>
         <Input {...form.register('name')} />
       </FormField>
@@ -45,15 +50,16 @@ export function FieldAgentForm(props: Props) {
         <Input type="email" {...form.register('email')} />
       </FormField>
       <FormField label="Telefone" error={form.formState.errors.phone?.message as string | undefined}>
-        <Input {...form.register('phone')} />
+        <Input inputMode="tel" autoComplete="tel" {...form.register('phone')} onChange={(event) => form.setValue('phone', maskPhone(event.target.value), { shouldValidate: true })} />
       </FormField>
-      <FormField label="Documento" error={form.formState.errors.document?.message as string | undefined}>
-        <Input {...form.register('document')} />
+      <FormField label="CPF/CNPJ" error={form.formState.errors.document?.message as string | undefined}>
+        <Input inputMode="numeric" {...form.register('document')} onChange={(event) => form.setValue('document', maskDocument(event.target.value), { shouldValidate: true })} />
       </FormField>
       <FormField label="User ID vinculado" error={form.formState.errors.user_id?.message as string | undefined}>
         <Input type="number" min={1} {...form.register('user_id')} />
       </FormField>
-      <Button disabled={props.busy}>{props.mode === 'create' ? 'Salvar inventariante' : 'Atualizar inventariante'}</Button>
+      {form.formState.errors.root?.message ? <p role="alert" className="text-sm text-destructive">{form.formState.errors.root.message}</p> : null}
+      <Button type="submit" disabled={props.busy || form.formState.isSubmitting}>{props.busy || form.formState.isSubmitting ? 'Salvando...' : props.mode === 'create' ? 'Salvar inventariante' : 'Atualizar inventariante'}</Button>
     </form>
   );
 }

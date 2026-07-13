@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Eye, Pencil, Plus, RotateCcw, UserX } from 'lucide-react';
+import { Eye, Lock, Pencil, Plus, RotateCcw, Trash2, Unlock, UserX } from 'lucide-react';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
 import { FilterPanel } from '@/components/base/FilterPanel';
@@ -13,9 +13,10 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog, DrawerForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { usePermissions } from '@/features/auth/usePermissions';
+import { useAuth } from '@/features/auth/AuthContext';
 import { FieldAgentDetailDrawer } from './FieldAgentDetailDrawer';
 import { FieldAgentForm } from './FieldAgentForm';
-import { useChangeFieldAgentStatus, useCreateFieldAgent, useFieldAgents, useUpdateFieldAgent } from './fieldAgentsQueries';
+import { useChangeFieldAgentStatus, useCreateFieldAgent, useDeleteFieldAgent, useFieldAgents, useUpdateFieldAgent } from './fieldAgentsQueries';
 import { formatDate } from '@/utils/format';
 import type { FieldAgent, FieldAgentStatus } from '@/types/api';
 
@@ -26,14 +27,18 @@ export function FieldAgentsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<FieldAgent | null>(null);
   const [viewingId, setViewingId] = useState<number | undefined>();
-  const [confirm, setConfirm] = useState<{ action: 'deactivate' | 'reactivate'; item: FieldAgent } | null>(null);
+  const [confirm, setConfirm] = useState<{ action: 'deactivate' | 'reactivate' | 'block' | 'unblock' | 'delete'; item: FieldAgent } | null>(null);
   const params = useMemo(() => ({ page, page_size: 20, search: search || undefined, status: status || undefined }), [page, search, status]);
   const query = useFieldAgents(params);
   const create = useCreateFieldAgent();
   const update = useUpdateFieldAgent();
   const deactivate = useChangeFieldAgentStatus('deactivate');
   const reactivate = useChangeFieldAgentStatus('reactivate');
+  const block = useChangeFieldAgentStatus('block');
+  const unblock = useChangeFieldAgentStatus('unblock');
+  const deleteAgent = useDeleteFieldAgent();
   const { hasPermission } = usePermissions();
+  const { user } = useAuth();
   const data = query.data ? normalizePage(query.data) : null;
 
   const columns: Column<FieldAgent>[] = [
@@ -52,14 +57,26 @@ export function FieldAgentsPage() {
             <Button type="button" variant="ghost" aria-label="Editar inventariante" onClick={() => setEditing(item)}><Pencil size={16} /></Button>
           </PermissionGate>
           {item.status === 'active' ? (
-            <PermissionGate permissions={['field-agents:deactivate']}>
-              <Button type="button" variant="ghost" aria-label="Desativar inventariante" onClick={() => setConfirm({ action: 'deactivate', item })}><UserX size={16} /></Button>
+            <>
+              <PermissionGate permissions={['field-agents:deactivate']}>
+                <Button type="button" variant="ghost" aria-label="Desativar inventariante" onClick={() => setConfirm({ action: 'deactivate', item })}><UserX size={16} /></Button>
+              </PermissionGate>
+              <PermissionGate permissions={['field-agents:block']}>
+                <Button type="button" variant="ghost" aria-label="Bloquear inventariante" onClick={() => setConfirm({ action: 'block', item })}><Lock size={16} /></Button>
+              </PermissionGate>
+            </>
+          ) : item.status === 'blocked' ? (
+            <PermissionGate permissions={['field-agents:unblock']}>
+              <Button type="button" variant="ghost" aria-label="Desbloquear inventariante" onClick={() => setConfirm({ action: 'unblock', item })}><Unlock size={16} /></Button>
             </PermissionGate>
           ) : (
             <PermissionGate permissions={['field-agents:reactivate']}>
               <Button type="button" variant="ghost" aria-label="Reativar inventariante" onClick={() => setConfirm({ action: 'reactivate', item })}><RotateCcw size={16} /></Button>
             </PermissionGate>
           )}
+          <PermissionGate permissions={['field-agents:delete']}>
+            <Button type="button" variant="ghost" aria-label="Excluir inventariante" onClick={() => setConfirm({ action: 'delete', item })}><Trash2 size={16} /></Button>
+          </PermissionGate>
         </div>
       ),
     },
@@ -69,8 +86,8 @@ export function FieldAgentsPage() {
     <PageContainer>
       <PageHeader
         title="Inventariantes"
-        description="Cadastro e acompanhamento dos inventariantes por organization."
-        action={hasPermission('field-agents:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo inventariante</Button> : null}
+        description="Cadastro e acompanhamento dos inventariantes da organização ativa."
+        action={hasPermission('field-agents:create') && user?.organization_id ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo inventariante</Button> : null}
       />
       <FilterPanel>
         <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar por nome, email ou documento" />
@@ -97,24 +114,30 @@ export function FieldAgentsPage() {
         <FieldAgentForm
           mode="create"
           busy={create.isPending}
-          onSubmit={(payload) => create.mutate(payload, { onSuccess: () => setCreateOpen(false) })}
+          onSubmit={async (payload) => { await create.mutateAsync(payload); setCreateOpen(false); }}
         />
       </DrawerForm>
       <DrawerForm open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)} title="Editar inventariante">
-        {editing ? <FieldAgentForm mode="edit" initial={editing} busy={update.isPending} onSubmit={(payload) => update.mutate({ id: editing.id, payload }, { onSuccess: () => setEditing(null) })} /> : null}
+        {editing ? <FieldAgentForm mode="edit" initial={editing} busy={update.isPending} onSubmit={async (payload) => { await update.mutateAsync({ id: editing.id, payload }); setEditing(null); }} /> : null}
       </DrawerForm>
       <FieldAgentDetailDrawer id={viewingId} open={Boolean(viewingId)} onOpenChange={(open) => !open && setViewingId(undefined)} />
       <ConfirmDialog
         open={Boolean(confirm)}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title={confirm?.action === 'deactivate' ? 'Desativar inventariante' : 'Reativar inventariante'}
-        description={`Confirmar alteracao de status de ${confirm?.item.name ?? 'inventariante'}?`}
+        title={`${actionLabel(confirm?.action)} inventariante`}
+        description={`Confirmar ${actionLabel(confirm?.action).toLowerCase()} de ${confirm?.item.name ?? 'inventariante'}?`}
+        busy={deactivate.isPending || reactivate.isPending || block.isPending || unblock.isPending || deleteAgent.isPending}
         onConfirm={() => {
           if (!confirm) return;
-          const mutation = confirm.action === 'deactivate' ? deactivate : reactivate;
+          const mutations = { deactivate, reactivate, block, unblock, delete: deleteAgent };
+          const mutation = mutations[confirm.action];
           mutation.mutate(confirm.item.id, { onSuccess: () => setConfirm(null) });
         }}
       />
     </PageContainer>
   );
+}
+
+function actionLabel(action?: 'deactivate' | 'reactivate' | 'block' | 'unblock' | 'delete') {
+  return ({ deactivate: 'Desativar', reactivate: 'Reativar', block: 'Bloquear', unblock: 'Desbloquear', delete: 'Excluir' } as const)[action ?? 'deactivate'];
 }

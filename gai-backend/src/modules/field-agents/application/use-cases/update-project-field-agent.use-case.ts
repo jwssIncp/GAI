@@ -18,6 +18,12 @@ import {
 } from '../../domain/ports/field-agent.repository.port';
 import { ProjectFieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import { UpdateProjectFieldAgentDto } from '../dto/project-field-agent.dto';
+import { ProjectFieldAgentStatus } from '../../domain/enums/project-field-agent-status.enum';
+import {
+  ActiveAssignmentExistsError,
+  activeAssignmentConflict,
+  isActiveAssignmentDuplicate,
+} from '../errors/field-agent-conflict';
 import {
   FieldAgentActorContext,
   FieldAgentScopeService,
@@ -84,15 +90,52 @@ export class UpdateProjectFieldAgentUseCase {
       return ProjectFieldAgentResponseDto.fromDomain(assignment);
     }
 
-    const saved = await this.repository.saveAssignmentWithAudit(assignment, {
-      organizationId: assignment.organizationId,
-      fieldAgentId: assignment.fieldAgentId,
-      projectFieldAgentId: assignment.id,
-      projectId: assignment.projectId,
-      operation: FieldAgentAuditOperation.UPDATE_PROJECT_ASSIGNMENT,
-      performedBy: actor.id,
-      changes,
-    });
+    if (assignment.status === ProjectFieldAgentStatus.ACTIVE) {
+      const fieldAgent = await this.repository.findById(
+        assignment.fieldAgentId,
+      );
+      if (!fieldAgent?.isActive()) {
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message:
+            'Only active field agents can have active project assignments',
+        });
+      }
+      if (
+        await this.repository.hasActiveAssignment(
+          assignment.organizationId,
+          assignment.projectId,
+          assignment.fieldAgentId,
+          assignment.id,
+        )
+      ) {
+        throw activeAssignmentConflict();
+      }
+    }
+
+    let saved;
+    try {
+      saved = await this.repository.saveAssignmentEnsuringUniqueActive(
+        assignment,
+        {
+          organizationId: assignment.organizationId,
+          fieldAgentId: assignment.fieldAgentId,
+          projectFieldAgentId: assignment.id,
+          projectId: assignment.projectId,
+          operation: FieldAgentAuditOperation.UPDATE_PROJECT_ASSIGNMENT,
+          performedBy: actor.id,
+          changes,
+        },
+      );
+    } catch (error) {
+      if (
+        error instanceof ActiveAssignmentExistsError ||
+        isActiveAssignmentDuplicate(error)
+      ) {
+        throw activeAssignmentConflict();
+      }
+      throw error;
+    }
 
     this.logger.info({
       operation: 'UPDATE_PROJECT_FIELD_AGENT',

@@ -36,9 +36,16 @@ export interface FieldAgentRepository {
   findAssignmentById(id: number): Promise<ProjectFieldAgent | null>;
   findUserOrganizationId(userId: number): Promise<number | null | undefined>;
   hasActiveAssignment(
+    organizationId: number,
     projectId: number,
     fieldAgentId: number,
+    excludeAssignmentId?: number,
   ): Promise<boolean>;
+  findConflict(
+    organizationId: number,
+    values: { email?: string | null; document?: string | null },
+    excludeFieldAgentId?: number,
+  ): Promise<'email' | 'document' | null>;
   list(
     params: ListFieldAgentsParams,
   ): Promise<{ items: FieldAgent[]; total: number }>;
@@ -50,6 +57,10 @@ export interface FieldAgentRepository {
     audit: FieldAgentAuditEntry,
   ): Promise<FieldAgent>;
   saveAssignmentWithAudit(
+    assignment: ProjectFieldAgent,
+    audit: FieldAgentAuditEntry,
+  ): Promise<ProjectFieldAgent>;
+  saveAssignmentEnsuringUniqueActive(
     assignment: ProjectFieldAgent,
     audit: FieldAgentAuditEntry,
   ): Promise<ProjectFieldAgent>;

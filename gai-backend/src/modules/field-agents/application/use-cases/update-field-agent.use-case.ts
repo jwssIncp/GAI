@@ -14,6 +14,10 @@ import {
 import { FieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import { UpdateFieldAgentDto } from '../dto/update-field-agent.dto';
 import {
+  duplicateFieldFromDatabase,
+  fieldAgentConflict,
+} from '../errors/field-agent-conflict';
+import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from '../services/field-agent-scope.service';
@@ -49,16 +53,9 @@ export class UpdateFieldAgentUseCase {
       changes = fieldAgent.updateFields({
         userId: dto.user_id,
         name: dto.name?.trim(),
-        email:
-          dto.email !== undefined
-            ? (dto.email?.trim().toLowerCase() ?? null)
-            : undefined,
-        phone:
-          dto.phone !== undefined ? (dto.phone?.trim() ?? null) : undefined,
-        document:
-          dto.document !== undefined
-            ? (dto.document?.trim() ?? null)
-            : undefined,
+        email: dto.email,
+        phone: dto.phone,
+        document: dto.document,
         metadata: dto.metadata,
       });
     } catch (error) {
@@ -72,13 +69,27 @@ export class UpdateFieldAgentUseCase {
       return FieldAgentResponseDto.fromDomain(fieldAgent);
     }
 
-    const saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
-      organizationId: fieldAgent.organizationId,
-      fieldAgentId: fieldAgent.id,
-      operation: FieldAgentAuditOperation.UPDATE,
-      performedBy: actor.id,
-      changes,
-    });
+    const conflict = await this.repository.findConflict(
+      fieldAgent.organizationId,
+      { email: fieldAgent.email, document: fieldAgent.document },
+      fieldAgent.id,
+    );
+    if (conflict) throw fieldAgentConflict(conflict);
+
+    let saved;
+    try {
+      saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
+        organizationId: fieldAgent.organizationId,
+        fieldAgentId: fieldAgent.id,
+        operation: FieldAgentAuditOperation.UPDATE,
+        performedBy: actor.id,
+        changes,
+      });
+    } catch (error) {
+      const duplicateField = duplicateFieldFromDatabase(error);
+      if (duplicateField) throw fieldAgentConflict(duplicateField);
+      throw error;
+    }
 
     this.logger.info({
       operation: 'UPDATE_FIELD_AGENT',

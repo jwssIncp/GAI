@@ -16,7 +16,6 @@ describe('Organization-scoped list filters', () => {
   const services = [
     new ProjectScopeService(),
     new CompanyScopeService(),
-    new FieldAgentScopeService(),
     new CatalogAssetScopeService(),
     new InventoryItemScopeService(),
   ];
@@ -42,4 +41,14 @@ describe('Organization-scoped list filters', () => {
       ).toBeUndefined();
     },
   );
+
+  it('FieldAgentScopeService requires an active organization even for PLATFORM_ADMIN', () => {
+    expect(() =>
+      new FieldAgentScopeService().resolveOrganizationFilter({
+        id: 1,
+        systemRoles: [UserRole.PLATFORM_ADMIN],
+        organizationId: null,
+      }),
+    ).toThrow(ForbiddenException);
+  });
 });

@@ -638,7 +638,13 @@ export class PaymentsExpensesService {
         code: 'VALIDATION_ERROR',
         message: 'Invalid field_agent_id',
       });
-    if (!(await this.fieldAgents.hasActiveAssignment(projectId, fieldAgentId)))
+    if (
+      !(await this.fieldAgents.hasActiveAssignment(
+        organizationId,
+        projectId,
+        fieldAgentId,
+      ))
+    )
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
         message: 'field_agent is not assigned to project',

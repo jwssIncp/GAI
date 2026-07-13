@@ -10,34 +10,23 @@ import {
   FIELD_AGENT_REPOSITORY,
   type FieldAgentRepository,
 } from '../../domain/ports/field-agent.repository.port';
-import { FieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from '../services/field-agent-scope.service';
 
-export type FieldAgentStatusAction =
-  | 'deactivate'
-  | 'reactivate'
-  | 'block'
-  | 'unblock';
-
 @Injectable()
-export class UpdateFieldAgentStatusUseCase {
+export class DeleteFieldAgentUseCase {
   constructor(
     @Inject(FIELD_AGENT_REPOSITORY)
     private readonly repository: FieldAgentRepository,
     private readonly scope: FieldAgentScopeService,
     private readonly logger: PinoLogger,
   ) {
-    this.logger.setContext(UpdateFieldAgentStatusUseCase.name);
+    this.logger.setContext(DeleteFieldAgentUseCase.name);
   }
 
-  async execute(
-    id: number,
-    action: FieldAgentStatusAction,
-    actor: FieldAgentActorContext,
-  ): Promise<FieldAgentResponseDto> {
+  async execute(id: number, actor: FieldAgentActorContext): Promise<void> {
     const fieldAgent = await this.repository.findById(id);
     if (!fieldAgent) {
       throw new NotFoundException({
@@ -46,46 +35,30 @@ export class UpdateFieldAgentStatusUseCase {
       });
     }
     this.scope.assertCanAccessOrganization(actor, fieldAgent.organizationId);
-
-    let changes: Record<string, { before: unknown; after: unknown }>;
+    let changes;
     try {
-      const transitions = {
-        deactivate: () => fieldAgent.deactivate(),
-        reactivate: () => fieldAgent.reactivate(),
-        block: () => fieldAgent.block(),
-        unblock: () => fieldAgent.unblock(),
-      };
-      changes = transitions[action]();
+      changes = fieldAgent.softDelete(new Date());
     } catch (error) {
       throw new ConflictException({
         code: 'CONFLICT',
         message:
           error instanceof Error
             ? error.message
-            : 'Field agent status blocks this operation',
+            : 'Field agent cannot be deleted',
       });
     }
-
-    const saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
+    await this.repository.saveFieldAgentWithAudit(fieldAgent, {
       organizationId: fieldAgent.organizationId,
       fieldAgentId: fieldAgent.id,
-      operation: {
-        deactivate: FieldAgentAuditOperation.DEACTIVATE,
-        reactivate: FieldAgentAuditOperation.REACTIVATE,
-        block: FieldAgentAuditOperation.BLOCK,
-        unblock: FieldAgentAuditOperation.UNBLOCK,
-      }[action],
+      operation: FieldAgentAuditOperation.DELETE,
       performedBy: actor.id,
       changes,
     });
-
     this.logger.info({
-      operation: `FIELD_AGENT_${action.toUpperCase()}`,
-      fieldAgentId: saved.id,
-      organizationId: saved.organizationId,
+      operation: 'DELETE_FIELD_AGENT',
+      fieldAgentId: fieldAgent.id,
+      organizationId: fieldAgent.organizationId,
       result: 'SUCCESS',
     });
-
-    return FieldAgentResponseDto.fromDomain(saved);
   }
 }

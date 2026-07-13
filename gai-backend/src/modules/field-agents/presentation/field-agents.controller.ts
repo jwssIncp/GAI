@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -41,6 +42,7 @@ import {
 import { ListFieldAgentsQueryDto } from '../application/dto/list-field-agents-query.dto';
 import { UpdateFieldAgentDto } from '../application/dto/update-field-agent.dto';
 import { CreateFieldAgentUseCase } from '../application/use-cases/create-field-agent.use-case';
+import { DeleteFieldAgentUseCase } from '../application/use-cases/delete-field-agent.use-case';
 import { GetFieldAgentUseCase } from '../application/use-cases/get-field-agent.use-case';
 import { ListFieldAgentsUseCase } from '../application/use-cases/list-field-agents.use-case';
 import { UpdateFieldAgentStatusUseCase } from '../application/use-cases/update-field-agent-status.use-case';
@@ -58,6 +60,7 @@ interface AuthenticatedRequest extends Request {
 export class FieldAgentsController {
   constructor(
     private readonly createFieldAgent: CreateFieldAgentUseCase,
+    private readonly deleteFieldAgent: DeleteFieldAgentUseCase,
     private readonly listFieldAgents: ListFieldAgentsUseCase,
     private readonly getFieldAgent: GetFieldAgentUseCase,
     private readonly updateFieldAgent: UpdateFieldAgentUseCase,
@@ -161,6 +164,46 @@ export class FieldAgentsController {
       'reactivate',
       this.toActor(req),
     );
+  }
+
+  @Post(':id/block')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:block')
+  @ApiOperation({ summary: 'Bloquear field agent' })
+  @ApiOkResponse({ type: FieldAgentResponseDto })
+  async block(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.updateFieldAgentStatus.execute(id, 'block', this.toActor(req));
+  }
+
+  @Post(':id/unblock')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:unblock')
+  @ApiOperation({ summary: 'Desbloquear field agent' })
+  @ApiOkResponse({ type: FieldAgentResponseDto })
+  async unblock(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.updateFieldAgentStatus.execute(
+      id,
+      'unblock',
+      this.toActor(req),
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @RequirePermissions('field-agents:delete')
+  @ApiOperation({ summary: 'Excluir field agent logicamente' })
+  @ApiNotFoundResponse()
+  async delete(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.deleteFieldAgent.execute(id, this.toActor(req));
   }
 
   private toActor(req: AuthenticatedRequest): FieldAgentActorContext {

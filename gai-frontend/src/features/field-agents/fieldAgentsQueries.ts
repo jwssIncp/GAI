@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fieldAgentsApi, projectFieldAgentsApi } from '@/api/endpoints';
-import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, PageParams, UpdateFieldAgentRequest } from '@/types/api';
+import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
 
 export const fieldAgentKeys = {
   all: ['field-agents'] as const,
@@ -36,10 +36,18 @@ export function useUpdateFieldAgent() {
   });
 }
 
-export function useChangeFieldAgentStatus(action: 'deactivate' | 'reactivate') {
+export function useChangeFieldAgentStatus(action: 'deactivate' | 'reactivate' | 'block' | 'unblock') {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => (action === 'deactivate' ? fieldAgentsApi.deactivate(id) : fieldAgentsApi.reactivate(id)),
+    mutationFn: (id: number) => fieldAgentsApi[action](id),
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentKeys.all }),
+  });
+}
+
+export function useDeleteFieldAgent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => fieldAgentsApi.delete(id),
     onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentKeys.all }),
   });
 }
@@ -60,6 +68,15 @@ export function useRemoveProjectFieldAgent(projectId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (assignmentId: number) => projectFieldAgentsApi.remove(projectId, assignmentId),
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+  });
+}
+
+export function useUpdateProjectFieldAgent(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ assignmentId, payload }: { assignmentId: number; payload: UpdateProjectFieldAgentRequest }) =>
+      projectFieldAgentsApi.update(projectId, assignmentId, payload),
     onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
   });
 }

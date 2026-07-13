@@ -62,7 +62,7 @@ describe('Payments & Expenses (e2e)', () => {
     const agent = await request(app.getHttpServer())
       .post('/api/v1/field-agents')
       .set('Authorization', `Bearer ${token}`)
-      .send({ organization_id: 1, name: 'Pagador Teste' })
+      .send({ name: 'Pagador Teste' })
       .expect(201);
     const agentBody = agent.body as IdBody;
 

@@ -16,6 +16,8 @@ describe('field-agents-api contract', () => {
       '/field-agents/{id}:',
       '/field-agents/{id}/deactivate:',
       '/field-agents/{id}/reactivate:',
+      '/field-agents/{id}/block:',
+      '/field-agents/{id}/unblock:',
       '/projects/{projectId}/field-agents:',
       '/projects/{projectId}/field-agents/{assignmentId}:',
       '/projects/{projectId}/field-agents/{assignmentId}/remove:',
@@ -54,6 +56,9 @@ describe('field-agents-api contract', () => {
       'field-agents:update',
       'field-agents:deactivate',
       'field-agents:reactivate',
+      'field-agents:block',
+      'field-agents:unblock',
+      'field-agents:delete',
       'project-field-agents:assign',
       'project-field-agents:read',
       'project-field-agents:update',
@@ -61,5 +66,15 @@ describe('field-agents-api contract', () => {
     ]) {
       expect(content).toContain(item);
     }
+  });
+
+  it('derives organization on create and documents Brazilian validation', () => {
+    const createSchema = content.slice(
+      content.indexOf('    CreateFieldAgentRequest:'),
+      content.indexOf('    UpdateFieldAgentRequest:'),
+    );
+    expect(createSchema).not.toContain('organization_id:');
+    expect(createSchema).toContain('CPF ou CNPJ');
+    expect(createSchema).toContain('Telefone brasileiro');
   });
 });

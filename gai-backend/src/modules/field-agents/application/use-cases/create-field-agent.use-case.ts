@@ -20,6 +20,10 @@ import {
 import { CreateFieldAgentDto } from '../dto/create-field-agent.dto';
 import { FieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import {
+  duplicateFieldFromDatabase,
+  fieldAgentConflict,
+} from '../errors/field-agent-conflict';
+import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from '../services/field-agent-scope.service';
@@ -41,10 +45,7 @@ export class CreateFieldAgentUseCase {
     dto: CreateFieldAgentDto,
     actor: FieldAgentActorContext,
   ): Promise<FieldAgentResponseDto> {
-    const organizationId = this.scope.resolveOrganizationForCreate(
-      actor,
-      dto.organization_id,
-    );
+    const organizationId = this.scope.resolveOrganizationForCreate(actor);
     const organization = await this.organizations.findById(organizationId);
     if (!organization) {
       throw new NotFoundException({
@@ -68,9 +69,9 @@ export class CreateFieldAgentUseCase {
         organizationId,
         userId: dto.user_id ?? null,
         name: dto.name.trim(),
-        email: this.normalizeString(dto.email)?.toLowerCase() ?? null,
-        phone: this.normalizeString(dto.phone),
-        document: this.normalizeString(dto.document),
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
+        document: dto.document ?? null,
         status: FieldAgentStatus.ACTIVE,
         metadata: dto.metadata ?? null,
         createdAt: now,
@@ -81,17 +82,30 @@ export class CreateFieldAgentUseCase {
       throw this.validation(error);
     }
 
-    const saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
-      organizationId,
-      fieldAgentId: 0,
-      operation: FieldAgentAuditOperation.CREATE,
-      performedBy: actor.id,
-      changes: {
-        organization_id: { before: null, after: organizationId },
-        name: { before: null, after: fieldAgent.name },
-        status: { before: null, after: fieldAgent.status },
-      },
+    const conflict = await this.repository.findConflict(organizationId, {
+      email: fieldAgent.email,
+      document: fieldAgent.document,
     });
+    if (conflict) throw fieldAgentConflict(conflict);
+
+    let saved: FieldAgent;
+    try {
+      saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
+        organizationId,
+        fieldAgentId: 0,
+        operation: FieldAgentAuditOperation.CREATE,
+        performedBy: actor.id,
+        changes: {
+          organization_id: { before: null, after: organizationId },
+          name: { before: null, after: fieldAgent.name },
+          status: { before: null, after: fieldAgent.status },
+        },
+      });
+    } catch (error) {
+      const duplicateField = duplicateFieldFromDatabase(error);
+      if (duplicateField) throw fieldAgentConflict(duplicateField);
+      throw error;
+    }
 
     this.logger.info({
       operation: 'CREATE_FIELD_AGENT',
@@ -124,10 +138,6 @@ export class CreateFieldAgentUseCase {
         message: 'User must belong to the same organization',
       });
     }
-  }
-
-  private normalizeString(value: string | null | undefined): string | null {
-    return value === undefined || value === null ? null : value.trim();
   }
 
   private validation(error: unknown): BadRequestException {
