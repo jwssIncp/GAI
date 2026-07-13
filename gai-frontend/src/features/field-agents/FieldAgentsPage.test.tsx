@@ -7,7 +7,7 @@ import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import { ApiError } from '@/api/http';
 import { FieldAgentsPage } from './FieldAgentsPage';
 import { ProjectFieldAgentsPanel } from './ProjectFieldAgentsPanel';
-import type { CurrentUser, FieldAgent, PaginatedItems, ProjectFieldAgent } from '@/types/api';
+import type { CurrentUser, FieldAgent, PaginatedItems, Project, ProjectFieldAgent } from '@/types/api';
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -71,6 +71,16 @@ const agent: FieldAgent = {
   updated_at: '2026-01-01T00:00:00.000Z',
 };
 
+const project: Project = {
+  id: 10,
+  organization_id: 1,
+  company_id: 1,
+  name: 'Projeto Alpha',
+  status: 'active',
+  created_at: '2026-01-01T00:00:00.000Z',
+  updated_at: '2026-01-01T00:00:00.000Z',
+};
+
 function page(items: FieldAgent[], overrides: Partial<PaginatedItems<FieldAgent>> = {}): PaginatedItems<FieldAgent> {
   return { items, page: 1, page_size: 20, total_items: items.length, total_pages: items.length ? 1 : 0, ...overrides };
 }
@@ -104,6 +114,8 @@ describe('FieldAgentsPage', () => {
     mocks.deactivate.mockResolvedValue({ ...agent, status: 'inactive' });
     mocks.delete.mockResolvedValue(undefined);
     mocks.projectUpdate.mockResolvedValue({});
+    mocks.assign.mockResolvedValue({});
+    mocks.remove.mockResolvedValue({});
     mocks.projectList.mockResolvedValue({ items: [], page: 1, page_size: 10, total_items: 0, total_pages: 0 });
   });
 
@@ -137,6 +149,19 @@ describe('FieldAgentsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /salvar inventariante/i }));
     expect(await screen.findByText('Nome deve ter pelo menos 2 caracteres')).toBeInTheDocument();
     expect(screen.queryByLabelText(/organization/i)).not.toBeInTheDocument();
+  });
+
+  it('explica o campo opcional de usuario vinculado sem enviar o formulario', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<FieldAgentsPage />);
+    await user.click(await screen.findByRole('button', { name: /novo inventariante/i }));
+
+    expect(screen.getByLabelText('Usuário vinculado')).toBeInTheDocument();
+    expect(screen.getByText('Opcional')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Ajuda sobre Usuário vinculado' }));
+    expect(await screen.findByText(/Vincula o inventariante a uma conta já cadastrada em Usuários/)).toBeInTheDocument();
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 
   it('normaliza documento e telefone sem enviar organization_id', async () => {
@@ -197,8 +222,8 @@ describe('FieldAgentsPage', () => {
   it('renderiza inventariantes vinculados ao projeto', async () => {
     const assignment: ProjectFieldAgent = { id: 9, organization_id: 1, project_id: 10, field_agent_id: 7, role: 'Lider', status: 'active', start_date: null, end_date: null, notes: null, created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z' };
     mocks.projectList.mockResolvedValue({ items: [assignment], page: 1, page_size: 10, total_items: 1, total_pages: 1 });
-    renderWithProviders(<ProjectFieldAgentsPanel projectId={10} />);
-    expect(await screen.findByText('Inventariante #7')).toBeInTheDocument();
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
+    expect(await screen.findByText('Ana Inventariante')).toBeInTheDocument();
     expect(screen.getByText('Lider')).toBeInTheDocument();
   });
 
@@ -206,11 +231,74 @@ describe('FieldAgentsPage', () => {
     const assignment: ProjectFieldAgent = { id: 9, organization_id: 1, project_id: 10, field_agent_id: 7, role: 'Lider', status: 'inactive', start_date: null, end_date: null, notes: null, created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z' };
     mocks.projectList.mockResolvedValue({ items: [assignment], page: 1, page_size: 10, total_items: 1, total_pages: 1 });
     mocks.projectUpdate.mockRejectedValueOnce(new ApiError(409, { code: 'CONFLICT', message: 'O inventariante já possui vínculo ativo com este projeto.' }));
-    renderWithProviders(<ProjectFieldAgentsPanel projectId={10} />);
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
     await userEvent.click(await screen.findByLabelText('Editar vinculo'));
     await userEvent.selectOptions(screen.getByLabelText('Status'), 'active');
     await userEvent.click(screen.getByRole('button', { name: 'Atualizar vínculo' }));
     expect(await screen.findByText('O inventariante já possui vínculo ativo com este projeto.')).toBeInTheDocument();
     expect(screen.getByLabelText('Status')).toHaveValue('active');
+  });
+
+  it('seleciona inventariante ativo com busca remota sem campo de ID manual', async () => {
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Vincular inventariante' }));
+    expect(screen.queryByLabelText('Inventariante ID')).not.toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: 'Ana Inventariante - ana@gai.local' })).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('Buscar inventariante'), 'Ana');
+    await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({
+      page: 1,
+      page_size: 20,
+      status: 'active',
+      search: 'Ana',
+    })));
+    await userEvent.selectOptions(screen.getByLabelText('Inventariante'), '7');
+    await userEvent.click(screen.getByRole('button', { name: 'Vincular' }));
+    await waitFor(() => expect(mocks.assign).toHaveBeenCalledWith(10, expect.objectContaining({ field_agent_id: 7 })));
+  });
+
+  it('renderiza loading e estado vazio no seletor remoto', async () => {
+    let resolveList!: (value: PaginatedItems<FieldAgent>) => void;
+    mocks.list.mockReturnValue(new Promise((resolve) => { resolveList = resolve; }));
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Vincular inventariante' }));
+    expect(screen.getByRole('option', { name: 'Carregando inventariantes...' })).toBeInTheDocument();
+    resolveList(page([]));
+    expect(await screen.findByRole('option', { name: 'Nenhum inventariante ativo encontrado' })).toBeInTheDocument();
+  });
+
+  it('renderiza erro e permite tentar novamente no seletor remoto', async () => {
+    mocks.list.mockRejectedValue(new Error('Falha ao listar inventariantes'));
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Vincular inventariante' }));
+    expect(await screen.findByText('Nao foi possivel carregar os inventariantes.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+  });
+
+  it('mantem vinculos somente para consulta quando o projeto e terminal', async () => {
+    const assignment: ProjectFieldAgent = { id: 9, organization_id: 1, project_id: 10, field_agent_id: 7, role: 'Lider', status: 'active', start_date: null, end_date: null, notes: null, created_at: '2026-01-01T00:00:00.000Z', updated_at: '2026-01-01T00:00:00.000Z' };
+    mocks.projectList.mockResolvedValue({ items: [assignment], page: 1, page_size: 10, total_items: 1, total_pages: 1 });
+    renderWithProviders(<ProjectFieldAgentsPanel project={{ ...project, status: 'finished' }} />);
+    expect(await screen.findByText(/somente para consulta/i)).toBeInTheDocument();
+    expect(await screen.findByText('Ana Inventariante')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Vincular inventariante' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Editar vinculo')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Remover vinculo')).not.toBeInTheDocument();
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it('exige field-agents:read para abrir o seletor de vinculo', async () => {
+    const limitedUser: CurrentUser = {
+      ...orgAdmin,
+      role_assignments: [],
+      permissions: [
+        { key: 'project-field-agents:read', scope: 'ORGANIZATION' },
+        { key: 'project-field-agents:assign', scope: 'ORGANIZATION' },
+      ],
+    };
+    renderWithProviders(<ProjectFieldAgentsPanel project={project} />, limitedUser);
+    expect(await screen.findByText(/precisa de `field-agents:read`/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Vincular inventariante' })).not.toBeInTheDocument();
+    expect(mocks.list).not.toHaveBeenCalled();
   });
 });

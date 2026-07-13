@@ -65,6 +65,11 @@ describe('Auth use cases (extended)', () => {
         },
       ]),
     };
+    const permissions = {
+      resolveForUser: jest
+        .fn()
+        .mockResolvedValue([{ key: 'projects:read', scope: 'PLATFORM' }]),
+    };
     const useCase = new LoginUseCase(
       users as never,
       sessions as never,
@@ -72,6 +77,7 @@ describe('Auth use cases (extended)', () => {
       orgGate,
       audit,
       assignments as never,
+      permissions as never,
       configService,
       logger,
     );
@@ -84,6 +90,9 @@ describe('Auth use cases (extended)', () => {
     expect(result.user.role_assignments[0].role_key).toBe(
       UserRole.PLATFORM_ADMIN,
     );
+    expect(result.user.permissions).toEqual([
+      { key: 'projects:read', scope: 'PLATFORM' },
+    ]);
   });
 
   it('RequestPasswordResetUseCase returns generic message when user missing', async () => {

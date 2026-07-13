@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { importSessionsApi } from '@/api/endpoints';
 import { uploadToPresignedUrl } from '@/api/http';
+import { projectKeys } from '@/features/projects/projectQueries';
 import type { ImportFileType, ImportPayloadInput, ImportSessionInput, ImportSessionStatus, PageParams } from '@/types/api';
 
 export const importSessionKeys = {
@@ -65,7 +66,7 @@ export function useCreateImportSession(projectId: number) {
     mutationFn: (payload: ImportSessionInput) => importSessionsApi.create(projectId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: importSessionKeys.project(projectId) });
-      await queryClient.invalidateQueries({ queryKey: ['project-summary', projectId] });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
     },
   });
 }
@@ -81,7 +82,7 @@ export function useImportSessionAction(projectId: number, action: 'finish' | 'ca
     onSuccess: async (_, sessionId) => {
       await queryClient.invalidateQueries({ queryKey: importSessionKeys.project(projectId) });
       await queryClient.invalidateQueries({ queryKey: importSessionKeys.detail(projectId, sessionId) });
-      await queryClient.invalidateQueries({ queryKey: ['project-summary', projectId] });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
     },
   });
 }

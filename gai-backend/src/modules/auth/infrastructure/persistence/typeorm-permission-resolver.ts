@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Repository } from 'typeorm';
-import { UserStatus } from '../../domain/enums/user.enums';
+import { UserRole, UserStatus } from '../../domain/enums/user.enums';
 import { UserEntity } from './user.entity';
 import { OrganizationStatus } from '../../../organizations/domain/enums/organization-status.enum';
 import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
@@ -64,21 +64,33 @@ export class TypeOrmPermissionResolver implements PermissionResolver {
     const roles = await this.roleRepo.find({
       where: { id: In(roleIds), isActive: true },
     });
-    const eligibleRoleIds = roles
-      .filter((role) =>
-        isRoleCompatibleWithUserOrganization(
-          {
-            type: role.type,
-            key: role.key,
-            organizationId: role.organizationId,
-          },
-          user.organizationId,
-        ),
-      )
-      .map((role) => Number(role.id));
-    if (eligibleRoleIds.length === 0) {
+    const eligibleRoles = roles.filter((role) =>
+      isRoleCompatibleWithUserOrganization(
+        {
+          type: role.type,
+          key: role.key,
+          organizationId: role.organizationId,
+        },
+        user.organizationId,
+      ),
+    );
+    if (eligibleRoles.length === 0) {
       return [];
     }
+
+    if (eligibleRoles.some((role) => role.key === UserRole.PLATFORM_ADMIN)) {
+      const permissions = await this.permRepo.find();
+      return permissions.map(({ key, scope }) => ({ key, scope }));
+    }
+
+    if (eligibleRoles.some((role) => role.key === UserRole.ORG_ADMIN)) {
+      const permissions = await this.permRepo.find({
+        where: { scope: PermissionScope.ORGANIZATION },
+      });
+      return permissions.map(({ key, scope }) => ({ key, scope }));
+    }
+
+    const eligibleRoleIds = eligibleRoles.map((role) => Number(role.id));
 
     const links = await this.rolePermRepo.find({
       where: { roleId: In(eligibleRoleIds) },

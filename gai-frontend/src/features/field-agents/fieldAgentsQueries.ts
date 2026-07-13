@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fieldAgentsApi, projectFieldAgentsApi } from '@/api/endpoints';
-import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
+import { projectKeys } from '@/features/projects/projectQueries';
+import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, FieldAgentListParams, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
 
 export const fieldAgentKeys = {
   all: ['field-agents'] as const,
-  list: (params: PageParams) => [...fieldAgentKeys.all, 'list', params] as const,
+  list: (params: FieldAgentListParams) => [...fieldAgentKeys.all, 'list', params] as const,
   detail: (id?: number) => [...fieldAgentKeys.all, 'detail', id] as const,
   project: (projectId: number, params: PageParams) => ['project-field-agents', projectId, params] as const,
 };
 
-export function useFieldAgents(params: PageParams) {
+export function useFieldAgents(params: FieldAgentListParams) {
   return useQuery({ queryKey: fieldAgentKeys.list(params), queryFn: () => fieldAgentsApi.list(params) });
 }
 
@@ -60,7 +61,10 @@ export function useAssignProjectFieldAgent(projectId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: AssignProjectFieldAgentRequest) => projectFieldAgentsApi.assign(projectId, payload),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }
 
@@ -68,7 +72,10 @@ export function useRemoveProjectFieldAgent(projectId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (assignmentId: number) => projectFieldAgentsApi.remove(projectId, assignmentId),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }
 
@@ -77,6 +84,9 @@ export function useUpdateProjectFieldAgent(projectId: number) {
   return useMutation({
     mutationFn: ({ assignmentId, payload }: { assignmentId: number; payload: UpdateProjectFieldAgentRequest }) =>
       projectFieldAgentsApi.update(projectId, assignmentId, payload),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }

@@ -49,9 +49,9 @@ export const router = createBrowserRouter([
           { element: <ProtectedRoute permissions={['projects:read']} />, children: [
             { path: 'projects', element: <ProjectsPage /> },
             { path: 'projects/:projectId/summary', element: <ProjectSummaryPage /> },
-            { path: 'projects/:projectId/export-jobs', element: <ProjectExportJobsPage /> },
             { path: 'projects/:projectId/area', element: <PlaceholderPage title="Project Area" dependency="Abas preparadas; os fluxos profundos entram na proxima rodada." /> },
           ] },
+          { element: <ProtectedRoute permissions={['export-jobs:read']} />, children: [{ path: 'projects/:projectId/export-jobs', element: <ProjectExportJobsPage /> }] },
           { element: <ProtectedRoute permissions={['import-sessions:read']} />, children: [{ path: 'projects/:projectId/import-sessions', element: <ProjectImportSessionsPage /> }] },
           { element: <ProtectedRoute permissions={['inventory-items:read']} />, children: [{ path: 'projects/:projectId/inventory-items', element: <ProjectInventoryItemsPage /> }] },
           { element: <ProtectedRoute permissions={['inventory-accounting-items:read']} />, children: [{ path: 'projects/:projectId/accounting-items', element: <ProjectAccountingItemsPage /> }] },

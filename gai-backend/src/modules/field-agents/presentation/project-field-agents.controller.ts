@@ -120,6 +120,10 @@ export class ProjectFieldAgentsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Mutacao bloqueada',
+    'Project status blocks this operation',
+  )
   async update(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
@@ -144,6 +148,10 @@ export class ProjectFieldAgentsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Mutacao bloqueada',
+    'Project status blocks this operation',
+  )
   async remove(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('assignmentId', ParseIntPipe) assignmentId: number,

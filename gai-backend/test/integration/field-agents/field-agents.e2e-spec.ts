@@ -8,6 +8,12 @@ import { ProjectFieldAgentEntity } from '../../../src/modules/field-agents/infra
 import { FieldAgentStatus } from '../../../src/modules/field-agents/domain/enums/field-agent-status.enum';
 import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
 import { OrganizationEntity } from '../../../src/modules/organizations/infrastructure/persistence/organization.entity';
+import { ProjectStatus } from '../../../src/modules/projects/domain/enums/project-status.enum';
+import {
+  PROJECT_REPOSITORY,
+  type ProjectRepository,
+} from '../../../src/modules/projects/domain/ports/project.repository.port';
+import { ProjectEntity } from '../../../src/modules/projects/infrastructure/persistence/project.entity';
 import {
   createTestApp,
   loginAsOrgUser,
@@ -150,6 +156,11 @@ describe('Field Agents API (e2e)', () => {
     const projectBody = project.body as ProjectBody;
 
     await request(app.getHttpServer())
+      .post(`/api/v1/projects/${projectBody.id}/activate`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
       .post(`/api/v1/projects/${projectBody.id}/finish`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
@@ -163,11 +174,124 @@ describe('Field Agents API (e2e)', () => {
       .expect(201);
     const fieldAgentBody = fieldAgent.body as FieldAgentBody;
 
-    await request(app.getHttpServer())
+    const blocked = await request(app.getHttpServer())
       .post(`/api/v1/projects/${projectBody.id}/field-agents`)
       .set('Authorization', `Bearer ${token}`)
       .send({ field_agent_id: fieldAgentBody.id })
       .expect(409);
+    expect(blocked.body).toMatchObject({
+      code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+      details: { current_status: 'finished' },
+    });
+  });
+
+  it('revalidates the locked project inside assign, update and remove transactions', async () => {
+    const fieldAgent = await request(app.getHttpServer())
+      .post('/api/v1/field-agents')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Inventariante concorrente' })
+      .expect(201);
+    const fieldAgentId = (fieldAgent.body as FieldAgentBody).id;
+    const projectRepository = app.get<ProjectRepository>(PROJECT_REPOSITORY);
+    const projectEntityRepository = app.get<Repository<ProjectEntity>>(
+      getRepositoryToken(ProjectEntity),
+    );
+    const assignmentRepository = app.get<Repository<ProjectFieldAgentEntity>>(
+      getRepositoryToken(ProjectFieldAgentEntity),
+    );
+    const auditRepository = app.get<Repository<FieldAgentAuditLogEntity>>(
+      getRepositoryToken(FieldAgentAuditLogEntity),
+    );
+
+    const assignProject = await request(app.getHttpServer())
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        organization_id: 1,
+        company_id: 1,
+        name: 'Projeto corrida assign',
+      })
+      .expect(201);
+    const assignProjectId = (assignProject.body as ProjectBody).id;
+    const staleAssignProject =
+      await projectRepository.findById(assignProjectId);
+    expect(staleAssignProject).not.toBeNull();
+    await projectEntityRepository.update(assignProjectId, {
+      status: ProjectStatus.FINISHED,
+    });
+    const assignLookup = jest
+      .spyOn(projectRepository, 'findById')
+      .mockResolvedValue(staleAssignProject);
+
+    const blockedAssign = await request(app.getHttpServer())
+      .post(`/api/v1/projects/${assignProjectId}/field-agents`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ field_agent_id: fieldAgentId })
+      .expect(409);
+    expect(blockedAssign.body).toMatchObject({
+      code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+      details: { current_status: 'finished' },
+    });
+    assignLookup.mockRestore();
+    await expect(
+      assignmentRepository.countBy({ projectId: assignProjectId }),
+    ).resolves.toBe(0);
+
+    const mutationProject = await request(app.getHttpServer())
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        organization_id: 1,
+        company_id: 1,
+        name: 'Projeto corrida update remove',
+      })
+      .expect(201);
+    const mutationProjectId = (mutationProject.body as ProjectBody).id;
+    const assignmentResponse = await request(app.getHttpServer())
+      .post(`/api/v1/projects/${mutationProjectId}/field-agents`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ field_agent_id: fieldAgentId, role: 'Coletor' })
+      .expect(201);
+    const assignmentId = (assignmentResponse.body as ProjectFieldAgentBody).id;
+    const staleMutationProject =
+      await projectRepository.findById(mutationProjectId);
+    expect(staleMutationProject).not.toBeNull();
+    await projectEntityRepository.update(mutationProjectId, {
+      status: ProjectStatus.FINISHED,
+    });
+    const mutationLookup = jest
+      .spyOn(projectRepository, 'findById')
+      .mockResolvedValue(staleMutationProject);
+    const auditCountBefore = await auditRepository.count();
+
+    const blockedUpdate = await request(app.getHttpServer())
+      .patch(
+        `/api/v1/projects/${mutationProjectId}/field-agents/${assignmentId}`,
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Lider' })
+      .expect(409);
+    expect(blockedUpdate.body).toMatchObject({
+      code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+      details: { current_status: 'finished' },
+    });
+
+    const blockedRemove = await request(app.getHttpServer())
+      .post(
+        `/api/v1/projects/${mutationProjectId}/field-agents/${assignmentId}/remove`,
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .expect(409);
+    expect(blockedRemove.body).toMatchObject({
+      code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+      details: { current_status: 'finished' },
+    });
+    mutationLookup.mockRestore();
+
+    await expect(
+      assignmentRepository.findOneByOrFail({ id: assignmentId }),
+    ).resolves.toMatchObject({ role: 'Coletor', status: 'active' });
+    await expect(auditRepository.count()).resolves.toBe(auditCountBefore);
   });
 
   it('rejects organization_id supplied by the client', async () => {

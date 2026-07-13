@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { expenseAttachmentsApi, expensesApi, fieldAgentsApi, paymentsApi } from '@/api/endpoints';
 import { uploadToPresignedUrl } from '@/api/http';
+import { projectKeys } from '@/features/projects/projectQueries';
 import type {
   ExpenseInput,
   ExpenseStatus,
@@ -39,7 +40,7 @@ export function useExpenses(projectId: number, params: PageParams & { field_agen
 function invalidateFinance(queryClient: ReturnType<typeof useQueryClient>, projectId: number) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: financeKeys.project(projectId) }),
-    queryClient.invalidateQueries({ queryKey: ['project-summary', projectId] }),
+    queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
   ]);
 }
 

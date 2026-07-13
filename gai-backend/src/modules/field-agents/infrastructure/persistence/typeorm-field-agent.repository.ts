@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { EntityManager, Not, Repository } from 'typeorm';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
+import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
+import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
+import { ProjectStatusBlocksFieldAgentOperationError } from '../../application/errors/project-status-blocks-operation';
 import { FieldAgent } from '../../domain/entities/field-agent';
 import { ProjectFieldAgent } from '../../domain/entities/project-field-agent';
 import { ProjectFieldAgentStatus } from '../../domain/enums/project-field-agent-status.enum';
@@ -169,6 +172,11 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     audit: FieldAgentAuditEntry,
   ): Promise<ProjectFieldAgent> {
     return this.assignmentRepo.manager.transaction(async (manager) => {
+      await this.lockOperationalProject(
+        manager,
+        assignment.organizationId,
+        assignment.projectId,
+      );
       const repo = manager.getRepository(ProjectFieldAgentEntity);
       const auditRepo = manager.getRepository(FieldAgentAuditLogEntity);
       const saved = await repo.save(this.toAssignmentEntity(assignment));
@@ -192,6 +200,11 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     audit: FieldAgentAuditEntry,
   ): Promise<ProjectFieldAgent> {
     return this.assignmentRepo.manager.transaction(async (manager) => {
+      await this.lockOperationalProject(
+        manager,
+        assignment.organizationId,
+        assignment.projectId,
+      );
       if (assignment.status === ProjectFieldAgentStatus.ACTIVE) {
         const fieldAgentRepo = manager.getRepository(FieldAgentEntity);
         const lock =
@@ -232,6 +245,29 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
       });
       return this.toAssignmentDomain(saved);
     });
+  }
+
+  private async lockOperationalProject(
+    manager: EntityManager,
+    organizationId: number,
+    projectId: number,
+  ): Promise<void> {
+    const lock =
+      manager.connection.options.type === 'mysql'
+        ? { mode: 'pessimistic_write' as const }
+        : undefined;
+    const project = await manager.getRepository(ProjectEntity).findOne({
+      where: { id: projectId, organizationId },
+      ...(lock ? { lock } : {}),
+    });
+    if (
+      !project ||
+      !ProjectStatusTransitionPolicy.allowsOperationalMutation(project.status)
+    ) {
+      throw new ProjectStatusBlocksFieldAgentOperationError(
+        project?.status ?? null,
+      );
+    }
   }
 
   private toFieldAgentEntity(fieldAgent: FieldAgent): FieldAgentEntity {

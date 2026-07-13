@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: GAI Export Jobs API
+  version: 1.0.0
+paths:
+  /projects/{projectId}/export-jobs:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+    post:
+      summary: Solicitar exportacao XLSX
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateExportJobRequest' }
+      responses:
+        '201':
+          description: Export job solicitado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    get:
+      summary: Listar export jobs
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:read
+      parameters:
+        - {
+            in: query,
+            name: page,
+            schema: { type: integer, default: 1, minimum: 1 },
+          }
+        - {
+            in: query,
+            name: page_size,
+            schema: { type: integer, default: 20, minimum: 1, maximum: 100 },
+          }
+        - {
+            in: query,
+            name: type,
+            schema: { $ref: '#/components/schemas/ExportJobType' },
+          }
+        - {
+            in: query,
+            name: status,
+            schema: { $ref: '#/components/schemas/ExportJobStatus' },
+          }
+        - {
+            in: query,
+            name: requested_by_id,
+            schema: { type: integer, format: int64 },
+          }
+        - { in: query, name: date_from, schema: { type: string, format: date } }
+        - { in: query, name: date_to, schema: { type: string, format: date } }
+        - { in: query, name: search, schema: { type: string, maxLength: 120 } }
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJobList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /projects/{projectId}/export-jobs/{jobId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/JobId'
+    get:
+      summary: Consultar export job
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:read
+      responses:
+        '200':
+          description: Export job
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /projects/{projectId}/export-jobs/{jobId}/download-url:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/JobId'
+    post:
+      summary: Obter caminho autenticado de download
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:download
+      responses:
+        '200':
+          description: Caminho protegido
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJobDownloadUrl' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Arquivo ainda nao disponivel }
+        '410': { description: Arquivo expirado }
+  /projects/{projectId}/export-jobs/{jobId}/download:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/JobId'
+    get:
+      summary: Baixar XLSX autenticado
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:download
+      responses:
+        '200':
+          description: Arquivo XLSX
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Arquivo ainda nao disponivel }
+        '410': { description: Arquivo expirado }
+  /projects/{projectId}/export-jobs/{jobId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/JobId'
+    post:
+      summary: Cancelar export job
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:cancel
+      responses:
+        '200':
+          description: Job cancelado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Status nao permite cancelamento }
+  /projects/{projectId}/export-jobs/{jobId}/retry:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/JobId'
+    post:
+      summary: Criar nova tentativa
+      security: [{ bearerAuth: [] }]
+      x-permission: export-jobs:retry
+      responses:
+        '201':
+          description: Novo export job criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Status invalido ou retry ativo existente }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: session-token
+      description: Token de sessao retornado por /auth/login
+  parameters:
+    ProjectId:
+      in: path
+      name: projectId
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    JobId:
+      in: path
+      name: jobId
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+  responses:
+    Unauthorized: { description: Sessao ausente ou invalida }
+    Forbidden: { description: Permissao ou escopo insuficiente }
+    NotFound: { description: Projeto ou export job nao encontrado }
+  schemas:
+    ExportJobType:
+      type: string
+      enum:
+        - inventory_items_xlsx
+        - inventory_accounting_items_xlsx
+        - pending_issues_xlsx
+        - payments_xlsx
+        - expenses_xlsx
+        - project_backup_xlsx
+    ExportJobStatus:
+      type: string
+      enum: [pending, processing, finished, failed, cancelled, expired]
+    CreateExportJobRequest:
+      type: object
+      additionalProperties: false
+      required: [type]
+      properties:
+        type: { $ref: '#/components/schemas/ExportJobType' }
+    ExportJob:
+      type: object
+      required:
+        - id
+        - organization_id
+        - project_id
+        - type
+        - status
+        - attempt_count
+        - requested_at
+        - created_at
+        - updated_at
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        type: { $ref: '#/components/schemas/ExportJobType' }
+        status: { $ref: '#/components/schemas/ExportJobStatus' }
+        file_name: { type: string, nullable: true }
+        mime_type: { type: string, nullable: true }
+        size_bytes: { type: integer, format: int64, nullable: true }
+        checksum: { type: string, nullable: true }
+        requested_by_id: { type: integer, format: int64, nullable: true }
+        retry_of_id: { type: integer, format: int64, nullable: true }
+        attempt_count: { type: integer, minimum: 1 }
+        requested_at: { type: string, format: date-time }
+        started_at: { type: string, format: date-time, nullable: true }
+        finished_at: { type: string, format: date-time, nullable: true }
+        expires_at: { type: string, format: date-time, nullable: true }
+        error_code: { type: string, nullable: true }
+        error_message: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ExportJobList:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ExportJob' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    ExportJobDownloadUrl:
+      type: object
+      required: [job, download_url, expires_in_seconds, requires_authentication]
+      properties:
+        job: { $ref: '#/components/schemas/ExportJob' }
+        download_url: { type: string }
+        expires_in_seconds: { type: integer, minimum: 0 }
+        requires_authentication: { type: boolean, enum: [true] }

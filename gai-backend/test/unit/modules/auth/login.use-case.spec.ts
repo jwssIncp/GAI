@@ -1,8 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { LoginUseCase } from '../../../../src/modules/auth/application/use-cases/login.use-case';
@@ -51,6 +47,9 @@ describe('LoginUseCase', () => {
       },
     ]),
   };
+  const permissions = {
+    resolveForUser: jest.fn().mockResolvedValue([]),
+  };
   const configService = {
     get: jest.fn((key: string, fallback?: unknown) => {
       const map: Record<string, unknown> = {
@@ -77,6 +76,7 @@ describe('LoginUseCase', () => {
       orgGate,
       audit,
       assignments as never,
+      permissions as never,
       configService as unknown as ConfigService,
       logger,
     );
@@ -85,7 +85,7 @@ describe('LoginUseCase', () => {
   it('locks account after max failed attempts', async () => {
     users.findByLoginOrEmail.mockResolvedValue(baseUser);
     hasher.verify.mockResolvedValue(false);
-    users.save.mockImplementation(async (user: User) => user);
+    users.save.mockImplementation((user: User) => Promise.resolve(user));
     sessions.create.mockResolvedValue({});
 
     for (let i = 0; i < 4; i++) {

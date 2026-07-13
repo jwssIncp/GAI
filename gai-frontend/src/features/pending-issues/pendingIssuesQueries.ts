@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { pendingIssuesApi } from '@/api/endpoints';
+import { projectKeys } from '@/features/projects/projectQueries';
 import type {
   CreateInventoryPendingIssueRequest,
   InventoryPendingIssueInput,
@@ -97,7 +98,7 @@ export function useGeneratePendingIssues(projectId: number) {
     mutationFn: () => pendingIssuesApi.generate(projectId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: pendingIssueKeys.project(projectId) });
-      await queryClient.invalidateQueries({ queryKey: ['project-summary', projectId] });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
     },
   });
 }

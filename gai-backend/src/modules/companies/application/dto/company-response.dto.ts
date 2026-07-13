@@ -157,20 +157,31 @@ export class ProjectUnitResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   company_unit_id!: number;
 
+  @ApiProperty({ type: CompanyUnitResponseDto })
+  company_unit!: CompanyUnitResponseDto;
+
   @ApiProperty({ format: 'date-time' })
   created_at!: string;
 
   @ApiProperty({ format: 'date-time' })
   updated_at!: string;
 
-  static fromEntity(entity: ProjectUnitEntity): ProjectUnitResponseDto {
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  deleted_at!: string | null;
+
+  static fromEntity(
+    entity: ProjectUnitEntity,
+    companyUnit: CompanyUnitEntity,
+  ): ProjectUnitResponseDto {
     return {
       id: Number(entity.id),
       organization_id: Number(entity.organizationId),
       project_id: Number(entity.projectId),
       company_unit_id: Number(entity.companyUnitId),
+      company_unit: CompanyUnitResponseDto.fromEntity(companyUnit),
       created_at: entity.createdAt.toISOString(),
       updated_at: entity.updatedAt.toISOString(),
+      deleted_at: entity.deletedAt?.toISOString() ?? null,
     };
   }
 }

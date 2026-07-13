@@ -11,6 +11,9 @@ describe('projects-api contract', () => {
     const paths = [
       '/projects:',
       '/projects/{id}:',
+      '/projects/{id}/activate:',
+      '/projects/{id}/pause:',
+      '/projects/{id}/resume:',
       '/projects/{id}/deactivate:',
       '/projects/{id}/reactivate:',
       '/projects/{id}/finish:',
@@ -28,6 +31,8 @@ describe('projects-api contract', () => {
       'UpdateProjectRequest',
       'ProjectResponse',
       'ProjectListResponse',
+      'ProjectAvailableAction',
+      'ProjectLifecycleAction',
       'ProjectStatus',
       'draft',
       'active',
@@ -65,6 +70,12 @@ describe('projects-api contract', () => {
     for (const item of [
       'projects:create',
       'projects:read',
+      'projects:activate',
+      'projects:pause',
+      'projects:resume',
+      'PROJECT_STATUS_TRANSITION_NOT_ALLOWED',
+      'PROJECT_HAS_OPEN_OPERATIONS',
+      'PROJECT_CONCURRENT_MODIFICATION',
       'InactiveOrganization',
       'InvalidDateRange',
       'ProjectMutationBlocked',
@@ -72,5 +83,19 @@ describe('projects-api contract', () => {
     ]) {
       expect(content).toContain(item);
     }
+  });
+
+  it('keeps status out of PATCH and exposes available actions', () => {
+    const updateSchema = content
+      .split('UpdateProjectRequest:')[1]
+      .split('ProjectResponse:')[0];
+    expect(updateSchema).not.toContain('status:');
+    expect(updateSchema).not.toContain('settings:');
+    expect(updateSchema).not.toContain('metadata:');
+    expect(content).toContain('available_actions:');
+    expect(content).toContain('maxLength: 5000');
+    expect(content).toContain(
+      'todas as pendencias tecnicas e operacionais bloqueiam',
+    );
   });
 });

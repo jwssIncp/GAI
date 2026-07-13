@@ -101,6 +101,7 @@ describe('Branch coverage boosters', () => {
         orgGate as never,
         audit as never,
         mockAssignments,
+        mockPermissionResolver,
         configService,
         logger,
       ),

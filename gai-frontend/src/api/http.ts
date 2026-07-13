@@ -1,18 +1,22 @@
 import axios, { AxiosError } from 'axios';
 import { clearStoredSession, readStoredSession } from './session-storage';
-import type { ApiErrorResponse } from '@/types/api';
+import type { ApiErrorResponse, ApiValidationDetail } from '@/types/api';
 
 export class ApiError extends Error {
   status: number;
   code?: string;
-  details?: ApiErrorResponse['details'];
+  details?: ApiValidationDetail[];
+  rawDetails?: unknown;
 
   constructor(status: number, body?: Partial<ApiErrorResponse>) {
     super(body?.message ?? 'Erro inesperado');
     this.name = 'ApiError';
     this.status = status;
     this.code = body?.code;
-    this.details = body?.details;
+    this.rawDetails = body?.details;
+    this.details = Array.isArray(body?.details)
+      ? body.details.filter((detail): detail is ApiValidationDetail => Boolean(detail && typeof detail === 'object' && 'field' in detail && 'message' in detail))
+      : undefined;
   }
 }
 

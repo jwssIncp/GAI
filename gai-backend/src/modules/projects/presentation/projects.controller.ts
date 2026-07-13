@@ -46,6 +46,7 @@ import { ListProjectsUseCase } from '../application/use-cases/list-projects.use-
 import { UpdateProjectStatusUseCase } from '../application/use-cases/update-project-status.use-case';
 import { UpdateProjectUseCase } from '../application/use-cases/update-project.use-case';
 import { ProjectActorContext } from '../application/services/project-scope.service';
+import { ProjectStatusTransitionPolicy } from '../domain/services/project-status-transition.policy';
 
 interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
@@ -133,11 +134,81 @@ export class ProjectsController {
     return this.updateProject.execute(id, dto, this.toActor(req));
   }
 
+  @Post(':id/activate')
+  @HttpCode(200)
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('activate').permission,
+  )
+  @ApiOperation({ summary: 'Ativar project em rascunho' })
+  @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição de status bloqueada',
+    'O projeto não pode executar esta transição a partir do status atual.',
+  )
+  async activate(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.updateProjectStatus.execute(id, 'activate', this.toActor(req));
+  }
+
+  @Post(':id/pause')
+  @HttpCode(200)
+  @RequirePermissions(ProjectStatusTransitionPolicy.getRule('pause').permission)
+  @ApiOperation({ summary: 'Pausar project ativo' })
+  @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição de status bloqueada',
+    'O projeto não pode executar esta transição a partir do status atual.',
+  )
+  async pause(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.updateProjectStatus.execute(id, 'pause', this.toActor(req));
+  }
+
+  @Post(':id/resume')
+  @HttpCode(200)
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('resume').permission,
+  )
+  @ApiOperation({ summary: 'Retomar project pausado' })
+  @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição de status bloqueada',
+    'O projeto não pode executar esta transição a partir do status atual.',
+  )
+  async resume(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.updateProjectStatus.execute(id, 'resume', this.toActor(req));
+  }
+
   @Post(':id/deactivate')
   @HttpCode(200)
-  @RequirePermissions('projects:deactivate')
-  @ApiOperation({ summary: 'Desativar project' })
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('deactivate').permission,
+  )
+  @ApiOperation({ summary: 'Desativar project (legado)', deprecated: true })
   @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição de status bloqueada',
+    'O projeto não pode executar esta transição a partir do status atual.',
+  )
   async deactivate(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
@@ -151,9 +222,21 @@ export class ProjectsController {
 
   @Post(':id/reactivate')
   @HttpCode(200)
-  @RequirePermissions('projects:reactivate')
-  @ApiOperation({ summary: 'Reativar project' })
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('reactivate').permission,
+  )
+  @ApiOperation({
+    summary: 'Reativar project inativo (legado)',
+    deprecated: true,
+  })
   @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição de status bloqueada',
+    'O projeto não pode executar esta transição a partir do status atual.',
+  )
   async reactivate(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
@@ -167,9 +250,18 @@ export class ProjectsController {
 
   @Post(':id/finish')
   @HttpCode(200)
-  @RequirePermissions('projects:finish')
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('finish').permission,
+  )
   @ApiOperation({ summary: 'Finalizar project' })
   @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição ou operação aberta bloqueia a finalização',
+    'O projeto possui operações em andamento e não pode executar esta transição.',
+  )
   async finish(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
@@ -179,9 +271,18 @@ export class ProjectsController {
 
   @Post(':id/cancel')
   @HttpCode(200)
-  @RequirePermissions('projects:cancel')
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('cancel').permission,
+  )
   @ApiOperation({ summary: 'Cancelar project' })
   @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição ou operação aberta bloqueia o cancelamento',
+    'O projeto possui operações em andamento e não pode executar esta transição.',
+  )
   async cancel(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
@@ -191,9 +292,18 @@ export class ProjectsController {
 
   @Post(':id/archive')
   @HttpCode(200)
-  @RequirePermissions('projects:archive')
+  @RequirePermissions(
+    ProjectStatusTransitionPolicy.getRule('archive').permission,
+  )
   @ApiOperation({ summary: 'Arquivar project' })
   @ApiOkResponse({ type: ProjectResponseDto })
+  @ApiUnauthorizedResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse(
+    'Transição ou operação aberta bloqueia o arquivamento',
+    'O projeto possui operações em andamento e não pode executar esta transição.',
+  )
   async archive(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,

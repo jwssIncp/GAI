@@ -17,6 +17,8 @@ import {
 import { ProjectSummaryRepository } from '../../domain/ports/project-summary.repository.port';
 import { ProjectFieldAgentStatus } from '../../../field-agents/domain/enums/project-field-agent-status.enum';
 import { ProjectFieldAgentEntity } from '../../../field-agents/infrastructure/persistence/project-field-agent.entity';
+import { ExportJobStatus } from '../../../export-jobs/domain/enums/export-job-status.enum';
+import { ExportJobEntity } from '../../../export-jobs/infrastructure/persistence/export-job.entity';
 import { ImportSessionStatus } from '../../../import-sessions/domain/enums/import-session-status.enum';
 import { ImportSessionEntity } from '../../../import-sessions/infrastructure/persistence/import-session.entity';
 import { InventoryAccountingItemStatus } from '../../../inventory-accounting-items/domain/enums/inventory-accounting-item-status.enum';
@@ -54,6 +56,8 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
     private readonly expenses: Repository<ExpenseEntity>,
     @InjectRepository(ImportSessionEntity)
     private readonly importSessions: Repository<ImportSessionEntity>,
+    @InjectRepository(ExportJobEntity)
+    private readonly exportJobs: Repository<ExportJobEntity>,
   ) {}
 
   async getInventorySummary(
@@ -395,22 +399,62 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
     };
   }
 
-  getExportsSummary(): Promise<ProjectExportsSummaryDto> {
-    return Promise.resolve({
-      total_export_jobs: 0,
-      pending_export_jobs: 0,
-      processing_export_jobs: 0,
-      finished_export_jobs: 0,
-      failed_export_jobs: 0,
-      cancelled_export_jobs: 0,
-      expired_export_jobs: 0,
-    });
+  async getExportsSummary(
+    projectId: number,
+  ): Promise<ProjectExportsSummaryDto> {
+    const row = await this.exportJobs
+      .createQueryBuilder('job')
+      .select([
+        'COUNT(job.id) AS total_export_jobs',
+        this.countStatus(
+          'pending_export_jobs',
+          'job.status',
+          ExportJobStatus.PENDING,
+        ),
+        this.countStatus(
+          'processing_export_jobs',
+          'job.status',
+          ExportJobStatus.PROCESSING,
+        ),
+        this.countStatus(
+          'finished_export_jobs',
+          'job.status',
+          ExportJobStatus.FINISHED,
+        ),
+        this.countStatus(
+          'failed_export_jobs',
+          'job.status',
+          ExportJobStatus.FAILED,
+        ),
+        this.countStatus(
+          'cancelled_export_jobs',
+          'job.status',
+          ExportJobStatus.CANCELLED,
+        ),
+        this.countStatus(
+          'expired_export_jobs',
+          'job.status',
+          ExportJobStatus.EXPIRED,
+        ),
+      ])
+      .where('job.project_id = :projectId', { projectId })
+      .getRawOne<RawRow>();
+
+    return {
+      total_export_jobs: this.number(row, 'total_export_jobs'),
+      pending_export_jobs: this.number(row, 'pending_export_jobs'),
+      processing_export_jobs: this.number(row, 'processing_export_jobs'),
+      finished_export_jobs: this.number(row, 'finished_export_jobs'),
+      failed_export_jobs: this.number(row, 'failed_export_jobs'),
+      cancelled_export_jobs: this.number(row, 'cancelled_export_jobs'),
+      expired_export_jobs: this.number(row, 'expired_export_jobs'),
+    };
   }
 
   async getRecentActivitySummary(
     projectId: number,
   ): Promise<ProjectRecentActivitySummaryDto> {
-    const [inventory, imports, issues, payments] = await Promise.all([
+    const [inventory, imports, exports, issues, payments] = await Promise.all([
       this.inventoryItems
         .createQueryBuilder('item')
         .select([
@@ -423,6 +467,17 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
         .createQueryBuilder('session')
         .select('MAX(session.finished_at)', 'last_import_finished_at')
         .where('session.project_id = :projectId', { projectId })
+        .getRawOne<RawRow>(),
+      this.exportJobs
+        .createQueryBuilder('job')
+        .select('MAX(job.finished_at)', 'last_export_finished_at')
+        .where('job.project_id = :projectId', { projectId })
+        .andWhere('job.status IN (:...completedExportStatuses)', {
+          completedExportStatuses: [
+            ExportJobStatus.FINISHED,
+            ExportJobStatus.EXPIRED,
+          ],
+        })
         .getRawOne<RawRow>(),
       this.pendingIssues
         .createQueryBuilder('issue')
@@ -444,7 +499,7 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
         inventory?.last_inventory_item_updated_at,
       ),
       last_import_finished_at: this.isoDate(imports?.last_import_finished_at),
-      last_export_finished_at: null,
+      last_export_finished_at: this.isoDate(exports?.last_export_finished_at),
       last_pending_issue_created_at: this.isoDate(
         issues?.last_pending_issue_created_at,
       ),

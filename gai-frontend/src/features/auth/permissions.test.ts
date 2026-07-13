@@ -24,4 +24,29 @@ describe('permissions', () => {
     expect(canAccess(user, ['companies:read'])).toBe(true);
     expect(canAccess(user, ['organizations:read'])).toBe(false);
   });
+
+  it('usa permissoes efetivas quando o backend as retorna', () => {
+    const user: CurrentUser = {
+      ...baseUser,
+      organization_id: 1,
+      permissions: [{ key: 'projects:read', scope: 'ORGANIZATION' }],
+      role_assignments: [{ assignment_id: 1, role_id: 7, role_name: 'Leitor de projetos', role_type: 'ORGANIZATION', organization_id: 1, assigned_at: '2026-01-01' }],
+    };
+    expect(hasPermission(user, 'projects:read')).toBe(true);
+    expect(hasPermission(user, 'projects:create')).toBe(false);
+  });
+
+  it('nao aplica fallback administrativo quando permissions vem vazio', () => {
+    const user: CurrentUser = {
+      ...baseUser,
+      permissions: [],
+      role_assignments: [{ assignment_id: 1, role_id: 1, role_key: 'PLATFORM_ADMIN', role_name: 'Platform', role_type: 'SYSTEM', organization_id: null, assigned_at: '2026-01-01' }],
+    };
+    expect(hasPermission(user, 'projects:read')).toBe(false);
+  });
+
+  it('exige todas as permissoes declaradas', () => {
+    const user: CurrentUser = { ...baseUser, permissions: [{ key: 'payments:read', scope: 'ORGANIZATION' }] };
+    expect(canAccess(user, ['payments:read', 'expenses:read'])).toBe(false);
+  });
 });

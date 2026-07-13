@@ -3,15 +3,6 @@ import { ApiResponse } from '@nestjs/swagger';
 import { ErrorCode } from './error-code.enum';
 import { ErrorResponseDto } from './error-response.dto';
 
-const errorExample = (code: ErrorCode, message: string) => ({
-  schema: { $ref: '#/components/schemas/ErrorResponseDto' },
-  examples: {
-    default: {
-      value: { code, message },
-    },
-  },
-});
-
 export function ApiUnauthorizedResponse() {
   return ApiResponse({
     status: 401,
@@ -24,7 +15,7 @@ export function ApiUnauthorizedResponse() {
 export function ApiForbiddenResponse() {
   return ApiResponse({
     status: 403,
-    description: 'Autenticado mas sem role PLATFORM_ADMIN',
+    description: 'Autenticado, mas sem permissao efetiva ou escopo suficiente',
     type: ErrorResponseDto,
     example: { code: ErrorCode.FORBIDDEN, message: 'Forbidden resource' },
   });

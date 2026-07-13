@@ -56,6 +56,9 @@ import { ImportPayloadEntity } from './modules/import-sessions/infrastructure/pe
 import { ImportPayloadErrorEntity } from './modules/import-sessions/infrastructure/persistence/import-payload-error.entity';
 import { ImportSessionAuditLogEntity } from './modules/import-sessions/infrastructure/persistence/import-session-audit-log.entity';
 import { ImportSessionEntity } from './modules/import-sessions/infrastructure/persistence/import-session.entity';
+import { ExportJobsModule } from './modules/export-jobs/export-jobs.module';
+import { ExportJobAuditLogEntity } from './modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity';
+import { ExportJobEntity } from './modules/export-jobs/infrastructure/persistence/export-job.entity';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ProjectDashboardModule } from './modules/project-dashboard/project-dashboard.module';
 import { ProjectAuditLogEntity } from './modules/projects/infrastructure/persistence/project-audit-log.entity';
@@ -135,6 +138,8 @@ import { UsersModule } from './modules/users/users.module';
           ImportPayloadErrorEntity,
           ImportFileEntity,
           ImportSessionAuditLogEntity,
+          ExportJobEntity,
+          ExportJobAuditLogEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -166,6 +171,7 @@ import { UsersModule } from './modules/users/users.module';
     InventoryPendingIssuesModule,
     PaymentsExpensesModule,
     ImportSessionsModule,
+    ExportJobsModule,
     CatalogAssetsModule,
     CompaniesModule,
   ],

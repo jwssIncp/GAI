@@ -3,6 +3,7 @@ import type {
   AccountingImportBatch,
   AccountingImportError,
   Company,
+  CompanyUnit,
   CreateCompanyRequest,
   CreateFieldAgentRequest,
   CreateExpenseAttachmentUploadRequest,
@@ -14,6 +15,7 @@ import type {
   ConfirmExpenseAttachmentUploadRequest,
   ConfirmImportFileUploadRequest,
   FieldAgent,
+  FieldAgentListParams,
   ConfirmInventoryItemImageUploadRequest,
   InventoryItem,
   InventoryItemImage,
@@ -35,6 +37,10 @@ import type {
   ExpenseAttachment,
   ExpenseAttachmentDownloadUrlResponse,
   ExpenseAttachmentUploadUrlResponse,
+  ExportJob,
+  ExportJobDownloadUrlResponse,
+  ExportJobStatus,
+  ExportJobType,
   CreateImportFileUploadRequest,
   ImportFile,
   ImportFileDownloadUrlResponse,
@@ -62,9 +68,12 @@ import type {
   PaginatedItems,
   Permission,
   Project,
+  ProjectUnit,
+  ProjectUnitListResponse,
   ProjectFieldAgent,
   ProjectSummary,
   UpdateFieldAgentRequest,
+  UpdateProjectRequest,
   UpdateProjectFieldAgentRequest,
   User,
   MetaPaginated,
@@ -82,10 +91,10 @@ export const authApi = {
 export const organizationsApi = {
   list: (params: PageParams) => api.get<PaginatedItems<Organization>>('/organizations', { params }).then((r) => r.data),
   create: (payload: CreateOrganizationRequest) => api.post<Organization>('/organizations', payload).then((r) => r.data),
-  get: (id: string) => api.get<Organization>(`/organizations/${id}`).then((r) => r.data),
-  update: (id: string, payload: Partial<CreateOrganizationRequest>) => api.patch<Organization>(`/organizations/${id}`, payload).then((r) => r.data),
-  deactivate: (id: string) => api.post<Organization>(`/organizations/${id}/deactivate`).then((r) => r.data),
-  activate: (id: string) => api.post<Organization>(`/organizations/${id}/activate`).then((r) => r.data),
+  get: (id: number) => api.get<Organization>(`/organizations/${id}`).then((r) => r.data),
+  update: (id: number, payload: Partial<CreateOrganizationRequest>) => api.patch<Organization>(`/organizations/${id}`, payload).then((r) => r.data),
+  deactivate: (id: number) => api.post<Organization>(`/organizations/${id}/deactivate`).then((r) => r.data),
+  activate: (id: number) => api.post<Organization>(`/organizations/${id}/activate`).then((r) => r.data),
 };
 
 export const usersApi = {
@@ -118,11 +127,42 @@ export const companiesApi = {
   reactivate: (id: number) => api.post<Company>(`/companies/${id}/reactivate`).then((r) => r.data),
 };
 
+export const companyUnitsApi = {
+  list: (companyId: number, params: PageParams & { city?: string; state?: string }) =>
+    api.get<PaginatedItems<CompanyUnit>>(`/companies/${companyId}/units`, { params }).then((r) => r.data),
+  get: (companyId: number, unitId: number) => api.get<CompanyUnit>(`/companies/${companyId}/units/${unitId}`).then((r) => r.data),
+};
+
+export const projectUnitsApi = {
+  list: (projectId: number) => api.get<ProjectUnitListResponse>(`/projects/${projectId}/units`).then((r) => r.data),
+  assign: (projectId: number, companyUnitId: number) =>
+    api.post<ProjectUnit>(`/projects/${projectId}/units`, { company_unit_id: companyUnitId }).then((r) => r.data),
+  remove: (projectId: number, companyUnitId: number) =>
+    api.post<ProjectUnit>(`/projects/${projectId}/units/${companyUnitId}/remove`).then((r) => r.data),
+};
+
+export const exportJobsApi = {
+  create: (projectId: number, type: ExportJobType) => api.post<ExportJob>(`/projects/${projectId}/export-jobs`, { type }).then((r) => r.data),
+  list: (projectId: number, params: PageParams & { type?: ExportJobType | ''; status?: ExportJobStatus | ''; requested_by_id?: number; date_from?: string; date_to?: string }) =>
+    api.get<PaginatedItems<ExportJob>>(`/projects/${projectId}/export-jobs`, { params }).then((r) => r.data),
+  get: (projectId: number, jobId: number) => api.get<ExportJob>(`/projects/${projectId}/export-jobs/${jobId}`).then((r) => r.data),
+  downloadUrl: (projectId: number, jobId: number) => api.post<ExportJobDownloadUrlResponse>(`/projects/${projectId}/export-jobs/${jobId}/download-url`).then((r) => r.data),
+  download: (authenticatedUrl: string) => {
+    const url = authenticatedUrl.startsWith('/api/v1/') ? authenticatedUrl.slice('/api/v1'.length) : authenticatedUrl;
+    return api.get<Blob>(url, { responseType: 'blob' }).then((r) => r.data);
+  },
+  cancel: (projectId: number, jobId: number) => api.post<ExportJob>(`/projects/${projectId}/export-jobs/${jobId}/cancel`).then((r) => r.data),
+  retry: (projectId: number, jobId: number) => api.post<ExportJob>(`/projects/${projectId}/export-jobs/${jobId}/retry`).then((r) => r.data),
+};
+
 export const projectsApi = {
   list: (params: PageParams) => api.get<PaginatedItems<Project>>('/projects', { params }).then((r) => r.data),
   create: (payload: CreateProjectRequest) => api.post<Project>('/projects', payload).then((r) => r.data),
   get: (id: number) => api.get<Project>(`/projects/${id}`).then((r) => r.data),
-  update: (id: number, payload: Partial<CreateProjectRequest>) => api.patch<Project>(`/projects/${id}`, payload).then((r) => r.data),
+  update: (id: number, payload: UpdateProjectRequest) => api.patch<Project>(`/projects/${id}`, payload).then((r) => r.data),
+  activate: (id: number) => api.post<Project>(`/projects/${id}/activate`).then((r) => r.data),
+  pause: (id: number) => api.post<Project>(`/projects/${id}/pause`).then((r) => r.data),
+  resume: (id: number) => api.post<Project>(`/projects/${id}/resume`).then((r) => r.data),
   deactivate: (id: number) => api.post<Project>(`/projects/${id}/deactivate`).then((r) => r.data),
   reactivate: (id: number) => api.post<Project>(`/projects/${id}/reactivate`).then((r) => r.data),
   finish: (id: number) => api.post<Project>(`/projects/${id}/finish`).then((r) => r.data),
@@ -143,7 +183,7 @@ export const projectsApi = {
 };
 
 export const fieldAgentsApi = {
-  list: (params: PageParams) => api.get<PaginatedItems<FieldAgent>>('/field-agents', { params }).then((r) => r.data),
+  list: (params: FieldAgentListParams) => api.get<PaginatedItems<FieldAgent>>('/field-agents', { params }).then((r) => r.data),
   create: (payload: CreateFieldAgentRequest) => api.post<FieldAgent>('/field-agents', payload).then((r) => r.data),
   get: (id: number) => api.get<FieldAgent>(`/field-agents/${id}`).then((r) => r.data),
   update: (id: number, payload: UpdateFieldAgentRequest) => api.patch<FieldAgent>(`/field-agents/${id}`, payload).then((r) => r.data),

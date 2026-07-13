@@ -1,6 +1,9 @@
 export enum ProjectAuditOperation {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
+  ACTIVATE = 'ACTIVATE',
+  PAUSE = 'PAUSE',
+  RESUME = 'RESUME',
   DEACTIVATE = 'DEACTIVATE',
   REACTIVATE = 'REACTIVATE',
   FINISH = 'FINISH',

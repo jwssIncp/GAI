@@ -140,6 +140,11 @@ describe('Inventory Items (e2e)', () => {
     const project = await createProject('Inventario finalizado');
 
     await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/activate`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
       .post(`/api/v1/projects/${project.id}/finish`)
       .set('Authorization', `Bearer ${orgAdminToken}`)
       .expect(200);

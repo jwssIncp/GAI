@@ -228,7 +228,7 @@ paths:
   /projects/{projectId}/units:
     post:
       summary: Assign unit to project
-      description: Requires project-units:assign.
+      description: Requires project-units:assign. Allowed only while the project is draft, active or paused and has a company. A logically removed assignment is restored instead of creating a duplicate row. Status, scope, unit activity and duplicate checks run atomically with persistence and audit.
       parameters:
         - $ref: '#/components/parameters/projectId'
       requestBody:
@@ -244,9 +244,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectUnitResponse'
+        '409':
+          description: Assignment conflict with a stable project-unit domain code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectUnitConflictResponse'
     get:
       summary: List project units
-      description: Requires project-units:read.
+      description: Requires project-units:read. Legacy projects with no company remain readable and return an empty items array.
       parameters:
         - $ref: '#/components/parameters/projectId'
       responses:
@@ -259,7 +265,7 @@ paths:
   /projects/{projectId}/units/{unitId}/remove:
     post:
       summary: Remove unit from project
-      description: Requires project-units:remove.
+      description: Requires project-units:remove. Performs logical removal and is allowed only while the project is draft, active or paused. The project company is not required for removal. Status and repeated-removal checks run atomically with persistence and audit.
       parameters:
         - $ref: '#/components/parameters/projectId'
         - $ref: '#/components/parameters/unitId'
@@ -270,6 +276,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectUnitResponse'
+        '409':
+          description: Removal conflict with a stable project-unit domain code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectUnitConflictResponse'
 components:
   parameters:
     id:
@@ -442,17 +454,39 @@ components:
         company_unit_id: { type: integer, format: int64 }
     ProjectUnitResponse:
       type: object
+      required: [id, organization_id, project_id, company_unit_id, company_unit, created_at, updated_at, deleted_at]
       properties:
         id: { type: integer, format: int64 }
         organization_id: { type: integer, format: int64 }
         project_id: { type: integer, format: int64 }
         company_unit_id: { type: integer, format: int64 }
+        company_unit:
+          $ref: '#/components/schemas/CompanyUnitResponse'
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
     ProjectUnitListResponse:
       type: object
+      required: [items]
       properties:
         items:
           type: array
           items:
             $ref: '#/components/schemas/ProjectUnitResponse'
+    ProjectUnitConflictResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - PROJECT_STATUS_BLOCKS_OPERATION
+            - PROJECT_HAS_NO_COMPANY
+            - PROJECT_UNIT_ALREADY_ASSIGNED
+            - PROJECT_UNIT_ALREADY_REMOVED
+            - PROJECT_UNIT_SCOPE_MISMATCH
+            - COMPANY_UNIT_STATUS_BLOCKS_OPERATION
+        message: { type: string }
+        details:
+          type: object
+          additionalProperties: true

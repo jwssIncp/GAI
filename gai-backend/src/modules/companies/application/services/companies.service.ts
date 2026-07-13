@@ -41,7 +41,6 @@ import {
 } from './company-scope.service';
 import { CompanyEntity } from '../../infrastructure/persistence/company.entity';
 import { CompanyUnitEntity } from '../../infrastructure/persistence/company-unit.entity';
-import { ProjectUnitEntity } from '../../infrastructure/persistence/project-unit.entity';
 import { TypeOrmCompaniesRepository } from '../../infrastructure/persistence/typeorm-companies.repository';
 
 @Injectable()
@@ -409,47 +408,70 @@ export class CompaniesService {
   ): Promise<ProjectUnitResponseDto> {
     const project = await this.findProjectOrFail(projectId);
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
-    const unit = await this.repository.findUnitById(dto.company_unit_id);
-    if (!unit) {
-      throw new NotFoundException({
-        code: 'NOT_FOUND',
-        message: 'Company unit not found',
-      });
-    }
-    if (
-      unit.organizationId !== project.organizationId ||
-      unit.companyId !== project.companyId
-    ) {
+    if (!project.companyId) {
       throw new ConflictException({
-        code: 'CONFLICT',
-        message:
-          'Project and company unit must belong to the same company and organization',
+        code: 'PROJECT_HAS_NO_COMPANY',
+        message: 'Project has no company linked',
+        details: { project_id: projectId },
       });
     }
-    if (unit.status !== CompanyUnitStatus.ACTIVE) {
-      throw new ConflictException({
-        code: 'CONFLICT',
-        message: 'Company unit status blocks this operation',
-      });
-    }
-    const existing = await this.repository.findProjectUnit(projectId, unit.id);
-    if (existing) {
-      throw new ConflictException({
-        code: 'CONFLICT',
-        message: 'Company unit already assigned to project',
-      });
-    }
-    const projectUnit = new ProjectUnitEntity();
-    Object.assign(projectUnit, {
-      organizationId: project.organizationId,
+
+    const result = await this.repository.assignProjectUnitWithAudit({
       projectId,
-      companyUnitId: unit.id,
+      organizationId: project.organizationId,
+      companyUnitId: dto.company_unit_id,
+      performedBy: actor.id,
     });
-    const saved = await this.repository.assignProjectUnitWithAudit(
-      projectUnit,
-      actor.id,
-    );
-    return ProjectUnitResponseDto.fromEntity(saved);
+    if (result.kind === 'success') {
+      return ProjectUnitResponseDto.fromEntity(
+        result.projectUnit,
+        result.companyUnit,
+      );
+    }
+
+    switch (result.kind) {
+      case 'project_not_found':
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      case 'project_has_no_company':
+        throw new ConflictException({
+          code: 'PROJECT_HAS_NO_COMPANY',
+          message: 'Project has no company linked',
+          details: { project_id: projectId },
+        });
+      case 'project_status_blocks':
+        throw new ConflictException({
+          code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+          message: 'Project status blocks this operation',
+          details: { current_status: result.currentStatus },
+        });
+      case 'unit_not_found':
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Company unit not found',
+        });
+      case 'unit_scope_mismatch':
+        throw new ConflictException({
+          code: 'PROJECT_UNIT_SCOPE_MISMATCH',
+          message:
+            'Project and company unit must belong to the same company and organization',
+          details: { company_unit_id: dto.company_unit_id },
+        });
+      case 'unit_inactive':
+        throw new ConflictException({
+          code: 'COMPANY_UNIT_STATUS_BLOCKS_OPERATION',
+          message: 'Company unit status blocks this operation',
+          details: { company_unit_id: dto.company_unit_id },
+        });
+      case 'already_assigned':
+        throw new ConflictException({
+          code: 'PROJECT_UNIT_ALREADY_ASSIGNED',
+          message: 'Company unit already assigned to project',
+          details: { company_unit_id: dto.company_unit_id },
+        });
+    }
   }
 
   async listProjectUnits(
@@ -458,9 +480,14 @@ export class CompaniesService {
   ): Promise<ProjectUnitListResponseDto> {
     const project = await this.findProjectOrFail(projectId);
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
+    if (!project.companyId) {
+      return { items: [] };
+    }
     const items = await this.repository.listProjectUnits(projectId);
     return {
-      items: items.map((item) => ProjectUnitResponseDto.fromEntity(item)),
+      items: items.map(({ projectUnit, companyUnit }) =>
+        ProjectUnitResponseDto.fromEntity(projectUnit, companyUnit),
+      ),
     };
   }
 
@@ -471,21 +498,56 @@ export class CompaniesService {
   ): Promise<ProjectUnitResponseDto> {
     const project = await this.findProjectOrFail(projectId);
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
-    const projectUnit = await this.repository.findProjectUnit(
+
+    const result = await this.repository.removeProjectUnitWithAudit({
       projectId,
-      unitId,
-    );
-    if (!projectUnit) {
-      throw new NotFoundException({
-        code: 'NOT_FOUND',
-        message: 'Project unit assignment not found',
-      });
+      organizationId: project.organizationId,
+      companyUnitId: unitId,
+      performedBy: actor.id,
+    });
+    if (result.kind === 'success') {
+      return ProjectUnitResponseDto.fromEntity(
+        result.projectUnit,
+        result.companyUnit,
+      );
     }
-    const removed = await this.repository.removeProjectUnitWithAudit(
-      projectUnit,
-      actor.id,
-    );
-    return ProjectUnitResponseDto.fromEntity(removed);
+
+    switch (result.kind) {
+      case 'project_not_found':
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      case 'project_status_blocks':
+        throw new ConflictException({
+          code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+          message: 'Project status blocks this operation',
+          details: { current_status: result.currentStatus },
+        });
+      case 'assignment_not_found':
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Project unit assignment not found',
+        });
+      case 'already_removed':
+        throw new ConflictException({
+          code: 'PROJECT_UNIT_ALREADY_REMOVED',
+          message: 'Project unit assignment is already removed',
+          details: { company_unit_id: unitId },
+        });
+      case 'unit_not_found':
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Company unit not found',
+        });
+      case 'unit_scope_mismatch':
+        throw new ConflictException({
+          code: 'PROJECT_UNIT_SCOPE_MISMATCH',
+          message:
+            'Project and company unit must belong to the same organization',
+          details: { company_unit_id: unitId },
+        });
+    }
   }
 
   async assertCompanyCanReceiveProject(
@@ -539,12 +601,6 @@ export class CompaniesService {
       throw new NotFoundException({
         code: 'NOT_FOUND',
         message: 'Project not found',
-      });
-    }
-    if (!project.companyId) {
-      throw new ConflictException({
-        code: 'CONFLICT',
-        message: 'Project has no company linked',
       });
     }
     return project;

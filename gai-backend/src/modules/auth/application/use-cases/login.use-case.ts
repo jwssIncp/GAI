@@ -40,6 +40,10 @@ import {
 } from '../../../users/domain/ports/user-role-assignment.repository.port';
 import { LoginDto } from '../dto/login.dto';
 import { CurrentUserDto, LoginResponseDto } from '../dto/login-response.dto';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../domain/ports/permission-resolver.port';
 
 @Injectable()
 export class LoginUseCase {
@@ -51,6 +55,8 @@ export class LoginUseCase {
     @Inject(AUTH_AUDIT_REPOSITORY) private readonly audit: AuthAuditRepository,
     @Inject(USER_ROLE_ASSIGNMENT_REPOSITORY)
     private readonly assignments: UserRoleAssignmentRepository,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
     private readonly configService: ConfigService,
     private readonly logger: PinoLogger,
   ) {
@@ -198,6 +204,7 @@ export class LoginUseCase {
       result: 'SUCCESS',
     });
 
+    const roleAssignments = await this.assignments.findActiveByUserId(user.id);
     return {
       access_token: sessionId,
       expires_at: expiresAt.toISOString(),
@@ -207,9 +214,10 @@ export class LoginUseCase {
         email: user.email,
         status: user.status,
         organizationId: user.organizationId,
-        roleAssignments: (
-          await this.assignments.findActiveByUserId(user.id)
-        ).map(RoleAssignmentResponseDto.fromAssignedRole),
+        roleAssignments: roleAssignments.map((assignment) =>
+          RoleAssignmentResponseDto.fromAssignedRole(assignment),
+        ),
+        permissions: await this.permissions.resolveForUser(user.id),
       }),
     };
   }

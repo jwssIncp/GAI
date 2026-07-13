@@ -13,6 +13,9 @@ const mocks = vi.hoisted(() => ({
   projectFieldAgentsList: vi.fn(),
   projectFieldAgentsAssign: vi.fn(),
   projectFieldAgentsRemove: vi.fn(),
+  companyGet: vi.fn(),
+  organizationGet: vi.fn(),
+  projectUnitsList: vi.fn(),
 }));
 
 vi.mock('@/api/endpoints', () => ({
@@ -20,6 +23,9 @@ vi.mock('@/api/endpoints', () => ({
     get: mocks.get,
     dashboard: mocks.dashboard,
   },
+  companiesApi: { get: mocks.companyGet },
+  organizationsApi: { get: mocks.organizationGet },
+  projectUnitsApi: { list: mocks.projectUnitsList, assign: vi.fn(), remove: vi.fn() },
   projectFieldAgentsApi: {
     list: mocks.projectFieldAgentsList,
     assign: mocks.projectFieldAgentsAssign,
@@ -94,6 +100,9 @@ describe('ProjectSummaryPage workspace', () => {
     mocks.projectFieldAgentsList.mockResolvedValue({ items: [], page: 1, page_size: 10, total_items: 0, total_pages: 0 });
     mocks.projectFieldAgentsAssign.mockResolvedValue({});
     mocks.projectFieldAgentsRemove.mockResolvedValue({});
+    mocks.companyGet.mockResolvedValue({ id: 3, organization_id: 1, name: 'Empresa Alpha', status: 'active' });
+    mocks.organizationGet.mockResolvedValue({ id: 1, legal_name: 'Organizacao Alpha', status: 'ACTIVE' });
+    mocks.projectUnitsList.mockResolvedValue({ items: [] });
   });
 
   it('renderiza workspace com breadcrumbs, cabecalho e metricas reais', async () => {
@@ -101,7 +110,7 @@ describe('ProjectSummaryPage workspace', () => {
     expect(await screen.findByRole('heading', { name: 'Projeto Alpha' })).toBeInTheDocument();
     expect(screen.getByText('Projetos')).toBeInTheDocument();
     expect(screen.getByText('Inventario da filial SP')).toBeInTheDocument();
-    expect(screen.getByText('Empresa #3')).toBeInTheDocument();
+    expect(await screen.findByText('Empresa Alpha')).toBeInTheDocument();
     expect(screen.getByText('Total de itens')).toBeInTheDocument();
     expect(screen.getByText('Pendencias criticas')).toBeInTheDocument();
     expect(mocks.get).toHaveBeenCalledWith(10);
@@ -153,5 +162,17 @@ describe('ProjectSummaryPage workspace', () => {
     renderPage();
     expect(await screen.findByText('Projeto bloqueado operacionalmente')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /novo item/i })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: 'Editar projeto' })).not.toBeInTheDocument();
+    expect(screen.getByText(/vinculos de inventariantes somente para consulta/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Vincular inventariante' })).not.toBeInTheDocument();
+  });
+
+  it('nao inventa configuracoes editaveis e preserva dados legados para consulta', async () => {
+    mocks.get.mockResolvedValue({ ...project, settings: { legacy_mode: true } });
+    renderPage();
+    expect(await screen.findByText(/nenhuma configuracao operacional suportada/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Dados legados somente para consulta'));
+    expect(screen.getByText(/"legacy_mode": true/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /salvar configuracoes/i })).not.toBeInTheDocument();
   });
 });

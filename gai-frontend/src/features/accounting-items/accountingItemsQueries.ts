@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { accountingImportsApi, accountingItemsApi } from '@/api/endpoints';
+import { projectKeys } from '@/features/projects/projectQueries';
 import type { InventoryAccountingItemInput, InventoryAccountingItemStatus, PageParams } from '@/types/api';
 
 export type AccountingItemListParams = PageParams & {
@@ -47,6 +48,7 @@ export function useUpdateAccountingItem(projectId: number) {
     onSuccess: async (_, variables) => {
       await queryClient.invalidateQueries({ queryKey: accountingItemKeys.project(projectId) });
       await queryClient.invalidateQueries({ queryKey: accountingItemKeys.detail(projectId, variables.id) });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
     },
   });
 }
@@ -55,7 +57,10 @@ export function useChangeAccountingItemStatus(projectId: number, action: 'deacti
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => (action === 'deactivate' ? accountingItemsApi.deactivate(projectId, id) : accountingItemsApi.reactivate(projectId, id)),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: accountingItemKeys.project(projectId) }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: accountingItemKeys.project(projectId) }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }
 
@@ -74,6 +79,7 @@ export function useImportAccountingFile(projectId: number) {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: accountingItemKeys.project(projectId) });
       await queryClient.invalidateQueries({ queryKey: accountingImportKeys.project(projectId) });
+      await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
     },
   });
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { uploadToPresignedUrl } from '@/api/http';
 import { inventoryItemImagesApi } from '@/api/endpoints';
+import { projectKeys } from '@/features/projects/projectQueries';
 import type { CreateInventoryItemImageUploadRequest, PageParams } from '@/types/api';
 
 export const inventoryItemImageKeys = {
@@ -30,7 +31,10 @@ export function useUploadInventoryItemImage(projectId: number, itemId: number, o
       await uploadToPresignedUrl(response.upload_url, file, onProgress);
       return inventoryItemImagesApi.confirmUpload(projectId, itemId, response.image.id, { size_bytes: file.size });
     },
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: inventoryItemImageKeys.projectItem(projectId, itemId) }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: inventoryItemImageKeys.projectItem(projectId, itemId) }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }
 
@@ -44,6 +48,9 @@ export function useRemoveInventoryItemImage(projectId: number, itemId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (imageId: number) => inventoryItemImagesApi.remove(projectId, itemId, imageId),
-    onSuccess: async () => queryClient.invalidateQueries({ queryKey: inventoryItemImageKeys.projectItem(projectId, itemId) }),
+    onSuccess: async () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: inventoryItemImageKeys.projectItem(projectId, itemId) }),
+      queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+    ]),
   });
 }

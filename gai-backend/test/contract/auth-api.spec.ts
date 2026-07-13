@@ -68,4 +68,11 @@ describe('auth-api contract', () => {
     expect(content).toContain('ACTIVE');
     expect(content).toContain('LOCKED');
   });
+
+  it('documents effective permissions returned by login and me', () => {
+    expect(content).toContain('ResolvedPermission');
+    expect(content).toContain('PermissionScope');
+    expect(content).toContain('permissions:');
+    expect(content).toContain('ORGANIZATION');
+  });
 });

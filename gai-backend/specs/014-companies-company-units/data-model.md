@@ -65,12 +65,18 @@ Indexes:
 - `company_unit_id` bigint unsigned not null
 - `created_at` datetime(3) not null
 - `updated_at` datetime(3) not null
+- `deleted_at` datetime(3) null
 
 Indexes:
 
 - `(organization_id, project_id)`
 - `(organization_id, company_unit_id)`
 - unique `(project_id, company_unit_id)`
+- `(project_id, deleted_at)`
+
+The nullable `projects.company_id` remains a legacy-compatibility concern rather than a `project_units` integrity change. Unit listing returns no operational assignments for a legacy project without a company. Assignment requires a company; removal can still clean up an existing historical link.
+
+The unique `(project_id, company_unit_id)` constraint is the final duplicate guard. The application additionally locks the project and existing link, revalidates project status and tenant/company scope, and writes exactly one audit row in the same transaction.
 
 ## audit tables
 

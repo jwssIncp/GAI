@@ -9,6 +9,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { ProjectAuditOperation } from '../../domain/enums/project-audit-operation.enum';
 import {
   PROJECT_REPOSITORY,
+  type ProjectEditableFields,
   type ProjectRepository,
 } from '../../domain/ports/project.repository.port';
 import { ProjectResponseDto } from '../dto/project-response.dto';
@@ -42,6 +43,8 @@ export class UpdateProjectUseCase {
       });
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
+    const expectedStatus = project.status;
+    const expectedUpdatedAt = project.updatedAt;
 
     let changes: Record<string, { before: unknown; after: unknown }>;
     try {
@@ -53,8 +56,6 @@ export class UpdateProjectUseCase {
             : undefined,
         startDate: this.parseDate(dto.start_date),
         endDate: this.parseDate(dto.end_date),
-        settings: dto.settings,
-        metadata: dto.metadata,
         updatedById: actor.id,
       });
     } catch (error) {
@@ -65,13 +66,41 @@ export class UpdateProjectUseCase {
       return ProjectResponseDto.fromDomain(project);
     }
 
-    const saved = await this.repository.saveWithAudit(project, {
-      projectId: project.id,
-      organizationId: project.organizationId,
-      operation: ProjectAuditOperation.UPDATE,
-      performedBy: actor.id,
-      changes,
+    const result = await this.repository.updateFieldsWithAudit({
+      id: project.id,
+      expectedStatus,
+      expectedUpdatedAt,
+      fields: this.toEditableFields(project, changes),
+      actorId: actor.id,
+      now: new Date(),
+      audit: {
+        projectId: project.id,
+        organizationId: project.organizationId,
+        operation: ProjectAuditOperation.UPDATE,
+        performedBy: actor.id,
+        changes,
+      },
     });
+
+    if (result.kind === 'not_found') {
+      throw new NotFoundException({
+        code: 'NOT_FOUND',
+        message: 'Project not found',
+      });
+    }
+    if (result.kind === 'concurrent_modification') {
+      throw new ConflictException({
+        code: 'PROJECT_CONCURRENT_MODIFICATION',
+        message:
+          'Project was modified by another operation. Reload it and try again.',
+        details: {
+          current_status: result.currentStatus,
+          current_updated_at: result.currentUpdatedAt.toISOString(),
+        },
+      });
+    }
+
+    const saved = result.project;
 
     this.logger.info({
       operation: 'UPDATE_PROJECT',
@@ -81,6 +110,23 @@ export class UpdateProjectUseCase {
     });
 
     return ProjectResponseDto.fromDomain(saved);
+  }
+
+  private toEditableFields(
+    project: {
+      name: string;
+      description: string | null;
+      startDate: Date | null;
+      endDate: Date | null;
+    },
+    changes: Record<string, { before: unknown; after: unknown }>,
+  ): ProjectEditableFields {
+    return {
+      ...(changes.name ? { name: project.name } : {}),
+      ...(changes.description ? { description: project.description } : {}),
+      ...(changes.start_date ? { startDate: project.startDate } : {}),
+      ...(changes.end_date ? { endDate: project.endDate } : {}),
+    };
   }
 
   private parseDate(value: string | null | undefined): Date | null | undefined {
@@ -95,7 +141,10 @@ export class UpdateProjectUseCase {
   ): BadRequestException | ConflictException {
     const message = error instanceof Error ? error.message : 'Invalid project';
     if (message === 'Project status blocks this operation') {
-      return new ConflictException({ code: 'CONFLICT', message });
+      return new ConflictException({
+        code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+        message,
+      });
     }
     return new BadRequestException({ code: 'VALIDATION_ERROR', message });
   }

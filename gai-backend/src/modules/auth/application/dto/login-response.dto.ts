@@ -1,6 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserStatus } from '../../domain/enums/user.enums';
 import { RoleAssignmentResponseDto } from '../../../users/application/dto/user-response.dto';
+import { PermissionScope } from '../../../users/domain/enums/permission-scope.enum';
+import { ResolvedPermission } from '../../domain/ports/permission-resolver.port';
+
+export class CurrentUserPermissionDto {
+  @ApiProperty({ example: 'projects:read' })
+  key!: string;
+
+  @ApiProperty({ enum: PermissionScope })
+  scope!: PermissionScope;
+}
 
 export class CurrentUserDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -21,6 +31,9 @@ export class CurrentUserDto {
   @ApiProperty({ type: [RoleAssignmentResponseDto] })
   role_assignments!: RoleAssignmentResponseDto[];
 
+  @ApiProperty({ type: [CurrentUserPermissionDto] })
+  permissions!: CurrentUserPermissionDto[];
+
   static fromUser(user: {
     id: number;
     login: string;
@@ -28,6 +41,7 @@ export class CurrentUserDto {
     status: UserStatus;
     organizationId: number | null;
     roleAssignments: RoleAssignmentResponseDto[];
+    permissions: ResolvedPermission[];
   }): CurrentUserDto {
     return {
       id: user.id,
@@ -36,6 +50,7 @@ export class CurrentUserDto {
       status: user.status,
       organization_id: user.organizationId,
       role_assignments: user.roleAssignments,
+      permissions: user.permissions,
     };
   }
 }

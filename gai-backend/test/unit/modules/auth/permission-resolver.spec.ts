@@ -120,4 +120,54 @@ describe('TypeOrmPermissionResolver tenant isolation', () => {
     organizationRepo.exist.mockResolvedValueOnce(false);
     await expect(resolver.resolveForUser(10)).resolves.toEqual([]);
   });
+
+  it('materializes the complete catalog for PLATFORM_ADMIN', async () => {
+    userRepo.findOne.mockResolvedValue({
+      id: 10,
+      organizationId: null,
+      status: UserStatus.ACTIVE,
+    });
+    roleRepo.find.mockResolvedValue([
+      {
+        id: 1,
+        type: RoleType.SYSTEM,
+        key: 'PLATFORM_ADMIN',
+        organizationId: null,
+        isActive: true,
+      },
+    ]);
+    permissionRepo.find.mockResolvedValue([
+      { id: 20, key: 'projects:read', scope: PermissionScope.ORGANIZATION },
+      { id: 21, key: 'organizations:read', scope: PermissionScope.PLATFORM },
+    ]);
+
+    await expect(resolver.resolveForUser(10)).resolves.toEqual([
+      { key: 'projects:read', scope: PermissionScope.ORGANIZATION },
+      { key: 'organizations:read', scope: PermissionScope.PLATFORM },
+    ]);
+    expect(rolePermissionRepo.find).not.toHaveBeenCalled();
+  });
+
+  it('materializes every organization permission for ORG_ADMIN', async () => {
+    roleRepo.find.mockResolvedValue([
+      {
+        id: 2,
+        type: RoleType.SYSTEM,
+        key: 'ORG_ADMIN',
+        organizationId: null,
+        isActive: true,
+      },
+    ]);
+    permissionRepo.find.mockResolvedValue([
+      { id: 20, key: 'projects:read', scope: PermissionScope.ORGANIZATION },
+    ]);
+
+    await expect(resolver.resolveForUser(10)).resolves.toEqual([
+      { key: 'projects:read', scope: PermissionScope.ORGANIZATION },
+    ]);
+    expect(permissionRepo.find).toHaveBeenCalledWith({
+      where: { scope: PermissionScope.ORGANIZATION },
+    });
+    expect(rolePermissionRepo.find).not.toHaveBeenCalled();
+  });
 });

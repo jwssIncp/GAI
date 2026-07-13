@@ -16,6 +16,11 @@ export class ErrorResponseDto {
   @ApiProperty({ example: 'Validation failed' })
   message!: string;
 
-  @ApiPropertyOptional({ type: [FieldErrorDto] })
-  details?: FieldErrorDto[];
+  @ApiPropertyOptional({
+    oneOf: [
+      { type: 'array', items: { type: 'object' } },
+      { type: 'object', additionalProperties: true },
+    ],
+  })
+  details?: FieldErrorDto[] | Record<string, unknown>;
 }

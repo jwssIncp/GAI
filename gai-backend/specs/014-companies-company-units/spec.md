@@ -55,9 +55,14 @@ Projects must be created for a company and may be linked to one or more company 
 ## Project unit behavior
 
 - `POST /projects/:projectId/units` assigns an active unit from the project's company and organization.
-- `GET /projects/:projectId/units` lists units assigned to the project.
-- `POST /projects/:projectId/units/:unitId/remove` removes the active assignment logically by deleting the join row from the operational set while preserving audit history.
-- Duplicate active assignments are rejected.
+- Assign and remove are allowed only while the project is `draft`, `active` or `paused`; terminal and `inactive` projects return `409 PROJECT_STATUS_BLOCKS_OPERATION`.
+- `GET /projects/:projectId/units` lists active assignments enriched with the current company-unit data.
+- Legacy projects whose nullable `company_id` has not been backfilled remain readable and return an empty unit list. A company is required only when assigning a unit (`409 PROJECT_HAS_NO_COMPANY`); removal of an existing link does not depend on `company_id`.
+- `POST /projects/:projectId/units/:unitId/remove` sets `project_units.deleted_at`, removes the link from the operational set and preserves both the row and audit history.
+- Reassigning a logically removed project-unit link clears `deleted_at` on the same row.
+- Duplicate active assignments are rejected with `409 PROJECT_UNIT_ALREADY_ASSIGNED`; repeated removal is rejected with `409 PROJECT_UNIT_ALREADY_REMOVED`.
+- A unit from another company or organization is rejected with `409 PROJECT_UNIT_SCOPE_MISMATCH`, and an inactive unit with `409 COMPANY_UNIT_STATUS_BLOCKS_OPERATION`.
+- Assign and remove lock and re-read the project and project-unit link in the same transaction that persists the link and its single audit record. This serializes concurrent status changes and duplicate/repeated requests on MySQL 8.
 
 ## Permissions
 
@@ -103,11 +108,11 @@ Project Units:
 
 ## Audit and transactions
 
-All create, update, deactivate, reactivate, assign, and remove operations must run in repository transactions and write audit rows with actor, organization, operation, and changes. Physical deletion of companies and company units is outside scope.
+All create, update, deactivate, reactivate, assign, and remove operations must run in repository transactions and write audit rows with actor, organization, operation, and changes. Project-unit mutations lock and validate the project status, tenant/company scope, unit status, and existing link inside that transaction. Rejected or rolled-back mutations do not write audit rows. Physical deletion of companies and company units is outside scope.
 
 ## Response and validation conventions
 
-Responses use the existing snake_case DTO convention and paginated list shape: `items`, `page`, `page_size`, `total_items`, `total_pages`. Errors use the existing Nest exception filter shape with `VALIDATION_ERROR`, `FORBIDDEN`, `NOT_FOUND`, and `CONFLICT`.
+Responses use the existing snake_case DTO convention and paginated list shape: `items`, `page`, `page_size`, `total_items`, `total_pages`. Errors use the existing Nest exception filter shape. Project-unit conflicts expose stable domain codes documented above so clients can distinguish status, scope, duplicate, repeated removal, missing company, and inactive-unit cases.
 
 ## Persistence decision
 

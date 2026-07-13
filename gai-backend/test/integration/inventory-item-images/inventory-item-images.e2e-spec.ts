@@ -68,7 +68,11 @@ describe('Inventory Item Images (e2e)', () => {
     const projectResponse = await request(app.getHttpServer())
       .post('/api/v1/projects')
       .set('Authorization', `Bearer ${orgAdminToken}`)
-      .send({ organization_id: 1, company_id: 1, name: 'Inventario com imagens' })
+      .send({
+        organization_id: 1,
+        company_id: 1,
+        name: 'Inventario com imagens',
+      })
       .expect(201);
     const project = projectResponse.body as ProjectResponseBody;
 
@@ -185,7 +189,13 @@ describe('Inventory Item Images (e2e)', () => {
       .expect(400);
 
     await request(app.getHttpServer())
-      .post(`/api/v1/projects/${project.id}/finish`)
+      .patch(`/api/v1/projects/${project.id}/inventory-items/${item.id}`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .send({ status: 'evaluated' })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/cancel`)
       .set('Authorization', `Bearer ${orgAdminToken}`)
       .expect(200);
 

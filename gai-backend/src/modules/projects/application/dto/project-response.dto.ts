@@ -1,6 +1,25 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JsonRecord, Project } from '../../domain/entities/project';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
+import { ProjectStatusTransitionPolicy } from '../../domain/services/project-status-transition.policy';
+import type { ProjectLifecycleAction } from '../../domain/services/project-status-transition.policy';
+
+const PROJECT_LIFECYCLE_ACTIONS: ProjectLifecycleAction[] = [
+  'activate',
+  'pause',
+  'resume',
+  'finish',
+  'cancel',
+  'archive',
+];
+
+export class ProjectAvailableActionDto {
+  @ApiProperty({ enum: PROJECT_LIFECYCLE_ACTIONS })
+  action!: ProjectLifecycleAction;
+
+  @ApiProperty({ example: 'projects:activate' })
+  permission!: string;
+}
 
 export class ProjectResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -59,6 +78,9 @@ export class ProjectResponseDto {
   @ApiPropertyOptional({ format: 'date-time', nullable: true })
   deleted_at!: string | null;
 
+  @ApiProperty({ type: [ProjectAvailableActionDto] })
+  available_actions!: ProjectAvailableActionDto[];
+
   static fromDomain(project: Project): ProjectResponseDto {
     return {
       id: project.id,
@@ -81,6 +103,9 @@ export class ProjectResponseDto {
       created_at: project.createdAt.toISOString(),
       updated_at: project.updatedAt.toISOString(),
       deleted_at: project.deletedAt?.toISOString() ?? null,
+      available_actions: ProjectStatusTransitionPolicy.availableActions(
+        project.status,
+      ),
     };
   }
 }

@@ -1,9 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import {
   AlertTriangle,
-  Archive,
-  Ban,
-  CheckCircle2,
   CircleDollarSign,
   FileDown,
   FileSpreadsheet,
@@ -15,18 +11,22 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { projectsApi } from '@/api/endpoints';
+import { companiesApi, organizationsApi } from '@/api/endpoints';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
 import { PageContainer } from '@/components/base/PageContainer';
 import { PageHeader } from '@/components/base/PageHeader';
 import { StatusBadge } from '@/components/base/StatusBadge';
-import { Button } from '@/components/ui/button';
 import { PermissionGate } from '@/features/auth/PermissionGate';
+import { usePermissions } from '@/features/auth/usePermissions';
 import { ProjectFieldAgentsPanel } from '@/features/field-agents/ProjectFieldAgentsPanel';
 import { cn } from '@/utils/cn';
 import { formatDate, formatDateTime, formatMoney } from '@/utils/format';
 import type { Project, ProjectStatus, ProjectSummary } from '@/types/api';
+import { ProjectLifecycleActions } from './ProjectLifecycleActions';
+import { ProjectUnitsPanel } from './ProjectUnitsPanel';
+import { canMutateProjectOperations } from './projectLifecycle';
+import { useProject, useProjectDashboard } from './projectQueries';
 
 const projectStatusLabels: Record<ProjectStatus, string> = {
   draft: 'Rascunho',
@@ -57,8 +57,8 @@ type Alert = {
 export function ProjectSummaryPage() {
   const projectId = Number(useParams().projectId);
   const enabled = Number.isFinite(projectId);
-  const project = useQuery({ queryKey: ['project', projectId], queryFn: () => projectsApi.get(projectId), enabled, retry: false });
-  const dashboard = useProjectDashboard(projectId, enabled);
+  const project = useProject(enabled ? projectId : undefined);
+  const dashboard = useProjectDashboard(enabled ? projectId : undefined);
   const projectData = project.data;
   const data = dashboard.data;
   const title = projectData?.name ?? data?.project.name ?? 'Workspace do projeto';
@@ -88,19 +88,6 @@ export function ProjectSummaryPage() {
   );
 }
 
-function useProjectDashboard(projectId: number, enabled: boolean) {
-  return useQuery({
-    queryKey: ['project-dashboard', projectId],
-    queryFn: () => projectsApi.dashboard(projectId),
-    enabled,
-    retry: false,
-    refetchInterval: (query) => {
-      const imports = query.state.data?.imports;
-      return imports && (imports.open_import_sessions > 0 || imports.processing_import_sessions > 0) ? 15000 : false;
-    },
-  });
-}
-
 function ProjectWorkspace({ project, summary }: { project: Project; summary: ProjectSummary }) {
   const alerts = buildAlerts(project, summary);
   return (
@@ -113,9 +100,13 @@ function ProjectWorkspace({ project, summary }: { project: Project; summary: Pro
       <QuickActions project={project} />
       <ModuleSummary projectId={project.id} summary={summary} />
       <RecentActivity activity={summary.recent_activity} />
-      <PermissionGate permissions={['project-field-agents:read']}>
-        <ProjectFieldAgentsPanel projectId={project.id} />
+      <PermissionGate permissions={['project-units:read']}>
+        <ProjectUnitsPanel project={project} />
       </PermissionGate>
+      <PermissionGate permissions={['project-field-agents:read']}>
+        <ProjectFieldAgentsPanel project={project} />
+      </PermissionGate>
+      <ProjectSettings project={project} />
     </div>
   );
 }
@@ -133,8 +124,7 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
           {project.description || 'Projeto sem descricao cadastrada.'}
         </p>
         <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
-          <Info label="Empresa vinculada" value={project.company_id ? `Empresa #${project.company_id}` : 'Nao vinculada'} />
-          <Info label="Organizacao" value={`#${project.organization_id}`} />
+          <ProjectContextInfo project={project} />
           <Info label="Inicio" value={formatDate(project.start_date)} />
           <Info label="Termino" value={formatDate(project.end_date)} />
           <Info label="Criado em" value={formatDateTime(project.created_at)} />
@@ -160,21 +150,12 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
 function ProjectActions({ project }: { project: Project }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <PermissionGate permissions={['projects:update']}>
-        <LinkButton to={`/app/projects?edit=${project.id}`} label="Editar projeto" />
-      </PermissionGate>
-      <PermissionGate permissions={['projects:finish']}>
-        <ActionChip icon={<CheckCircle2 size={16} />} label="Finalizar" disabled={project.status !== 'active'} />
-      </PermissionGate>
-      <PermissionGate permissions={['projects:cancel']}>
-        <ActionChip icon={<Ban size={16} />} label="Cancelar" disabled={lockedStatuses.includes(project.status)} />
-      </PermissionGate>
-      <PermissionGate permissions={['projects:archive']}>
-        <ActionChip icon={<Archive size={16} />} label="Arquivar" disabled={project.status !== 'finished'} />
-      </PermissionGate>
-      <PermissionGate permissions={['projects:reactivate']}>
-        <ActionChip icon={<CheckCircle2 size={16} />} label="Reativar" disabled={project.status !== 'inactive'} />
-      </PermissionGate>
+      {canMutateProjectOperations(project.status) ? (
+        <PermissionGate permissions={['projects:update']}>
+          <LinkButton to={`/app/projects?edit=${project.id}`} label="Editar projeto" />
+        </PermissionGate>
+      ) : null}
+      <ProjectLifecycleActions project={project} />
     </div>
   );
 }
@@ -192,7 +173,7 @@ function MetricGrid({ summary }: { summary: ProjectSummary }) {
       <MetricCard label="Pendencias abertas" value={summary.pending_issues.open_pending_issues} hint={`${summary.pending_issues.critical_pending_issues} criticas`} icon={<AlertTriangle size={18} />} />
       <MetricCard label="Financeiro total" value={financial ? formatMoney(financial.financial_total_amount) : 'Pendente'} hint={financial ? `${financial.pending_payments} pagamentos pendentes` : 'Metrica pendente no backend ou nao solicitada.'} icon={<CircleDollarSign size={18} />} />
       <MetricCard label="Importacoes em processamento" value={imports?.processing_import_sessions ?? 'Pendente'} hint={imports ? `${imports.failed_import_sessions} com falha` : 'Metrica pendente no backend ou nao solicitada.'} icon={<FileUp size={18} />} />
-      <MetricCard label="Exportacoes recentes" value={exports?.finished_export_jobs ?? 'Pendente'} hint={exports ? 'Resumo agregado disponivel; lista operacional pendente.' : 'Metrica pendente no backend.'} icon={<FileDown size={18} />} />
+      <MetricCard label="Exportacoes concluidas" value={exports?.finished_export_jobs ?? 0} hint={exports ? `${exports.failed_export_jobs} com falha` : 'Nenhum job registrado.'} icon={<FileDown size={18} />} />
     </div>
   );
 }
@@ -260,8 +241,9 @@ function WorkspaceTabs({ projectId }: { projectId: number }) {
     { label: 'Inventariantes', to: '#inventariantes', permissions: ['project-field-agents:read'] },
     { label: 'Financeiro', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
     { label: 'Importacoes', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
-    { label: 'Exportacoes', to: `/app/projects/${projectId}/export-jobs`, permissions: ['projects:read'] },
-    { label: 'Configuracoes', disabled: true, hint: 'Modulo preparado para proxima rodada.' },
+    { label: 'Exportacoes', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
+    { label: 'Unidades', to: '#unidades', permissions: ['project-units:read'] },
+    { label: 'Configuracoes', to: '#configuracoes', permissions: ['projects:read'] },
   ];
   return (
     <nav className="sticky top-[92px] z-20 flex gap-1.5 overflow-x-auto rounded-xl border border-border/70 bg-background/80 p-1.5 shadow-panel backdrop-blur-xl" aria-label="Abas do projeto">
@@ -294,7 +276,7 @@ function QuickActions({ project }: { project: Project }) {
     { label: 'Gerar pendencias', to: `/app/projects/${project.id}/pending-issues?generate=1`, permissions: ['inventory-pending-issues:generate'], icon: <AlertTriangle size={18} /> },
     { label: 'Nova despesa', to: `/app/projects/${project.id}/finance?tab=expenses&new=1`, permissions: ['expenses:create'], icon: <CircleDollarSign size={18} /> },
     { label: 'Novo pagamento', to: `/app/projects/${project.id}/finance?tab=payments&new=1`, permissions: ['payments:create'], icon: <CircleDollarSign size={18} /> },
-    { label: 'Nova exportacao', to: `/app/projects/${project.id}/export-jobs`, permissions: ['projects:read'], icon: <FileDown size={18} /> },
+    { label: 'Nova exportacao', to: `/app/projects/${project.id}/export-jobs?new=1`, permissions: ['export-jobs:create'], icon: <FileDown size={18} /> },
     { label: 'Nova importacao', to: `/app/projects/${project.id}/import-sessions?new=1`, permissions: ['import-sessions:create'], icon: <FileUp size={18} /> },
     { label: 'Vincular inventariante', to: '#inventariantes', permissions: ['project-field-agents:assign'], icon: <UserPlus size={18} /> },
   ];
@@ -329,7 +311,7 @@ function ModuleSummary({ projectId, summary }: { projectId: number; summary: Pro
     { title: 'Pendencias', description: `${summary.pending_issues.open_pending_issues} abertas, ${summary.pending_issues.resolved_pending_issues} resolvidas e ${summary.pending_issues.critical_pending_issues} criticas.`, to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
     { title: 'Financeiro', description: summary.financial ? `${formatMoney(summary.financial.financial_total_amount)} em pagamentos e despesas.` : 'Resumo financeiro nao retornado pelo dashboard.', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
     { title: 'Importacoes', description: summary.imports ? `${summary.imports.total_import_sessions} sessoes, ${summary.imports.processing_import_sessions} em processamento e ${summary.imports.failed_import_sessions} com falha.` : 'Resumo de importacoes nao retornado pelo dashboard.', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
-    { title: 'Exportacoes', description: summary.exports ? `${summary.exports.total_export_jobs} jobs agregados. Endpoints operacionais continuam pendentes.` : 'Resumo de exportacoes nao retornado pelo dashboard.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['projects:read'] },
+    { title: 'Exportacoes', description: summary.exports ? `${summary.exports.total_export_jobs} jobs, ${summary.exports.finished_export_jobs} concluidos e ${summary.exports.failed_export_jobs} com falha.` : 'Nenhuma exportacao registrada.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
   ];
   return (
     <section className="grid gap-4">
@@ -375,6 +357,23 @@ function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activi
           {rows.map((row) => <Info key={row.label} label={row.label} value={formatDateTime(row.value)} />)}
         </dl>
       )}
+    </section>
+  );
+}
+
+function ProjectSettings({ project }: { project: Project }) {
+  const settings = project.settings && Object.keys(project.settings).length ? project.settings : null;
+  return (
+    <section id="configuracoes" className="premium-panel scroll-mt-32 p-5 sm:p-6">
+      <p className="eyebrow">Configuracoes</p>
+      <h2 className="mt-2 text-lg font-bold tracking-tight">Configuracoes operacionais</h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">Nenhuma configuracao operacional suportada pode ser alterada nesta versao.</p>
+      {settings ? (
+        <details className="mt-4 rounded-xl border border-border/60 bg-muted/25 p-4">
+          <summary className="cursor-pointer text-sm font-semibold">Dados legados somente para consulta</summary>
+          <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-xs text-muted-foreground">{JSON.stringify(settings, null, 2)}</pre>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -425,14 +424,29 @@ function Info({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+function ProjectContextInfo({ project }: { project: Project }) {
+  const { hasPermission } = usePermissions();
+  const canReadCompany = hasPermission('companies:read');
+  const canReadOrganization = hasPermission('organizations:read');
+  const company = useQuery({
+    queryKey: ['companies', 'project-context', project.company_id],
+    queryFn: () => companiesApi.get(project.company_id!),
+    enabled: canReadCompany && Boolean(project.company_id),
+  });
+  const organization = useQuery({
+    queryKey: ['organizations', 'project-context', project.organization_id],
+    queryFn: () => organizationsApi.get(project.organization_id),
+    enabled: canReadOrganization,
+  });
+  return (
+    <>
+      <Info label="Empresa vinculada" value={project.company_id ? company.data?.name ?? 'Empresa vinculada' : 'Nao vinculada'} />
+      <Info label="Organizacao" value={organization.data?.trade_name || organization.data?.legal_name || (canReadOrganization ? 'Carregando organizacao' : 'Sua organizacao')} />
+    </>
+  );
+}
+
 function LinkButton({ to, label }: { to: string; label: string }) {
   return <Link className="inline-flex h-10 items-center justify-center rounded-lg border border-border/70 bg-card/80 px-4 text-sm font-semibold text-foreground shadow-panel transition hover:border-primary/25 hover:bg-primary-subtle hover:text-primary" to={to}>{label}</Link>;
 }
-
-function ActionChip({ icon, label, disabled }: { icon: ReactNode; label: string; disabled?: boolean }) {
-  return (
-    <Button type="button" variant="secondary" disabled={disabled} title="Acao operacional disponivel na listagem de projetos">
-      {icon} {label}
-    </Button>
-  );
-}
+import { useQuery } from '@tanstack/react-query';

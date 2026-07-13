@@ -54,6 +54,9 @@ import { ImportPayloadEntity } from '../../src/modules/import-sessions/infrastru
 import { ImportPayloadErrorEntity } from '../../src/modules/import-sessions/infrastructure/persistence/import-payload-error.entity';
 import { ImportSessionAuditLogEntity } from '../../src/modules/import-sessions/infrastructure/persistence/import-session-audit-log.entity';
 import { ImportSessionEntity } from '../../src/modules/import-sessions/infrastructure/persistence/import-session.entity';
+import { ExportJobsModule } from '../../src/modules/export-jobs/export-jobs.module';
+import { ExportJobAuditLogEntity } from '../../src/modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity';
+import { ExportJobEntity } from '../../src/modules/export-jobs/infrastructure/persistence/export-job.entity';
 import { OrganizationStatus } from '../../src/modules/organizations/domain/enums/organization-status.enum';
 import { OrganizationsModule } from '../../src/modules/organizations/organizations.module';
 import { OrganizationAuditLogEntity } from '../../src/modules/organizations/infrastructure/persistence/organization-audit-log.entity';
@@ -119,6 +122,8 @@ export async function createTestApp(): Promise<INestApplication> {
           ImportPayloadErrorEntity,
           ImportFileEntity,
           ImportSessionAuditLogEntity,
+          ExportJobEntity,
+          ExportJobAuditLogEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -148,6 +153,7 @@ export async function createTestApp(): Promise<INestApplication> {
       InventoryPendingIssuesModule,
       PaymentsExpensesModule,
       ImportSessionsModule,
+      ExportJobsModule,
       CatalogAssetsModule,
       CompaniesModule,
     ],
@@ -289,6 +295,9 @@ export async function seedTestData(app: INestApplication): Promise<void> {
       p.key.startsWith('company-units:') ||
       p.key.startsWith('project-units:'),
   );
+  const exportJobPermissions = permissions.filter((p) =>
+    p.key.startsWith('export-jobs:'),
+  );
 
   const platformAdminRole = await roleRepo.save(
     roleRepo.create({
@@ -389,6 +398,12 @@ export async function seedTestData(app: INestApplication): Promise<void> {
       }),
     ),
     ...companyPermissions.map((permission) =>
+      rolePermRepo.create({
+        roleId: operatorRole.id,
+        permissionId: permission.id,
+      }),
+    ),
+    ...exportJobPermissions.map((permission) =>
       rolePermRepo.create({
         roleId: operatorRole.id,
         permissionId: permission.id,

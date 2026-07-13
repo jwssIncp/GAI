@@ -5,24 +5,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { Project } from '../../domain/entities/project';
-import { ProjectAuditOperation } from '../../domain/enums/project-audit-operation.enum';
 import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
 } from '../../domain/ports/project.repository.port';
+import {
+  ProjectStatusAction,
+  ProjectStatusTransitionPolicy,
+} from '../../domain/services/project-status-transition.policy';
 import { ProjectResponseDto } from '../dto/project-response.dto';
 import {
   ProjectActorContext,
   ProjectScopeService,
 } from '../services/project-scope.service';
-
-export type ProjectStatusAction =
-  | 'deactivate'
-  | 'reactivate'
-  | 'finish'
-  | 'cancel'
-  | 'archive';
 
 @Injectable()
 export class UpdateProjectStatusUseCase {
@@ -49,64 +44,56 @@ export class UpdateProjectStatusUseCase {
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
 
-    let changes: Record<string, { before: unknown; after: unknown }>;
-    try {
-      changes = this.applyAction(project, action, actor.id);
-    } catch (error) {
+    const result = await this.repository.transitionStatusWithAudit({
+      id,
+      action,
+      actorId: actor.id,
+      now: new Date(),
+    });
+
+    if (result.kind === 'not_found') {
+      throw new NotFoundException({
+        code: 'NOT_FOUND',
+        message: 'Project not found',
+      });
+    }
+    if (
+      result.kind === 'invalid_transition' ||
+      result.kind === 'concurrent_modification'
+    ) {
       throw new ConflictException({
-        code: 'CONFLICT',
+        code: 'PROJECT_STATUS_TRANSITION_NOT_ALLOWED',
         message:
-          error instanceof Error
-            ? error.message
-            : 'Project status blocks this operation',
+          'O projeto não pode executar esta transição a partir do status atual.',
+        details: {
+          current_status: result.currentStatus,
+          requested_action: action,
+        },
+      });
+    }
+    if (result.kind === 'open_operations') {
+      throw new ConflictException({
+        code: 'PROJECT_HAS_OPEN_OPERATIONS',
+        message:
+          'O projeto possui operações em andamento e não pode executar esta transição.',
+        details: {
+          current_status: result.currentStatus,
+          requested_action: action,
+          operations: result.operations,
+        },
       });
     }
 
-    const saved = await this.repository.saveWithAudit(project, {
-      projectId: project.id,
-      organizationId: project.organizationId,
-      operation: this.operationFor(action),
-      performedBy: actor.id,
-      changes,
-    });
+    const saved = result.project;
+    const rule = ProjectStatusTransitionPolicy.getRule(action);
 
     this.logger.info({
-      operation: `PROJECT_${this.operationFor(action)}`,
+      operation: `PROJECT_${rule.auditOperation}`,
       projectId: saved.id,
       organizationId: saved.organizationId,
       result: 'SUCCESS',
     });
 
     return ProjectResponseDto.fromDomain(saved);
-  }
-
-  private applyAction(
-    project: Project,
-    action: ProjectStatusAction,
-    actorId: number,
-  ): Record<string, { before: unknown; after: unknown }> {
-    switch (action) {
-      case 'deactivate':
-        return project.deactivate(actorId);
-      case 'reactivate':
-        return project.reactivate(actorId);
-      case 'finish':
-        return project.finish(actorId, new Date());
-      case 'cancel':
-        return project.cancel(actorId);
-      case 'archive':
-        return project.archive(actorId);
-    }
-  }
-
-  private operationFor(action: ProjectStatusAction): ProjectAuditOperation {
-    const map: Record<ProjectStatusAction, ProjectAuditOperation> = {
-      deactivate: ProjectAuditOperation.DEACTIVATE,
-      reactivate: ProjectAuditOperation.REACTIVATE,
-      finish: ProjectAuditOperation.FINISH,
-      cancel: ProjectAuditOperation.CANCEL,
-      archive: ProjectAuditOperation.ARCHIVE,
-    };
-    return map[action];
   }
 }

@@ -55,7 +55,12 @@ export function FieldAgentForm(props: Props) {
       <FormField label="CPF/CNPJ" error={form.formState.errors.document?.message as string | undefined}>
         <Input inputMode="numeric" {...form.register('document')} onChange={(event) => form.setValue('document', maskDocument(event.target.value), { shouldValidate: true })} />
       </FormField>
-      <FormField label="User ID vinculado" error={form.formState.errors.user_id?.message as string | undefined}>
+      <FormField
+        label="Usuário vinculado"
+        optional
+        help="Vincula o inventariante a uma conta já cadastrada em Usuários e pertencente à mesma organização. Deixe em branco se ele não precisar acessar o sistema. Esse vínculo não cria a conta nem concede permissões."
+        error={form.formState.errors.user_id?.message as string | undefined}
+      >
         <Input type="number" min={1} {...form.register('user_id')} />
       </FormField>
       {form.formState.errors.root?.message ? <p role="alert" className="text-sm text-destructive">{form.formState.errors.root.message}</p> : null}

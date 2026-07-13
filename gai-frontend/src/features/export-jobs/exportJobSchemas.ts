@@ -1,12 +1,12 @@
+import { z } from 'zod';
+
 export const exportJobTypes = [
   'inventory_items_xlsx',
   'inventory_accounting_items_xlsx',
   'pending_issues_xlsx',
   'payments_xlsx',
   'expenses_xlsx',
-  'project_images_zip',
   'project_backup_xlsx',
-  'project_backup_zip',
 ] as const;
 
 export const exportJobStatuses = ['pending', 'processing', 'finished', 'failed', 'cancelled', 'expired'] as const;
@@ -17,9 +17,7 @@ export const exportJobTypeLabels: Record<(typeof exportJobTypes)[number], string
   pending_issues_xlsx: 'Pendencias XLSX',
   payments_xlsx: 'Pagamentos XLSX',
   expenses_xlsx: 'Despesas XLSX',
-  project_images_zip: 'Imagens do projeto ZIP',
-  project_backup_xlsx: 'Backup consolidado XLSX',
-  project_backup_zip: 'Backup consolidado ZIP',
+  project_backup_xlsx: 'Relatorio consolidado do projeto XLSX',
 };
 
 export const exportJobStatusLabels: Record<(typeof exportJobStatuses)[number], string> = {
@@ -30,3 +28,6 @@ export const exportJobStatusLabels: Record<(typeof exportJobStatuses)[number], s
   cancelled: 'Cancelada',
   expired: 'Expirada',
 };
+
+export const exportJobFormSchema = z.object({ type: z.enum(exportJobTypes, { required_error: 'Selecione o tipo de exportacao' }) });
+export type ExportJobFormValues = z.infer<typeof exportJobFormSchema>;

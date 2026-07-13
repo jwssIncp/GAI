@@ -19,6 +19,11 @@ import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from '../services/field-agent-scope.service';
+import {
+  assertProjectAllowsFieldAgentMutation,
+  ProjectStatusBlocksFieldAgentOperationError,
+  projectStatusBlocksFieldAgentOperation,
+} from '../errors/project-status-blocks-operation';
 
 @Injectable()
 export class RemoveProjectFieldAgentUseCase {
@@ -46,6 +51,7 @@ export class RemoveProjectFieldAgentUseCase {
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
+    assertProjectAllowsFieldAgentMutation(project.status);
 
     const assignment = await this.repository.findAssignmentById(assignmentId);
     if (!assignment || assignment.projectId !== projectId) {
@@ -68,15 +74,23 @@ export class RemoveProjectFieldAgentUseCase {
       });
     }
 
-    const saved = await this.repository.saveAssignmentWithAudit(assignment, {
-      organizationId: assignment.organizationId,
-      fieldAgentId: assignment.fieldAgentId,
-      projectFieldAgentId: assignment.id,
-      projectId: assignment.projectId,
-      operation: FieldAgentAuditOperation.REMOVE_FROM_PROJECT,
-      performedBy: actor.id,
-      changes,
-    });
+    let saved;
+    try {
+      saved = await this.repository.saveAssignmentWithAudit(assignment, {
+        organizationId: assignment.organizationId,
+        fieldAgentId: assignment.fieldAgentId,
+        projectFieldAgentId: assignment.id,
+        projectId: assignment.projectId,
+        operation: FieldAgentAuditOperation.REMOVE_FROM_PROJECT,
+        performedBy: actor.id,
+        changes,
+      });
+    } catch (error) {
+      if (error instanceof ProjectStatusBlocksFieldAgentOperationError) {
+        throw projectStatusBlocksFieldAgentOperation(error.currentStatus);
+      }
+      throw error;
+    }
 
     this.logger.info({
       operation: 'REMOVE_PROJECT_FIELD_AGENT',

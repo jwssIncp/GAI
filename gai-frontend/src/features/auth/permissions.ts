@@ -12,6 +12,9 @@ export function isPlatformAdmin(user: CurrentUser | null) {
 
 export function hasPermission(user: CurrentUser | null, permission: string) {
   if (!user) return false;
+  if (user.permissions !== undefined) {
+    return user.permissions.some((grant) => grant.key === permission);
+  }
   if (isPlatformAdmin(user)) return true;
   const roleKeys = getSystemRoles(user);
   if (roleKeys.includes('ORG_ADMIN')) {
@@ -22,5 +25,5 @@ export function hasPermission(user: CurrentUser | null, permission: string) {
 
 export function canAccess(user: CurrentUser | null, permissions?: string[]) {
   if (!permissions?.length) return Boolean(user);
-  return permissions.some((permission) => hasPermission(user, permission));
+  return permissions.every((permission) => hasPermission(user, permission));
 }

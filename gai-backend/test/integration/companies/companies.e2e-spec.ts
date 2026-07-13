@@ -2,8 +2,15 @@ import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { Repository } from 'typeorm';
+import { CompanyStatus } from '../../../src/modules/companies/domain/enums/company-status.enum';
+import { CompanyUnitStatus } from '../../../src/modules/companies/domain/enums/company-unit-status.enum';
 import { CompanyAuditLogEntity } from '../../../src/modules/companies/infrastructure/persistence/company-audit-log.entity';
+import { CompanyUnitEntity } from '../../../src/modules/companies/infrastructure/persistence/company-unit.entity';
+import { CompanyEntity } from '../../../src/modules/companies/infrastructure/persistence/company.entity';
 import { ProjectUnitAuditLogEntity } from '../../../src/modules/companies/infrastructure/persistence/project-unit-audit-log.entity';
+import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
+import { OrganizationEntity } from '../../../src/modules/organizations/infrastructure/persistence/organization.entity';
+import { ProjectEntity } from '../../../src/modules/projects/infrastructure/persistence/project.entity';
 import {
   createTestApp,
   loginAsOrgUser,
@@ -25,13 +32,19 @@ interface UnitBody {
 
 interface ProjectBody {
   id: number;
-  company_id: number;
+  company_id: number | null;
 }
 
 interface ProjectUnitBody {
   id: number;
   project_id: number;
   company_unit_id: number;
+  company_unit: UnitBody & { name: string };
+  deleted_at: string | null;
+}
+
+interface ErrorBody {
+  code: string;
 }
 
 describe('Companies and Company Units API (e2e)', () => {
@@ -107,12 +120,55 @@ describe('Companies and Company Units API (e2e)', () => {
     expect(assignment).toMatchObject({
       project_id: project.id,
       company_unit_id: unit.id,
+      company_unit: { id: unit.id, company_id: company.id, status: 'active' },
+      deleted_at: null,
     });
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'PROJECT_UNIT_ALREADY_ASSIGNED',
+        );
+      });
+
+    const removedResponse = await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units/${unit.id}/remove`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect((removedResponse.body as ProjectUnitBody).deleted_at).toEqual(
+      expect.any(String),
+    );
 
     await request(app.getHttpServer())
       .post(`/api/v1/projects/${project.id}/units/${unit.id}/remove`)
       .set('Authorization', `Bearer ${token}`)
-      .expect(200);
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'PROJECT_UNIT_ALREADY_REMOVED',
+        );
+      });
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect({ items: [] });
+
+    const reassignedResponse = await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(201);
+    expect(reassignedResponse.body).toMatchObject({
+      id: assignment.id,
+      company_unit: { id: unit.id, name: 'Galpao Modulos 1 e 2' },
+      deleted_at: null,
+    });
 
     const companyAuditRepo = app.get<Repository<CompanyAuditLogEntity>>(
       getRepositoryToken(CompanyAuditLogEntity),
@@ -121,7 +177,59 @@ describe('Companies and Company Units API (e2e)', () => {
       getRepositoryToken(ProjectUnitAuditLogEntity),
     );
     await expect(companyAuditRepo.count()).resolves.toBeGreaterThanOrEqual(1);
-    await expect(projectUnitAuditRepo.count()).resolves.toBe(2);
+    await expect(projectUnitAuditRepo.count()).resolves.toBe(3);
+  });
+
+  it('blocks project-unit mutations after the project becomes terminal', async () => {
+    const unitResponse = await request(app.getHttpServer())
+      .post('/api/v1/companies/1/units')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Unidade terminal' })
+      .expect(201);
+    const unit = unitResponse.body as UnitBody;
+    const projectResponse = await request(app.getHttpServer())
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ organization_id: 1, company_id: 1, name: 'Projeto terminal' })
+      .expect(201);
+    const project = projectResponse.body as ProjectBody;
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/cancel`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as unknown as ErrorBody).code).toBe(
+          'PROJECT_STATUS_BLOCKS_OPERATION',
+        );
+      });
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units/${unit.id}/remove`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'PROJECT_STATUS_BLOCKS_OPERATION',
+        );
+      });
+
+    const auditRepository = app.get<Repository<ProjectUnitAuditLogEntity>>(
+      getRepositoryToken(ProjectUnitAuditLogEntity),
+    );
+    await expect(auditRepository.count()).resolves.toBe(1);
   });
 
   it('prevents assigning inactive units to projects', async () => {
@@ -148,6 +256,134 @@ describe('Companies and Company Units API (e2e)', () => {
       .post(`/api/v1/projects/${project.id}/units`)
       .set('Authorization', `Bearer ${token}`)
       .send({ company_unit_id: unit.id })
-      .expect(409);
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'COMPANY_UNIT_STATUS_BLOCKS_OPERATION',
+        );
+      });
+  });
+
+  it('lists a legacy project without company and only requires company on assign', async () => {
+    const unitResponse = await request(app.getHttpServer())
+      .post('/api/v1/companies/1/units')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Unidade de projeto legado' })
+      .expect(201);
+    const unit = unitResponse.body as UnitBody;
+
+    const projectResponse = await request(app.getHttpServer())
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ organization_id: 1, company_id: 1, name: 'Projeto legado' })
+      .expect(201);
+    const project = projectResponse.body as ProjectBody;
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(201);
+
+    const projectRepository = app.get<Repository<ProjectEntity>>(
+      getRepositoryToken(ProjectEntity),
+    );
+    await projectRepository.update(project.id, { companyId: null });
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect({ items: [] });
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units/${unit.id}/remove`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: unit.id })
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'PROJECT_HAS_NO_COMPANY',
+        );
+      });
+
+    const auditRepository = app.get<Repository<ProjectUnitAuditLogEntity>>(
+      getRepositoryToken(ProjectUnitAuditLogEntity),
+    );
+    await expect(auditRepository.count()).resolves.toBe(2);
+  });
+
+  it('rejects a unit from another tenant without writing an audit row', async () => {
+    const organizationRepository = app.get<Repository<OrganizationEntity>>(
+      getRepositoryToken(OrganizationEntity),
+    );
+    const companyRepository = app.get<Repository<CompanyEntity>>(
+      getRepositoryToken(CompanyEntity),
+    );
+    const unitRepository = app.get<Repository<CompanyUnitEntity>>(
+      getRepositoryToken(CompanyUnitEntity),
+    );
+    const otherOrganization = await organizationRepository.save(
+      organizationRepository.create({
+        legalName: 'Outra organizacao LTDA',
+        tradeName: 'Outra organizacao',
+        cnpj: '12345678000195',
+        contactEmail: null,
+        contactPhone: null,
+        status: OrganizationStatus.ACTIVE,
+      }),
+    );
+    const otherCompany = await companyRepository.save(
+      companyRepository.create({
+        organizationId: otherOrganization.id,
+        name: 'Empresa de outro tenant',
+        corporateName: null,
+        document: null,
+        status: CompanyStatus.ACTIVE,
+        metadata: null,
+        createdById: null,
+        updatedById: null,
+      }),
+    );
+    const otherUnit = await unitRepository.save(
+      unitRepository.create({
+        organizationId: otherOrganization.id,
+        companyId: otherCompany.id,
+        name: 'Unidade de outro tenant',
+        code: null,
+        status: CompanyUnitStatus.ACTIVE,
+        metadata: null,
+        createdById: null,
+        updatedById: null,
+      }),
+    );
+
+    const projectResponse = await request(app.getHttpServer())
+      .post('/api/v1/projects')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ organization_id: 1, company_id: 1, name: 'Projeto isolado' })
+      .expect(201);
+    const project = projectResponse.body as ProjectBody;
+
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/units`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ company_unit_id: otherUnit.id })
+      .expect(409)
+      .expect((response) => {
+        expect((response.body as ErrorBody).code).toBe(
+          'PROJECT_UNIT_SCOPE_MISMATCH',
+        );
+      });
+
+    const auditRepository = app.get<Repository<ProjectUnitAuditLogEntity>>(
+      getRepositoryToken(ProjectUnitAuditLogEntity),
+    );
+    await expect(auditRepository.count()).resolves.toBe(0);
   });
 });

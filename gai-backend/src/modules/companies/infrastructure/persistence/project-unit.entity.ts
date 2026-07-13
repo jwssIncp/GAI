@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   PrimaryGeneratedColumn,
@@ -20,6 +21,7 @@ import {
   'organizationId',
   'companyUnitId',
 ])
+@Index('idx_project_units_project_deleted', ['projectId', 'deletedAt'])
 @Index('uq_project_units_project_unit', ['projectId', 'companyUnitId'], {
   unique: true,
 })
@@ -41,4 +43,12 @@ export class ProjectUnitEntity {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;
+
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  deletedAt!: Date | null;
 }

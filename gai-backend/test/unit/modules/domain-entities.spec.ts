@@ -119,6 +119,7 @@ describe('GetCurrentUserUseCase', () => {
     const useCase = new GetCurrentUserUseCase(
       users as never,
       assignments as never,
+      { resolveForUser: jest.fn().mockResolvedValue([]) },
     );
     const result = await useCase.execute(1);
     expect(result.login).toBe('admin');

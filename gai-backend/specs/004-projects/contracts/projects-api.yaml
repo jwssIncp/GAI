@@ -1,14 +1,14 @@
 openapi: 3.1.0
 info:
   title: GAI Backend - Projects API
-  version: 1.2.0
+  version: 2.0.0
   description: |
     CRUD e controle de status de projects operacionais por organization.
 
     Todas as respostas de erro seguem `ErrorResponse`:
 
     ```json
-    { "code": "<ErrorCode>", "message": "...", "details": [{ "field": "...", "message": "..." }] }
+    { "code": "<ErrorCode>", "message": "...", "details": { "current_status": "active" } }
     ```
 
 servers:
@@ -139,6 +139,9 @@ paths:
       operationId: updateProject
       description: |
         Bloqueia mutacoes em `inactive`, `finished`, `cancelled` e `archived`.
+        O update usa compare-and-set em `status` e `updated_at`; uma alteracao
+        concorrente retorna `409 PROJECT_CONCURRENT_MODIFICATION` sem sobrescrever
+        `status` ou `finished_at`. `settings` e `metadata` nao sao editaveis por PATCH.
       security:
         - bearerAuth: []
       requestBody:
@@ -165,10 +168,63 @@ paths:
         '409':
           $ref: '#/components/responses/ProjectMutationBlocked'
 
+  /projects/{id}/activate:
+    post:
+      tags: [Projects]
+      summary: Ativar project em rascunho
+      operationId: activateProject
+      description: Requer `projects:activate`. Transicao permitida: `draft -> active`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
+
+  /projects/{id}/pause:
+    post:
+      tags: [Projects]
+      summary: Pausar project ativo
+      operationId: pauseProject
+      description: Requer `projects:pause`. Transicao permitida: `active -> paused`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
+
+  /projects/{id}/resume:
+    post:
+      tags: [Projects]
+      summary: Retomar project pausado
+      operationId: resumeProject
+      description: Requer `projects:resume`. Transicao permitida: `paused -> active`.
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { $ref: '#/components/responses/ProjectOk' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
+
   /projects/{id}/deactivate:
     post:
       tags: [Projects]
-      summary: Desativar project
+      summary: Desativar project (legado)
+      deprecated: true
+      description: Compatibilidade temporaria. Novos clientes devem usar activate, pause, resume, cancel, finish e archive. Todas as pendencias tecnicas e operacionais bloqueiam a desativacao.
       operationId: deactivateProject
       parameters:
         - $ref: '#/components/parameters/ProjectId'
@@ -179,12 +235,14 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
 
   /projects/{id}/reactivate:
     post:
       tags: [Projects]
-      summary: Reativar project
+      summary: Reativar project inativo (legado)
+      deprecated: true
+      description: Compatibilidade temporaria para registros inactive.
       operationId: reactivateProject
       parameters:
         - $ref: '#/components/parameters/ProjectId'
@@ -195,13 +253,14 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
 
   /projects/{id}/finish:
     post:
       tags: [Projects]
       summary: Finalizar project
       operationId: finishProject
+      description: Requer `projects:finish`. Transicao permitida apenas de `active`; pendencias operacionais bloqueiam a finalizacao.
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
@@ -211,13 +270,14 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
 
   /projects/{id}/cancel:
     post:
       tags: [Projects]
       summary: Cancelar project
       operationId: cancelProject
+      description: Requer `projects:cancel`. Transicoes permitidas de `draft`, `active` ou `paused`; todas as pendencias tecnicas e operacionais bloqueiam.
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
@@ -227,13 +287,14 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
 
   /projects/{id}/archive:
     post:
       tags: [Projects]
       summary: Arquivar project
       operationId: archiveProject
+      description: Requer `projects:archive`. Transicoes permitidas apenas de `finished` ou `cancelled`; todas as pendencias tecnicas e operacionais bloqueiam.
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
@@ -243,7 +304,7 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectMutationBlocked' }
+        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
 
 components:
   securitySchemes:
@@ -280,7 +341,17 @@ components:
   schemas:
     ErrorCode:
       type: string
-      enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INTERNAL_ERROR]
+      enum:
+        - VALIDATION_ERROR
+        - UNAUTHORIZED
+        - FORBIDDEN
+        - NOT_FOUND
+        - CONFLICT
+        - PROJECT_STATUS_TRANSITION_NOT_ALLOWED
+        - PROJECT_HAS_OPEN_OPERATIONS
+        - PROJECT_STATUS_BLOCKS_OPERATION
+        - PROJECT_CONCURRENT_MODIFICATION
+        - INTERNAL_ERROR
     FieldError:
       type: object
       required: [field, message]
@@ -296,9 +367,12 @@ components:
         message:
           type: string
         details:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldError'
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/FieldError'
+            - type: object
+              additionalProperties: true
     ProjectStatus:
       type: string
       enum: [draft, active, paused, inactive, finished, cancelled, archived]
@@ -319,6 +393,7 @@ components:
         description:
           type: string
           nullable: true
+          maxLength: 5000
         start_date:
           type: string
           format: date
@@ -343,8 +418,7 @@ components:
         description:
           type: string
           nullable: true
-        status:
-          $ref: '#/components/schemas/ProjectStatus'
+          maxLength: 5000
         start_date:
           type: string
           format: date
@@ -353,15 +427,9 @@ components:
           type: string
           format: date
           nullable: true
-        settings:
-          type: object
-          nullable: true
-        metadata:
-          type: object
-          nullable: true
     ProjectResponse:
       type: object
-      required: [id, organization_id, name, status, created_at, updated_at]
+      required: [id, organization_id, company_id, name, status, available_actions, created_at, updated_at]
       properties:
         id: { type: integer, format: int64 }
         organization_id: { type: integer, format: int64 }
@@ -380,6 +448,32 @@ components:
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
         deleted_at: { type: string, format: date-time, nullable: true }
+        available_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectAvailableAction'
+    ProjectLifecycleAction:
+      type: string
+      enum: [activate, pause, resume, finish, cancel, archive]
+    ProjectAvailableAction:
+      type: object
+      required: [action, permission]
+      properties:
+        action:
+          $ref: '#/components/schemas/ProjectLifecycleAction'
+        permission:
+          type: string
+          example: projects:activate
+    ProjectOpenOperation:
+      type: object
+      required: [type, count]
+      properties:
+        type:
+          type: string
+          example: inventory_item_pending
+        count:
+          type: integer
+          minimum: 1
     ProjectListResponse:
       type: object
       required: [items, page, page_size, total_items, total_pages]
@@ -434,11 +528,46 @@ components:
             code: CONFLICT
             message: Project cannot be created for inactive organization
     ProjectMutationBlocked:
-      description: Mutacao bloqueada pelo status atual
+      description: Mutacao bloqueada pelo status atual ou por alteracao concorrente
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          example:
-            code: CONFLICT
-            message: Project status blocks this operation
+          examples:
+            blockedStatus:
+              value:
+                code: PROJECT_STATUS_BLOCKS_OPERATION
+                message: Project status blocks this operation
+                details:
+                  current_status: finished
+            concurrentModification:
+              value:
+                code: PROJECT_CONCURRENT_MODIFICATION
+                message: Project was modified by another operation. Reload it and try again.
+                details:
+                  current_status: active
+                  current_updated_at: '2026-07-13T12:00:00.000Z'
+    ProjectLifecycleConflict:
+      description: Transicao invalida, concorrente ou bloqueada por operacoes abertas
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidTransition:
+              value:
+                code: PROJECT_STATUS_TRANSITION_NOT_ALLOWED
+                message: O projeto nao pode executar esta transicao a partir do status atual.
+                details:
+                  current_status: draft
+                  requested_action: finish
+            openOperations:
+              value:
+                code: PROJECT_HAS_OPEN_OPERATIONS
+                message: O projeto possui operacoes em andamento e nao pode executar esta transicao.
+                details:
+                  current_status: active
+                  requested_action: finish
+                  operations:
+                    - type: inventory_item_pending
+                      count: 3

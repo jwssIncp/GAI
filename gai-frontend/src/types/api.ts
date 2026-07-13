@@ -1,16 +1,11 @@
-export type ErrorCode =
-  | 'VALIDATION_ERROR'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'ACCOUNT_LOCKED'
-  | 'INTERNAL_ERROR';
+export type ErrorCode = string;
+
+export type ApiValidationDetail = { field: string; message: string };
 
 export type ApiErrorResponse = {
   code: ErrorCode;
   message: string;
-  details?: Array<{ field: string; message: string }>;
+  details?: unknown;
 };
 
 export type PageParams = {
@@ -62,6 +57,11 @@ export type RoleAssignment = {
   assigned_at: string;
 };
 
+export type EffectivePermission = {
+  key: string;
+  scope: 'PLATFORM' | 'ORGANIZATION';
+};
+
 export type CurrentUser = {
   id: number;
   login: string;
@@ -69,6 +69,8 @@ export type CurrentUser = {
   status: UserStatus;
   organization_id?: number | null;
   role_assignments: RoleAssignment[];
+  /** Omitted only by older API versions. An empty array means no grants. */
+  permissions?: EffectivePermission[];
 };
 
 export type LoginRequest = { identifier: string; password: string };
@@ -76,7 +78,7 @@ export type LoginResponse = { access_token: string; expires_at: string; user: Cu
 
 export type OrganizationStatus = 'ACTIVE' | 'INACTIVE';
 export type Organization = {
-  id: string;
+  id: number;
   legal_name: string;
   trade_name?: string | null;
   cnpj: string;
@@ -144,6 +146,8 @@ export type CreateCompanyRequest = {
 };
 
 export type ProjectStatus = 'draft' | 'active' | 'paused' | 'inactive' | 'finished' | 'cancelled' | 'archived';
+export type ProjectLifecycleAction = 'activate' | 'pause' | 'resume' | 'finish' | 'cancel' | 'archive';
+export type ProjectAvailableAction = { action: ProjectLifecycleAction; permission: string };
 export type Project = {
   id: number;
   organization_id: number;
@@ -154,8 +158,14 @@ export type Project = {
   start_date?: string | null;
   end_date?: string | null;
   finished_at?: string | null;
+  settings?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+  created_by_id?: number | null;
+  updated_by_id?: number | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
+  available_actions?: ProjectAvailableAction[];
 };
 export type CreateProjectRequest = {
   organization_id: number;
@@ -166,6 +176,82 @@ export type CreateProjectRequest = {
   end_date?: string | null;
   settings?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
+};
+
+export type UpdateProjectRequest = {
+  name?: string;
+  description?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+};
+
+export type CompanyUnitStatus = 'active' | 'inactive';
+export type CompanyUnit = {
+  id: number;
+  organization_id: number;
+  company_id: number;
+  name: string;
+  code?: string | null;
+  status: CompanyUnitStatus;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+};
+
+export type ProjectUnit = {
+  id: number;
+  organization_id: number;
+  project_id: number;
+  company_unit_id: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+  company_unit?: CompanyUnit;
+  unit?: CompanyUnit;
+  company_unit_name?: string;
+  company_unit_code?: string | null;
+};
+
+export type ProjectUnitListResponse = {
+  items: ProjectUnit[];
+};
+
+export type ExportJobType =
+  | 'inventory_items_xlsx'
+  | 'inventory_accounting_items_xlsx'
+  | 'pending_issues_xlsx'
+  | 'payments_xlsx'
+  | 'expenses_xlsx'
+  | 'project_backup_xlsx';
+export type ExportJobStatus = 'pending' | 'processing' | 'finished' | 'failed' | 'cancelled' | 'expired';
+export type ExportJob = {
+  id: number;
+  organization_id: number;
+  project_id: number;
+  type: ExportJobType;
+  status: ExportJobStatus;
+  file_name?: string | null;
+  mime_type?: string | null;
+  size_bytes?: number | null;
+  checksum?: string | null;
+  requested_by_id: number | null;
+  retry_of_id?: number | null;
+  attempt_count: number;
+  requested_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  expires_at?: string | null;
+  error_code?: string | null;
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+export type ExportJobDownloadUrlResponse = {
+  job: ExportJob;
+  download_url: string;
+  expires_in_seconds: number;
+  requires_authentication: true;
 };
 
 export type ProjectSummaryProject = {
@@ -275,6 +361,10 @@ export type ProjectSummary = {
 };
 
 export type FieldAgentStatus = 'active' | 'inactive' | 'blocked';
+export type FieldAgentListParams = PageParams & {
+  status?: FieldAgentStatus;
+  search?: string;
+};
 export type FieldAgent = {
   id: number;
   organization_id: number;

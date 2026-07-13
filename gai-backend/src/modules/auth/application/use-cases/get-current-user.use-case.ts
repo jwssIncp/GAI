@@ -9,6 +9,10 @@ import {
   type UserRepository,
 } from '../../domain/ports/user.repository.port';
 import { CurrentUserDto } from '../dto/login-response.dto';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../domain/ports/permission-resolver.port';
 
 @Injectable()
 export class GetCurrentUserUseCase {
@@ -16,6 +20,8 @@ export class GetCurrentUserUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(USER_ROLE_ASSIGNMENT_REPOSITORY)
     private readonly assignments: UserRoleAssignmentRepository,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
   ) {}
 
   async execute(userId: number): Promise<CurrentUserDto> {
@@ -35,9 +41,10 @@ export class GetCurrentUserUseCase {
       email: user.email,
       status: user.status,
       organizationId: user.organizationId,
-      roleAssignments: roleAssignments.map(
-        RoleAssignmentResponseDto.fromAssignedRole,
+      roleAssignments: roleAssignments.map((assignment) =>
+        RoleAssignmentResponseDto.fromAssignedRole(assignment),
       ),
+      permissions: await this.permissions.resolveForUser(user.id),
     });
   }
 }

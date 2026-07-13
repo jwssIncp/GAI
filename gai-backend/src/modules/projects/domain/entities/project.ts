@@ -1,4 +1,8 @@
 import { ProjectStatus } from '../enums/project-status.enum';
+import {
+  ProjectStatusAction,
+  ProjectStatusTransitionPolicy,
+} from '../services/project-status-transition.policy';
 
 export type JsonRecord = Record<string, unknown>;
 
@@ -91,12 +95,9 @@ export class Project {
   }
 
   blocksOperationalMutation(): boolean {
-    return [
-      ProjectStatus.INACTIVE,
-      ProjectStatus.FINISHED,
-      ProjectStatus.CANCELLED,
-      ProjectStatus.ARCHIVED,
-    ].includes(this.props.status);
+    return !ProjectStatusTransitionPolicy.allowsOperationalMutation(
+      this.props.status,
+    );
   }
 
   updateFields(fields: {
@@ -104,8 +105,6 @@ export class Project {
     description?: string | null;
     startDate?: Date | null;
     endDate?: Date | null;
-    settings?: JsonRecord | null;
-    metadata?: JsonRecord | null;
     updatedById: number | null;
   }): Record<string, { before: unknown; after: unknown }> {
     if (this.blocksOperationalMutation()) {
@@ -132,12 +131,6 @@ export class Project {
     this.applyChange(changes, 'end_date', fields.endDate, (value) => {
       this.props.endDate = value;
     });
-    this.applyChange(changes, 'settings', fields.settings, (value) => {
-      this.props.settings = value;
-    });
-    this.applyChange(changes, 'metadata', fields.metadata, (value) => {
-      this.props.metadata = value;
-    });
 
     if (Object.keys(changes).length > 0) {
       this.props.updatedById = fields.updatedById;
@@ -149,50 +142,67 @@ export class Project {
   deactivate(
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
-    if (this.blocksOperationalMutation()) {
-      throw new Error('Project status blocks this operation');
-    }
-    return this.changeStatus(ProjectStatus.INACTIVE, actorId);
+    return this.applyStatusAction('deactivate', actorId, new Date());
   }
 
   reactivate(
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
-    if (this.props.status !== ProjectStatus.INACTIVE) {
-      throw new Error('Only inactive projects can be reactivated');
-    }
-    return this.changeStatus(ProjectStatus.ACTIVE, actorId);
+    return this.applyStatusAction('reactivate', actorId, new Date());
+  }
+
+  activate(
+    actorId: number | null,
+  ): Record<string, { before: unknown; after: unknown }> {
+    return this.applyStatusAction('activate', actorId, new Date());
+  }
+
+  pause(
+    actorId: number | null,
+  ): Record<string, { before: unknown; after: unknown }> {
+    return this.applyStatusAction('pause', actorId, new Date());
+  }
+
+  resume(
+    actorId: number | null,
+  ): Record<string, { before: unknown; after: unknown }> {
+    return this.applyStatusAction('resume', actorId, new Date());
   }
 
   finish(
     actorId: number | null,
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
-    if (this.blocksOperationalMutation()) {
-      throw new Error('Project status blocks this operation');
-    }
-    const changes = this.changeStatus(ProjectStatus.FINISHED, actorId);
-    changes.finished_at = { before: this.props.finishedAt, after: now };
-    this.props.finishedAt = now;
-    return changes;
+    return this.applyStatusAction('finish', actorId, now);
   }
 
   cancel(
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
-    if (this.blocksOperationalMutation()) {
-      throw new Error('Project status blocks this operation');
-    }
-    return this.changeStatus(ProjectStatus.CANCELLED, actorId);
+    return this.applyStatusAction('cancel', actorId, new Date());
   }
 
   archive(
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
-    if (this.props.status === ProjectStatus.ARCHIVED) {
-      throw new Error('Project status blocks this operation');
+    return this.applyStatusAction('archive', actorId, new Date());
+  }
+
+  applyStatusAction(
+    action: ProjectStatusAction,
+    actorId: number | null,
+    now: Date,
+  ): Record<string, { before: unknown; after: unknown }> {
+    const rule = ProjectStatusTransitionPolicy.resolve(
+      this.props.status,
+      action,
+    );
+    const changes = this.changeStatus(rule.to, actorId);
+    if (action === 'finish') {
+      changes.finished_at = { before: this.props.finishedAt, after: now };
+      this.props.finishedAt = now;
     }
-    return this.changeStatus(ProjectStatus.ARCHIVED, actorId);
+    return changes;
   }
 
   toProps(): ProjectProps {
@@ -242,8 +252,6 @@ export class Project {
       description: 'description',
       start_date: 'startDate',
       end_date: 'endDate',
-      settings: 'settings',
-      metadata: 'metadata',
     };
     return map[key] ?? 'name';
   }

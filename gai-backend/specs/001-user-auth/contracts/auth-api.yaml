@@ -73,6 +73,9 @@ paths:
                       role_type: SYSTEM
                       organization_id: null
                       assigned_at: '2026-06-19T22:00:35.811Z'
+                  permissions:
+                    - key: projects:activate
+                      scope: ORGANIZATION
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -240,6 +243,20 @@ components:
       enum: [PLATFORM_ADMIN, ORG_ADMIN, ORG_USER]
       description: Chave de papel de sistema (resolvida via role_assignments, não campo direto em user)
 
+    PermissionScope:
+      type: string
+      enum: [PLATFORM, ORGANIZATION]
+
+    ResolvedPermission:
+      type: object
+      required: [key, scope]
+      properties:
+        key:
+          type: string
+          example: projects:read
+        scope:
+          $ref: '#/components/schemas/PermissionScope'
+
     RoleType:
       type: string
       enum: [SYSTEM, ORGANIZATION]
@@ -290,7 +307,7 @@ components:
 
     CurrentUserResponse:
       type: object
-      required: [id, login, email, status, role_assignments]
+      required: [id, login, email, status, role_assignments, permissions]
       properties:
         id:
           type: integer
@@ -310,6 +327,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RoleAssignment'
+        permissions:
+          type: array
+          description: Permissões efetivas usadas pela API para o usuário autenticado
+          items:
+            $ref: '#/components/schemas/ResolvedPermission'
 
     LoginResponse:
       type: object

@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { ProjectStatus } from '../../../projects/domain/enums/project-status.enum';
 import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
@@ -24,6 +23,11 @@ import {
   activeAssignmentConflict,
   isActiveAssignmentDuplicate,
 } from '../errors/field-agent-conflict';
+import {
+  assertProjectAllowsFieldAgentMutation,
+  ProjectStatusBlocksFieldAgentOperationError,
+  projectStatusBlocksFieldAgentOperation,
+} from '../errors/project-status-blocks-operation';
 import {
   FieldAgentActorContext,
   FieldAgentScopeService,
@@ -56,7 +60,7 @@ export class UpdateProjectFieldAgentUseCase {
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
-    this.assertProjectAllowsMutation(project.status);
+    assertProjectAllowsFieldAgentMutation(project.status);
 
     const assignment = await this.repository.findAssignmentById(assignmentId);
     if (!assignment || assignment.projectId !== projectId) {
@@ -134,6 +138,9 @@ export class UpdateProjectFieldAgentUseCase {
       ) {
         throw activeAssignmentConflict();
       }
+      if (error instanceof ProjectStatusBlocksFieldAgentOperationError) {
+        throw projectStatusBlocksFieldAgentOperation(error.currentStatus);
+      }
       throw error;
     }
 
@@ -146,22 +153,6 @@ export class UpdateProjectFieldAgentUseCase {
     });
 
     return ProjectFieldAgentResponseDto.fromDomain(saved);
-  }
-
-  private assertProjectAllowsMutation(status: ProjectStatus): void {
-    if (
-      [
-        ProjectStatus.INACTIVE,
-        ProjectStatus.FINISHED,
-        ProjectStatus.CANCELLED,
-        ProjectStatus.ARCHIVED,
-      ].includes(status)
-    ) {
-      throw new ConflictException({
-        code: 'CONFLICT',
-        message: 'Project status blocks this operation',
-      });
-    }
   }
 
   private parseDate(value: string | null | undefined): Date | null | undefined {

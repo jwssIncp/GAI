@@ -20,6 +20,15 @@ const limitedUser = {
   ],
 };
 
+const orgAdmin = {
+  ...user,
+  login: 'org.admin',
+  organization_id: 1,
+  role_assignments: [
+    { assignment_id: 3, role_id: 2, role_key: 'ORG_ADMIN', role_name: 'Organization Administrator', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' },
+  ],
+};
+
 async function mockApi(page: any, sessionUser: any = user) {
   await page.route('**/api/v1/auth/login**', async (route: any) => route.fulfill({ json: { access_token: 'token-123', expires_at: '2099-01-01T00:00:00.000Z', user: sessionUser } }));
   await page.route('**/api/v1/auth/me**', async (route: any) => route.fulfill({ json: sessionUser }));
@@ -522,13 +531,21 @@ test('bloqueia inventariantes sem permissao', async ({ page }) => {
 });
 
 test('abre formulario e valida campos obrigatorios de inventariante', async ({ page }) => {
-  await mockApi(page);
-  await authenticate(page);
+  await mockApi(page, orgAdmin);
+  await authenticateAs(page, orgAdmin);
   await page.goto('/app/field-agents');
   await page.getByRole('button', { name: /novo inventariante/i }).click();
-  await page.getByRole('button', { name: /salvar inventariante/i }).click();
-  await expect(page.getByText('Informe a organization')).toBeVisible();
-  await expect(page.getByText('Nome deve ter pelo menos 2 caracteres')).toBeVisible();
+  const form = page.getByRole('dialog', { name: 'Novo inventariante' });
+  await expect(form.getByRole('spinbutton', { name: 'Usuário vinculado', exact: true })).toBeVisible();
+  await expect(form.getByText('Opcional')).toBeVisible();
+
+  await form.getByRole('button', { name: 'Ajuda sobre Usuário vinculado' }).click();
+  const help = page.getByRole('dialog', { name: 'Sobre este campo' });
+  await expect(help.getByText(/Vincula o inventariante a uma conta já cadastrada em Usuários/)).toBeVisible();
+  await help.getByRole('button', { name: 'Fechar ajuda' }).click();
+
+  await form.getByRole('button', { name: /salvar inventariante/i }).click();
+  await expect(form.getByText('Nome deve ter pelo menos 2 caracteres')).toBeVisible();
 });
 
 test('abre detalhe de inventariante', async ({ page }) => {
@@ -785,8 +802,8 @@ test('acessa exportacoes a partir de um projeto autenticado', async ({ page }) =
   await authenticate(page);
   await page.goto('/app/projects/10/export-jobs');
   await expect(page.getByRole('heading', { name: 'Exportacoes' })).toBeVisible();
-  await expect(page.getByText('Export jobs ainda nao disponiveis')).toBeVisible();
-  await expect(page.getByRole('button', { name: /nova exportacao/i })).toBeDisabled();
+  await expect(page.getByText('Nenhum registro encontrado')).toBeVisible();
+  await expect(page.getByRole('button', { name: /nova exportacao/i })).toBeEnabled();
 });
 
 test('acessa workspace consolidado do projeto', async ({ page }) => {

@@ -68,6 +68,14 @@ describe('field-agents-api contract', () => {
     }
   });
 
+  it('documents the stable terminal-project conflict', () => {
+    expect(content).toContain('PROJECT_STATUS_BLOCKS_OPERATION');
+    expect(content).toContain('current_status');
+    expect(content).toContain(
+      "'409': { $ref: '#/components/responses/ProjectMutationBlocked' }",
+    );
+  });
+
   it('derives organization on create and documents Brazilian validation', () => {
     const createSchema = content.slice(
       content.indexOf('    CreateFieldAgentRequest:'),

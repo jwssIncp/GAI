@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ProjectFieldAgentEntity } from '../field-agents/infrastructure/persistence/project-field-agent.entity';
+import { ExportJobEntity } from '../export-jobs/infrastructure/persistence/export-job.entity';
 import { ImportSessionEntity } from '../import-sessions/infrastructure/persistence/import-session.entity';
 import { InventoryAccountingItemEntity } from '../inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity';
 import { InventoryItemImageEntity } from '../inventory-item-images/infrastructure/persistence/inventory-item-image.entity';
@@ -26,6 +27,7 @@ import { ProjectDashboardController } from './presentation/project-dashboard.con
       FieldAgentPaymentEntity,
       ExpenseEntity,
       ImportSessionEntity,
+      ExportJobEntity,
     ]),
     AuthModule,
     ProjectsModule,
