@@ -57,6 +57,22 @@ interface ProjectDashboardResponseBody {
   recent_activity: { last_inventory_item_created_at: string | null };
 }
 
+interface ProjectDashboardAnalyticsBody {
+  project: { id: number };
+  summary: {
+    total_items: number;
+    inventoried_items: number;
+    not_inventoried_items: number;
+    completion_percentage: number;
+    consolidated_items: null;
+  };
+  timeline: Array<{ inventoried_items: number }>;
+  status_distribution: Array<{ status: string; total_items: number }>;
+  sectors: { available: boolean };
+  consolidation: { available: boolean };
+  filters: { period: string };
+}
+
 describe('Project Dashboard (e2e)', () => {
   let app: INestApplication;
   let orgAdminToken: string;
@@ -106,6 +122,46 @@ describe('Project Dashboard (e2e)', () => {
       .get(`/api/v1/projects/${projectId}/dashboard`)
       .set('Authorization', `Bearer ${orgAdminToken}`)
       .expect(200);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/dashboard/analytics?period=total`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(200)
+      .expect((response) => {
+        const body = response.body as unknown as ProjectDashboardAnalyticsBody;
+        expect(body.project.id).toBe(projectId);
+        expect(body.summary.total_items).toBe(4);
+        expect(body.summary.inventoried_items).toBe(2);
+        expect(body.summary.not_inventoried_items).toBe(2);
+        expect(body.summary.completion_percentage).toBe(50);
+        expect(body.summary.consolidated_items).toBeNull();
+        expect(body.timeline).toHaveLength(1);
+        expect(body.status_distribution).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ status: 'evaluated', total_items: 2 }),
+            expect.objectContaining({ status: 'pending', total_items: 1 }),
+          ]),
+        );
+        expect(body.sectors.available).toBe(false);
+        expect(body.consolidation.available).toBe(false);
+        expect(body.filters.period).toBe('total');
+      });
+  });
+
+  it('validates dashboard date filters', async () => {
+    const projectId = await seedDashboardProject(app);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectId}/dashboard/analytics?period=custom`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(400);
+
+    await request(app.getHttpServer())
+      .get(
+        `/api/v1/projects/${projectId}/dashboard/analytics?period=custom&date_from=2026-02-01&date_to=2026-01-01`,
+      )
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(400);
   });
 
   it('denies access to a project from another organization', async () => {
@@ -135,6 +191,11 @@ describe('Project Dashboard (e2e)', () => {
 
     await request(app.getHttpServer())
       .get(`/api/v1/projects/${project.id}/summary`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(403);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/dashboard/analytics?period=total`)
       .set('Authorization', `Bearer ${orgAdminToken}`)
       .expect(403);
   });

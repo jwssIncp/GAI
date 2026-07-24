@@ -21,7 +21,7 @@ export function ForgotPasswordPage() {
         </FormField>
         <Button size="lg" loading={form.formState.isSubmitting}>Enviar instrucoes</Button>
       </form>
-      {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
+      {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-success"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
       <BackToLogin />
     </AuthPanel>
   );
@@ -41,7 +41,7 @@ export function ResetPasswordPage() {
         <FormField label="Nova senha" error={form.formState.errors.new_password?.message}><IconInput icon={<KeyRound size={17} />} type="password" autoComplete="new-password" {...form.register('new_password')} /></FormField>
         <Button size="lg" loading={form.formState.isSubmitting}>Redefinir senha</Button>
       </form>
-      {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-emerald-700 dark:text-emerald-300"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
+      {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-success"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
       <BackToLogin />
     </AuthPanel>
   );

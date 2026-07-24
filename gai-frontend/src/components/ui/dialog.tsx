@@ -8,7 +8,7 @@ export function ModalForm({ open, onOpenChange, title, children }: { open: boole
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-md data-[state=open]:animate-fade-up" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-topbar/70 backdrop-blur-md data-[state=open]:animate-fade-up" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className="glass-surface fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[min(94vw,580px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-border/80 bg-popover p-6 shadow-elevated data-[state=open]:animate-scale-in sm:p-7"
@@ -31,7 +31,7 @@ export function DrawerForm({ open, onOpenChange, title, children }: { open: bool
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-slate-950/55 backdrop-blur-sm data-[state=open]:animate-fade-up" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-topbar/65 backdrop-blur-sm data-[state=open]:animate-fade-up" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
           className={cn('fixed right-0 top-0 z-50 h-dvh w-[min(94vw,580px)] overflow-y-auto border-l border-border/70 bg-popover p-6 shadow-elevated data-[state=open]:animate-slide-in-right sm:p-8')}

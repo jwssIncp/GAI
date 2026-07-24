@@ -19,6 +19,7 @@ import { ProjectPendingIssuesPage } from '@/features/pending-issues/ProjectPendi
 import { ProjectFinancePage } from '@/features/finance/ProjectFinancePage';
 import { ProjectExportJobsPage } from '@/features/export-jobs/ProjectExportJobsPage';
 import { ProjectImportSessionsPage } from '@/features/import-sessions/ProjectImportSessionsPage';
+import { ProjectDashboardPage } from '@/features/project-dashboard/ProjectDashboardPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/app/dashboard" replace /> },
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
           { element: <ProtectedRoute permissions={['projects:read']} />, children: [
             { path: 'projects', element: <ProjectsPage /> },
             { path: 'projects/:projectId/summary', element: <ProjectSummaryPage /> },
+            { path: 'projects/:projectId/dashboard', element: <ProjectDashboardPage /> },
             { path: 'projects/:projectId/area', element: <PlaceholderPage title="Project Area" dependency="Abas preparadas; os fluxos profundos entram na proxima rodada." /> },
           ] },
           { element: <ProtectedRoute permissions={['export-jobs:read']} />, children: [{ path: 'projects/:projectId/export-jobs', element: <ProjectExportJobsPage /> }] },

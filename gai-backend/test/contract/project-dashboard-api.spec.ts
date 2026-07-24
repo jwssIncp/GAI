@@ -13,7 +13,24 @@ describe('project-dashboard-api contract', () => {
   it('defines summary and dashboard endpoints', () => {
     expect(content).toContain('/projects/{projectId}/summary:');
     expect(content).toContain('/projects/{projectId}/dashboard:');
+    expect(content).toContain('/projects/{projectId}/dashboard/analytics:');
     expect(content).toContain('projects:read');
+  });
+
+  it('documents analytics filters, temporal series and unavailable domains', () => {
+    for (const item of [
+      'date_from',
+      'date_to',
+      'grouping',
+      'status_distribution',
+      'inventoried_items',
+      'estimated_completion_date',
+      'DashboardGeographyPoint',
+      'DashboardAvailability',
+      'America/Sao_Paulo',
+    ]) {
+      expect(content).toContain(item);
+    }
   });
 
   it('documents optional include query params and response blocks', () => {

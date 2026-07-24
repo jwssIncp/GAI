@@ -365,6 +365,111 @@ export type FieldAgentListParams = PageParams & {
   status?: FieldAgentStatus;
   search?: string;
 };
+
+export type ProjectDashboardPeriod = '7d' | '30d' | 'month' | 'total' | 'custom';
+export type ProjectDashboardGrouping = 'day' | 'week' | 'month';
+export type ProjectDashboardParams = {
+  period?: ProjectDashboardPeriod;
+  date_from?: string;
+  date_to?: string;
+  grouping?: ProjectDashboardGrouping;
+  unit?: string;
+  state?: string;
+  status?: InventoryItemStatus;
+};
+export type DashboardAvailability = { available: boolean; reason: string | null };
+export type ProjectDashboardUnit = {
+  unit: string | null;
+  total_items: number;
+  inventoried_items: number;
+  pending_items: number;
+  consolidated_items: number | null;
+  completion_percentage: number;
+};
+export type ProjectDashboardAnalytics = {
+  project: {
+    id: number;
+    name: string;
+    status: ProjectStatus;
+    organization_id: number;
+    company_id: number | null;
+  };
+  summary: {
+    total_items: number;
+    inventoried_items: number;
+    not_inventoried_items: number;
+    consolidated_items: number | null;
+    pending_consolidation_items: number | null;
+    completion_percentage: number;
+    consolidation_percentage: number | null;
+    total_sectors: number | null;
+    total_units: number;
+    total_field_agents: number;
+    active_days: number;
+    average_items_per_active_day: number;
+    inventoried_today: number;
+    inventoried_last_7_days: number;
+    inventoried_last_30_days: number;
+    last_activity_at: string | null;
+    estimated_completion_date: string | null;
+  };
+  timeline: Array<{
+    period: string;
+    inventoried_items: number;
+    moving_average: number;
+    cumulative_inventoried_items: number;
+    cumulative_consolidated_items: number | null;
+    total_items_reference: number;
+  }>;
+  status_distribution: Array<{
+    status: InventoryItemStatus;
+    total_items: number;
+    percentage: number;
+  }>;
+  units: ProjectDashboardUnit[];
+  geography: Array<{
+    state: string;
+    total_items: number;
+    inventoried_items: number;
+    pending_items: number;
+    consolidated_items: number | null;
+    total_units: number;
+    total_sectors: number | null;
+    completion_percentage: number;
+  }>;
+  unlocated_items: number;
+  data_quality: {
+    items_without_unit: number;
+    items_without_location: number;
+    items_without_description: number;
+    items_without_state: number;
+  };
+  recent_activity: Array<{
+    id: number;
+    inventory_item_id: number;
+    operation: string;
+    resulting_status: InventoryItemStatus | null;
+    occurred_at: string;
+  }>;
+  attention_units: ProjectDashboardUnit[];
+  sectors: DashboardAvailability;
+  consolidation: DashboardAvailability;
+  productivity: DashboardAvailability;
+  filters: {
+    period: ProjectDashboardPeriod;
+    date_from: string | null;
+    date_to: string | null;
+    grouping: ProjectDashboardGrouping;
+    unit: string | null;
+    state: string | null;
+    status: InventoryItemStatus | null;
+    available_units: string[];
+    available_states: string[];
+    available_statuses: InventoryItemStatus[];
+  };
+  limitations: string[];
+  timezone: string;
+};
 export type FieldAgent = {
   id: number;
   organization_id: number;

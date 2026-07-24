@@ -18,8 +18,8 @@ export function AppLayout() {
   return (
     <div className="relative flex min-h-dvh bg-background">
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -right-40 -top-52 size-[34rem] rounded-full bg-primary/[0.045] blur-3xl" />
-        <div className="absolute -bottom-56 left-1/3 size-[30rem] rounded-full bg-chart-2/[0.035] blur-3xl" />
+        <div className="absolute -right-40 -top-52 size-[34rem] rounded-full bg-primary/[0.035] blur-3xl" />
+        <div className="absolute -bottom-56 left-1/3 size-[30rem] rounded-full bg-brand-navy/[0.025] blur-3xl" />
       </div>
       <Sidebar mobileOpen={navigationOpen} onMobileOpenChange={setNavigationOpen} />
       <div className="relative flex min-w-0 flex-1 flex-col">

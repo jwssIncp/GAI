@@ -9,6 +9,13 @@ export default {
         sans: ['Inter', 'Geist', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
       },
       colors: {
+        brand: {
+          ink: 'hsl(var(--brand-ink))',
+          navy: 'hsl(var(--brand-navy))',
+          green: 'hsl(var(--brand-green))',
+          'green-deep': 'hsl(var(--brand-green-deep))',
+          teal: 'hsl(var(--brand-teal))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -65,8 +72,15 @@ export default {
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar))',
           foreground: 'hsl(var(--sidebar-foreground))',
+          muted: 'hsl(var(--sidebar-muted))',
           accent: 'hsl(var(--sidebar-accent))',
           border: 'hsl(var(--sidebar-border))',
+        },
+        topbar: {
+          DEFAULT: 'hsl(var(--topbar))',
+          foreground: 'hsl(var(--topbar-foreground))',
+          muted: 'hsl(var(--topbar-muted))',
+          border: 'hsl(var(--topbar-border))',
         },
         chart: {
           1: 'hsl(var(--chart-1))',
@@ -91,6 +105,7 @@ export default {
       },
       backgroundImage: {
         'premium-gradient': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--chart-2)))',
+        'brand-hero': 'linear-gradient(135deg, hsl(var(--brand-ink)) 0%, hsl(var(--brand-navy)) 100%)',
         'card-sheen': 'linear-gradient(145deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.74))',
       },
       keyframes: {

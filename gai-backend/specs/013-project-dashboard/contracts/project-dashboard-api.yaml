@@ -45,6 +45,53 @@ paths:
         '401': { description: Usuario nao autenticado }
         '403': { description: Usuario sem permissao ou fora do escopo da organization }
         '404': { description: Project nao encontrado }
+  /projects/{projectId}/dashboard/analytics:
+    get:
+      summary: Consultar indicadores analiticos do dashboard do project
+      description: >
+        Retorna agregacoes filtradas do projeto. evaluated representa item
+        inventariado; setores, consolidacao e produtividade informam
+        available=false enquanto o modelo nao possuir dados confiaveis.
+      security: [{ bearerAuth: [] }]
+      x-permission: projects:read
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: period
+          in: query
+          schema: { type: string, enum: [7d, 30d, month, total, custom], default: 30d }
+        - name: date_from
+          in: query
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          schema: { type: string, format: date }
+        - name: grouping
+          in: query
+          schema: { type: string, enum: [day, week, month], default: day }
+        - name: unit
+          in: query
+          schema: { type: string, maxLength: 255 }
+        - name: state
+          in: query
+          schema:
+            type: string
+            enum: [AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA, PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, evaluated, divergent, not_found, duplicated, removed, inactive]
+      responses:
+        '200':
+          description: Dashboard analitico filtrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectDashboardAnalyticsResponse'
+        '400': { description: Filtros invalidos }
+        '401': { description: Usuario nao autenticado }
+        '403': { description: Usuario sem permissao ou fora do escopo da organization }
+        '404': { description: Project nao encontrado }
 components:
   securitySchemes:
     bearerAuth:
@@ -77,6 +124,104 @@ components:
       required: false
       schema: { type: boolean, default: false }
   schemas:
+    ProjectDashboardAnalyticsResponse:
+      type: object
+      required: [project, summary, timeline, status_distribution, units, geography, data_quality, recent_activity, sectors, consolidation, productivity, filters, limitations, timezone]
+      properties:
+        project:
+          type: object
+          properties:
+            id: { type: integer, format: int64 }
+            name: { type: string }
+            status: { type: string }
+            organization_id: { type: integer, format: int64 }
+            company_id: { type: integer, format: int64, nullable: true }
+        summary:
+          $ref: '#/components/schemas/DashboardSummary'
+        timeline:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardTimelinePoint' }
+        status_distribution:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardStatusPoint' }
+        units:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardUnitPoint' }
+        geography:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardGeographyPoint' }
+        unlocated_items: { type: integer }
+        data_quality: { type: object }
+        recent_activity:
+          type: array
+          items: { type: object }
+        attention_units:
+          type: array
+          items: { $ref: '#/components/schemas/DashboardUnitPoint' }
+        sectors: { $ref: '#/components/schemas/DashboardAvailability' }
+        consolidation: { $ref: '#/components/schemas/DashboardAvailability' }
+        productivity: { $ref: '#/components/schemas/DashboardAvailability' }
+        filters: { type: object }
+        limitations: { type: array, items: { type: string } }
+        timezone: { type: string, example: America/Sao_Paulo }
+    DashboardSummary:
+      type: object
+      properties:
+        total_items: { type: integer }
+        inventoried_items: { type: integer }
+        not_inventoried_items: { type: integer }
+        consolidated_items: { type: integer, nullable: true }
+        pending_consolidation_items: { type: integer, nullable: true }
+        completion_percentage: { type: number }
+        consolidation_percentage: { type: number, nullable: true }
+        total_sectors: { type: integer, nullable: true }
+        total_units: { type: integer }
+        total_field_agents: { type: integer }
+        active_days: { type: integer }
+        average_items_per_active_day: { type: number }
+        inventoried_today: { type: integer }
+        inventoried_last_7_days: { type: integer }
+        inventoried_last_30_days: { type: integer }
+        last_activity_at: { type: string, format: date-time, nullable: true }
+        estimated_completion_date: { type: string, format: date, nullable: true }
+    DashboardTimelinePoint:
+      type: object
+      properties:
+        period: { type: string }
+        inventoried_items: { type: integer }
+        moving_average: { type: number }
+        cumulative_inventoried_items: { type: integer }
+        cumulative_consolidated_items: { type: integer, nullable: true }
+        total_items_reference: { type: integer }
+    DashboardStatusPoint:
+      type: object
+      properties:
+        status: { type: string }
+        total_items: { type: integer }
+        percentage: { type: number }
+    DashboardUnitPoint:
+      type: object
+      properties:
+        unit: { type: string, nullable: true }
+        total_items: { type: integer }
+        inventoried_items: { type: integer }
+        pending_items: { type: integer }
+        consolidated_items: { type: integer, nullable: true }
+        completion_percentage: { type: number }
+    DashboardGeographyPoint:
+      allOf:
+        - $ref: '#/components/schemas/DashboardUnitPoint'
+        - type: object
+          properties:
+            state: { type: string }
+            total_units: { type: integer }
+            total_sectors: { type: integer, nullable: true }
+    DashboardAvailability:
+      type: object
+      required: [available, reason]
+      properties:
+        available: { type: boolean }
+        reason: { type: string, nullable: true }
     ProjectSummaryResponse:
       type: object
       required: [project, inventory, images, accounting, pending_issues, field_agents]

@@ -1,18 +1,35 @@
 import { ReactNode } from 'react';
+import { cn } from '@/utils/cn';
 
-export function MetricCard({ label, value, hint, icon }: { label: string; value: ReactNode; hint?: string; icon?: ReactNode }) {
+export function MetricCard({
+  label,
+  value,
+  hint,
+  icon,
+  tone = 'default',
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: string;
+  icon?: ReactNode;
+  tone?: 'default' | 'brand';
+}) {
+  const branded = tone === 'brand';
   return (
-    <div className="premium-panel interactive-card group min-h-40 p-5 sm:p-6">
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      <div className="absolute -right-10 -top-12 size-32 rounded-full bg-primary/5 blur-3xl transition duration-500 group-hover:bg-primary/10" aria-hidden="true" />
+    <div className={cn(
+      'premium-panel interactive-card group min-h-40 p-5 sm:p-6',
+      branded && 'border-primary/35 bg-gradient-to-br from-primary to-brand-green-deep text-primary-foreground shadow-glow',
+    )}>
+      <div className={cn('absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100', branded && 'via-white/55 opacity-60')} />
+      <div className={cn('absolute -right-10 -top-12 size-32 rounded-full bg-primary/5 blur-3xl transition duration-500 group-hover:bg-primary/10', branded && 'bg-white/15 group-hover:bg-white/25')} aria-hidden="true" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-          <p className="mt-3 text-3xl font-bold leading-none tracking-[-0.04em] text-foreground">{value}</p>
+          <p className={cn('text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted-foreground', branded && 'text-primary-foreground/70')}>{label}</p>
+          <p className={cn('mt-3 text-3xl font-bold leading-none tracking-[-0.04em] text-foreground', branded && 'text-primary-foreground')}>{value}</p>
         </div>
-        {icon ? <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/10 bg-primary-subtle text-primary shadow-inner-highlight transition duration-300 group-hover:scale-105 group-hover:shadow-glow">{icon}</div> : null}
+        {icon ? <div className={cn('grid size-11 shrink-0 place-items-center rounded-xl border border-primary/10 bg-primary-subtle text-primary shadow-inner-highlight transition duration-300 group-hover:scale-105 group-hover:shadow-glow', branded && 'border-primary-foreground/10 bg-primary-foreground/10 text-primary-foreground')}>{icon}</div> : null}
       </div>
-      {hint ? <p className="mt-5 border-t border-border/60 pt-3 text-xs leading-5 text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className={cn('mt-5 border-t border-border/60 pt-3 text-xs leading-5 text-muted-foreground', branded && 'border-primary-foreground/15 text-primary-foreground/70')}>{hint}</p> : null}
     </div>
   );
 }

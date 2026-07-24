@@ -234,6 +234,7 @@ function OperationalAlerts({ alerts }: { alerts: Alert[] }) {
 function WorkspaceTabs({ projectId }: { projectId: number }) {
   const tabs: Tab[] = [
     { label: 'Visao geral', to: `/app/projects/${projectId}/summary`, permissions: ['projects:read'] },
+    { label: 'Dashboard', to: `/app/projects/${projectId}/dashboard`, permissions: ['projects:read'] },
     { label: 'Itens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
     { label: 'Imagens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'], hint: 'Imagens ficam no detalhe do item.' },
     { label: 'Base contabil', to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },

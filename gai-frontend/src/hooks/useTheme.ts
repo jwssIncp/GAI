@@ -8,7 +8,7 @@ function applyTheme(theme: Theme) {
   const isDark = theme === 'dark';
   document.documentElement.classList.toggle('dark', isDark);
   document.documentElement.style.colorScheme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#0a0b18' : '#f7f8fc');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark ? '#000d20' : '#ffffff');
 }
 
 function currentTheme(): Theme {

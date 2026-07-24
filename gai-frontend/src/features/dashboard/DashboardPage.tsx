@@ -36,27 +36,27 @@ export function DashboardPage() {
       <PageHeader title="Dashboard operacional" description="Uma leitura clara da sua operação, respeitando escopos e permissões de acesso." />
       {loading ? <LoadingState /> : error ? <ErrorState /> : visibleCards.length ? (
         <>
-          <section className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-primary/15 bg-[#0c0e21] text-white shadow-elevated lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="absolute inset-0 opacity-80" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 12% 10%, hsl(244 86% 65% / .34), transparent 26rem), radial-gradient(circle at 92% 84%, hsl(184 88% 45% / .23), transparent 24rem)' }} />
+          <section className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-sidebar-border bg-brand-hero text-white shadow-elevated lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="absolute inset-0 opacity-80" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 12% 10%, hsl(var(--primary) / .22), transparent 26rem), radial-gradient(circle at 92% 84%, hsl(var(--brand-teal) / .42), transparent 24rem)' }} />
             <div className="absolute inset-0 opacity-[0.07]" aria-hidden="true" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '38px 38px', maskImage: 'linear-gradient(90deg, black, transparent 74%)' }} />
             <div className="relative z-10 flex flex-col justify-between p-6 sm:p-8 lg:p-10">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.07] px-3 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-cyan-200 backdrop-blur">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.08] px-3 py-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-primary backdrop-blur">
                   <Sparkles size={13} /> Visão consolidada
                 </div>
                 <h2 className="mt-5 max-w-xl text-3xl font-bold leading-tight tracking-[-0.045em] sm:text-4xl">Olá, {user?.login ?? 'usuário'}. Sua operação começa aqui.</h2>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-white/58">Navegue pelos módulos e acompanhe o universo de ativos disponível para o seu perfil.</p>
               </div>
               {canAccess(['projects:read']) ? (
-                <Link className="mt-8 inline-flex h-10 w-fit items-center gap-2 rounded-lg border border-white/10 bg-white/[0.09] px-4 text-sm font-semibold backdrop-blur transition hover:border-white/20 hover:bg-white/[0.14]" to="/app/projects">
-                  Abrir projetos <ArrowUpRight size={15} />
+                <Link className="mt-8 inline-flex h-10 w-fit items-center gap-2 rounded-lg border border-primary/30 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition hover:brightness-105" to="/app/projects">
+                  <span>Abrir projetos</span> <ArrowUpRight size={15} />
                 </Link>
               ) : null}
             </div>
             <PortfolioPulse cards={visibleCards} />
           </section>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {visibleCards.map((card) => <MetricCard key={card.key} label={card.label} value={card.value ?? '-'} hint={card.hint} icon={card.icon} />)}
+            {visibleCards.map((card) => <MetricCard key={card.key} label={card.label} value={card.value ?? '-'} hint={card.hint} icon={card.icon} tone="brand" />)}
           </div>
           {quickAccess.length ? (
             <section className="premium-panel p-5 sm:p-6">
@@ -72,7 +72,7 @@ export function DashboardPage() {
                   const Icon = item.icon;
                   return (
                     <Link key={item.to} to={item.to} className="group flex min-h-20 items-center gap-3 rounded-xl border border-border/70 bg-muted/25 p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary-subtle hover:shadow-panel">
-                      <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', index % 3 === 0 ? 'bg-primary-subtle text-primary' : index % 3 === 1 ? 'bg-accent text-accent-foreground' : 'bg-info-subtle text-sky-600 dark:text-sky-300')}><Icon size={17} /></span>
+                      <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', index % 3 === 0 ? 'bg-primary-subtle text-brand-teal' : index % 3 === 1 ? 'bg-accent text-accent-foreground' : 'bg-info-subtle text-info')}><Icon size={17} /></span>
                       <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.label}</span>
                       <ArrowUpRight className="text-muted-foreground transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" size={15} />
                     </Link>
@@ -97,7 +97,7 @@ function PortfolioPulse({ cards }: { cards: Array<{ key: string; label: string; 
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/45">Distribuição do workspace</p>
           <p className="mt-1 text-sm font-semibold text-white/85">Volume por módulo</p>
         </div>
-        <span className="grid size-10 place-items-center rounded-xl bg-white/[0.08] text-cyan-200"><TrendingUp size={18} /></span>
+        <span className="grid size-10 place-items-center rounded-xl bg-primary/[0.1] text-primary"><TrendingUp size={18} /></span>
       </div>
       <div className="mt-8 grid gap-4">
         {cards.map((card, index) => (
@@ -108,7 +108,7 @@ function PortfolioPulse({ cards }: { cards: Array<{ key: string; label: string; 
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">
               <div
-                className={cn('h-full rounded-full transition-all duration-700', index % 4 === 0 ? 'bg-indigo-400' : index % 4 === 1 ? 'bg-cyan-300' : index % 4 === 2 ? 'bg-emerald-300' : 'bg-amber-300')}
+                className={cn('h-full rounded-full transition-all duration-700', index % 4 === 0 ? 'bg-chart-1' : index % 4 === 1 ? 'bg-chart-2' : index % 4 === 2 ? 'bg-chart-4' : 'bg-chart-5')}
                 style={{ width: `${Math.max(((card.value ?? 0) / maxValue) * 100, card.value ? 8 : 0)}%` }}
               />
             </div>

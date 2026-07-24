@@ -12,11 +12,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'border border-primary/20 bg-premium-gradient text-primary-foreground shadow-glow hover:brightness-110',
-  secondary: 'border border-border/80 bg-card/80 text-foreground shadow-panel hover:border-primary/25 hover:bg-card',
+  primary: 'border border-primary/30 bg-premium-gradient text-primary-foreground shadow-glow hover:brightness-105 hover:saturate-110',
+  secondary: 'border border-border/80 bg-card text-foreground shadow-panel hover:border-primary/45 hover:bg-primary-subtle',
   ghost: 'border border-transparent text-foreground hover:border-border/60 hover:bg-muted/75',
   danger: 'border border-destructive/20 bg-destructive text-destructive-foreground shadow-[0_12px_30px_-16px_hsl(var(--destructive)/0.7)] hover:brightness-110',
-  outline: 'border border-primary/30 bg-transparent text-primary hover:bg-primary-subtle',
+  outline: 'border border-brand-teal/45 bg-transparent text-brand-teal hover:border-primary hover:bg-primary-subtle hover:text-brand-ink dark:text-primary',
   soft: 'border border-primary/10 bg-primary-subtle text-primary hover:border-primary/20 hover:bg-primary/10',
 };
 

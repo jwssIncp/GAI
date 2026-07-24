@@ -83,6 +83,17 @@ quando financeiro, importacoes, exportacoes ou atividades recentes nao forem nec
   propria de exportacoes.
 - **FR-020**: Response NAO DEVE expor senhas, tokens, paths internos de storage, buckets
   ou metadados sensiveis.
+- **FR-021**: Endpoint analitico DEVE ser
+  `GET /projects/{projectId}/dashboard/analytics`, preservando os endpoints de summary.
+- **FR-022**: Filtros analiticos suportados DEVEM ser periodo, agrupamento, unidade
+  textual, UF da unidade vinculada e status real do item.
+- **FR-023**: `evaluated` e a regra de item inventariado; `updated_at` e usado como
+  proxy temporal enquanto nao existir `inventoried_at`.
+- **FR-024**: Setor, consolidacao e produtividade individual DEVEM retornar
+  disponibilidade falsa, e nunca zero fabricado, enquanto o modelo nao possuir os
+  campos e relacionamentos necessarios.
+- **FR-025**: A UF tem como fonte `company_units.state`; a associacao de itens usa
+  correspondencia normalizada entre `inventory_items.unit_text` e o nome da unidade.
 
 ### Non-Functional Requirements
 

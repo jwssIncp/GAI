@@ -14,12 +14,12 @@ export function DataTable<T>({ columns, items, getKey }: { columns: Column<T>[];
     <div className="premium-panel">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left text-sm">
-          <thead className="bg-muted/60 text-[0.6875rem] uppercase tracking-[0.12em] text-muted-foreground">
-            <tr>{columns.map((column) => <th key={column.header} className={cn('border-b border-border/80 px-5 py-4 font-bold first:pl-6 last:pr-6', column.className)}>{column.header}</th>)}</tr>
+          <thead className="bg-brand-navy text-[0.6875rem] uppercase tracking-[0.12em] text-white/75">
+            <tr>{columns.map((column) => <th key={column.header} className={cn('border-b border-sidebar-border px-5 py-4 font-bold first:pl-6 last:pr-6', column.className)}>{column.header}</th>)}</tr>
           </thead>
           <tbody className="[&>tr:last-child>td]:border-b-0">
             {items.map((item) => (
-              <tr key={getKey(item)} className="group transition-colors duration-150 hover:bg-primary/[0.035]">
+              <tr key={getKey(item)} className="group transition-colors duration-150 hover:bg-primary/[0.07]">
                 {columns.map((column) => <td key={column.header} className={cn('border-b border-border/55 px-5 py-4 align-middle text-foreground/90 first:pl-6 last:pr-6', column.className)}>{column.cell(item)}</td>)}
               </tr>
             ))}

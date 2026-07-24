@@ -28,11 +28,11 @@ export function Breadcrumbs() {
   const location = useLocation();
   const parts = location.pathname.split('/').filter(Boolean).slice(1);
   return (
-    <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-1 text-sm text-topbar-muted">
       {parts.length ? parts.map((part, index) => (
         <span key={`${part}-${index}`} className="inline-flex items-center gap-1">
-          {index ? <ChevronRight className="text-muted-foreground/50" size={12} /> : null}
-          <span className={index === parts.length - 1 ? 'font-semibold text-foreground' : ''}>{/^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' '))}</span>
+          {index ? <ChevronRight className="text-topbar-muted/50" size={12} /> : null}
+          <span className={index === parts.length - 1 ? 'font-semibold text-topbar-foreground' : ''}>{/^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' '))}</span>
         </span>
       )) : 'Visão geral'}
     </div>
@@ -48,29 +48,29 @@ export function Topbar({ onOpenNavigation }: { onOpenNavigation: () => void }) {
   const initials = (user?.login ?? 'U').slice(0, 2).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-30 flex min-h-[76px] items-center justify-between gap-3 border-b border-border/70 bg-background/78 px-4 py-3 backdrop-blur-2xl sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex min-h-[76px] items-center justify-between gap-3 border-b border-topbar-border bg-topbar/95 px-4 py-3 text-topbar-foreground shadow-[0_8px_30px_-24px_hsl(var(--brand-ink)/0.95)] backdrop-blur-2xl sm:px-6 lg:px-8">
       <div className="flex min-w-0 items-center gap-3">
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Abrir navegação" onClick={onOpenNavigation}>
+        <Button variant="ghost" size="icon" className="text-topbar-foreground hover:border-white/10 hover:bg-white/[0.07] lg:hidden" aria-label="Abrir navegação" onClick={onOpenNavigation}>
           <Menu size={19} />
         </Button>
         <div className="min-w-0">
           <Breadcrumbs />
-          <div className="mt-1 truncate text-[0.6875rem] font-medium text-muted-foreground">{organizationLabel}</div>
+          <div className="mt-1 truncate text-[0.6875rem] font-medium text-topbar-muted">{organizationLabel}</div>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="rounded-xl" aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'} onClick={toggleTheme}>
+        <Button variant="ghost" size="icon" className="rounded-xl text-topbar-muted hover:border-white/10 hover:bg-white/[0.07] hover:text-topbar-foreground" aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'} onClick={toggleTheme}>
           {theme === 'dark' ? <Sun className="transition-transform duration-300 group-hover:rotate-12" size={17} /> : <Moon className="transition-transform duration-300 group-hover:-rotate-12" size={17} />}
         </Button>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <Button variant="secondary" className="h-11 rounded-xl p-1.5 pr-2 sm:pr-3" aria-label={`Menu do usuário ${user?.login ?? 'Usuário'}`}>
-              <span className="grid size-8 place-items-center rounded-lg bg-premium-gradient text-[0.6875rem] font-extrabold text-white shadow-glow">{initials}</span>
+            <Button variant="secondary" className="h-11 rounded-xl border-white/10 bg-white/[0.06] p-1.5 pr-2 text-topbar-foreground shadow-none hover:border-primary/35 hover:bg-white/[0.1] sm:pr-3" aria-label={`Menu do usuário ${user?.login ?? 'Usuário'}`}>
+              <span className="grid size-8 place-items-center rounded-lg bg-premium-gradient text-[0.6875rem] font-extrabold text-primary-foreground shadow-glow">{initials}</span>
               <span className="hidden min-w-0 text-left sm:block">
                 <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuario'}</span>
-                <span className="block max-w-32 truncate text-[0.625rem] font-medium text-muted-foreground">{organizationLabel}</span>
+                <span className="block max-w-32 truncate text-[0.625rem] font-medium text-topbar-muted">{organizationLabel}</span>
               </span>
-              <ChevronDown className="text-muted-foreground" size={14} />
+              <ChevronDown className="text-topbar-muted" size={14} />
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>

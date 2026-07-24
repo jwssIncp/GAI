@@ -72,6 +72,8 @@ import type {
   ProjectUnitListResponse,
   ProjectFieldAgent,
   ProjectSummary,
+  ProjectDashboardAnalytics,
+  ProjectDashboardParams,
   UpdateFieldAgentRequest,
   UpdateProjectRequest,
   UpdateProjectFieldAgentRequest,
@@ -179,6 +181,10 @@ export const projectsApi = {
       .get<ProjectSummary>(`/projects/${projectId}/dashboard`, {
         params: { include_financial: true, include_imports: true, include_exports: true, include_recent_activity: true },
       })
+      .then((r) => r.data),
+  dashboardAnalytics: (projectId: number, params: ProjectDashboardParams) =>
+    api
+      .get<ProjectDashboardAnalytics>(`/projects/${projectId}/dashboard/analytics`, { params })
       .then((r) => r.data),
 };
 

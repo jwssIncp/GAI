@@ -40,6 +40,7 @@ async function mockApi(page: any, sessionUser: any = user) {
   await page.route('**/api/v1/projects/10', async (route: any) => route.fulfill({ json: project }));
   await page.route('**/api/v1/projects/10/summary**', async (route: any) => route.fulfill({ json: projectSummary }));
   await page.route('**/api/v1/projects/10/dashboard**', async (route: any) => route.fulfill({ json: projectSummary }));
+  await page.route('**/api/v1/projects/10/dashboard/analytics**', async (route: any) => route.fulfill({ json: projectDashboardAnalytics }));
   await page.route('**/api/v1/field-agents**', async (route: any) => route.fulfill({ json: { items: [fieldAgent], page: 1, page_size: 20, total_items: 1, total_pages: 1 } }));
   await page.route('**/api/v1/field-agents/7**', async (route: any) => route.fulfill({ json: fieldAgent }));
   await page.route('**/api/v1/projects/10/inventory-items**', async (route: any) => route.fulfill({ json: { items: [inventoryItem], page: 1, page_size: 20, total_items: 1, total_pages: 1 } }));
@@ -403,6 +404,65 @@ const projectSummary = {
   imports: null,
   exports: { total_export_jobs: 0, pending_export_jobs: 0, processing_export_jobs: 0, finished_export_jobs: 0, failed_export_jobs: 0, cancelled_export_jobs: 0, expired_export_jobs: 0 },
   recent_activity: { last_inventory_item_created_at: null, last_inventory_item_updated_at: null, last_import_finished_at: null, last_export_finished_at: null, last_pending_issue_created_at: null, last_payment_updated_at: null },
+};
+
+const projectDashboardAnalytics = {
+  project: { id: 10, name: 'Projeto Alpha', status: 'active', organization_id: 1, company_id: 3 },
+  summary: {
+    total_items: 100,
+    inventoried_items: 65,
+    not_inventoried_items: 35,
+    consolidated_items: null,
+    pending_consolidation_items: null,
+    completion_percentage: 65,
+    consolidation_percentage: null,
+    total_sectors: null,
+    total_units: 2,
+    total_field_agents: 3,
+    active_days: 5,
+    average_items_per_active_day: 13,
+    inventoried_today: 4,
+    inventoried_last_7_days: 25,
+    inventoried_last_30_days: 65,
+    last_activity_at: '2026-07-24T12:00:00.000Z',
+    estimated_completion_date: '2026-07-31',
+  },
+  timeline: [
+    { period: '2026-07-23', inventoried_items: 20, moving_average: 20, cumulative_inventoried_items: 20, cumulative_consolidated_items: null, total_items_reference: 100 },
+    { period: '2026-07-24', inventoried_items: 45, moving_average: 32.5, cumulative_inventoried_items: 65, cumulative_consolidated_items: null, total_items_reference: 100 },
+  ],
+  status_distribution: [
+    { status: 'evaluated', total_items: 65, percentage: 65 },
+    { status: 'pending', total_items: 35, percentage: 35 },
+  ],
+  units: [
+    { unit: 'Matriz', total_items: 70, inventoried_items: 50, pending_items: 20, consolidated_items: null, completion_percentage: 71.43 },
+    { unit: 'Filial', total_items: 30, inventoried_items: 15, pending_items: 15, consolidated_items: null, completion_percentage: 50 },
+  ],
+  geography: [
+    { state: 'SP', total_items: 70, inventoried_items: 50, pending_items: 20, consolidated_items: null, total_units: 1, total_sectors: null, completion_percentage: 71.43 },
+  ],
+  unlocated_items: 30,
+  data_quality: { items_without_unit: 0, items_without_location: 8, items_without_description: 2, items_without_state: 30 },
+  recent_activity: [{ id: 1, inventory_item_id: 11, operation: 'update', resulting_status: 'evaluated', occurred_at: '2026-07-24T12:00:00.000Z' }],
+  attention_units: [{ unit: 'Filial', total_items: 30, inventoried_items: 15, pending_items: 15, consolidated_items: null, completion_percentage: 50 }],
+  sectors: { available: false, reason: 'O modelo atual não possui entidade ou campo de setor.' },
+  consolidation: { available: false, reason: 'O modelo atual não registra consolidação por item.' },
+  productivity: { available: false, reason: 'O item não possui vínculo confiável com o inventariante.' },
+  filters: {
+    period: '30d',
+    date_from: '2026-06-25',
+    date_to: '2026-07-24',
+    grouping: 'day',
+    unit: null,
+    state: null,
+    status: null,
+    available_units: ['Filial', 'Matriz'],
+    available_states: ['SP'],
+    available_statuses: ['pending', 'evaluated', 'divergent', 'not_found', 'duplicated', 'removed', 'inactive'],
+  },
+  limitations: ['A série temporal usa updated_at.'],
+  timezone: 'America/Sao_Paulo',
 };
 
 const payment = {
@@ -814,6 +874,17 @@ test('acessa workspace consolidado do projeto', async ({ page }) => {
   await expect(page.getByText('Inventario da filial SP')).toBeVisible();
   await expect(page.getByText('Total de itens')).toBeVisible();
   await expect(page.getByText('Alertas operacionais')).toBeVisible();
+});
+
+test('acessa dashboard analitico do projeto e aplica filtro', async ({ page }) => {
+  await mockApi(page);
+  await authenticate(page);
+  await page.goto('/app/projects/10/dashboard');
+  await expect(page.getByRole('heading', { name: 'Dashboard · Projeto Alpha' })).toBeVisible();
+  await expect(page.getByText('65 de 100 itens inventariados')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'SP' })).toBeVisible();
+  await page.getByLabel('Status', { exact: true }).selectOption('evaluated');
+  await expect(page).toHaveURL(/status=evaluated/);
 });
 
 test('navega entre abas do workspace do projeto', async ({ page }) => {
