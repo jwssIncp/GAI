@@ -42,6 +42,12 @@ export class ProjectInventorySummaryDto {
   inactive_items!: number;
   @ApiProperty()
   progress_percentage!: number;
+  @ApiProperty() inventoried_items!: number;
+  @ApiProperty() observation_progress_percentage!: number;
+  @ApiProperty() inventory_sessions!: number;
+  @ApiProperty() inventory_rounds!: number;
+  @ApiProperty() reinventory_rounds!: number;
+  @ApiProperty() observations!: number;
 }
 
 export class ProjectImagesSummaryDto {
@@ -66,6 +72,12 @@ export class ProjectAccountingSummaryDto {
   not_found_accounting_items!: number;
   @ApiProperty()
   ignored_accounting_items!: number;
+  @ApiProperty() latest_reconciliation_run!: number | null;
+  @ApiProperty() reconciled_items!: number;
+  @ApiProperty() physical_surplus_items!: number;
+  @ApiProperty() accounting_surplus_items!: number;
+  @ApiProperty() duplicate_items!: number;
+  @ApiProperty() consolidated_items!: number;
 }
 
 export class ProjectPendingIssuesSummaryDto {
@@ -131,6 +143,9 @@ export class ProjectFinancialSummaryDto {
   total_expense_amount!: string;
   @ApiProperty({ example: '6200.00' })
   financial_total_amount!: string;
+  @ApiProperty() open_accountabilities!: number;
+  @ApiProperty() closed_accountabilities!: number;
+  @ApiProperty({ example: '1200.00' }) closed_accountabilities_amount!: string;
 }
 
 export class ProjectImportsSummaryDto {

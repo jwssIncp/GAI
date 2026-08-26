@@ -1,0 +1,122 @@
+openapi: 3.1.0
+info: { title: GAI Expense Accountabilities API, version: 1.1.0 }
+servers: [{ url: /api/v1 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /projects/{projectId}/expense-accountabilities:
+    post:
+      summary: Open accountability
+      x-permission: expense-accountabilities:create
+      responses:
+        {
+          '201': { description: Created },
+          '409': { description: Invalid period or assignment },
+        }
+    get:
+      summary: List accountabilities
+      x-permission: expense-accountabilities:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - {
+            name: field_agent_id,
+            in: query,
+            schema: { type: integer, minimum: 1 },
+          }
+        - {
+            name: status,
+            in: query,
+            schema: { type: string, enum: [open, closed, cancelled] },
+          }
+        - {
+            name: period_start,
+            in: query,
+            schema: { type: string, format: date },
+          }
+        - {
+            name: period_end,
+            in: query,
+            schema: { type: string, format: date },
+          }
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /projects/{projectId}/expense-accountabilities/{id}:
+    get:
+      summary: Get accountability and linked expenses
+      x-permission: expense-accountabilities:read
+      responses: { '200': { description: Accountability } }
+  /projects/{projectId}/expense-accountabilities/{id}/expenses:
+    post:
+      summary: Link an expense from the same organization, project, agent and period
+      x-permission: expense-accountabilities:update
+      responses:
+        {
+          '200': { description: Linked },
+          '404': { description: Expense outside project or tenant scope },
+          '409':
+            {
+              description: Already linked,
+              closed,
+              outside period or agent mismatch,
+            },
+        }
+  /projects/{projectId}/expense-accountabilities/{id}/close:
+    post:
+      summary: Close and recalculate total transactionally
+      x-permission: expense-accountabilities:close
+      responses:
+        {
+          '200': { description: Closed },
+          '409': { description: Empty or not open },
+        }
+  /projects/{projectId}/expenses/{expenseId}/installments/generate:
+    post:
+      summary: Generate installments preserving total cents
+      x-permission: expense-installments:create
+      responses:
+        {
+          '201': { description: Installments },
+          '409': { description: Already generated },
+        }
+  /projects/{projectId}/expenses/{expenseId}/installments:
+    get:
+      summary: List installments
+      x-permission: expense-installments:read
+      parameters:
+        [
+          { $ref: '#/components/parameters/Page' },
+          { $ref: '#/components/parameters/PageSize' },
+        ]
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer } }
+  parameters:
+    Page:
+      {
+        name: page,
+        in: query,
+        schema: { type: integer, minimum: 1, default: 1 },
+      }
+    PageSize:
+      {
+        name: page_size,
+        in: query,
+        schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+      }
+  responses:
+    Paginated:
+      description: Paginated collection
+      content:
+        {
+          application/json:
+            { schema: { $ref: '#/components/schemas/PaginatedResponse' } },
+        }
+  schemas:
+    PaginatedResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items: { type: array, items: {} }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+        total_items: { type: integer, minimum: 0 }
+        total_pages: { type: integer, minimum: 0 }

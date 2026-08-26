@@ -26,11 +26,19 @@ import { CompanyUnitEntity } from '../../src/modules/companies/infrastructure/pe
 import { CompanyEntity } from '../../src/modules/companies/infrastructure/persistence/company.entity';
 import { ProjectUnitAuditLogEntity } from '../../src/modules/companies/infrastructure/persistence/project-unit-audit-log.entity';
 import { ProjectUnitEntity } from '../../src/modules/companies/infrastructure/persistence/project-unit.entity';
+import {
+  EXPENSE_ACCOUNTABILITY_ENTITIES,
+  ExpenseAccountabilitiesModule,
+} from '../../src/modules/expense-accountabilities/expense-accountabilities.module';
 import { FieldAgentsModule } from '../../src/modules/field-agents/field-agents.module';
 import { FieldAgentAuditLogEntity } from '../../src/modules/field-agents/infrastructure/persistence/field-agent-audit-log.entity';
 import { FieldAgentEntity } from '../../src/modules/field-agents/infrastructure/persistence/field-agent.entity';
 import { ProjectFieldAgentEntity } from '../../src/modules/field-agents/infrastructure/persistence/project-field-agent.entity';
 import { InventoryItemsModule } from '../../src/modules/inventory-items/inventory-items.module';
+import {
+  INVENTORY_OPERATION_ENTITIES,
+  InventoryOperationsModule,
+} from '../../src/modules/inventory-operations/inventory-operations.module';
 import { InventoryItemAuditLogEntity } from '../../src/modules/inventory-items/infrastructure/persistence/inventory-item-audit-log.entity';
 import { InventoryItemEntity } from '../../src/modules/inventory-items/infrastructure/persistence/inventory-item.entity';
 import { InventoryItemImagesModule } from '../../src/modules/inventory-item-images/inventory-item-images.module';
@@ -106,6 +114,7 @@ export async function createTestApp(): Promise<INestApplication> {
           FieldAgentAuditLogEntity,
           InventoryItemEntity,
           InventoryItemAuditLogEntity,
+          ...INVENTORY_OPERATION_ENTITIES,
           InventoryItemImageEntity,
           InventoryItemImageAuditLogEntity,
           InventoryAccountingItemEntity,
@@ -117,6 +126,7 @@ export async function createTestApp(): Promise<INestApplication> {
           ExpenseEntity,
           ExpenseAttachmentEntity,
           PaymentExpenseAuditLogEntity,
+          ...EXPENSE_ACCOUNTABILITY_ENTITIES,
           ImportSessionEntity,
           ImportPayloadEntity,
           ImportPayloadErrorEntity,
@@ -148,10 +158,12 @@ export async function createTestApp(): Promise<INestApplication> {
       ProjectDashboardModule,
       FieldAgentsModule,
       InventoryItemsModule,
+      InventoryOperationsModule,
       InventoryItemImagesModule,
       InventoryAccountingItemsModule,
       InventoryPendingIssuesModule,
       PaymentsExpensesModule,
+      ExpenseAccountabilitiesModule,
       ImportSessionsModule,
       ExportJobsModule,
       CatalogAssetsModule,

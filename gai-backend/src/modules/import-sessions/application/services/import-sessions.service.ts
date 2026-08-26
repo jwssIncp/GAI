@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -17,6 +17,21 @@ import { InventoryItemAuditOperation } from '../../../inventory-items/domain/enu
 import { InventoryItemStatus } from '../../../inventory-items/domain/enums/inventory-item-status.enum';
 import { InventoryItemAuditLogEntity } from '../../../inventory-items/infrastructure/persistence/inventory-item-audit-log.entity';
 import { InventoryItemEntity } from '../../../inventory-items/infrastructure/persistence/inventory-item.entity';
+import { ProjectFieldAgentStatus } from '../../../field-agents/domain/enums/project-field-agent-status.enum';
+import { ProjectFieldAgentEntity } from '../../../field-agents/infrastructure/persistence/project-field-agent.entity';
+import {
+  InventoryObservationResult,
+  InventoryRoundStatus,
+  InventorySessionStatus,
+  PlateEvidenceSource,
+} from '../../../inventory-operations/domain/inventory-operation.enums';
+import {
+  InventoryObservationEntity,
+  InventoryOperationAuditLogEntity,
+  InventoryPlateHistoryEntity,
+  InventoryRoundEntity,
+  InventorySessionEntity,
+} from '../../../inventory-operations/infrastructure/persistence/inventory-operation.entity';
 import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
@@ -41,8 +56,11 @@ import {
   CreateImportSessionDto,
   ImportItemOperation,
   ImportPayloadItemDto,
+  ImportPhysicalObservationsFileDto,
 } from '../dto/import-sessions-inputs';
 import { ImportFileType } from '../../domain/enums/import-file-type.enum';
+import { ImportSessionType } from '../../domain/enums/import-session-type.enum';
+import { PhysicalObservationImportParserService } from './physical-observation-import-parser.service';
 import {
   ImportPagedQueryDto,
   ImportSessionListQueryDto,
@@ -82,6 +100,7 @@ export class ImportSessionsService {
     private readonly dataSource: DataSource,
     private readonly scope: ImportSessionScopeService,
     private readonly logger: PinoLogger,
+    private readonly physicalParser: PhysicalObservationImportParserService,
   ) {
     this.logger.setContext(ImportSessionsService.name);
   }
@@ -557,15 +576,25 @@ export class ImportSessionsService {
       const counts: Counts = { created: 0, updated: 0, deleted: 0, failed: 0 };
       for (const [index, item] of items.entries()) {
         try {
-          const result = await this.applyItem(
-            manager,
-            itemRepo,
-            itemAuditRepo,
-            session,
-            item,
-            actor,
-            index + 1,
-          );
+          const result =
+            session.type === ImportSessionType.PHYSICAL_OBSERVATIONS_IMPORT
+              ? await this.applyPhysicalObservation(
+                  manager,
+                  session,
+                  payload,
+                  item,
+                  actor,
+                  index + 1,
+                )
+              : await this.applyItem(
+                  manager,
+                  itemRepo,
+                  itemAuditRepo,
+                  session,
+                  item,
+                  actor,
+                  index + 1,
+                );
           counts[result] += 1;
         } catch (error) {
           counts.failed += 1;
@@ -603,6 +632,233 @@ export class ImportSessionsService {
         changes: counts,
       });
     });
+  }
+
+  async importPhysicalFile(
+    projectId: number,
+    sessionId: number,
+    dto: ImportPhysicalObservationsFileDto,
+    file: { originalname: string; buffer: Buffer },
+    actor: ImportSessionActorContext,
+  ): Promise<ImportPayloadResponseDto> {
+    const session = await this.findSession(projectId, sessionId, actor, true);
+    if (session.type !== ImportSessionType.PHYSICAL_OBSERVATIONS_IMPORT)
+      throw new ConflictException({
+        code: 'IMPORT_SESSION_TYPE_MISMATCH',
+        message: 'Session is not a physical observations import',
+      });
+    if (!file?.buffer || !file.originalname.toLowerCase().endsWith('.xlsx'))
+      throw new BadRequestException({
+        code: 'INVALID_IMPORT_FILE',
+        message: 'XLSX file is required',
+      });
+    const checksum = createHash('sha256').update(file.buffer).digest('hex');
+    return this.receivePayload(
+      projectId,
+      sessionId,
+      {
+        payload_number: dto.payload_number,
+        idempotency_key: dto.idempotency_key,
+        checksum,
+        raw_payload_path: `inline-xlsx://${file.originalname}`,
+        items: this.physicalParser.parse(file.buffer),
+        metadata: {
+          original_name: file.originalname,
+          parser: 'physical_observation_aliases_v1',
+        },
+      },
+      actor,
+    );
+  }
+
+  private async applyPhysicalObservation(
+    manager: EntityManager,
+    importSession: ImportSessionEntity,
+    payload: ImportPayloadEntity,
+    item: ImportPayloadItemDto,
+    actor: ImportSessionActorContext,
+    rowNumber: number,
+  ): Promise<'created'> {
+    const config = (importSession.metadata ?? {}) as Record<string, unknown>;
+    const inventorySessionId =
+      item.inventory_session_id ??
+      this.positiveInteger(config.inventory_session_id);
+    const roundId = item.round_id ?? this.positiveInteger(config.round_id);
+    const fieldAgentId =
+      item.field_agent_id ?? this.positiveInteger(config.field_agent_id);
+    if (!inventorySessionId)
+      throw new Error('inventory_session_id is required');
+    if (!roundId) throw new Error('round_id is required');
+    if (!fieldAgentId) throw new Error('field_agent_id is required');
+
+    const itemRepo = manager.getRepository(InventoryItemEntity);
+    const inventoryItem = item.inventory_item_id
+      ? await itemRepo.findOne({
+          where: {
+            id: item.inventory_item_id,
+            organizationId: importSession.organizationId,
+            projectId: importSession.projectId,
+          },
+        })
+      : await this.findInventoryItemByExternalId(
+          itemRepo,
+          importSession.projectId,
+          this.scope.cleanText(item.external_item_id) ?? null,
+        );
+    if (
+      !inventoryItem ||
+      inventoryItem.organizationId !== importSession.organizationId
+    )
+      throw new Error('inventory item not found');
+
+    const [operationSession, round, assignment] = await Promise.all([
+      manager
+        .getRepository(InventorySessionEntity)
+        .findOne({
+          where: {
+            id: inventorySessionId,
+            organizationId: importSession.organizationId,
+            projectId: importSession.projectId,
+          },
+        }),
+      manager
+        .getRepository(InventoryRoundEntity)
+        .findOne({
+          where: {
+            id: roundId,
+            organizationId: importSession.organizationId,
+            projectId: importSession.projectId,
+            sessionId: inventorySessionId,
+          },
+        }),
+      manager
+        .getRepository(ProjectFieldAgentEntity)
+        .findOne({
+          where: {
+            organizationId: importSession.organizationId,
+            projectId: importSession.projectId,
+            fieldAgentId,
+            status: ProjectFieldAgentStatus.ACTIVE,
+          },
+        }),
+    ]);
+    if (
+      !operationSession ||
+      operationSession.status !== InventorySessionStatus.ACTIVE
+    )
+      throw new Error('inventory session must be active');
+    if (!round || round.status !== InventoryRoundStatus.ACTIVE)
+      throw new Error('inventory round must be active');
+    if (
+      round.inventoryItemId !== null &&
+      round.inventoryItemId !== inventoryItem.id
+    )
+      throw new Error('reinventory round targets another item');
+    if (!assignment)
+      throw new Error('field agent must have an active project assignment');
+
+    const idempotencyKey = this.physicalObservationKey(
+      importSession.sessionUuid,
+      payload.idempotencyKey,
+      rowNumber,
+    );
+    const observationRepo = manager.getRepository(InventoryObservationEntity);
+    if (
+      await observationRepo.findOne({
+        where: { organizationId: importSession.organizationId, idempotencyKey },
+      })
+    )
+      return 'created';
+    const prior = await observationRepo.findOne({
+      where: {
+        projectId: importSession.projectId,
+        sessionId: inventorySessionId,
+        inventoryItemId: inventoryItem.id,
+      },
+      order: { capturedAt: 'DESC', id: 'DESC' },
+    });
+    const observedPlate =
+      this.scope.normalizePlate(
+        item.observed_plate ?? item.new_plate ?? item.old_plate,
+      ) ?? null;
+    const masterPlate =
+      this.scope.normalizePlate(
+        inventoryItem.newPlate ?? inventoryItem.oldPlate,
+      ) ?? null;
+    const capturedAt = item.captured_at
+      ? new Date(item.captured_at)
+      : new Date();
+    if (Number.isNaN(capturedAt.getTime()))
+      throw new Error('captured_at must be a valid date-time');
+    const result =
+      item.observation_result ??
+      (observedPlate && masterPlate && observedPlate !== masterPlate
+        ? InventoryObservationResult.DIVERGENT
+        : InventoryObservationResult.FOUND);
+    const observation = await observationRepo.save({
+      organizationId: importSession.organizationId,
+      projectId: importSession.projectId,
+      sessionId: inventorySessionId,
+      roundId,
+      inventoryItemId: inventoryItem.id,
+      fieldAgentId,
+      priorObservationId: prior?.id ?? null,
+      idempotencyKey,
+      result,
+      observedPlate,
+      observedSerialNumber:
+        this.scope.cleanText(
+          item.observed_serial_number ?? item.serial_number,
+        ) ?? null,
+      unitText: this.scope.cleanText(item.unit_text) ?? null,
+      sectorText: this.scope.cleanText(item.sector_text) ?? null,
+      locationText: this.scope.cleanText(item.location_text) ?? null,
+      notes: this.scope.cleanText(item.notes) ?? null,
+      capturedAt,
+      receivedAt: new Date(),
+      createdById: actor.id,
+    });
+    if (observedPlate)
+      await manager.getRepository(InventoryPlateHistoryEntity).save({
+        organizationId: importSession.organizationId,
+        projectId: importSession.projectId,
+        inventoryItemId: inventoryItem.id,
+        observationId: observation.id,
+        previousPlate: masterPlate,
+        observedPlate,
+        source: PlateEvidenceSource.PHYSICAL_BASE,
+        recordedById: actor.id,
+      });
+    await manager.getRepository(InventoryOperationAuditLogEntity).save({
+      organizationId: importSession.organizationId,
+      projectId: importSession.projectId,
+      entity: 'inventory_observation',
+      entityId: observation.id,
+      operation: 'IMPORT_PHYSICAL_EVIDENCE',
+      performedBy: actor.id,
+      changes: {
+        import_session_id: importSession.id,
+        import_payload_id: payload.id,
+        row_number: rowNumber,
+        prior_observation_id: prior?.id ?? null,
+        master_plate: masterPlate,
+        observed_plate: observedPlate,
+      },
+    });
+    return 'created';
+  }
+
+  private positiveInteger(value: unknown): number | undefined {
+    const number = Number(value);
+    return Number.isInteger(number) && number > 0 ? number : undefined;
+  }
+
+  private physicalObservationKey(
+    sessionUuid: string,
+    payloadKey: string,
+    rowNumber: number,
+  ): string {
+    return `imp:${createHash('sha256').update(`${sessionUuid}:${payloadKey}:${rowNumber}`).digest('hex')}`;
   }
 
   private async applyItem(

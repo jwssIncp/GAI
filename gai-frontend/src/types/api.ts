@@ -831,7 +831,7 @@ export type ExpenseAttachmentDownloadUrlResponse = {
   expires_in_seconds: number;
 };
 
-export type ImportSessionType = 'mobile_sync' | 'inventory_items_import' | 'accounting_items_import' | 'images_import' | 'raw_backup_import' | 'incremental_sync';
+export type ImportSessionType = 'mobile_sync' | 'inventory_items_import' | 'accounting_items_import' | 'images_import' | 'raw_backup_import' | 'incremental_sync' | 'physical_observations_import';
 export type ImportSessionSource = 'mobile_app' | 'web_admin' | 'api_client' | 'system' | 'migration';
 export type ImportSessionStatus = 'open' | 'receiving' | 'processing' | 'finished' | 'failed' | 'cancelled' | 'expired';
 export type ImportPayloadStatus = 'received' | 'processing' | 'processed' | 'failed' | 'duplicated' | 'ignored';
@@ -938,4 +938,145 @@ export type ImportFileDownloadUrlResponse = {
   file: ImportFile;
   download_url: string;
   expires_in_seconds: number;
+};
+
+export type InventorySessionStatus = 'draft' | 'active' | 'finished' | 'cancelled';
+export type InventoryRoundKind = 'initial' | 'reinventory';
+export type InventoryRoundStatus = 'active' | 'finished' | 'cancelled';
+export type InventoryObservationResult = 'found' | 'not_found' | 'divergent' | 'duplicated';
+export type ReconciliationStatus = 'matched' | 'physical_surplus' | 'accounting_surplus' | 'duplicate' | 'plate_divergence';
+export type ConsolidationDecision = 'accepted' | 'corrected' | 'rejected';
+
+export type InventorySession = {
+  id: number;
+  organization_id: number;
+  project_id: number;
+  name: string;
+  status: InventorySessionStatus;
+  started_at?: string | null;
+  finished_at?: string | null;
+  created_by_id: number;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  rounds?: InventoryRound[];
+};
+
+export type InventoryRound = {
+  id: number;
+  session_id: number;
+  round_number: number;
+  kind: InventoryRoundKind;
+  inventory_item_id?: number | null;
+  reason?: string | null;
+  status: InventoryRoundStatus;
+  requested_by_id?: number | null;
+  started_at: string;
+  finished_at?: string | null;
+};
+
+export type InventorySessionStartResponse = {
+  session: InventorySession;
+  round: InventoryRound;
+};
+
+export type InventoryObservation = {
+  id: number;
+  session_id: number;
+  round_id: number;
+  inventory_item_id: number;
+  field_agent_id: number;
+  prior_observation_id?: number | null;
+  idempotency_key?: string | null;
+  result: InventoryObservationResult;
+  observed_plate?: string | null;
+  observed_serial_number?: string | null;
+  unit_text?: string | null;
+  sector_text?: string | null;
+  location_text?: string | null;
+  notes?: string | null;
+  captured_at: string;
+  received_at: string;
+};
+
+export type CreateInventoryObservationRequest = {
+  inventory_item_id: number;
+  field_agent_id: number;
+  idempotency_key?: string;
+  result: InventoryObservationResult;
+  observed_plate?: string | null;
+  observed_serial_number?: string | null;
+  unit_text?: string | null;
+  sector_text?: string | null;
+  location_text?: string | null;
+  notes?: string | null;
+  captured_at?: string;
+};
+
+export type InventoryReconciliation = {
+  id: number;
+  session_id: number;
+  run_number: number;
+  inventory_item_id?: number | null;
+  observation_id?: number | null;
+  accounting_item_id?: number | null;
+  status: ReconciliationStatus;
+  physical_plate?: string | null;
+  accounting_plate?: string | null;
+  evidence?: Record<string, unknown> | null;
+  created_by_id: number;
+  created_at: string;
+};
+
+export type AssetValuation = {
+  id: number;
+  inventory_item_id: number;
+  source: string;
+  new_value?: string | null;
+  used_value?: string | null;
+  valuation_date: string;
+  notes?: string | null;
+  responsible_by_id: number;
+  created_at: string;
+};
+
+export type PlateHistoryEntry = {
+  id: number;
+  inventory_item_id: number;
+  source: 'field' | 'physical_base' | 'accounting_base' | 'manual';
+  observation_id?: number | null;
+  previous_plate?: string | null;
+  observed_plate?: string | null;
+  recorded_by_id?: number | null;
+  created_at: string;
+};
+
+export type ExpenseAccountabilityStatus = 'open' | 'closed' | 'cancelled';
+export type ExpenseAccountability = {
+  id: number;
+  organization_id: number;
+  project_id: number;
+  field_agent_id: number;
+  period_start: string;
+  period_end: string;
+  status: ExpenseAccountabilityStatus;
+  total_amount: string;
+  notes?: string | null;
+  responsible_by_id: number;
+  closed_by_id?: number | null;
+  closed_at?: string | null;
+  expense_ids: number[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExpenseInstallment = {
+  id: number;
+  expense_id: number;
+  installment_number: number;
+  installment_count: number;
+  due_date: string;
+  amount: string;
+  origin?: string | null;
+  created_at: string;
 };

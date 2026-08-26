@@ -46,8 +46,10 @@ import {
   useImportSessions,
   useReprocessImportPayload,
   useUploadImportFile,
+  useImportPhysicalObservations,
 } from './importSessionsQueries';
 import type { ImportFile, ImportFileType, ImportPayload, ImportPayloadError, ImportSession, ImportSessionStatus } from '@/types/api';
+import { createIdempotencyKey } from '@/features/inventory-operations/idempotency';
 
 const ALLOWED_FILE_TYPES = [
   'application/json',
@@ -189,7 +191,7 @@ function ImportSessionForm({ busy, onSubmit }: { busy?: boolean; onSubmit: (payl
 }
 
 function ImportSessionDetailDrawer({ projectId, session, onOpenChange }: { projectId: number; session: ImportSession | null; onOpenChange: (open: boolean) => void }) {
-  const [tab, setTab] = useState<'payloads' | 'errors' | 'files' | 'technical'>('payloads');
+  const [tab, setTab] = useState<'physical' | 'payloads' | 'errors' | 'files' | 'technical'>('payloads');
   const detail = useImportSession(projectId, session?.id);
   const current = detail.data ?? session;
   return (
@@ -213,13 +215,14 @@ function ImportSessionDetailDrawer({ projectId, session, onOpenChange }: { proje
             {current.error_message ? <Info label="Erro" value={current.error_message} /> : null}
           </dl>
           <div className="flex flex-wrap gap-2 border-b">
-            {(['payloads', 'errors', 'files', 'technical'] as const).map((item) => (
+            {([...(current.type === 'physical_observations_import' ? ['physical' as const] : []), 'payloads', 'errors', 'files', 'technical'] as const).map((item) => (
               <button key={item} type="button" className={`px-3 py-2 text-sm font-medium ${tab === item ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setTab(item)}>
-                {item === 'payloads' ? 'Payloads' : item === 'errors' ? 'Erros' : item === 'files' ? 'Arquivos' : 'Dados tecnicos'}
+                {item === 'physical' ? 'Importar XLSX' : item === 'payloads' ? 'Payloads' : item === 'errors' ? 'Erros' : item === 'files' ? 'Arquivos' : 'Dados tecnicos'}
               </button>
             ))}
           </div>
           {tab === 'payloads' ? <PayloadsPanel projectId={projectId} sessionId={current.id} /> : null}
+          {tab === 'physical' ? <PhysicalObservationsPanel projectId={projectId} sessionId={current.id} /> : null}
           {tab === 'errors' ? <ErrorsPanel projectId={projectId} sessionId={current.id} /> : null}
           {tab === 'files' ? <FilesPanel projectId={projectId} sessionId={current.id} /> : null}
           {tab === 'technical' ? <SafeTechnicalPanel session={current} /> : null}
@@ -227,6 +230,22 @@ function ImportSessionDetailDrawer({ projectId, session, onOpenChange }: { proje
       ) : null}
     </DrawerForm>
   );
+}
+
+function PhysicalObservationsPanel({ projectId, sessionId }: { projectId: number; sessionId: number }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [payloadNumber, setPayloadNumber] = useState('1');
+  const [idempotencyKey, setIdempotencyKey] = useState(() => createIdempotencyKey());
+  const mutation = useImportPhysicalObservations(projectId, sessionId);
+  function submit() {
+    if (!file) return;
+    mutation.mutate({ file, payload_number: Number(payloadNumber), idempotency_key: idempotencyKey }, { onSuccess: () => { setFile(null); setPayloadNumber(String(Number(payloadNumber) + 1)); setIdempotencyKey(createIdempotencyKey()); } });
+  }
+  function select(next: File) {
+    if (!next.name.toLowerCase().endsWith('.xlsx')) return;
+    setFile(next);
+  }
+  return <section className="grid gap-3 rounded-xl border p-4"><div><h3 className="font-semibold">Importar observacoes fisicas</h3><p className="mt-1 text-sm text-muted-foreground">Somente XLSX. O arquivo e processado pelo backend; erros validos permanecem disponiveis por linha na aba Erros.</p></div><label className="grid gap-1 text-sm font-medium">Numero do payload<input className="h-10 rounded-md border bg-background px-3" type="number" min={1} value={payloadNumber} onChange={(event) => setPayloadNumber(event.target.value)} /></label><label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium"><FileUp size={16} /> {file?.name ?? 'Selecionar XLSX'}<FileUpload className="sr-only" aria-label="Selecionar XLSX de observacoes fisicas" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={select} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}{mutation.isSuccess ? <p role="status" className="rounded-md bg-success/10 p-3 text-sm">Arquivo processado. Consulte o resumo de payloads e os erros por linha.</p> : null}<Button disabled={!file || !payloadNumber || mutation.isPending} onClick={submit}>{mutation.isPending ? 'Processando...' : 'Enviar e processar XLSX'}</Button></section>;
 }
 
 function PayloadsPanel({ projectId, sessionId }: { projectId: number; sessionId: number }) {

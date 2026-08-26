@@ -9,13 +9,18 @@ import {
   Query,
   Req,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { RequirePermissions } from '../../auth/presentation/decorators/require-permissions.decorator';
@@ -29,6 +34,7 @@ import {
   CreateImportFileUploadDto,
   CreateImportPayloadDto,
   CreateImportSessionDto,
+  ImportPhysicalObservationsFileDto,
 } from '../application/dto/import-sessions-inputs';
 import {
   ImportPagedQueryDto,
@@ -158,6 +164,42 @@ export class ImportSessionsController {
       projectId,
       sessionId,
       dto,
+      this.toActor(req),
+    );
+  }
+
+  @Post(':sessionId/physical-observations/import')
+  @HttpCode(201)
+  @RequirePermissions('import-payloads:create')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Importar XLSX de evidencias fisicas usando staging de payloads',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file', 'payload_number', 'idempotency_key'],
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        payload_number: { type: 'integer', minimum: 1 },
+        idempotency_key: { type: 'string', maxLength: 128 },
+      },
+    },
+  })
+  @ApiCreatedResponse({ type: ImportPayloadResponseDto })
+  importPhysicalFile(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Body() dto: ImportPhysicalObservationsFileDto,
+    @UploadedFile() file: { originalname: string; buffer: Buffer },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.importPhysicalFile(
+      projectId,
+      sessionId,
+      dto,
+      file,
       this.toActor(req),
     );
   }

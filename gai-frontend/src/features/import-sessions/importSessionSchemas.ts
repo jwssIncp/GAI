@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const importSessionTypes = ['mobile_sync', 'inventory_items_import', 'accounting_items_import', 'images_import', 'raw_backup_import', 'incremental_sync'] as const;
+export const importSessionTypes = ['mobile_sync', 'inventory_items_import', 'accounting_items_import', 'images_import', 'raw_backup_import', 'incremental_sync', 'physical_observations_import'] as const;
 export const importSessionSources = ['mobile_app', 'web_admin', 'api_client', 'system', 'migration'] as const;
 export const importSessionStatuses = ['open', 'receiving', 'processing', 'finished', 'failed', 'cancelled', 'expired'] as const;
 export const importPayloadStatuses = ['received', 'processing', 'processed', 'failed', 'duplicated', 'ignored'] as const;
@@ -13,6 +13,7 @@ export const importSessionTypeLabels: Record<(typeof importSessionTypes)[number]
   images_import: 'Importacao de imagens',
   raw_backup_import: 'Backup bruto',
   incremental_sync: 'Sincronizacao incremental',
+  physical_observations_import: 'Observacoes fisicas (XLSX)',
 };
 
 export const importSessionSourceLabels: Record<(typeof importSessionSources)[number], string> = {

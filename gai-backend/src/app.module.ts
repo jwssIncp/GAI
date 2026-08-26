@@ -33,6 +33,10 @@ import { FieldAgentAuditLogEntity } from './modules/field-agents/infrastructure/
 import { FieldAgentEntity } from './modules/field-agents/infrastructure/persistence/field-agent.entity';
 import { ProjectFieldAgentEntity } from './modules/field-agents/infrastructure/persistence/project-field-agent.entity';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
+import {
+  INVENTORY_OPERATION_ENTITIES,
+  InventoryOperationsModule,
+} from './modules/inventory-operations/inventory-operations.module';
 import { InventoryItemAuditLogEntity } from './modules/inventory-items/infrastructure/persistence/inventory-item-audit-log.entity';
 import { InventoryItemEntity } from './modules/inventory-items/infrastructure/persistence/inventory-item.entity';
 import { InventoryItemImagesModule } from './modules/inventory-item-images/inventory-item-images.module';
@@ -57,6 +61,10 @@ import { ImportPayloadErrorEntity } from './modules/import-sessions/infrastructu
 import { ImportSessionAuditLogEntity } from './modules/import-sessions/infrastructure/persistence/import-session-audit-log.entity';
 import { ImportSessionEntity } from './modules/import-sessions/infrastructure/persistence/import-session.entity';
 import { ExportJobsModule } from './modules/export-jobs/export-jobs.module';
+import {
+  EXPENSE_ACCOUNTABILITY_ENTITIES,
+  ExpenseAccountabilitiesModule,
+} from './modules/expense-accountabilities/expense-accountabilities.module';
 import { ExportJobAuditLogEntity } from './modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity';
 import { ExportJobEntity } from './modules/export-jobs/infrastructure/persistence/export-job.entity';
 import { ProjectsModule } from './modules/projects/projects.module';
@@ -122,6 +130,7 @@ import { UsersModule } from './modules/users/users.module';
           FieldAgentAuditLogEntity,
           InventoryItemEntity,
           InventoryItemAuditLogEntity,
+          ...INVENTORY_OPERATION_ENTITIES,
           InventoryItemImageEntity,
           InventoryItemImageAuditLogEntity,
           InventoryAccountingItemEntity,
@@ -140,6 +149,7 @@ import { UsersModule } from './modules/users/users.module';
           ImportSessionAuditLogEntity,
           ExportJobEntity,
           ExportJobAuditLogEntity,
+          ...EXPENSE_ACCOUNTABILITY_ENTITIES,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -166,12 +176,14 @@ import { UsersModule } from './modules/users/users.module';
     ProjectDashboardModule,
     FieldAgentsModule,
     InventoryItemsModule,
+    InventoryOperationsModule,
     InventoryItemImagesModule,
     InventoryAccountingItemsModule,
     InventoryPendingIssuesModule,
     PaymentsExpensesModule,
     ImportSessionsModule,
     ExportJobsModule,
+    ExpenseAccountabilitiesModule,
     CatalogAssetsModule,
     CompaniesModule,
   ],

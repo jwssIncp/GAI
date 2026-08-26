@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info: { title: GAI Inventory Operations API, version: 1.1.0 }
+servers: [{ url: /api/v1 }]
+security: [{ bearerAuth: [] }]
+paths:
+  /projects/{projectId}/inventory-sessions:
+    post:
+      summary: Create inventory session
+      x-permission: inventory-sessions:create
+      responses:
+        {
+          '201': { description: Created },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '409': { description: Project state conflict },
+        }
+    get:
+      summary: List inventory sessions
+      x-permission: inventory-sessions:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - {
+            name: status,
+            in: query,
+            schema:
+              { type: string, enum: [draft, active, finished, cancelled] },
+          }
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /projects/{projectId}/inventory-sessions/{sessionId}:
+    get:
+      summary: Get inventory session
+      x-permission: inventory-sessions:read
+      responses:
+        { '200': { description: Session }, '404': { description: Not found } }
+  /projects/{projectId}/inventory-sessions/{sessionId}/start:
+    post:
+      summary: Start session and initial round
+      x-permission: inventory-sessions:update
+      responses:
+        {
+          '200': { description: Started },
+          '409': { description: Invalid state },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/reinventory:
+    post:
+      summary: Request a historical reinventory round
+      x-permission: inventory-rounds:reinventory
+      responses:
+        {
+          '201': { description: Round created },
+          '409': { description: Missing prior evidence or inactive session },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations:
+    post:
+      summary: Create immutable idempotent observation
+      description: observed_plate is evidence and never overwrites the master item. Reusing the same idempotency_key returns the original observation.
+      x-permission: inventory-observations:create
+      responses:
+        {
+          '201': { description: Observation created or idempotent replay },
+          '409':
+            {
+              description: Round,
+              assignment,
+              duplicate item/round or idempotency conflict,
+            },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/finish:
+    post:
+      summary: Finish round
+      x-permission: inventory-sessions:update
+      responses: { '200': { description: Finished } }
+  /projects/{projectId}/inventory-sessions/{sessionId}/observations:
+    get:
+      summary: List observation history
+      x-permission: inventory-sessions:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: round_id, in: query, schema: { type: integer, minimum: 1 } }
+        - {
+            name: inventory_item_id,
+            in: query,
+            schema: { type: integer, minimum: 1 },
+          }
+        - {
+            name: field_agent_id,
+            in: query,
+            schema: { type: integer, minimum: 1 },
+          }
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /projects/{projectId}/inventory-sessions/{sessionId}/reconciliations:
+    post:
+      summary: Run versioned reconciliation
+      x-permission: reconciliations:create
+      responses: { '201': { description: Reconciliation run } }
+    get:
+      summary: List reconciliation history
+      x-permission: reconciliations:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - { name: run_number, in: query, schema: { type: integer, minimum: 1 } }
+        - {
+            name: status,
+            in: query,
+            schema:
+              {
+                type: string,
+                enum:
+                  [
+                    matched,
+                    physical_surplus,
+                    accounting_surplus,
+                    duplicate,
+                    plate_divergence,
+                  ],
+              },
+          }
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /projects/{projectId}/inventory-sessions/{sessionId}/reconciliations/{id}/consolidate:
+    post:
+      summary: Persist immutable decision snapshot
+      x-permission: consolidations:create
+      responses:
+        {
+          '201': { description: Consolidation },
+          '409': { description: Duplicate evidence or already consolidated },
+        }
+  /projects/{projectId}/inventory-items/{itemId}/valuations:
+    post:
+      summary: Create manual valuation
+      x-permission: asset-valuations:create
+      responses: { '201': { description: Valuation } }
+    get:
+      summary: List valuation history
+      x-permission: asset-valuations:read
+      parameters:
+        [
+          { $ref: '#/components/parameters/Page' },
+          { $ref: '#/components/parameters/PageSize' },
+        ]
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+  /projects/{projectId}/inventory-items/{itemId}/plate-history:
+    get:
+      summary: List source-aware plate history
+      x-permission: plate-history:read
+      parameters:
+        [
+          { $ref: '#/components/parameters/Page' },
+          { $ref: '#/components/parameters/PageSize' },
+        ]
+      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer } }
+  parameters:
+    Page:
+      {
+        name: page,
+        in: query,
+        schema: { type: integer, minimum: 1, default: 1 },
+      }
+    PageSize:
+      {
+        name: page_size,
+        in: query,
+        schema: { type: integer, minimum: 1, maximum: 100, default: 20 },
+      }
+  responses:
+    Paginated:
+      description: Paginated collection
+      content:
+        {
+          application/json:
+            { schema: { $ref: '#/components/schemas/PaginatedResponse' } },
+        }
+  schemas:
+    PaginatedResponse:
+      type: object
+      required: [items, page, page_size, total_items, total_pages]
+      properties:
+        items: { type: array, items: {} }
+        page: { type: integer, minimum: 1 }
+        page_size: { type: integer, minimum: 1, maximum: 100 }
+        total_items: { type: integer, minimum: 0 }
+        total_pages: { type: integer, minimum: 0 }

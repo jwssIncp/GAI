@@ -236,11 +236,13 @@ function WorkspaceTabs({ projectId }: { projectId: number }) {
     { label: 'Visao geral', to: `/app/projects/${projectId}/summary`, permissions: ['projects:read'] },
     { label: 'Dashboard', to: `/app/projects/${projectId}/dashboard`, permissions: ['projects:read'] },
     { label: 'Itens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
+    { label: 'Inventario', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
     { label: 'Imagens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'], hint: 'Imagens ficam no detalhe do item.' },
     { label: 'Base contabil', to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
     { label: 'Pendencias', to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
     { label: 'Inventariantes', to: '#inventariantes', permissions: ['project-field-agents:read'] },
     { label: 'Financeiro', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
+    { label: 'Prestacoes', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
     { label: 'Importacoes', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
     { label: 'Exportacoes', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
     { label: 'Unidades', to: '#unidades', permissions: ['project-units:read'] },
@@ -273,6 +275,7 @@ function QuickActions({ project }: { project: Project }) {
   const locked = lockedStatuses.includes(project.status);
   const actions = [
     { label: 'Novo item', to: `/app/projects/${project.id}/inventory-items?new=1`, permissions: ['inventory-items:create'], icon: <Plus size={18} /> },
+    { label: 'Nova sessao de inventario', to: `/app/projects/${project.id}/inventory/sessions`, permissions: ['inventory-sessions:create'], icon: <Plus size={18} /> },
     { label: 'Importar base contabil', to: `/app/projects/${project.id}/accounting-items?import=1`, permissions: ['inventory-accounting-items:import'], icon: <FileSpreadsheet size={18} /> },
     { label: 'Gerar pendencias', to: `/app/projects/${project.id}/pending-issues?generate=1`, permissions: ['inventory-pending-issues:generate'], icon: <AlertTriangle size={18} /> },
     { label: 'Nova despesa', to: `/app/projects/${project.id}/finance?tab=expenses&new=1`, permissions: ['expenses:create'], icon: <CircleDollarSign size={18} /> },
@@ -308,9 +311,11 @@ function QuickActions({ project }: { project: Project }) {
 function ModuleSummary({ projectId, summary }: { projectId: number; summary: ProjectSummary }) {
   const modules = [
     { title: 'Itens inventariados', description: `${summary.inventory.pending_items} pendentes, ${summary.inventory.divergent_items} divergentes e ${summary.inventory.not_found_items} nao encontrados.`, to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
+    { title: 'Inventario operacional', description: 'Sessoes, rodadas, observacoes, reinventarios e conciliacoes versionadas.', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
     { title: 'Base contabil', description: `${summary.accounting.total_accounting_items} itens, ${summary.accounting.matched_accounting_items} conciliados e ${summary.accounting.divergent_accounting_items} divergentes.`, to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
     { title: 'Pendencias', description: `${summary.pending_issues.open_pending_issues} abertas, ${summary.pending_issues.resolved_pending_issues} resolvidas e ${summary.pending_issues.critical_pending_issues} criticas.`, to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
     { title: 'Financeiro', description: summary.financial ? `${formatMoney(summary.financial.financial_total_amount)} em pagamentos e despesas.` : 'Resumo financeiro nao retornado pelo dashboard.', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
+    { title: 'Prestacao de contas', description: 'Despesas elegiveis, fechamento e parcelas com total do backend.', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
     { title: 'Importacoes', description: summary.imports ? `${summary.imports.total_import_sessions} sessoes, ${summary.imports.processing_import_sessions} em processamento e ${summary.imports.failed_import_sessions} com falha.` : 'Resumo de importacoes nao retornado pelo dashboard.', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
     { title: 'Exportacoes', description: summary.exports ? `${summary.exports.total_export_jobs} jobs, ${summary.exports.finished_export_jobs} concluidos e ${summary.exports.failed_export_jobs} com falha.` : 'Nenhuma exportacao registrada.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
   ];

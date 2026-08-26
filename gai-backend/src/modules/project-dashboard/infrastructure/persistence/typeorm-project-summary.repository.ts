@@ -34,6 +34,21 @@ import { ExpenseStatus } from '../../../payments-expenses/domain/enums/expense-s
 import { PaymentStatus } from '../../../payments-expenses/domain/enums/payment-status.enum';
 import { ExpenseEntity } from '../../../payments-expenses/infrastructure/persistence/expense.entity';
 import { FieldAgentPaymentEntity } from '../../../payments-expenses/infrastructure/persistence/field-agent-payment.entity';
+import {
+  InventoryConsolidationEntity,
+  InventoryObservationEntity,
+  InventoryReconciliationEntity,
+  InventoryRoundEntity,
+  InventorySessionEntity,
+} from '../../../inventory-operations/infrastructure/persistence/inventory-operation.entity';
+import {
+  InventoryRoundKind,
+  ReconciliationStatus,
+} from '../../../inventory-operations/domain/inventory-operation.enums';
+import {
+  ExpenseAccountabilityEntity,
+  ExpenseAccountabilityStatus,
+} from '../../../expense-accountabilities/expense-accountability.entity';
 
 type RawRow = Record<string, unknown>;
 
@@ -58,6 +73,18 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
     private readonly importSessions: Repository<ImportSessionEntity>,
     @InjectRepository(ExportJobEntity)
     private readonly exportJobs: Repository<ExportJobEntity>,
+    @InjectRepository(InventorySessionEntity)
+    private readonly operationSessions: Repository<InventorySessionEntity>,
+    @InjectRepository(InventoryRoundEntity)
+    private readonly operationRounds: Repository<InventoryRoundEntity>,
+    @InjectRepository(InventoryObservationEntity)
+    private readonly observations: Repository<InventoryObservationEntity>,
+    @InjectRepository(InventoryReconciliationEntity)
+    private readonly reconciliations: Repository<InventoryReconciliationEntity>,
+    @InjectRepository(InventoryConsolidationEntity)
+    private readonly consolidations: Repository<InventoryConsolidationEntity>,
+    @InjectRepository(ExpenseAccountabilityEntity)
+    private readonly accountabilities: Repository<ExpenseAccountabilityEntity>,
   ) {}
 
   async getInventorySummary(
@@ -119,6 +146,26 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
     const totalItems = this.number(row, 'total_items');
     const evaluatedItems = this.number(row, 'evaluated_items');
 
+    const [
+      sessionCount,
+      roundCount,
+      reinventoryCount,
+      observationCount,
+      inventoriedRaw,
+    ] = await Promise.all([
+      this.operationSessions.count({ where: { projectId } }),
+      this.operationRounds.count({ where: { projectId } }),
+      this.operationRounds.count({
+        where: { projectId, kind: InventoryRoundKind.REINVENTORY },
+      }),
+      this.observations.count({ where: { projectId } }),
+      this.observations
+        .createQueryBuilder('observation')
+        .select('COUNT(DISTINCT observation.inventory_item_id)', 'count')
+        .where('observation.project_id = :projectId', { projectId })
+        .getRawOne<RawRow>(),
+    ]);
+    const inventoriedItems = this.number(inventoriedRaw, 'count');
     return {
       total_items: totalItems,
       evaluated_items: evaluatedItems,
@@ -132,6 +179,15 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
         evaluatedItems,
         totalItems,
       ),
+      inventoried_items: inventoriedItems,
+      observation_progress_percentage: calculateProgressPercentage(
+        inventoriedItems,
+        totalItems,
+      ),
+      inventory_sessions: sessionCount,
+      inventory_rounds: roundCount,
+      reinventory_rounds: reinventoryCount,
+      observations: observationCount,
     };
   }
 
@@ -204,6 +260,50 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
       .where('accounting.project_id = :projectId', { projectId })
       .getRawOne<RawRow>();
 
+    const latest = await this.reconciliations.findOne({
+      where: { projectId },
+      order: { createdAt: 'DESC', id: 'DESC' },
+    });
+    let operational: RawRow = {};
+    let consolidatedItems = 0;
+    if (latest) {
+      operational =
+        (await this.reconciliations
+          .createQueryBuilder('r')
+          .select([
+            this.countStatus(
+              'reconciled_items',
+              'r.status',
+              ReconciliationStatus.MATCHED,
+            ),
+            this.countStatus(
+              'physical_surplus_items',
+              'r.status',
+              ReconciliationStatus.PHYSICAL_SURPLUS,
+            ),
+            this.countStatus(
+              'accounting_surplus_items',
+              'r.status',
+              ReconciliationStatus.ACCOUNTING_SURPLUS,
+            ),
+            this.countStatus(
+              'duplicate_items',
+              'r.status',
+              ReconciliationStatus.DUPLICATE,
+            ),
+          ])
+          .where('r.project_id = :projectId', { projectId })
+          .andWhere('r.session_id = :sessionId', {
+            sessionId: latest.sessionId,
+          })
+          .andWhere('r.run_number = :runNumber', {
+            runNumber: latest.runNumber,
+          })
+          .getRawOne<RawRow>()) ?? {};
+      consolidatedItems = await this.consolidations.count({
+        where: { projectId, sessionId: latest.sessionId },
+      });
+    }
     return {
       total_accounting_items: this.number(row, 'total_accounting_items'),
       matched_accounting_items: this.number(row, 'matched_accounting_items'),
@@ -216,6 +316,18 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
         'not_found_accounting_items',
       ),
       ignored_accounting_items: this.number(row, 'ignored_accounting_items'),
+      latest_reconciliation_run: latest?.runNumber ?? null,
+      reconciled_items: this.number(operational, 'reconciled_items'),
+      physical_surplus_items: this.number(
+        operational,
+        'physical_surplus_items',
+      ),
+      accounting_surplus_items: this.number(
+        operational,
+        'accounting_surplus_items',
+      ),
+      duplicate_items: this.number(operational, 'duplicate_items'),
+      consolidated_items: consolidatedItems,
     };
   }
 
@@ -326,9 +438,26 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
   async getFinancialSummary(
     projectId: number,
   ): Promise<ProjectFinancialSummaryDto> {
-    const [payments, expenses] = await Promise.all([
+    const [payments, expenses, accountabilityRaw] = await Promise.all([
       this.getPaymentSummary(projectId),
       this.getExpenseSummary(projectId),
+      this.accountabilities
+        .createQueryBuilder('a')
+        .select([
+          this.countStatus(
+            'open_accountabilities',
+            'a.status',
+            ExpenseAccountabilityStatus.OPEN,
+          ),
+          this.countStatus(
+            'closed_accountabilities',
+            'a.status',
+            ExpenseAccountabilityStatus.CLOSED,
+          ),
+          `COALESCE(SUM(CASE WHEN a.status = '${ExpenseAccountabilityStatus.CLOSED}' THEN a.total_amount ELSE 0 END), 0) AS closed_accountabilities_amount`,
+        ])
+        .where('a.project_id = :projectId', { projectId })
+        .getRawOne<RawRow>(),
     ]);
 
     return {
@@ -338,6 +467,17 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
         payments.total_payment_amount,
         expenses.total_expense_amount,
       ),
+      open_accountabilities: this.number(
+        accountabilityRaw,
+        'open_accountabilities',
+      ),
+      closed_accountabilities: this.number(
+        accountabilityRaw,
+        'closed_accountabilities',
+      ),
+      closed_accountabilities_amount: Number(
+        accountabilityRaw?.closed_accountabilities_amount ?? 0,
+      ).toFixed(2),
     };
   }
 

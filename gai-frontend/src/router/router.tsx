@@ -20,6 +20,9 @@ import { ProjectFinancePage } from '@/features/finance/ProjectFinancePage';
 import { ProjectExportJobsPage } from '@/features/export-jobs/ProjectExportJobsPage';
 import { ProjectImportSessionsPage } from '@/features/import-sessions/ProjectImportSessionsPage';
 import { ProjectDashboardPage } from '@/features/project-dashboard/ProjectDashboardPage';
+import { ProjectInventorySessionsPage } from '@/features/inventory-operations/ProjectInventorySessionsPage';
+import { InventorySessionDetailPage } from '@/features/inventory-operations/InventorySessionDetailPage';
+import { ProjectAccountabilitiesPage } from '@/features/accountabilities/ProjectAccountabilitiesPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/app/dashboard" replace /> },
@@ -56,9 +59,14 @@ export const router = createBrowserRouter([
           { element: <ProtectedRoute permissions={['export-jobs:read']} />, children: [{ path: 'projects/:projectId/export-jobs', element: <ProjectExportJobsPage /> }] },
           { element: <ProtectedRoute permissions={['import-sessions:read']} />, children: [{ path: 'projects/:projectId/import-sessions', element: <ProjectImportSessionsPage /> }] },
           { element: <ProtectedRoute permissions={['inventory-items:read']} />, children: [{ path: 'projects/:projectId/inventory-items', element: <ProjectInventoryItemsPage /> }] },
+          { element: <ProtectedRoute permissions={['inventory-sessions:read']} />, children: [
+            { path: 'projects/:projectId/inventory/sessions', element: <ProjectInventorySessionsPage /> },
+            { path: 'projects/:projectId/inventory/sessions/:sessionId', element: <InventorySessionDetailPage /> },
+          ] },
           { element: <ProtectedRoute permissions={['inventory-accounting-items:read']} />, children: [{ path: 'projects/:projectId/accounting-items', element: <ProjectAccountingItemsPage /> }] },
           { element: <ProtectedRoute permissions={['inventory-pending-issues:read']} />, children: [{ path: 'projects/:projectId/pending-issues', element: <ProjectPendingIssuesPage /> }] },
           { element: <ProtectedRoute permissions={['payments:read', 'expenses:read']} />, children: [{ path: 'projects/:projectId/finance', element: <ProjectFinancePage /> }] },
+          { element: <ProtectedRoute permissions={['expense-accountabilities:read']} />, children: [{ path: 'projects/:projectId/finance/accountabilities', element: <ProjectAccountabilitiesPage /> }] },
           { element: <ProtectedRoute permissions={['field-agents:read']} />, children: [{ path: 'field-agents', element: <FieldAgentsPage /> }] },
           { path: 'catalog-assets', element: <PlaceholderPage title="Catalog Assets" /> },
           { path: 'inventory-items', element: <PlaceholderPage title="Inventory Items" /> },

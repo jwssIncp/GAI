@@ -128,3 +128,15 @@ export function useUploadImportFile(projectId: number, sessionId: number, type: 
 export function useImportFileDownloadUrl(projectId: number, sessionId: number) {
   return useMutation({ mutationFn: (fileId: number) => importSessionsApi.fileDownloadUrl(projectId, sessionId, fileId) });
 }
+
+export function useImportPhysicalObservations(projectId: number, sessionId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { file: File; payload_number: number; idempotency_key: string }) => importSessionsApi.importPhysicalObservations(projectId, sessionId, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: importSessionKeys.detail(projectId, sessionId) });
+      await queryClient.invalidateQueries({ queryKey: importSessionKeys.errors(projectId, sessionId) });
+      await queryClient.invalidateQueries({ queryKey: importSessionKeys.payloads(projectId, sessionId) });
+    },
+  });
+}

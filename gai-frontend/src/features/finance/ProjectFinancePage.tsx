@@ -65,6 +65,7 @@ export function ProjectFinancePage() {
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/pending-issues`}>Pendencias</Link>
         <span className="text-muted-foreground">/ Financeiro</span>
+        <PermissionGate permissions={['expense-accountabilities:read']}><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/finance/accountabilities`}>Prestacao de contas</Link></PermissionGate>
       </div>
       <PaymentSummaryCards projectId={projectId} />
       <div className="flex w-fit gap-1 rounded-xl border border-border/70 bg-muted/45 p-1.5 shadow-inner" role="group" aria-label="Visões financeiras">

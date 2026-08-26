@@ -79,6 +79,19 @@ import type {
   UpdateProjectFieldAgentRequest,
   User,
   MetaPaginated,
+  AssetValuation,
+  ConsolidationDecision,
+  CreateInventoryObservationRequest,
+  ExpenseAccountability,
+  ExpenseAccountabilityStatus,
+  ExpenseInstallment,
+  InventoryObservation,
+  InventoryReconciliation,
+  InventorySession,
+  InventorySessionStartResponse,
+  InventorySessionStatus,
+  PlateHistoryEntry,
+  ReconciliationStatus,
 } from '@/types/api';
 
 export const authApi = {
@@ -394,4 +407,57 @@ export const importSessionsApi = {
     api.get<ImportFile[]>(`/projects/${projectId}/import-sessions/${sessionId}/files`).then((r) => r.data),
   fileDownloadUrl: (projectId: number, sessionId: number, fileId: number) =>
     api.post<ImportFileDownloadUrlResponse>(`/projects/${projectId}/import-sessions/${sessionId}/files/${fileId}/download-url`).then((r) => r.data),
+  importPhysicalObservations: (projectId: number, sessionId: number, payload: { file: File; payload_number: number; idempotency_key: string }) => {
+    const form = new FormData();
+    form.append('file', payload.file);
+    form.append('payload_number', String(payload.payload_number));
+    form.append('idempotency_key', payload.idempotency_key);
+    return api.post<ImportPayload>(`/projects/${projectId}/import-sessions/${sessionId}/physical-observations/import`, form).then((r) => r.data);
+  },
+};
+
+export const inventoryOperationsApi = {
+  listSessions: (projectId: number, params: PageParams & { status?: InventorySessionStatus | '' }) =>
+    api.get<PaginatedItems<InventorySession>>(`/projects/${projectId}/inventory-sessions`, { params }).then((r) => r.data),
+  createSession: (projectId: number, payload: { name: string; metadata?: Record<string, unknown> }) =>
+    api.post<InventorySession>(`/projects/${projectId}/inventory-sessions`, payload).then((r) => r.data),
+  getSession: (projectId: number, sessionId: number) =>
+    api.get<InventorySession>(`/projects/${projectId}/inventory-sessions/${sessionId}`).then((r) => r.data),
+  startSession: (projectId: number, sessionId: number) =>
+    api.post<InventorySessionStartResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/start`).then((r) => r.data),
+  requestReinventory: (projectId: number, sessionId: number, payload: { inventory_item_id: number; reason: string }) =>
+    api.post(`/projects/${projectId}/inventory-sessions/${sessionId}/reinventory`, payload).then((r) => r.data),
+  createObservation: (projectId: number, sessionId: number, roundId: number, payload: CreateInventoryObservationRequest) =>
+    api.post<InventoryObservation>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations`, payload).then((r) => r.data),
+  finishRound: (projectId: number, sessionId: number, roundId: number) =>
+    api.post(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/finish`).then((r) => r.data),
+  listObservations: (projectId: number, sessionId: number, params: PageParams & { round_id?: number; inventory_item_id?: number; field_agent_id?: number }) =>
+    api.get<PaginatedItems<InventoryObservation>>(`/projects/${projectId}/inventory-sessions/${sessionId}/observations`, { params }).then((r) => r.data),
+  reconcile: (projectId: number, sessionId: number) =>
+    api.post<InventoryReconciliation[]>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
+  listReconciliations: (projectId: number, sessionId: number, params: PageParams & { run_number?: number; status?: ReconciliationStatus | '' }) =>
+    api.get<PaginatedItems<InventoryReconciliation>>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`, { params }).then((r) => r.data),
+  consolidate: (projectId: number, sessionId: number, id: number, payload: { decision: ConsolidationDecision; notes?: string | null }) =>
+    api.post(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations/${id}/consolidate`, payload).then((r) => r.data),
+  listValuations: (projectId: number, itemId: number, params: PageParams) =>
+    api.get<PaginatedItems<AssetValuation>>(`/projects/${projectId}/inventory-items/${itemId}/valuations`, { params }).then((r) => r.data),
+  createValuation: (projectId: number, itemId: number, payload: { source: string; new_value?: string | null; used_value?: string | null; valuation_date: string; notes?: string | null }) =>
+    api.post<AssetValuation>(`/projects/${projectId}/inventory-items/${itemId}/valuations`, payload).then((r) => r.data),
+  plateHistory: (projectId: number, itemId: number, params: PageParams) =>
+    api.get<PaginatedItems<PlateHistoryEntry>>(`/projects/${projectId}/inventory-items/${itemId}/plate-history`, { params }).then((r) => r.data),
+};
+
+export const expenseAccountabilitiesApi = {
+  list: (projectId: number, params: PageParams & { field_agent_id?: number; status?: ExpenseAccountabilityStatus | ''; period_start?: string; period_end?: string }) =>
+    api.get<PaginatedItems<ExpenseAccountability>>(`/projects/${projectId}/expense-accountabilities`, { params }).then((r) => r.data),
+  create: (projectId: number, payload: { field_agent_id: number; period_start: string; period_end: string; notes?: string }) =>
+    api.post<ExpenseAccountability>(`/projects/${projectId}/expense-accountabilities`, payload).then((r) => r.data),
+  get: (projectId: number, id: number) => api.get<ExpenseAccountability>(`/projects/${projectId}/expense-accountabilities/${id}`).then((r) => r.data),
+  addExpense: (projectId: number, id: number, expenseId: number) =>
+    api.post<ExpenseAccountability>(`/projects/${projectId}/expense-accountabilities/${id}/expenses`, { expense_id: expenseId }).then((r) => r.data),
+  close: (projectId: number, id: number) => api.post<ExpenseAccountability>(`/projects/${projectId}/expense-accountabilities/${id}/close`).then((r) => r.data),
+  listInstallments: (projectId: number, expenseId: number, params: PageParams) =>
+    api.get<PaginatedItems<ExpenseInstallment>>(`/projects/${projectId}/expenses/${expenseId}/installments`, { params }).then((r) => r.data),
+  generateInstallments: (projectId: number, expenseId: number, payload: { count: number; first_due_date: string; origin?: string }) =>
+    api.post<ExpenseInstallment[]>(`/projects/${projectId}/expenses/${expenseId}/installments/generate`, payload).then((r) => r.data),
 };

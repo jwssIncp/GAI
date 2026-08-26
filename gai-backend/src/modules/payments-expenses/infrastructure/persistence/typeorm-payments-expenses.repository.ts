@@ -178,6 +178,7 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
       ? (this.dateKey(x.paymentDate) as unknown as Date)
       : null;
     if (x.id > 0) e.id = x.id;
+    else delete (e as Partial<FieldAgentPaymentEntity>).id;
     return e;
   }
   private toExpenseEntity(p: Expense): ExpenseEntity {
@@ -185,12 +186,14 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
     const e = this.expenseRepo.create(x as Partial<ExpenseEntity>);
     e.expenseDate = this.dateKey(x.expenseDate) as unknown as Date;
     if (x.id > 0) e.id = x.id;
+    else delete (e as Partial<ExpenseEntity>).id;
     return e;
   }
   private toAttachmentEntity(p: ExpenseAttachment): ExpenseAttachmentEntity {
     const x = p.toProps();
     const e = this.attachmentRepo.create(x as Partial<ExpenseAttachmentEntity>);
     if (x.id > 0) e.id = x.id;
+    else delete (e as Partial<ExpenseAttachmentEntity>).id;
     return e;
   }
   private toPayment(e: FieldAgentPaymentEntity): FieldAgentPayment {

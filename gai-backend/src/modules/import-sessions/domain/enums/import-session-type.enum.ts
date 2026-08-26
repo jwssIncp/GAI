@@ -5,4 +5,5 @@ export enum ImportSessionType {
   IMAGES_IMPORT = 'images_import',
   RAW_BACKUP_IMPORT = 'raw_backup_import',
   INCREMENTAL_SYNC = 'incremental_sync',
+  PHYSICAL_OBSERVATIONS_IMPORT = 'physical_observations_import',
 }

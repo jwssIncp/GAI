@@ -30,6 +30,7 @@ const orgAdmin = {
 };
 
 async function mockApi(page: any, sessionUser: any = user) {
+  await page.route('**/api/v1/**', async (route: any) => route.fulfill({ status: 404, json: { code: 'NOT_FOUND', message: 'Endpoint nao mockado no E2E' } }));
   await page.route('**/api/v1/auth/login**', async (route: any) => route.fulfill({ json: { access_token: 'token-123', expires_at: '2099-01-01T00:00:00.000Z', user: sessionUser } }));
   await page.route('**/api/v1/auth/me**', async (route: any) => route.fulfill({ json: sessionUser }));
   await page.route('**/api/v1/auth/logout**', async (route: any) => route.fulfill({ status: 204 }));
@@ -45,6 +46,8 @@ async function mockApi(page: any, sessionUser: any = user) {
   await page.route('**/api/v1/field-agents/7**', async (route: any) => route.fulfill({ json: fieldAgent }));
   await page.route('**/api/v1/projects/10/inventory-items**', async (route: any) => route.fulfill({ json: { items: [inventoryItem], page: 1, page_size: 20, total_items: 1, total_pages: 1 } }));
   await page.route('**/api/v1/projects/10/inventory-items/11**', async (route: any) => route.fulfill({ json: inventoryItem }));
+  await page.route('**/api/v1/projects/10/inventory-items/11/plate-history**', async (route: any) => route.fulfill({ json: { items: [], page: 1, page_size: 10, total_items: 0, total_pages: 0 } }));
+  await page.route('**/api/v1/projects/10/inventory-items/11/valuations**', async (route: any) => route.fulfill({ json: { items: [], page: 1, page_size: 10, total_items: 0, total_pages: 0 } }));
   await page.route('**/api/v1/projects/10/inventory-items/11/images**', async (route: any) =>
     route.fulfill({ json: { items: [inventoryItemImage], page: 1, page_size: 12, total_items: 1, total_pages: 1 } }),
   );
@@ -645,6 +648,7 @@ test('abre detalhe de item', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
+  await expect(page.getByText('Notebook Dell')).toBeVisible();
   await page.getByLabel('Visualizar item').click();
   await expect(page.getByText('Item #11 - Projeto #10')).toBeVisible();
   await expect(page.getByLabel('Detalhes do item').getByText('Sala 10')).toBeVisible();
@@ -655,6 +659,7 @@ test('visualiza imagem de item por download-url temporaria', async ({ page }) =>
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
+  await expect(page.getByText('Notebook Dell')).toBeVisible();
   await page.getByLabel('Visualizar item').click();
   await page.getByRole('button', { name: /visualizar/i }).click();
   await expect(page.getByRole('img', { name: 'frente.webp' })).toHaveAttribute('src', 'https://signed.example/preview.webp');
@@ -664,6 +669,7 @@ test('envia imagem de item com upload-url e confirmacao', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
+  await expect(page.getByText('Notebook Dell')).toBeVisible();
   await page.getByLabel('Visualizar item').click();
   await page.getByLabel('Adicionar imagem').setInputFiles({ name: 'nova.webp', mimeType: 'image/webp', buffer: Buffer.from('fake-image') });
   await expect(page.getByText('Imagem enviada com sucesso.')).toBeVisible();
@@ -673,6 +679,7 @@ test('remove imagem de item com confirmacao', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
+  await expect(page.getByText('Notebook Dell')).toBeVisible();
   await page.getByLabel('Visualizar item').click();
   await page.getByLabel('Remover frente.webp').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();

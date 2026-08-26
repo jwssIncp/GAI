@@ -6,6 +6,7 @@ import { PermissionGate } from '@/features/auth/PermissionGate';
 import { InventoryItemImagesGallery } from '@/features/inventory-item-images/InventoryItemImagesGallery';
 import { formatDateTime, formatMoney } from '@/utils/format';
 import { useProjectInventoryItem } from './inventoryItemsQueries';
+import { ItemEvidencePanels } from './ItemEvidencePanels';
 
 export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }: { projectId: number; id?: number; open: boolean; onOpenChange: (open: boolean) => void }) {
   const query = useProjectInventoryItem(projectId, open ? id : undefined);
@@ -25,8 +26,8 @@ export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }:
             </div>
           </section>
           <div className="grid gap-3 md:grid-cols-2">
-            <MetricCard label="Placa antiga" value={item.old_plate ?? '-'} />
-            <MetricCard label="Placa nova" value={item.new_plate ?? '-'} />
+            <MetricCard label="Placa mestre anterior" value={item.old_plate ?? '-'} />
+            <MetricCard label="Placa mestre atual" value={item.new_plate ?? '-'} />
             <MetricCard label="Valor usado" value={formatMoney(item.used_value)} />
             <MetricCard label="Valor novo" value={formatMoney(item.new_value)} />
           </div>
@@ -44,6 +45,7 @@ export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }:
           <PermissionGate permissions={['inventory-item-images:read']} fallback={<ImagePlaceholder />}>
             <InventoryItemImagesGallery projectId={projectId} itemId={item.id} />
           </PermissionGate>
+          <ItemEvidencePanels projectId={projectId} itemId={item.id} />
           <section className="rounded-lg border bg-muted/30 p-4 text-muted-foreground">
             Area preparada para pendencias relacionadas ao item. A implementacao profunda fica para a rodada do modulo de pendencias.
           </section>

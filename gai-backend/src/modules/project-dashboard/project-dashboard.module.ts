@@ -20,6 +20,14 @@ import { PROJECT_SUMMARY_REPOSITORY } from './domain/ports/project-summary.repos
 import { TypeOrmProjectSummaryRepository } from './infrastructure/persistence/typeorm-project-summary.repository';
 import { TypeOrmProjectDashboardAnalyticsRepository } from './infrastructure/persistence/typeorm-project-dashboard-analytics.repository';
 import { ProjectDashboardController } from './presentation/project-dashboard.controller';
+import {
+  InventoryConsolidationEntity,
+  InventoryObservationEntity,
+  InventoryReconciliationEntity,
+  InventoryRoundEntity,
+  InventorySessionEntity,
+} from '../inventory-operations/infrastructure/persistence/inventory-operation.entity';
+import { ExpenseAccountabilityEntity } from '../expense-accountabilities/expense-accountability.entity';
 
 @Module({
   imports: [
@@ -35,6 +43,12 @@ import { ProjectDashboardController } from './presentation/project-dashboard.con
       ExpenseEntity,
       ImportSessionEntity,
       ExportJobEntity,
+      InventorySessionEntity,
+      InventoryRoundEntity,
+      InventoryObservationEntity,
+      InventoryReconciliationEntity,
+      InventoryConsolidationEntity,
+      ExpenseAccountabilityEntity,
     ]),
     AuthModule,
     ProjectsModule,

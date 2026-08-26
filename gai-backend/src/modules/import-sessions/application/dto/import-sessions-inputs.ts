@@ -19,6 +19,7 @@ import { InventoryItemStatus } from '../../../inventory-items/domain/enums/inven
 import { ImportFileType } from '../../domain/enums/import-file-type.enum';
 import { ImportSessionSource } from '../../domain/enums/import-session-source.enum';
 import { ImportSessionType } from '../../domain/enums/import-session-type.enum';
+import { InventoryObservationResult } from '../../../inventory-operations/domain/inventory-operation.enums';
 
 const MONEY_PATTERN = /^\d{1,13}(\.\d{1,2})?$/;
 
@@ -194,6 +195,67 @@ export class ImportPayloadItemDto {
   @ValidateNested({ each: true })
   @Type(() => ImportPayloadItemImageDto)
   images?: ImportPayloadItemImageDto[];
+
+  @ApiPropertyOptional({
+    type: 'integer',
+    format: 'int64',
+    description:
+      'Required for physical observation imports unless external_item_id identifies the item.',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  inventory_item_id?: number;
+
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  inventory_session_id?: number;
+
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  round_id?: number;
+
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  field_agent_id?: number;
+
+  @ApiPropertyOptional({ enum: InventoryObservationResult })
+  @IsOptional()
+  @IsEnum(InventoryObservationResult)
+  observation_result?: InventoryObservationResult;
+
+  @ApiPropertyOptional({ maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  observed_plate?: string | null;
+
+  @ApiPropertyOptional({ maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  observed_serial_number?: string | null;
+
+  @ApiPropertyOptional({ maxLength: 255 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  sector_text?: string | null;
+
+  @ApiPropertyOptional({ format: 'date-time' })
+  @IsOptional()
+  @IsString()
+  captured_at?: string;
 }
 
 export class CreateImportPayloadDto {
@@ -268,4 +330,17 @@ export class ConfirmImportFileUploadDto {
   @IsInt()
   @Min(1)
   size_bytes?: number;
+}
+
+export class ImportPhysicalObservationsFileDto {
+  @ApiProperty({ minimum: 1 })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  payload_number!: number;
+
+  @ApiProperty({ maxLength: 128 })
+  @IsString()
+  @MaxLength(128)
+  idempotency_key!: string;
 }

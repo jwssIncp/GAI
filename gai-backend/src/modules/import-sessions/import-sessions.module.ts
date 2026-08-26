@@ -16,6 +16,15 @@ import { ImportSessionAuditLogEntity } from './infrastructure/persistence/import
 import { ImportSessionEntity } from './infrastructure/persistence/import-session.entity';
 import { TypeOrmImportSessionsRepository } from './infrastructure/persistence/typeorm-import-sessions.repository';
 import { ImportSessionsController } from './presentation/import-sessions.controller';
+import { PhysicalObservationImportParserService } from './application/services/physical-observation-import-parser.service';
+import { ProjectFieldAgentEntity } from '../field-agents/infrastructure/persistence/project-field-agent.entity';
+import {
+  InventoryObservationEntity,
+  InventoryOperationAuditLogEntity,
+  InventoryPlateHistoryEntity,
+  InventoryRoundEntity,
+  InventorySessionEntity,
+} from '../inventory-operations/infrastructure/persistence/inventory-operation.entity';
 
 @Module({
   imports: [
@@ -27,6 +36,12 @@ import { ImportSessionsController } from './presentation/import-sessions.control
       ImportSessionAuditLogEntity,
       InventoryItemEntity,
       InventoryItemAuditLogEntity,
+      ProjectFieldAgentEntity,
+      InventorySessionEntity,
+      InventoryRoundEntity,
+      InventoryObservationEntity,
+      InventoryPlateHistoryEntity,
+      InventoryOperationAuditLogEntity,
     ]),
     AuthModule,
     ProjectsModule,
@@ -35,6 +50,7 @@ import { ImportSessionsController } from './presentation/import-sessions.control
   providers: [
     ImportSessionScopeService,
     ImportSessionsService,
+    PhysicalObservationImportParserService,
     {
       provide: IMPORT_SESSIONS_REPOSITORY,
       useClass: TypeOrmImportSessionsRepository,
