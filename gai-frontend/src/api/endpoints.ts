@@ -81,13 +81,22 @@ import type {
   MetaPaginated,
   AssetValuation,
   ConsolidationDecision,
+  ConfirmInventoryEvidenceUploadRequest,
+  CreateInventoryEvidenceUploadRequest,
   CreateInventoryObservationRequest,
   ExpenseAccountability,
   ExpenseAccountabilityStatus,
   ExpenseInstallment,
+  InventoryEvidence,
+  InventoryEvidenceDownloadUrlResponse,
+  InventoryEvidenceUploadUrlResponse,
   InventoryObservation,
   InventoryReconciliation,
+  InventoryRound,
+  InventoryRoundKind,
+  InventoryRoundStatus,
   InventorySession,
+  InventorySessionDetail,
   InventorySessionStartResponse,
   InventorySessionStatus,
   PlateHistoryEntry,
@@ -422,17 +431,31 @@ export const inventoryOperationsApi = {
   createSession: (projectId: number, payload: { name: string; metadata?: Record<string, unknown> }) =>
     api.post<InventorySession>(`/projects/${projectId}/inventory-sessions`, payload).then((r) => r.data),
   getSession: (projectId: number, sessionId: number) =>
-    api.get<InventorySession>(`/projects/${projectId}/inventory-sessions/${sessionId}`).then((r) => r.data),
+    api.get<InventorySessionDetail>(`/projects/${projectId}/inventory-sessions/${sessionId}`).then((r) => r.data),
+  listRounds: (projectId: number, sessionId: number, params: PageParams & { status?: InventoryRoundStatus | ''; type?: InventoryRoundKind | '' }) =>
+    api.get<PaginatedItems<InventoryRound>>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds`, { params }).then((r) => r.data),
   startSession: (projectId: number, sessionId: number) =>
     api.post<InventorySessionStartResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/start`).then((r) => r.data),
+  finishSession: (projectId: number, sessionId: number) =>
+    api.post<InventorySession>(`/projects/${projectId}/inventory-sessions/${sessionId}/finish`).then((r) => r.data),
+  cancelSession: (projectId: number, sessionId: number, payload: { reason: string }) =>
+    api.post<InventorySession>(`/projects/${projectId}/inventory-sessions/${sessionId}/cancel`, payload).then((r) => r.data),
   requestReinventory: (projectId: number, sessionId: number, payload: { inventory_item_id: number; reason: string }) =>
-    api.post(`/projects/${projectId}/inventory-sessions/${sessionId}/reinventory`, payload).then((r) => r.data),
+    api.post<InventoryRound>(`/projects/${projectId}/inventory-sessions/${sessionId}/reinventory`, payload).then((r) => r.data),
   createObservation: (projectId: number, sessionId: number, roundId: number, payload: CreateInventoryObservationRequest) =>
     api.post<InventoryObservation>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations`, payload).then((r) => r.data),
   finishRound: (projectId: number, sessionId: number, roundId: number) =>
     api.post(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/finish`).then((r) => r.data),
   listObservations: (projectId: number, sessionId: number, params: PageParams & { round_id?: number; inventory_item_id?: number; field_agent_id?: number }) =>
     api.get<PaginatedItems<InventoryObservation>>(`/projects/${projectId}/inventory-sessions/${sessionId}/observations`, { params }).then((r) => r.data),
+  createEvidenceUploadUrl: (projectId: number, sessionId: number, roundId: number, observationId: number, payload: CreateInventoryEvidenceUploadRequest) =>
+    api.post<InventoryEvidenceUploadUrlResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence/upload-url`, payload).then((r) => r.data),
+  confirmEvidenceUpload: (projectId: number, sessionId: number, roundId: number, observationId: number, evidenceId: number, payload?: ConfirmInventoryEvidenceUploadRequest) =>
+    api.post<InventoryEvidence>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence/${evidenceId}/confirm-upload`, payload ?? {}).then((r) => r.data),
+  listEvidence: (projectId: number, sessionId: number, roundId: number, observationId: number, params: PageParams) =>
+    api.get<PaginatedItems<InventoryEvidence>>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence`, { params }).then((r) => r.data),
+  evidenceDownloadUrl: (projectId: number, sessionId: number, roundId: number, observationId: number, evidenceId: number) =>
+    api.post<InventoryEvidenceDownloadUrlResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence/${evidenceId}/download-url`).then((r) => r.data),
   reconcile: (projectId: number, sessionId: number) =>
     api.post<InventoryReconciliation[]>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
   listReconciliations: (projectId: number, sessionId: number, params: PageParams & { run_number?: number; status?: ReconciliationStatus | '' }) =>

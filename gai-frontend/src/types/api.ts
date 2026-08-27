@@ -944,6 +944,24 @@ export type InventorySessionStatus = 'draft' | 'active' | 'finished' | 'cancelle
 export type InventoryRoundKind = 'initial' | 'reinventory';
 export type InventoryRoundStatus = 'active' | 'finished' | 'cancelled';
 export type InventoryObservationResult = 'found' | 'not_found' | 'divergent' | 'duplicated';
+export type InventoryEvidenceStatus = 'pending_upload' | 'uploaded';
+export type InventoryEvidenceMimeType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp';
+export type InventoryDomainConflictCode =
+  | 'INVENTORY_SESSION_STATUS_INVALID'
+  | 'INVENTORY_SESSION_HAS_ACTIVE_ROUNDS'
+  | 'INVENTORY_SESSION_NOT_ACTIVE'
+  | 'INVENTORY_ROUND_NOT_ACTIVE'
+  | 'INVENTORY_ROUND_CONCURRENT_MODIFICATION'
+  | 'REINVENTORY_REQUIRES_PRIOR_OBSERVATION'
+  | 'REINVENTORY_ITEM_MISMATCH'
+  | 'FIELD_AGENT_NOT_ASSIGNED'
+  | 'OBSERVATION_ALREADY_RECORDED'
+  | 'IDEMPOTENCY_KEY_REUSED'
+  | 'INVENTORY_OBSERVATION_CONFLICT'
+  | 'OBSERVATION_EVIDENCE_NOT_UPLOADED'
+  | 'RECONCILIATION_REQUIRES_OBSERVATIONS'
+  | 'RECONCILIATION_ALREADY_CONSOLIDATED'
+  | 'PROJECT_STATUS_BLOCKS_OPERATION';
 export type ReconciliationStatus = 'matched' | 'physical_surplus' | 'accounting_surplus' | 'duplicate' | 'plate_divergence';
 export type ConsolidationDecision = 'accepted' | 'corrected' | 'rejected';
 
@@ -953,13 +971,19 @@ export type InventorySession = {
   project_id: number;
   name: string;
   status: InventorySessionStatus;
+  current_round_id?: number | null;
   started_at?: string | null;
   finished_at?: string | null;
-  created_by_id: number;
+  cancelled_at?: string | null;
+  cancellation_reason?: string | null;
+  created_by_id: number | null;
   metadata?: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
-  rounds?: InventoryRound[];
+};
+
+export type InventorySessionDetail = InventorySession & {
+  current_round_id: number | null;
 };
 
 export type InventoryRound = {
@@ -967,12 +991,15 @@ export type InventoryRound = {
   session_id: number;
   round_number: number;
   kind: InventoryRoundKind;
-  inventory_item_id?: number | null;
-  reason?: string | null;
+  type: InventoryRoundKind;
+  inventory_item_id: number | null;
+  reason: string | null;
   status: InventoryRoundStatus;
-  requested_by_id?: number | null;
+  requested_by_id: number | null;
+  created_by_id: number | null;
   started_at: string;
-  finished_at?: string | null;
+  finished_at: string | null;
+  created_at: string;
 };
 
 export type InventorySessionStartResponse = {
@@ -1013,6 +1040,51 @@ export type CreateInventoryObservationRequest = {
   captured_at?: string;
 };
 
+export type InventoryEvidence = {
+  id: number;
+  organization_id: number;
+  project_id: number;
+  session_id: number;
+  round_id: number;
+  observation_id: number;
+  storage_provider: string;
+  bucket: string;
+  storage_key: string;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  checksum: string | null;
+  status: InventoryEvidenceStatus;
+  created_by_id: number | null;
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CreateInventoryEvidenceUploadRequest = {
+  original_name: string;
+  mime_type: InventoryEvidenceMimeType;
+  size_bytes: number;
+  checksum?: string | null;
+};
+
+export type ConfirmInventoryEvidenceUploadRequest = {
+  checksum?: string | null;
+  size_bytes?: number | null;
+};
+
+export type InventoryEvidenceUploadUrlResponse = {
+  evidence: InventoryEvidence;
+  upload_url: string;
+  expires_in_seconds: number;
+};
+
+export type InventoryEvidenceDownloadUrlResponse = {
+  evidence: InventoryEvidence;
+  download_url: string;
+  expires_in_seconds: number;
+};
+
 export type InventoryReconciliation = {
   id: number;
   session_id: number;
@@ -1045,6 +1117,11 @@ export type PlateHistoryEntry = {
   inventory_item_id: number;
   source: 'field' | 'physical_base' | 'accounting_base' | 'manual';
   observation_id?: number | null;
+  session_id?: number | null;
+  round_id?: number | null;
+  round_number?: number | null;
+  captured_at?: string | null;
+  field_agent_id?: number | null;
   previous_plate?: string | null;
   observed_plate?: string | null;
   recorded_by_id?: number | null;

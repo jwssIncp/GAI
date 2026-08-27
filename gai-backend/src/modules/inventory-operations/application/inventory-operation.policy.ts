@@ -23,6 +23,34 @@ export class InventoryOperationPolicy {
       });
   }
 
+  static assertCanFinishSession(
+    status: InventorySessionStatus,
+    activeRoundCount: number,
+  ): void {
+    if (status !== InventorySessionStatus.ACTIVE)
+      throw new ConflictException({
+        code: 'INVENTORY_SESSION_STATUS_INVALID',
+        message: 'Only active sessions can be finished',
+      });
+    if (activeRoundCount > 0)
+      throw new ConflictException({
+        code: 'INVENTORY_SESSION_HAS_ACTIVE_ROUNDS',
+        message: 'All active rounds must be finished before the session',
+      });
+  }
+
+  static assertCanCancelSession(status: InventorySessionStatus): void {
+    if (
+      ![InventorySessionStatus.DRAFT, InventorySessionStatus.ACTIVE].includes(
+        status,
+      )
+    )
+      throw new ConflictException({
+        code: 'INVENTORY_SESSION_STATUS_INVALID',
+        message: 'Only draft or active sessions can be cancelled',
+      });
+  }
+
   static assertCanReceiveObservation(
     sessionStatus: InventorySessionStatus,
     roundStatus: InventoryRoundStatus,

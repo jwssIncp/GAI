@@ -23,6 +23,45 @@ describe('InventoryOperationPolicy', () => {
     ).toThrow(ConflictException);
   });
 
+  it('finishes only active sessions without active rounds', () => {
+    expect(() =>
+      InventoryOperationPolicy.assertCanFinishSession(
+        InventorySessionStatus.ACTIVE,
+        0,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      InventoryOperationPolicy.assertCanFinishSession(
+        InventorySessionStatus.ACTIVE,
+        1,
+      ),
+    ).toThrow(ConflictException);
+    expect(() =>
+      InventoryOperationPolicy.assertCanFinishSession(
+        InventorySessionStatus.FINISHED,
+        0,
+      ),
+    ).toThrow(ConflictException);
+  });
+
+  it('cancels only draft or active sessions', () => {
+    expect(() =>
+      InventoryOperationPolicy.assertCanCancelSession(
+        InventorySessionStatus.DRAFT,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      InventoryOperationPolicy.assertCanCancelSession(
+        InventorySessionStatus.ACTIVE,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      InventoryOperationPolicy.assertCanCancelSession(
+        InventorySessionStatus.FINISHED,
+      ),
+    ).toThrow(ConflictException);
+  });
+
   it('restricts a reinventory round to its requested item', () => {
     expect(() =>
       InventoryOperationPolicy.assertCanReceiveObservation(

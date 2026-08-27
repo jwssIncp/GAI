@@ -1,19 +1,27 @@
+import { randomUUID } from 'crypto';
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, Repository } from 'typeorm';
+import {
+  STORAGE_SIGNER,
+  type StorageSigner,
+} from '../../../common/storage/storage-signer.port';
 import { UserRole } from '../../auth/domain/enums/user.enums';
 import { ProjectFieldAgentStatus } from '../../field-agents/domain/enums/project-field-agent-status.enum';
 import { ProjectFieldAgentEntity } from '../../field-agents/infrastructure/persistence/project-field-agent.entity';
 import { InventoryAccountingItemEntity } from '../../inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity';
 import { InventoryItemEntity } from '../../inventory-items/infrastructure/persistence/inventory-item.entity';
+import { InventoryItemImageScopeService } from '../../inventory-item-images/application/services/inventory-item-image-scope.service';
 import { ProjectEntity } from '../../projects/infrastructure/persistence/project.entity';
 import {
-  ConsolidationDecision,
+  InventoryObservationEvidenceStatus,
   InventoryRoundKind,
   InventoryRoundStatus,
   InventorySessionStatus,
@@ -23,6 +31,7 @@ import {
 import {
   AssetValuationEntity,
   InventoryConsolidationEntity,
+  InventoryObservationEvidenceEntity,
   InventoryObservationEntity,
   InventoryOperationAuditLogEntity,
   InventoryPlateHistoryEntity,
@@ -31,13 +40,17 @@ import {
   InventorySessionEntity,
 } from '../infrastructure/persistence/inventory-operation.entity';
 import {
+  CancelInventorySessionDto,
+  ConfirmObservationEvidenceUploadDto,
   ConsolidateReconciliationDto,
   CreateAssetValuationDto,
   CreateInventoryObservationDto,
+  CreateObservationEvidenceUploadDto,
   CreateInventorySessionDto,
   RequestReinventoryDto,
   InventoryOperationListQueryDto,
   InventoryObservationListQueryDto,
+  InventoryRoundListQueryDto,
   InventorySessionListQueryDto,
   ReconciliationListQueryDto,
 } from './inventory-operation.dto';
@@ -61,6 +74,8 @@ export class InventoryOperationsService {
     private readonly rounds: Repository<InventoryRoundEntity>,
     @InjectRepository(InventoryObservationEntity)
     private readonly observations: Repository<InventoryObservationEntity>,
+    @InjectRepository(InventoryObservationEvidenceEntity)
+    private readonly observationEvidence: Repository<InventoryObservationEvidenceEntity>,
     @InjectRepository(InventoryReconciliationEntity)
     private readonly reconciliations: Repository<InventoryReconciliationEntity>,
     @InjectRepository(InventoryConsolidationEntity)
@@ -75,6 +90,9 @@ export class InventoryOperationsService {
     private readonly accountingItems: Repository<InventoryAccountingItemEntity>,
     @InjectRepository(ProjectFieldAgentEntity)
     private readonly assignments: Repository<ProjectFieldAgentEntity>,
+    @Inject(STORAGE_SIGNER)
+    private readonly storageSigner: StorageSigner,
+    private readonly imageScope: InventoryItemImageScopeService,
   ) {}
 
   async createSession(
@@ -91,6 +109,8 @@ export class InventoryOperationsService {
         status: InventorySessionStatus.DRAFT,
         startedAt: null,
         finishedAt: null,
+        cancelledAt: null,
+        cancellationReason: null,
         createdById: actor.id,
         metadata: dto.metadata ?? null,
       });
@@ -139,8 +159,46 @@ export class InventoryOperationsService {
     actor: InventoryOperationActor,
   ) {
     await this.getProject(projectId, actor, false);
-    return this.sessionResponse(
-      await this.requireSession(projectId, sessionId),
+    const session = await this.requireSession(projectId, sessionId);
+    const currentRound = await this.rounds.findOne({
+      where: {
+        organizationId: session.organizationId,
+        projectId,
+        sessionId,
+        status: InventoryRoundStatus.ACTIVE,
+      },
+      order: { roundNumber: 'DESC', id: 'DESC' },
+    });
+    return {
+      ...this.sessionResponse(session),
+      current_round_id: currentRound?.id ?? null,
+    };
+  }
+
+  async listRounds(
+    projectId: number,
+    sessionId: number,
+    query: InventoryRoundListQueryDto,
+    actor: InventoryOperationActor,
+  ) {
+    const project = await this.getProject(projectId, actor, false);
+    await this.requireSession(projectId, sessionId);
+    const [items, total] = await this.rounds.findAndCount({
+      where: {
+        organizationId: project.organizationId,
+        projectId,
+        sessionId,
+        ...(query.status ? { status: query.status } : {}),
+        ...(query.type ? { kind: query.type } : {}),
+      },
+      order: { roundNumber: 'DESC', id: 'DESC' },
+      skip: (query.page - 1) * query.page_size,
+      take: query.page_size,
+    });
+    return this.paginate(
+      items.map((item) => this.roundResponse(item)),
+      query,
+      total,
     );
   }
 
@@ -159,13 +217,13 @@ export class InventoryOperationsService {
           : {}),
       });
       if (!session) this.notFound('Inventory session');
-      InventoryOperationPolicy.assertCanStart(session!.status);
+      InventoryOperationPolicy.assertCanStart(session.status);
       const now = new Date();
-      session!.status = InventorySessionStatus.ACTIVE;
-      session!.startedAt = now;
-      await repo.save(session!);
+      session.status = InventorySessionStatus.ACTIVE;
+      session.startedAt = now;
+      await repo.save(session);
       const round = await manager.getRepository(InventoryRoundEntity).save({
-        organizationId: session!.organizationId,
+        organizationId: session.organizationId,
         projectId,
         sessionId,
         roundNumber: 1,
@@ -179,7 +237,7 @@ export class InventoryOperationsService {
       });
       await this.audit(
         manager,
-        session!.organizationId,
+        session.organizationId,
         projectId,
         'inventory_session',
         sessionId,
@@ -188,9 +246,113 @@ export class InventoryOperationsService {
         { round_id: round.id },
       );
       return {
-        session: this.sessionResponse(session!),
+        session: this.sessionResponse(session),
         round: this.roundResponse(round),
       };
+    });
+  }
+
+  async finishSession(
+    projectId: number,
+    sessionId: number,
+    actor: InventoryOperationActor,
+  ) {
+    await this.getProject(projectId, actor, true);
+    return this.dataSource.transaction(async (manager) => {
+      const sessionRepo = manager.getRepository(InventorySessionEntity);
+      const session = await sessionRepo.findOne({
+        where: { id: sessionId, projectId },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
+      });
+      if (!session) this.notFound('Inventory session');
+      const activeRoundCount = await manager
+        .getRepository(InventoryRoundEntity)
+        .count({
+          where: {
+            projectId,
+            sessionId,
+            status: InventoryRoundStatus.ACTIVE,
+          },
+        });
+      InventoryOperationPolicy.assertCanFinishSession(
+        session.status,
+        activeRoundCount,
+      );
+      const oldStatus = session.status;
+      session.status = InventorySessionStatus.FINISHED;
+      session.finishedAt = new Date();
+      await sessionRepo.save(session);
+      await this.audit(
+        manager,
+        session.organizationId,
+        projectId,
+        'inventory_session',
+        sessionId,
+        'FINISH',
+        actor.id,
+        {
+          old_status: oldStatus,
+          new_status: InventorySessionStatus.FINISHED,
+        },
+      );
+      return this.sessionResponse(session);
+    });
+  }
+
+  async cancelSession(
+    projectId: number,
+    sessionId: number,
+    dto: CancelInventorySessionDto,
+    actor: InventoryOperationActor,
+  ) {
+    await this.getProject(projectId, actor, true);
+    return this.dataSource.transaction(async (manager) => {
+      const sessionRepo = manager.getRepository(InventorySessionEntity);
+      const session = await sessionRepo.findOne({
+        where: { id: sessionId, projectId },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
+      });
+      if (!session) this.notFound('Inventory session');
+      InventoryOperationPolicy.assertCanCancelSession(session.status);
+      const roundRepo = manager.getRepository(InventoryRoundEntity);
+      const activeRounds = await roundRepo.find({
+        where: {
+          projectId,
+          sessionId,
+          status: InventoryRoundStatus.ACTIVE,
+        },
+      });
+      const now = new Date();
+      for (const round of activeRounds) {
+        round.status = InventoryRoundStatus.CANCELLED;
+        round.finishedAt = now;
+      }
+      if (activeRounds.length > 0) await roundRepo.save(activeRounds);
+      const oldStatus = session.status;
+      session.status = InventorySessionStatus.CANCELLED;
+      session.cancelledAt = now;
+      session.cancellationReason = dto.reason.trim();
+      await sessionRepo.save(session);
+      await this.audit(
+        manager,
+        session.organizationId,
+        projectId,
+        'inventory_session',
+        sessionId,
+        'CANCEL',
+        actor.id,
+        {
+          old_status: oldStatus,
+          new_status: InventorySessionStatus.CANCELLED,
+          reason: session.cancellationReason,
+          cancelled_round_ids: activeRounds.map((round) => round.id),
+        },
+      );
+      return this.sessionResponse(session);
     });
   }
 
@@ -211,49 +373,57 @@ export class InventoryOperationsService {
         code: 'REINVENTORY_REQUIRES_PRIOR_OBSERVATION',
         message: 'Reinventory requires an earlier observation',
       });
-    return this.dataSource.transaction(async (manager) => {
-      const session = await manager
-        .getRepository(InventorySessionEntity)
-        .findOne({
-          where: { id: sessionId, projectId },
-          ...(manager.connection.options.type === 'mysql'
-            ? { lock: { mode: 'pessimistic_write' as const } }
-            : {}),
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const session = await manager
+          .getRepository(InventorySessionEntity)
+          .findOne({
+            where: { id: sessionId, projectId },
+            ...(manager.connection.options.type === 'mysql'
+              ? { lock: { mode: 'pessimistic_write' as const } }
+              : {}),
+          });
+        if (!session) this.notFound('Inventory session');
+        if (session.status !== InventorySessionStatus.ACTIVE)
+          throw new ConflictException({
+            code: 'INVENTORY_SESSION_NOT_ACTIVE',
+            message: 'Session must be active',
+          });
+        const latest = await manager
+          .getRepository(InventoryRoundEntity)
+          .findOne({ where: { sessionId }, order: { roundNumber: 'DESC' } });
+        const round = await manager.getRepository(InventoryRoundEntity).save({
+          organizationId: session.organizationId,
+          projectId,
+          sessionId,
+          roundNumber: (latest?.roundNumber ?? 0) + 1,
+          kind: InventoryRoundKind.REINVENTORY,
+          inventoryItemId: dto.inventory_item_id,
+          reason: dto.reason.trim(),
+          status: InventoryRoundStatus.ACTIVE,
+          requestedById: actor.id,
+          startedAt: new Date(),
+          finishedAt: null,
         });
-      if (!session) this.notFound('Inventory session');
-      if (session!.status !== InventorySessionStatus.ACTIVE)
-        throw new ConflictException({
-          code: 'INVENTORY_SESSION_NOT_ACTIVE',
-          message: 'Session must be active',
-        });
-      const latest = await manager
-        .getRepository(InventoryRoundEntity)
-        .findOne({ where: { sessionId }, order: { roundNumber: 'DESC' } });
-      const round = await manager.getRepository(InventoryRoundEntity).save({
-        organizationId: session!.organizationId,
-        projectId,
-        sessionId,
-        roundNumber: (latest?.roundNumber ?? 0) + 1,
-        kind: InventoryRoundKind.REINVENTORY,
-        inventoryItemId: dto.inventory_item_id,
-        reason: dto.reason.trim(),
-        status: InventoryRoundStatus.ACTIVE,
-        requestedById: actor.id,
-        startedAt: new Date(),
-        finishedAt: null,
+        await this.audit(
+          manager,
+          session.organizationId,
+          projectId,
+          'inventory_round',
+          round.id,
+          'REQUEST_REINVENTORY',
+          actor.id,
+          { item_id: dto.inventory_item_id, reason: round.reason },
+        );
+        return this.roundResponse(round);
       });
-      await this.audit(
-        manager,
-        session!.organizationId,
-        projectId,
-        'inventory_round',
-        round.id,
-        'REQUEST_REINVENTORY',
-        actor.id,
-        { item_id: dto.inventory_item_id, reason: round.reason },
-      );
-      return this.roundResponse(round);
-    });
+    } catch (error) {
+      if (!this.isUniqueViolation(error)) throw error;
+      throw new ConflictException({
+        code: 'INVENTORY_ROUND_CONCURRENT_MODIFICATION',
+        message: 'Round number was allocated by a concurrent operation',
+      });
+    }
   }
 
   async recordObservation(
@@ -305,9 +475,9 @@ export class InventoryOperationsService {
       });
     InventoryOperationPolicy.assertCanReceiveObservation(
       session.status,
-      round!.status,
-      round!.kind,
-      round!.inventoryItemId,
+      round.status,
+      round.kind,
+      round.inventoryItemId,
       item.id,
     );
     const roundObservation = await this.observations.findOne({
@@ -385,7 +555,8 @@ export class InventoryOperationsService {
         return this.observationResponse(observation);
       });
     } catch (error) {
-      if (dto.idempotency_key && this.isUniqueViolation(error)) {
+      if (!this.isUniqueViolation(error)) throw error;
+      if (dto.idempotency_key) {
         const existing = await this.observations.findOne({
           where: {
             organizationId: project.organizationId,
@@ -399,8 +570,25 @@ export class InventoryOperationsService {
           existing.roundId === roundId
         )
           return this.observationResponse(existing);
+        if (existing)
+          throw new ConflictException({
+            code: 'IDEMPOTENCY_KEY_REUSED',
+            message: 'Idempotency key belongs to another operation',
+          });
       }
-      throw error;
+      if (
+        await this.observations.findOne({
+          where: { projectId, sessionId, roundId, inventoryItemId: item.id },
+        })
+      )
+        throw new ConflictException({
+          code: 'OBSERVATION_ALREADY_RECORDED',
+          message: 'Item already has an observation in this round',
+        });
+      throw new ConflictException({
+        code: 'INVENTORY_OBSERVATION_CONFLICT',
+        message: 'Observation conflicts with a concurrent operation',
+      });
     }
   }
 
@@ -433,6 +621,216 @@ export class InventoryOperationsService {
     );
   }
 
+  async createEvidenceUploadUrl(
+    projectId: number,
+    sessionId: number,
+    roundId: number,
+    observationId: number,
+    dto: CreateObservationEvidenceUploadDto,
+    actor: InventoryOperationActor,
+  ) {
+    const project = await this.getProject(projectId, actor, true);
+    const session = await this.requireSession(projectId, sessionId);
+    this.assertSessionAcceptsEvidence(session);
+    await this.requireObservation(projectId, sessionId, roundId, observationId);
+    this.imageScope.assertMimeType(dto.mime_type);
+    this.imageScope.assertSize(dto.size_bytes);
+    const originalName = this.imageScope.cleanText(dto.original_name);
+    if (!originalName)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: 'original_name is required',
+      });
+    const storageKey = this.observationEvidenceStorageKey(
+      project.organizationId,
+      projectId,
+      sessionId,
+      observationId,
+      originalName,
+    );
+    const evidence = await this.dataSource.transaction(async (manager) => {
+      const saved = await manager
+        .getRepository(InventoryObservationEvidenceEntity)
+        .save({
+          organizationId: project.organizationId,
+          projectId,
+          sessionId,
+          roundId,
+          observationId,
+          storageProvider: this.imageScope.storageProvider(),
+          bucket: this.imageScope.storageBucket(),
+          storageKey,
+          originalName,
+          mimeType: dto.mime_type.toLowerCase(),
+          sizeBytes: dto.size_bytes,
+          checksum: this.imageScope.cleanText(dto.checksum),
+          status: InventoryObservationEvidenceStatus.PENDING_UPLOAD,
+          createdById: actor.id,
+          confirmedAt: null,
+        });
+      await this.audit(
+        manager,
+        project.organizationId,
+        projectId,
+        'inventory_observation_evidence',
+        saved.id,
+        'CREATE_UPLOAD_URL',
+        actor.id,
+        {
+          session_id: sessionId,
+          round_id: roundId,
+          observation_id: observationId,
+          mime_type: saved.mimeType,
+          size_bytes: saved.sizeBytes,
+        },
+      );
+      return saved;
+    });
+    const signed = await this.storageSigner.createUploadUrl({
+      bucket: evidence.bucket,
+      path: evidence.storageKey,
+      mimeType: evidence.mimeType,
+      expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
+    });
+    return {
+      evidence: this.evidenceResponse(evidence),
+      upload_url: signed.url,
+      expires_in_seconds: signed.expiresInSeconds,
+    };
+  }
+
+  async confirmEvidenceUpload(
+    projectId: number,
+    sessionId: number,
+    roundId: number,
+    observationId: number,
+    evidenceId: number,
+    dto: ConfirmObservationEvidenceUploadDto,
+    actor: InventoryOperationActor,
+  ) {
+    await this.getProject(projectId, actor, true);
+    const session = await this.requireSession(projectId, sessionId);
+    this.assertSessionAcceptsEvidence(session);
+    await this.requireObservation(projectId, sessionId, roundId, observationId);
+    if (dto.size_bytes != null) this.imageScope.assertSize(dto.size_bytes);
+    return this.dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(InventoryObservationEvidenceEntity);
+      const evidence = await repo.findOne({
+        where: {
+          id: evidenceId,
+          organizationId: session.organizationId,
+          projectId,
+          sessionId,
+          roundId,
+          observationId,
+        },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
+      });
+      if (!evidence) this.notFound('Observation evidence');
+      if (evidence.status === InventoryObservationEvidenceStatus.UPLOADED)
+        return this.evidenceResponse(evidence);
+      const before = {
+        status: evidence.status,
+        checksum: evidence.checksum,
+        size_bytes: evidence.sizeBytes,
+      };
+      evidence.status = InventoryObservationEvidenceStatus.UPLOADED;
+      evidence.checksum =
+        this.imageScope.cleanText(dto.checksum) ?? evidence.checksum;
+      evidence.sizeBytes = dto.size_bytes ?? evidence.sizeBytes;
+      evidence.confirmedAt = new Date();
+      await repo.save(evidence);
+      await this.audit(
+        manager,
+        evidence.organizationId,
+        projectId,
+        'inventory_observation_evidence',
+        evidenceId,
+        'CONFIRM_UPLOAD',
+        actor.id,
+        {
+          before,
+          after: {
+            status: evidence.status,
+            checksum: evidence.checksum,
+            size_bytes: evidence.sizeBytes,
+          },
+        },
+      );
+      return this.evidenceResponse(evidence);
+    });
+  }
+
+  async listObservationEvidence(
+    projectId: number,
+    sessionId: number,
+    roundId: number,
+    observationId: number,
+    query: InventoryOperationListQueryDto,
+    actor: InventoryOperationActor,
+  ) {
+    const project = await this.getProject(projectId, actor, false);
+    await this.requireObservation(projectId, sessionId, roundId, observationId);
+    const [items, total] = await this.observationEvidence.findAndCount({
+      where: {
+        organizationId: project.organizationId,
+        projectId,
+        sessionId,
+        roundId,
+        observationId,
+      },
+      order: { createdAt: 'ASC', id: 'ASC' },
+      skip: (query.page - 1) * query.page_size,
+      take: query.page_size,
+    });
+    return this.paginate(
+      items.map((item) => this.evidenceResponse(item)),
+      query,
+      total,
+    );
+  }
+
+  async createEvidenceDownloadUrl(
+    projectId: number,
+    sessionId: number,
+    roundId: number,
+    observationId: number,
+    evidenceId: number,
+    actor: InventoryOperationActor,
+  ) {
+    const project = await this.getProject(projectId, actor, false);
+    await this.requireObservation(projectId, sessionId, roundId, observationId);
+    const evidence = await this.observationEvidence.findOne({
+      where: {
+        id: evidenceId,
+        organizationId: project.organizationId,
+        projectId,
+        sessionId,
+        roundId,
+        observationId,
+      },
+    });
+    if (!evidence) this.notFound('Observation evidence');
+    if (evidence.status !== InventoryObservationEvidenceStatus.UPLOADED)
+      throw new ConflictException({
+        code: 'OBSERVATION_EVIDENCE_NOT_UPLOADED',
+        message: 'Only uploaded evidence can be downloaded',
+      });
+    const signed = await this.storageSigner.createDownloadUrl({
+      bucket: evidence.bucket,
+      path: evidence.storageKey,
+      mimeType: evidence.mimeType,
+      expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
+    });
+    return {
+      evidence: this.evidenceResponse(evidence),
+      download_url: signed.url,
+      expires_in_seconds: signed.expiresInSeconds,
+    };
+  }
+
   async finishRound(
     projectId: number,
     sessionId: number,
@@ -449,17 +847,17 @@ export class InventoryOperationsService {
           : {}),
       });
       if (!round) this.notFound('Inventory round');
-      if (round!.status !== InventoryRoundStatus.ACTIVE)
+      if (round.status !== InventoryRoundStatus.ACTIVE)
         throw new ConflictException({
           code: 'INVENTORY_ROUND_NOT_ACTIVE',
           message: 'Only active rounds can be finished',
         });
-      round!.status = InventoryRoundStatus.FINISHED;
-      round!.finishedAt = new Date();
-      await repo.save(round!);
+      round.status = InventoryRoundStatus.FINISHED;
+      round.finishedAt = new Date();
+      await repo.save(round);
       await this.audit(
         manager,
-        round!.organizationId,
+        round.organizationId,
         projectId,
         'inventory_round',
         roundId,
@@ -467,7 +865,7 @@ export class InventoryOperationsService {
         actor.id,
         { status: InventoryRoundStatus.FINISHED },
       );
-      return this.roundResponse(round!);
+      return this.roundResponse(round);
     });
   }
 
@@ -647,47 +1045,55 @@ export class InventoryOperationsService {
       where: { id: reconciliationId, projectId, sessionId },
     });
     if (!reconciliation) this.notFound('Reconciliation');
-    if (reconciliation!.status === ReconciliationStatus.DUPLICATE)
+    if (reconciliation.status === ReconciliationStatus.DUPLICATE)
       throw new ConflictException({
         code: 'DUPLICATE_BLOCKS_CONSOLIDATION',
         message: 'Duplicate evidence must be resolved before consolidation',
       });
-    return this.dataSource.transaction(async (manager) => {
-      if (
-        await manager
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        if (
+          await manager
+            .getRepository(InventoryConsolidationEntity)
+            .findOne({ where: { reconciliationId } })
+        )
+          throw new ConflictException({
+            code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
+            message: 'Reconciliation already consolidated',
+          });
+        const entity = await manager
           .getRepository(InventoryConsolidationEntity)
-          .findOne({ where: { reconciliationId } })
-      )
-        throw new ConflictException({
-          code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
-          message: 'Reconciliation already consolidated',
-        });
-      const entity = await manager
-        .getRepository(InventoryConsolidationEntity)
-        .save({
-          organizationId: project.organizationId,
+          .save({
+            organizationId: project.organizationId,
+            projectId,
+            sessionId,
+            reconciliationId,
+            inventoryItemId: reconciliation.inventoryItemId,
+            decision: dto.decision,
+            notes: this.clean(dto.notes),
+            evidenceSnapshot: this.reconciliationResponse(reconciliation),
+            decidedById: actor.id,
+            decidedAt: new Date(),
+          });
+        await this.audit(
+          manager,
+          project.organizationId,
           projectId,
-          sessionId,
-          reconciliationId,
-          inventoryItemId: reconciliation!.inventoryItemId,
-          decision: dto.decision,
-          notes: this.clean(dto.notes),
-          evidenceSnapshot: this.reconciliationResponse(reconciliation!),
-          decidedById: actor.id,
-          decidedAt: new Date(),
-        });
-      await this.audit(
-        manager,
-        project.organizationId,
-        projectId,
-        'inventory_consolidation',
-        entity.id,
-        'CREATE',
-        actor.id,
-        { reconciliation_id: reconciliationId, decision: dto.decision },
-      );
-      return this.consolidationResponse(entity);
-    });
+          'inventory_consolidation',
+          entity.id,
+          'CREATE',
+          actor.id,
+          { reconciliation_id: reconciliationId, decision: dto.decision },
+        );
+        return this.consolidationResponse(entity);
+      });
+    } catch (error) {
+      if (!this.isUniqueViolation(error)) throw error;
+      throw new ConflictException({
+        code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
+        message: 'Reconciliation already consolidated',
+      });
+    }
   }
 
   async createValuation(
@@ -761,28 +1167,53 @@ export class InventoryOperationsService {
     query: InventoryOperationListQueryDto,
     actor: InventoryOperationActor,
   ) {
-    await this.getProject(projectId, actor, false);
+    const project = await this.getProject(projectId, actor, false);
     await this.requireItem(projectId, itemId);
-    const [items, total] = await this.plateHistory.findAndCount({
-      where: { projectId, inventoryItemId: itemId },
-      order: { createdAt: 'ASC', id: 'ASC' },
-      skip: (query.page - 1) * query.page_size,
-      take: query.page_size,
+    const total = await this.plateHistory.count({
+      where: {
+        organizationId: project.organizationId,
+        projectId,
+        inventoryItemId: itemId,
+      },
     });
-    return this.paginate(
-      items.map((row) => ({
-        id: row.id,
-        inventory_item_id: row.inventoryItemId,
-        observation_id: row.observationId,
-        previous_plate: row.previousPlate,
-        observed_plate: row.observedPlate,
-        source: row.source,
-        recorded_by_id: row.recordedById,
-        created_at: row.createdAt,
-      })),
-      query,
-      total,
-    );
+    const items = await this.plateHistory
+      .createQueryBuilder('plate')
+      .leftJoin(
+        InventoryObservationEntity,
+        'observation',
+        'observation.id = plate.observation_id AND observation.project_id = :projectId',
+        { projectId },
+      )
+      .leftJoin(
+        InventoryRoundEntity,
+        'round',
+        'round.id = observation.round_id AND round.project_id = :projectId',
+        { projectId },
+      )
+      .select('plate.id', 'id')
+      .addSelect('plate.inventory_item_id', 'inventory_item_id')
+      .addSelect('plate.observation_id', 'observation_id')
+      .addSelect('plate.previous_plate', 'previous_plate')
+      .addSelect('plate.observed_plate', 'observed_plate')
+      .addSelect('plate.source', 'source')
+      .addSelect('plate.recorded_by_id', 'recorded_by_id')
+      .addSelect('plate.created_at', 'created_at')
+      .addSelect('observation.session_id', 'session_id')
+      .addSelect('observation.round_id', 'round_id')
+      .addSelect('round.round_number', 'round_number')
+      .addSelect('observation.captured_at', 'captured_at')
+      .addSelect('observation.field_agent_id', 'field_agent_id')
+      .where('plate.organization_id = :organizationId', {
+        organizationId: project.organizationId,
+      })
+      .andWhere('plate.project_id = :projectId', { projectId })
+      .andWhere('plate.inventory_item_id = :itemId', { itemId })
+      .orderBy('plate.created_at', 'ASC')
+      .addOrderBy('plate.id', 'ASC')
+      .offset((query.page - 1) * query.page_size)
+      .limit(query.page_size)
+      .getRawMany<Record<string, unknown>>();
+    return this.paginate(items, query, total);
   }
 
   private async getProject(
@@ -794,7 +1225,7 @@ export class InventoryOperationsService {
     if (!project) this.notFound('Project');
     if (
       !actor.systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
-      actor.organizationId !== project!.organizationId
+      actor.organizationId !== project.organizationId
     )
       throw new ForbiddenException({
         code: 'FORBIDDEN',
@@ -802,26 +1233,71 @@ export class InventoryOperationsService {
       });
     if (
       mutation &&
-      ['inactive', 'finished', 'cancelled', 'archived'].includes(
-        project!.status,
-      )
+      ['inactive', 'finished', 'cancelled', 'archived'].includes(project.status)
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
         message: 'Project status blocks this operation',
       });
-    return project!;
+    return project;
   }
 
   private async requireSession(projectId: number, id: number) {
     const entity = await this.sessions.findOne({ where: { id, projectId } });
     if (!entity) this.notFound('Inventory session');
-    return entity!;
+    return entity;
+  }
+  private async requireObservation(
+    projectId: number,
+    sessionId: number,
+    roundId: number,
+    observationId: number,
+  ) {
+    const entity = await this.observations.findOne({
+      where: {
+        id: observationId,
+        projectId,
+        sessionId,
+        roundId,
+      },
+    });
+    if (!entity) this.notFound('Inventory observation');
+    return entity;
+  }
+  private assertSessionAcceptsEvidence(session: InventorySessionEntity) {
+    if (session.status !== InventorySessionStatus.ACTIVE)
+      throw new ConflictException({
+        code: 'INVENTORY_SESSION_NOT_ACTIVE',
+        message: 'Evidence can only be added while the session is active',
+      });
+  }
+  private observationEvidenceStorageKey(
+    organizationId: number,
+    projectId: number,
+    sessionId: number,
+    observationId: number,
+    originalName: string,
+  ) {
+    const safeName =
+      originalName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 120) || 'evidence';
+    return [
+      `organizations/${organizationId}`,
+      `projects/${projectId}`,
+      `inventory-sessions/${sessionId}`,
+      `observations/${observationId}`,
+      `evidence/${randomUUID()}-${safeName}`,
+    ].join('/');
   }
   private async requireItem(projectId: number, id: number) {
     const entity = await this.items.findOne({ where: { id, projectId } });
     if (!entity) this.notFound('Inventory item');
-    return entity!;
+    return entity;
   }
   private notFound(resource: string): never {
     throw new NotFoundException({
@@ -890,6 +1366,8 @@ export class InventoryOperationsService {
       status: row.status,
       started_at: row.startedAt,
       finished_at: row.finishedAt,
+      cancelled_at: row.cancelledAt,
+      cancellation_reason: row.cancellationReason,
       created_by_id: row.createdById,
       metadata: row.metadata,
       created_at: row.createdAt,
@@ -902,12 +1380,15 @@ export class InventoryOperationsService {
       session_id: row.sessionId,
       round_number: row.roundNumber,
       kind: row.kind,
+      type: row.kind,
       inventory_item_id: row.inventoryItemId,
       reason: row.reason,
       status: row.status,
       requested_by_id: row.requestedById,
       started_at: row.startedAt,
       finished_at: row.finishedAt,
+      created_by_id: row.requestedById,
+      created_at: row.createdAt,
     };
   }
   private observationResponse(row: InventoryObservationEntity) {
@@ -928,6 +1409,28 @@ export class InventoryOperationsService {
       notes: row.notes,
       captured_at: row.capturedAt,
       received_at: row.receivedAt,
+    };
+  }
+  private evidenceResponse(row: InventoryObservationEvidenceEntity) {
+    return {
+      id: row.id,
+      organization_id: row.organizationId,
+      project_id: row.projectId,
+      session_id: row.sessionId,
+      round_id: row.roundId,
+      observation_id: row.observationId,
+      storage_provider: row.storageProvider,
+      bucket: row.bucket,
+      storage_key: row.storageKey,
+      original_name: row.originalName,
+      mime_type: row.mimeType,
+      size_bytes: row.sizeBytes,
+      checksum: row.checksum,
+      status: row.status,
+      created_by_id: row.createdById,
+      confirmed_at: row.confirmedAt,
+      created_at: row.createdAt,
+      updated_at: row.updatedAt,
     };
   }
   private reconciliationResponse(

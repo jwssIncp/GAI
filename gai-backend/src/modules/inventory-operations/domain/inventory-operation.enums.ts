@@ -16,6 +16,11 @@ export enum InventoryRoundStatus {
   CANCELLED = 'cancelled',
 }
 
+export enum InventoryObservationEvidenceStatus {
+  PENDING_UPLOAD = 'pending_upload',
+  UPLOADED = 'uploaded',
+}
+
 export enum InventoryObservationResult {
   FOUND = 'found',
   NOT_FOUND = 'not_found',

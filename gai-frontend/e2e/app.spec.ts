@@ -185,6 +185,145 @@ async function mockApi(page: any, sessionUser: any = user) {
   );
 }
 
+const inventorySession = {
+  id: 5,
+  organization_id: 1,
+  project_id: 10,
+  name: 'Inventario operacional',
+  status: 'active',
+  current_round_id: 22,
+  started_at: '2026-08-20T10:00:00.000Z',
+  finished_at: null,
+  cancelled_at: null,
+  cancellation_reason: null,
+  created_by_id: 1,
+  metadata: null,
+  created_at: '2026-08-20T09:00:00.000Z',
+  updated_at: '2026-08-20T10:00:00.000Z',
+};
+
+const inventoryInitialRound = {
+  id: 21,
+  session_id: 5,
+  round_number: 1,
+  kind: 'initial',
+  type: 'initial',
+  inventory_item_id: null,
+  reason: null,
+  status: 'finished',
+  requested_by_id: 1,
+  created_by_id: 1,
+  started_at: '2026-08-20T10:00:00.000Z',
+  finished_at: '2026-08-20T11:00:00.000Z',
+  created_at: '2026-08-20T10:00:00.000Z',
+};
+
+const inventoryCurrentRound = {
+  ...inventoryInitialRound,
+  id: 22,
+  round_number: 2,
+  kind: 'reinventory',
+  type: 'reinventory',
+  inventory_item_id: 11,
+  reason: 'Conferir placa',
+  status: 'active',
+  started_at: '2026-08-20T12:00:00.000Z',
+  finished_at: null,
+  created_at: '2026-08-20T12:00:00.000Z',
+};
+
+const inventoryObservation = {
+  id: 31,
+  session_id: 5,
+  round_id: 22,
+  inventory_item_id: 11,
+  field_agent_id: 7,
+  prior_observation_id: 30,
+  idempotency_key: 'idem-observation-31',
+  result: 'divergent',
+  observed_plate: 'ABC1D23',
+  observed_serial_number: 'SN-1',
+  unit_text: 'Matriz',
+  sector_text: 'TI',
+  location_text: 'Sala 1',
+  notes: 'Revisar',
+  captured_at: '2026-08-20T12:15:00.000Z',
+  received_at: '2026-08-20T12:16:00.000Z',
+};
+
+const inventoryEvidence = {
+  id: 41,
+  organization_id: 1,
+  project_id: 10,
+  session_id: 5,
+  round_id: 22,
+  observation_id: 31,
+  storage_provider: 's3',
+  bucket: 'private',
+  storage_key: 'private/evidence.webp',
+  original_name: 'evidence.webp',
+  mime_type: 'image/webp',
+  size_bytes: 2048,
+  checksum: null,
+  status: 'uploaded',
+  created_by_id: 7,
+  confirmed_at: '2026-08-20T12:20:00.000Z',
+  created_at: '2026-08-20T12:19:00.000Z',
+  updated_at: '2026-08-20T12:20:00.000Z',
+};
+
+async function mockInventoryOperationApi(page: any) {
+  let session = { ...inventorySession };
+  let rounds = [{ ...inventoryCurrentRound }, { ...inventoryInitialRound }];
+  let observations = [{ ...inventoryObservation }];
+  let evidence = [{ ...inventoryEvidence }];
+  const paginated = (items: any[], pageSize = 20) => ({ items, page: 1, page_size: pageSize, total_items: items.length, total_pages: items.length ? 1 : 0 });
+
+  await page.route('**/api/v1/projects/10/inventory-sessions/5', async (route: any) => route.fulfill({ json: session }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds**', async (route: any) => route.fulfill({ json: paginated(rounds) }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/observations**', async (route: any) => route.fulfill({ json: paginated(observations) }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/reconciliations**', async (route: any) => route.fulfill({ json: paginated([]) }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/reinventory', async (route: any) => {
+    const body = route.request().postDataJSON();
+    const nextRound = { ...inventoryCurrentRound, id: 23, round_number: 3, inventory_item_id: body.inventory_item_id, reason: body.reason, started_at: '2026-08-20T13:00:00.000Z', created_at: '2026-08-20T13:00:00.000Z' };
+    rounds = [nextRound, ...rounds];
+    session = { ...session, current_round_id: nextRound.id, updated_at: '2026-08-20T13:00:00.000Z' };
+    await route.fulfill({ status: 201, json: nextRound });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/*/observations', async (route: any) => {
+    const body = route.request().postDataJSON();
+    const roundId = Number(new URL(route.request().url()).pathname.split('/').at(-2));
+    const created = { ...inventoryObservation, id: 32, round_id: roundId, inventory_item_id: body.inventory_item_id, field_agent_id: body.field_agent_id, idempotency_key: body.idempotency_key, observed_plate: body.observed_plate, prior_observation_id: null };
+    observations = [...observations, created];
+    await route.fulfill({ status: 201, json: created });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/*/finish', async (route: any) => {
+    const roundId = Number(new URL(route.request().url()).pathname.split('/').at(-2));
+    rounds = rounds.map((round) => round.id === roundId ? { ...round, status: 'finished', finished_at: '2026-08-20T14:00:00.000Z' } : round);
+    session = { ...session, current_round_id: null, updated_at: '2026-08-20T14:00:00.000Z' };
+    await route.fulfill({ json: rounds.find((round) => round.id === roundId) });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/finish', async (route: any) => {
+    session = { ...session, status: 'finished', current_round_id: null, finished_at: '2026-08-20T15:00:00.000Z' };
+    await route.fulfill({ json: session });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/cancel', async (route: any) => {
+    const body = route.request().postDataJSON();
+    session = { ...session, status: 'cancelled', current_round_id: null, cancelled_at: '2026-08-20T15:00:00.000Z', cancellation_reason: body.reason };
+    await route.fulfill({ json: session });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/22/observations/31/evidence**', async (route: any) => route.fulfill({ json: paginated(evidence, 10) }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/22/observations/31/evidence/upload-url', async (route: any) => route.fulfill({ status: 201, json: { evidence: { ...inventoryEvidence, id: 42, original_name: 'nova.webp', status: 'pending_upload' }, upload_url: 'https://upload.example/observation-evidence', expires_in_seconds: 300 } }));
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/22/observations/31/evidence/42/confirm-upload', async (route: any) => {
+    const uploaded = { ...inventoryEvidence, id: 42, original_name: 'nova.webp' };
+    evidence = [...evidence, uploaded];
+    await route.fulfill({ json: uploaded });
+  });
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/22/observations/31/evidence/41/download-url', async (route: any) => route.fulfill({ json: { evidence: inventoryEvidence, download_url: 'https://signed.example/evidence.webp', expires_in_seconds: 300 } }));
+  await page.route('https://upload.example/observation-evidence', async (route: any) => route.fulfill({ status: 200 }));
+  await page.route('https://signed.example/evidence.webp', async (route: any) => route.fulfill({ contentType: 'image/webp', body: Buffer.from('UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA', 'base64') }));
+}
+
 const fieldAgent = {
   id: 7,
   organization_id: 1,
@@ -1007,4 +1146,72 @@ test('finaliza e cancela importacao com confirmacao', async ({ page }) => {
   await page.getByLabel('Cancelar importacao').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByText('Cancelar importacao')).not.toBeVisible();
+});
+
+test('retoma sessao de inventario por deep link e refresh', async ({ page }) => {
+  await mockApi(page);
+  await mockInventoryOperationApi(page);
+  await authenticate(page);
+  await page.goto('/app/projects/10/inventory/sessions/5');
+  await expect(page.getByRole('heading', { name: 'Inventario operacional' })).toBeVisible();
+  await expect(page.getByText('Rodada 2').first()).toBeVisible();
+  await expect(page.getByText('ATIVA').first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Rodada 2').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar observacao' })).toBeEnabled();
+});
+
+test('anexa evidencia, cria reinventario e retoma nova rodada apos refresh', async ({ page }) => {
+  await mockApi(page);
+  await mockInventoryOperationApi(page);
+  await authenticate(page);
+  await page.goto('/app/projects/10/inventory/sessions/5');
+  await page.getByRole('button', { name: 'Abrir' }).click();
+  await expect(page.getByText('evidence.webp')).toBeVisible();
+  await page.getByLabel('Anexar evidencia').setInputFiles({ name: 'nova.webp', mimeType: 'image/webp', buffer: Buffer.from('fake-webp') });
+  await expect(page.getByText('Evidencia enviada e confirmada com sucesso.')).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar' }).click();
+
+  await page.getByRole('button', { name: 'Solicitar reinventario' }).click();
+  await page.getByLabel('Item divergente').fill('12');
+  await page.getByLabel('Motivo').fill('Nova conferencia');
+  await page.getByRole('button', { name: 'Criar nova rodada' }).click();
+  await expect(page.getByText('Rodada 3').first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Rodada 3').first()).toBeVisible();
+
+  await page.getByRole('button', { name: 'Adicionar observacao' }).click();
+  const observationDrawer = page.getByRole('dialog', { name: /Nova observacao/ });
+  await observationDrawer.getByLabel('Item patrimonial').fill('12');
+  await observationDrawer.getByLabel('Inventariante', { exact: true }).fill('7');
+  await observationDrawer.getByRole('button', { name: 'Registrar observacao' }).click();
+  await expect(page.getByText('#12')).toBeVisible();
+});
+
+test('finaliza rodada e sessao removendo acoes operacionais', async ({ page }) => {
+  await mockApi(page);
+  await mockInventoryOperationApi(page);
+  await authenticate(page);
+  await page.goto('/app/projects/10/inventory/sessions/5');
+  await page.getByRole('button', { name: 'Finalizar rodada atual' }).click();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.getByRole('button', { name: 'Finalizar sessao' })).toBeVisible();
+  await page.getByRole('button', { name: 'Finalizar sessao' }).click();
+  await page.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(page.getByRole('button', { name: 'Adicionar observacao' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancelar sessao' })).not.toBeVisible();
+});
+
+test('apresenta conflito 409 de observacao por codigo de dominio', async ({ page }) => {
+  await mockApi(page);
+  await mockInventoryOperationApi(page);
+  await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/*/observations', async (route: any) => route.fulfill({ status: 409, json: { code: 'OBSERVATION_ALREADY_RECORDED', message: 'Item already has an observation in this round' } }));
+  await authenticate(page);
+  await page.goto('/app/projects/10/inventory/sessions/5');
+  await page.getByRole('button', { name: 'Adicionar observacao' }).click();
+  const observationDrawer = page.getByRole('dialog', { name: /Nova observacao/ });
+  await observationDrawer.getByLabel('Item patrimonial').fill('11');
+  await observationDrawer.getByLabel('Inventariante', { exact: true }).fill('7');
+  await observationDrawer.getByRole('button', { name: 'Registrar observacao' }).click();
+  await expect(page.getByText('Este item ja possui uma observacao nesta rodada.')).toBeVisible();
 });

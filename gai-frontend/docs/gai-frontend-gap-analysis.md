@@ -132,66 +132,97 @@ Geração recebe quantidade e primeiro vencimento. Listagem mostra número/total
 
 O dashboard atual permanece conectado a dados reais. Métricas novas de sessões, rodadas, conciliações e prestações dependem do response atual do backend e não foram inventadas.
 
-## 21. Testes
+## 21. Rodada de fechamento pós BACKEND_GAP
 
-- Suíte completa: 21 arquivos, 141 testes aprovados.
-- Novos testes: idempotência, listagem/filtro/criação de sessões e prestação com três despesas/total do backend.
-- Cenários existentes cobrem auth/RBAC, projetos, vínculos, itens, importações, financeiro, dashboard, paginação, loading, empty e erros.
-- Recharts em JSDOM emite avisos preexistentes de container 0x0; não há falha.
+### Alterações realizadas
 
-## 22. Build/lint/typecheck
+- O detalhe da sessão deixou de manter `roundId` como fonte de verdade local. A retomada usa `GET` da sessão, `current_round_id` e a listagem paginada de rodadas.
+- O histórico de rodadas mostra número, tipo, status, início, término, motivo e responsável, com identificação da rodada atual somente pelo ID oficial do backend.
+- Finalização e cancelamento de sessão foram integrados com confirmação acessível; cancelamento exige motivo.
+- Ações operacionais são condicionadas pelo status real da sessão e pelas permissões existentes.
+- Evidências de observação foram integradas pelo fluxo presigned upload, PUT binário, confirmação, listagem paginada e download temporário sob demanda. Nenhum binário/base64 entra no JSON.
+- O histórico de placas passou a exibir data capturada, sessão, rodada e agente retornados pelo endpoint, sem request por linha e sem mutation da placa mestre.
+- Conflitos previsíveis são traduzidos centralmente por `error.code`; mensagens de backend não são inspecionadas por substring.
+- Invalidações atualizam sessão, rodadas, observações, evidências, histórico de placas e dashboard conforme a mutation.
+
+### Contratos consumidos
+
+- `GET /projects/:projectId/inventory-sessions/:sessionId`, incluindo `current_round_id`, cancelamento e lifecycle.
+- `GET /projects/:projectId/inventory-sessions/:sessionId/rounds`, paginado e filtrável por `status`/`type`.
+- `POST .../inventory-sessions/:sessionId/finish` e `POST .../cancel` com `reason` obrigatório no cancelamento.
+- `POST/GET .../observations/:observationId/evidence/*` para upload URL, confirmação, listagem e download URL.
+- `GET /projects/:projectId/inventory-items/:itemId/plate-history`, incluindo `session_id`, `round_id`, `round_number`, `captured_at` e `field_agent_id`.
+- Códigos 409 estáveis: `OBSERVATION_ALREADY_RECORDED`, `IDEMPOTENCY_KEY_REUSED`, `INVENTORY_ROUND_CONCURRENT_MODIFICATION`, `RECONCILIATION_ALREADY_CONSOLIDATED` e demais transições documentadas.
+
+### Fluxo de retomada
+
+O deep link `/app/projects/:projectId/inventory/sessions/:sessionId` dispara sessão e rodadas pela API. Após F5 ou nova aba, `current_round_id` seleciona a rodada oficial e as observações são carregadas sem `location.state`, `Math.max(...)` ou memória de navegação. O E2E comprova reinventário, refresh, recuperação da nova rodada e nova observação.
+
+### Lifecycle
+
+Sessões `draft` oferecem início e cancelamento; `active` oferece operações enquanto existe rodada atual, cancelamento e finalização somente após o encerramento das rodadas ativas. Sessões `finished`/`cancelled` não oferecem início, observação, reinventário, cancelamento ou nova finalização. O backend continua sendo a fonte de verdade e 409 permanece tratado.
+
+### Evidências
+
+O upload aceita JPEG/JPG/PNG/WebP até 10 MiB, mostra progresso/sucesso/erro e bloqueia reenvio concorrente. Upload depende de `inventory-observations:create`; consulta/download dependem de `inventory-sessions:read`. URLs temporárias permanecem apenas no estado efêmero do drawer e são geradas novamente em cada visualização.
+
+### Histórico de placas
+
+A tabela apresenta data, origem, placa, sessão, rodada e responsável diretamente do response enriquecido. A regra “placa observada não atualiza placa mestre” continua explícita e não foi adicionada mutation de item.
+
+### Conflitos tratados
+
+Foi criado um tradutor único para códigos de domínio. O teste de 409 comprova mensagem amigável para observação duplicada. A chave idempotente é criada antes da primeira tentativa, permanece igual no retry após erro e só é renovada após sucesso.
+
+### Testes adicionados
+
+- Deep link e refresh sem estado anterior do componente.
+- Reinventário, recuperação da rodada seguinte e nova montagem.
+- Finalização e cancelamento com motivo.
+- 409 por código e preservação da `idempotency_key` no retry.
+- Upload presigned, PUT mockado, confirmação, listagem e download de evidência.
+- Contexto enriquecido do histórico de placas sem N+1.
+- Quatro E2E novos para retomada, cadeia com evidência/reinventário, lifecycle e conflito.
+
+### Playwright
+
+- Total: 55.
+- Passed: 55.
+- Failed: 0.
+- Flaky: 0.
+- Skipped: 0.
+- Não há retries configurados. A execução completa passou em um worker e não usa `waitForTimeout`; locators de drawers são reavaliados após rerender.
+
+### Testes unitários/componentes
+
+- Arquivos: 23.
+- Testes: 149.
+- Resultado: 149 passed, 0 failed.
+- Aviso não bloqueante preexistente: Recharts reporta container 0x0 no JSDOM.
+
+### Build/lint/typecheck
 
 - `npx tsc -b --pretty false`: PASS.
 - `npm run lint`: PASS.
-- `npm run test`: PASS (141/141; exigiu execução fora do sandbox por restrição de leitura do esbuild).
-- `npm run build`: PASS. O Vite emitiu apenas o alerta não bloqueante de bundle principal acima de 500 kB (aproximadamente 1,36 MB minificado e 378 kB gzip).
-- Playwright: Chromium instalado e suíte executada. Na execução final, 45 de 51 cenários passaram e 6 falharam de forma intermitente em fluxos preexistentes (contabilidade, financeiro, dashboard e atalho do workspace), alternando entre perda da sessão simulada e elementos substituídos durante renderização. Esses mesmos cenários passaram em outras execuções/tentativas; a suíte E2E ainda não pode ser considerada integralmente estável.
+- `npm run test`: PASS.
+- `npm run build`: PASS.
+- Bundle principal: 1.371,29 kB minificado; 381,44 kB gzip.
+- Warning: chunk acima de 500 kB. Não foi iniciada otimização ampla de bundle nesta rodada.
 
-## 23. Backend gaps
+### Backend gaps
 
-### BACKEND_GAP — recuperação de rodadas
+Os quatro `BACKEND_GAP` anteriores — recuperação de rodadas, lifecycle de sessão, evidências e contexto do histórico de placas — foram resolvidos pelo contrato 016 atual e consumidos pelo frontend. Nenhum novo `BACKEND_GAP` foi identificado nesta rodada.
 
-- Endpoint: `GET /projects/:projectId/inventory-sessions/:sessionId`.
-- Problema: retorna somente o cabeçalho; não há endpoint GET de rodadas.
-- Request esperado: detalhe da sessão com rodadas ou `GET .../rounds` paginado.
-- Response atual: sessão sem `rounds`.
-- Impacto: após refresh de sessão ativa sem observações, o frontend não recupera o `roundId` necessário para observar/finalizar.
-- Sugestão: expor lista de rodadas e/ou `current_round` no detalhe.
-
-### BACKEND_GAP — lifecycle de sessão
-
-- Endpoint: inventário operacional.
-- Problema: não existe ação explícita para finalizar/cancelar a sessão, embora o enum possua `finished/cancelled`.
-- Request esperado: endpoints de lifecycle ou regra documentada que finalize a sessão ao terminar rodadas.
-- Response atual: apenas start e finish de rodada.
-- Impacto: UI não pode concluir o cabeçalho da sessão de forma explícita.
-- Sugestão: formalizar transições no contrato.
-
-### BACKEND_GAP — evidências de observação
-
-- Endpoint: `POST .../rounds/:roundId/observations`.
-- Problema: o DTO não possui campo/endpoint de evidências ou fotos vinculadas à observação.
-- Request esperado: referência de uploads autorizados ou endpoint de anexos da observação.
-- Response atual: somente campos textuais.
-- Impacto: a UI mostra notas e dados coletados, mas não evidências binárias da observação.
-- Sugestão: reutilizar presigned storage com vínculo imutável à observação.
-
-### BACKEND_GAP — histórico de placas sem contexto direto de rodada
-
-- Endpoint: `GET .../inventory-items/:itemId/plate-history`.
-- Problema: retorna `observation_id`, mas não `session_id`/`round_id`.
-- Impacto: a tabela não pode mostrar sessão/rodada sem chamadas adicionais.
-- Sugestão: incluir IDs de contexto ou endpoint batch de observações.
-
-## 24. Pendências funcionais
+## 22. Pendências frontend/funcionais
 
 - `REQUIRES_FUNCTIONAL_DEFINITION`: setores (somente `sector_text`, sem CRUD/hierarquia).
 - `REQUIRES_FUNCTIONAL_DEFINITION`: catálogo/validação definitiva de documentos dos inventariantes.
 - `REQUIRES_FUNCTIONAL_DEFINITION`: categorias de despesa.
 - `REQUIRES_FUNCTIONAL_DEFINITION`: formas de pagamento.
-- `REQUIRES_FUNCTIONAL_DEFINITION`: aprovação de duplicidades (não implementada; consolidação permanece bloqueada).
+- `REQUIRES_FUNCTIONAL_DEFINITION`: aprovação de duplicidades; consolidação permanece bloqueada por contrato.
+- Otimização de bundle por route-level splitting permanece recomendação futura, fora do escopo cirúrgico desta rodada.
 
-## 25. Matriz de prontidão
+## 23. Matriz final de prontidão
 
 | Domínio | UI | API | RBAC | Paginação | Testes | Estado |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -200,9 +231,10 @@ O dashboard atual permanece conectado a dados reais. Métricas novas de sessões
 | Inventariantes/vínculos | Sim | Sim | Sim | Sim | Sim | READY |
 | Itens/fotos | Sim | Sim | Sim | Sim | Sim | READY |
 | Placas/avaliações | Sim | Sim | Sim | Sim | Parcial | PARTIAL |
-| Sessões | Sim | Sim | Sim | Sim | Sim | PARTIAL |
-| Rodadas/reinventário | Sim | Sim | Sim | N/A | Parcial | BLOCKED |
-| Observações | Sim | Sim | Sim | Sim | Parcial | PARTIAL |
+| Sessões | Sim | Sim | Sim | Sim | Sim | READY |
+| Rodadas/reinventário | Sim | Sim | Sim | Sim | Sim | READY |
+| Observações | Sim | Sim | Sim | Sim | Sim | READY |
+| Evidências | Sim | Sim | Sim | Sim | Sim | READY |
 | Importação física | Sim | Sim | Sim | Erros/payloads | Parcial | PARTIAL |
 | Conciliação/divergências | Sim | Sim | Sim | Sim | Parcial | PARTIAL |
 | Consolidação | Sim | Sim | Sim | N/A | Parcial | PARTIAL |
@@ -212,4 +244,4 @@ O dashboard atual permanece conectado a dados reais. Métricas novas de sessões
 | Dashboard | Sim | Sim | Sim | N/A | Sim | PARTIAL |
 | Exportações | Sim | Sim | Sim | Sim | Sim | READY |
 
-`READY` segue o critério completo de UI + API + estados + permission + validação + testes. Os módulos novos permanecem `PARTIAL` quando ainda faltam testes de componente para todas as mutations ou quando o contrato não permite completar o fluxo após refresh.
+Rodadas/reinventário agora atendem integralmente o critério de READY: refresh, deep link, rodada oficial via API, reinventário após refresh e testes aprovados. Evidências atendem upload presigned, confirmação, consulta, download autorizado, RBAC, estados de UI e testes.

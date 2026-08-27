@@ -13,7 +13,6 @@ import {
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -25,13 +24,17 @@ import {
   SessionAuthGuard,
 } from '../../auth/presentation/guards/session-auth.guard';
 import {
+  CancelInventorySessionDto,
+  ConfirmObservationEvidenceUploadDto,
   ConsolidateReconciliationDto,
   CreateAssetValuationDto,
   CreateInventoryObservationDto,
+  CreateObservationEvidenceUploadDto,
   CreateInventorySessionDto,
   InventoryOperationResponseDto,
   InventoryOperationListQueryDto,
   InventoryObservationListQueryDto,
+  InventoryRoundListQueryDto,
   InventorySessionListQueryDto,
   ReconciliationListQueryDto,
   RequestReinventoryDto,
@@ -87,6 +90,23 @@ export class InventoryOperationsController {
     return this.service.getSession(projectId, sessionId, this.actor(req));
   }
 
+  @Get('inventory-sessions/:sessionId/rounds')
+  @RequirePermissions('inventory-sessions:read')
+  @ApiOperation({ summary: 'Listar rodadas da sessao de inventario' })
+  listRounds(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Query() query: InventoryRoundListQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.listRounds(
+      projectId,
+      sessionId,
+      query,
+      this.actor(req),
+    );
+  }
+
   @Post('inventory-sessions/:sessionId/start')
   @HttpCode(200)
   @RequirePermissions('inventory-sessions:update')
@@ -97,6 +117,36 @@ export class InventoryOperationsController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.service.startSession(projectId, sessionId, this.actor(req));
+  }
+
+  @Post('inventory-sessions/:sessionId/finish')
+  @HttpCode(200)
+  @RequirePermissions('inventory-sessions:update')
+  @ApiOperation({ summary: 'Finalizar sessao sem rodadas ativas' })
+  finishSession(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.finishSession(projectId, sessionId, this.actor(req));
+  }
+
+  @Post('inventory-sessions/:sessionId/cancel')
+  @HttpCode(200)
+  @RequirePermissions('inventory-sessions:update')
+  @ApiOperation({ summary: 'Cancelar sessao sem apagar o historico' })
+  cancelSession(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Body() dto: CancelInventorySessionDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.cancelSession(
+      projectId,
+      sessionId,
+      dto,
+      this.actor(req),
+    );
   }
 
   @Post('inventory-sessions/:sessionId/reinventory')
@@ -135,6 +185,103 @@ export class InventoryOperationsController {
       sessionId,
       roundId,
       dto,
+      this.actor(req),
+    );
+  }
+
+  @Post(
+    'inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/upload-url',
+  )
+  @HttpCode(201)
+  @RequirePermissions('inventory-observations:create')
+  @ApiOperation({ summary: 'Solicitar upload URL de evidencia da observacao' })
+  createEvidenceUploadUrl(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Param('roundId', ParseIntPipe) roundId: number,
+    @Param('observationId', ParseIntPipe) observationId: number,
+    @Body() dto: CreateObservationEvidenceUploadDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.createEvidenceUploadUrl(
+      projectId,
+      sessionId,
+      roundId,
+      observationId,
+      dto,
+      this.actor(req),
+    );
+  }
+
+  @Post(
+    'inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/:evidenceId/confirm-upload',
+  )
+  @HttpCode(200)
+  @RequirePermissions('inventory-observations:create')
+  @ApiOperation({ summary: 'Confirmar upload de evidencia da observacao' })
+  confirmEvidenceUpload(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Param('roundId', ParseIntPipe) roundId: number,
+    @Param('observationId', ParseIntPipe) observationId: number,
+    @Param('evidenceId', ParseIntPipe) evidenceId: number,
+    @Body() dto: ConfirmObservationEvidenceUploadDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.confirmEvidenceUpload(
+      projectId,
+      sessionId,
+      roundId,
+      observationId,
+      evidenceId,
+      dto,
+      this.actor(req),
+    );
+  }
+
+  @Get(
+    'inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence',
+  )
+  @RequirePermissions('inventory-sessions:read')
+  @ApiOperation({ summary: 'Listar evidencias da observacao' })
+  listObservationEvidence(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Param('roundId', ParseIntPipe) roundId: number,
+    @Param('observationId', ParseIntPipe) observationId: number,
+    @Query() query: InventoryOperationListQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.listObservationEvidence(
+      projectId,
+      sessionId,
+      roundId,
+      observationId,
+      query,
+      this.actor(req),
+    );
+  }
+
+  @Post(
+    'inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/:evidenceId/download-url',
+  )
+  @HttpCode(200)
+  @RequirePermissions('inventory-sessions:read')
+  @ApiOperation({ summary: 'Gerar download URL de evidencia da observacao' })
+  createEvidenceDownloadUrl(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @Param('roundId', ParseIntPipe) roundId: number,
+    @Param('observationId', ParseIntPipe) observationId: number,
+    @Param('evidenceId', ParseIntPipe) evidenceId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.createEvidenceDownloadUrl(
+      projectId,
+      sessionId,
+      roundId,
+      observationId,
+      evidenceId,
       this.actor(req),
     );
   }

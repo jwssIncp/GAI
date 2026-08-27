@@ -1,5 +1,5 @@
 openapi: 3.1.0
-info: { title: GAI Inventory Operations API, version: 1.1.0 }
+info: { title: GAI Inventory Operations API, version: 1.2.0 }
 servers: [{ url: /api/v1 }]
 security: [{ bearerAuth: [] }]
 paths:
@@ -32,7 +32,58 @@ paths:
       summary: Get inventory session
       x-permission: inventory-sessions:read
       responses:
-        { '200': { description: Session }, '404': { description: Not found } }
+        {
+          '200':
+            {
+              description: Session with explicit current active round ID,
+              content:
+                {
+                  application/json:
+                    {
+                      schema: { $ref: '#/components/schemas/InventorySession' },
+                    },
+                },
+            },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Project or session not found },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds:
+    get:
+      summary: List session rounds ordered by newest round first
+      description: Filter status=active to recover active rounds after a client restart. current_round_id on the session detail is the highest active round_number.
+      x-permission: inventory-sessions:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+        - {
+            name: status,
+            in: query,
+            schema: { type: string, enum: [active, finished, cancelled] },
+          }
+        - {
+            name: type,
+            in: query,
+            schema: { type: string, enum: [initial, reinventory] },
+          }
+      responses:
+        {
+          '200':
+            {
+              description: Paginated rounds,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: '#/components/schemas/InventoryRoundPage' },
+                    },
+                },
+            },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Project or session not found },
+        }
   /projects/{projectId}/inventory-sessions/{sessionId}/start:
     post:
       summary: Start session and initial round
@@ -50,6 +101,40 @@ paths:
         {
           '201': { description: Round created },
           '409': { description: Missing prior evidence or inactive session },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/finish:
+    post:
+      summary: Finish an active session after every active round is finished
+      x-permission: inventory-sessions:update
+      responses:
+        {
+          '200': { description: Session finished },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Project or session not found },
+          '409': { description: Invalid state or active rounds remain },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/cancel:
+    post:
+      summary: Cancel a draft or active session and cancel its active rounds
+      description: Cancellation is logical, requires a reason and is audited. Finished or already cancelled sessions conflict.
+      x-permission: inventory-sessions:update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties: { reason: { type: string, maxLength: 2000 } }
+      responses:
+        {
+          '200': { description: Session cancelled },
+          '400': { description: Validation error },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Project or session not found },
+          '409': { description: Invalid state },
         }
   /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations:
     post:
@@ -71,6 +156,100 @@ paths:
       summary: Finish round
       x-permission: inventory-sessions:update
       responses: { '200': { description: Finished } }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations/{observationId}/evidence/upload-url:
+    post:
+      summary: Create append-only evidence metadata and a presigned PUT URL
+      description: Allowed only while the session is active. Binary data is written directly to object storage, never to MySQL.
+      x-permission: inventory-observations:create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvidenceUploadRequest' }
+      responses:
+        {
+          '201':
+            {
+              description: Pending evidence and presigned upload URL,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: '#/components/schemas/EvidenceUploadUrl' },
+                    },
+                },
+            },
+          '400': { description: Invalid MIME type or size },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Context or observation not found },
+          '409': { description: Session is not active or concurrent conflict },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations/{observationId}/evidence:
+    get:
+      summary: List append-only observation evidence
+      x-permission: inventory-sessions:read
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        {
+          '200':
+            {
+              description: Paginated evidence,
+              content:
+                {
+                  application/json:
+                    { schema: { $ref: '#/components/schemas/EvidencePage' } },
+                },
+            },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Context or observation not found },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations/{observationId}/evidence/{evidenceId}/confirm-upload:
+    post:
+      summary: Confirm an evidence upload
+      description: Idempotently returns evidence already marked uploaded. Confirmation is blocked after session finish/cancel.
+      x-permission: inventory-observations:create
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EvidenceConfirmRequest' }
+      responses:
+        {
+          '200': { description: Evidence uploaded },
+          '400': { description: Invalid size },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Context or evidence not found },
+          '409': { description: Session is not active },
+        }
+  /projects/{projectId}/inventory-sessions/{sessionId}/rounds/{roundId}/observations/{observationId}/evidence/{evidenceId}/download-url:
+    post:
+      summary: Create an authorized presigned GET URL
+      x-permission: inventory-sessions:read
+      responses:
+        {
+          '200':
+            {
+              description: Evidence and presigned download URL,
+              content:
+                {
+                  application/json:
+                    {
+                      schema:
+                        { $ref: '#/components/schemas/EvidenceDownloadUrl' },
+                    },
+                },
+            },
+          '401': { description: Authentication required },
+          '403': { description: Tenant or permission denied },
+          '404': { description: Context or evidence not found },
+          '409': { description: Evidence upload is not confirmed },
+        }
   /projects/{projectId}/inventory-sessions/{sessionId}/observations:
     get:
       summary: List observation history
@@ -151,7 +330,12 @@ paths:
           { $ref: '#/components/parameters/Page' },
           { $ref: '#/components/parameters/PageSize' },
         ]
-      responses: { '200': { $ref: '#/components/responses/Paginated' } }
+      responses:
+        '200':
+          description: Plate evidence with observation session and round context resolved by joins
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlateHistoryPage' }
 components:
   securitySchemes: { bearerAuth: { type: http, scheme: bearer } }
   parameters:
@@ -176,6 +360,164 @@ components:
             { schema: { $ref: '#/components/schemas/PaginatedResponse' } },
         }
   schemas:
+    InventorySession:
+      type: object
+      required:
+        [id, organization_id, project_id, name, status, current_round_id]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        name: { type: string }
+        status: { type: string, enum: [draft, active, finished, cancelled] }
+        current_round_id: { type: [integer, 'null'], format: int64 }
+        started_at: { type: [string, 'null'], format: date-time }
+        finished_at: { type: [string, 'null'], format: date-time }
+        cancelled_at: { type: [string, 'null'], format: date-time }
+        cancellation_reason: { type: [string, 'null'] }
+        created_by_id: { type: [integer, 'null'], format: int64 }
+        metadata: { type: [object, 'null'], additionalProperties: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    InventoryRound:
+      type: object
+      required:
+        [
+          id,
+          session_id,
+          round_number,
+          kind,
+          type,
+          status,
+          started_at,
+          created_at,
+        ]
+      properties:
+        id: { type: integer, format: int64 }
+        session_id: { type: integer, format: int64 }
+        round_number: { type: integer, minimum: 1 }
+        kind: { type: string, enum: [initial, reinventory] }
+        type: { type: string, enum: [initial, reinventory] }
+        inventory_item_id: { type: [integer, 'null'], format: int64 }
+        reason: { type: [string, 'null'] }
+        status: { type: string, enum: [active, finished, cancelled] }
+        requested_by_id: { type: [integer, 'null'], format: int64 }
+        created_by_id: { type: [integer, 'null'], format: int64 }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+    InventoryRoundPage:
+      allOf:
+        - { $ref: '#/components/schemas/PaginatedResponse' }
+        - type: object
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/InventoryRound' }
+    EvidenceUploadRequest:
+      type: object
+      required: [original_name, mime_type, size_bytes]
+      properties:
+        original_name: { type: string, maxLength: 255 }
+        mime_type:
+          { type: string, enum: [image/jpeg, image/jpg, image/png, image/webp] }
+        size_bytes: { type: integer, minimum: 1, maximum: 10485760 }
+        checksum: { type: [string, 'null'], maxLength: 128 }
+    EvidenceConfirmRequest:
+      type: object
+      properties:
+        checksum: { type: [string, 'null'], maxLength: 128 }
+        size_bytes: { type: [integer, 'null'], minimum: 1, maximum: 10485760 }
+    ObservationEvidence:
+      type: object
+      required:
+        [
+          id,
+          organization_id,
+          project_id,
+          session_id,
+          round_id,
+          observation_id,
+          storage_key,
+          original_name,
+          mime_type,
+          size_bytes,
+          status,
+          created_at,
+        ]
+      properties:
+        id: { type: integer, format: int64 }
+        organization_id: { type: integer, format: int64 }
+        project_id: { type: integer, format: int64 }
+        session_id: { type: integer, format: int64 }
+        round_id: { type: integer, format: int64 }
+        observation_id: { type: integer, format: int64 }
+        storage_provider: { type: string, example: s3 }
+        bucket: { type: string, example: gai-local }
+        storage_key:
+          {
+            type: string,
+            example: organizations/1/projects/2/inventory-sessions/3/observations/4/evidence/uuid-photo.webp,
+          }
+        original_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        checksum: { type: [string, 'null'] }
+        status: { type: string, enum: [pending_upload, uploaded] }
+        created_by_id: { type: [integer, 'null'], format: int64 }
+        confirmed_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    EvidenceUploadUrl:
+      type: object
+      required: [evidence, upload_url, expires_in_seconds]
+      properties:
+        evidence: { $ref: '#/components/schemas/ObservationEvidence' }
+        upload_url: { type: string, format: uri }
+        expires_in_seconds: { type: integer }
+    EvidenceDownloadUrl:
+      type: object
+      required: [evidence, download_url, expires_in_seconds]
+      properties:
+        evidence: { $ref: '#/components/schemas/ObservationEvidence' }
+        download_url: { type: string, format: uri }
+        expires_in_seconds: { type: integer }
+    EvidencePage:
+      allOf:
+        - { $ref: '#/components/schemas/PaginatedResponse' }
+        - type: object
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/ObservationEvidence' }
+    PlateHistoryEntry:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        inventory_item_id: { type: integer, format: int64 }
+        observation_id: { type: [integer, 'null'], format: int64 }
+        session_id: { type: [integer, 'null'], format: int64 }
+        round_id: { type: [integer, 'null'], format: int64 }
+        round_number: { type: [integer, 'null'] }
+        captured_at: { type: [string, 'null'], format: date-time }
+        field_agent_id: { type: [integer, 'null'], format: int64 }
+        previous_plate: { type: [string, 'null'] }
+        observed_plate: { type: [string, 'null'] }
+        source:
+          {
+            type: string,
+            enum: [field, physical_base, accounting_base, manual],
+          }
+        recorded_by_id: { type: [integer, 'null'], format: int64 }
+        created_at: { type: string, format: date-time }
+    PlateHistoryPage:
+      allOf:
+        - { $ref: '#/components/schemas/PaginatedResponse' }
+        - type: object
+          properties:
+            items:
+              type: array
+              items: { $ref: '#/components/schemas/PlateHistoryEntry' }
     PaginatedResponse:
       type: object
       required: [items, page, page_size, total_items, total_pages]

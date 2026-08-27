@@ -17,7 +17,13 @@ import { Type } from 'class-transformer';
 import {
   ConsolidationDecision,
   InventoryObservationResult,
+  InventoryRoundKind,
+  InventoryRoundStatus,
 } from '../domain/inventory-operation.enums';
+import {
+  ConfirmInventoryItemImageUploadDto,
+  CreateInventoryItemImageUploadDto,
+} from '../../inventory-item-images/application/dto/inventory-item-image-inputs';
 
 export class CreateInventorySessionDto {
   @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(255) name!: string;
@@ -34,6 +40,18 @@ export class RequestReinventoryDto {
   inventory_item_id!: number;
   @ApiProperty() @IsString() @IsNotEmpty() @MaxLength(2000) reason!: string;
 }
+
+export class CancelInventorySessionDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(2000)
+  reason!: string;
+}
+
+export class CreateObservationEvidenceUploadDto extends CreateInventoryItemImageUploadDto {}
+
+export class ConfirmObservationEvidenceUploadDto extends ConfirmInventoryItemImageUploadDto {}
 
 export class CreateInventoryObservationDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -171,6 +189,18 @@ export class InventoryObservationListQueryDto extends InventoryOperationListQuer
   @IsInt()
   @Min(1)
   field_agent_id?: number;
+}
+
+export class InventoryRoundListQueryDto extends InventoryOperationListQueryDto {
+  @ApiPropertyOptional({ enum: InventoryRoundStatus })
+  @IsOptional()
+  @IsEnum(InventoryRoundStatus)
+  status?: InventoryRoundStatus;
+
+  @ApiPropertyOptional({ name: 'type', enum: InventoryRoundKind })
+  @IsOptional()
+  @IsEnum(InventoryRoundKind)
+  type?: InventoryRoundKind;
 }
 
 export class ReconciliationListQueryDto extends InventoryOperationListQueryDto {

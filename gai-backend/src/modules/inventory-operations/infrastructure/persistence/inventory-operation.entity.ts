@@ -13,6 +13,7 @@ import {
 import {
   ConsolidationDecision,
   InventoryObservationResult,
+  InventoryObservationEvidenceStatus,
   InventoryRoundKind,
   InventoryRoundStatus,
   InventorySessionStatus,
@@ -51,6 +52,15 @@ export class InventorySessionEntity {
     nullable: true,
   })
   finishedAt!: Date | null;
+  @Column({
+    name: 'cancelled_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  cancelledAt!: Date | null;
+  @Column({ name: 'cancellation_reason', type: 'text', nullable: true })
+  cancellationReason!: string | null;
   @Column({ name: 'created_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   createdById!: number | null;
   @Column({ type: 'json', nullable: true }) metadata!: JsonObject | null;
@@ -159,6 +169,62 @@ export class InventoryObservationEntity {
   receivedAt!: Date;
   @Column({ name: 'created_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   createdById!: number | null;
+}
+
+@Entity('inventory_observation_evidence')
+@Index('idx_inventory_observation_evidence_observation_created', [
+  'observationId',
+  'createdAt',
+])
+@Index('idx_inventory_observation_evidence_scope', [
+  'organizationId',
+  'projectId',
+  'sessionId',
+  'roundId',
+])
+@Index('uq_inventory_observation_evidence_storage_key', ['storageKey'], {
+  unique: true,
+})
+export class InventoryObservationEvidenceEntity {
+  @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN) id!: number;
+  @Column({ name: 'organization_id', ...FOREIGN_KEY_COLUMN })
+  organizationId!: number;
+  @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN }) projectId!: number;
+  @Column({ name: 'session_id', ...FOREIGN_KEY_COLUMN }) sessionId!: number;
+  @Column({ name: 'round_id', ...FOREIGN_KEY_COLUMN }) roundId!: number;
+  @Column({ name: 'observation_id', ...FOREIGN_KEY_COLUMN })
+  observationId!: number;
+  @Column({ name: 'storage_provider', type: 'varchar', length: 30 })
+  storageProvider!: string;
+  @Column({ type: 'varchar', length: 255 }) bucket!: string;
+  @Column({ name: 'storage_key', type: 'varchar', length: 1024 })
+  storageKey!: string;
+  @Column({ name: 'original_name', type: 'varchar', length: 255 })
+  originalName!: string;
+  @Column({ name: 'mime_type', type: 'varchar', length: 100 })
+  mimeType!: string;
+  @Column({ name: 'size_bytes', ...FOREIGN_KEY_COLUMN }) sizeBytes!: number;
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  checksum!: string | null;
+  @Column({
+    type: 'varchar',
+    length: 30,
+    default: InventoryObservationEvidenceStatus.PENDING_UPLOAD,
+  })
+  status!: InventoryObservationEvidenceStatus;
+  @Column({ name: 'created_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  createdById!: number | null;
+  @Column({
+    name: 'confirmed_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  confirmedAt!: Date | null;
+  @CreateDateColumn({ name: 'created_at', type: 'datetime', precision: 3 })
+  createdAt!: Date;
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
+  updatedAt!: Date;
 }
 
 @Entity('inventory_plate_history')

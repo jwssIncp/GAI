@@ -10,8 +10,15 @@ describe('inventory-operations contract', () => {
   it('documents sessions, reinventory, observations, reconciliation and consolidation', () => {
     for (const value of [
       'inventory-sessions',
+      'current_round_id',
+      '/rounds',
       'reinventory',
       'observations',
+      'evidence/upload-url',
+      'confirm-upload',
+      'download-url',
+      '/finish',
+      '/cancel',
       'reconciliations',
       'consolidate',
       'valuations',
@@ -29,6 +36,18 @@ describe('inventory-operations contract', () => {
       'consolidations:create',
       'asset-valuations:create',
       'plate-history:read',
+    ])
+      expect(content).toContain(value);
+  });
+
+  it('documents restart recovery, lifecycle and storage authorization', () => {
+    for (const value of [
+      'After a restart',
+      'draft -> active -> finished',
+      'object-storage',
+      'organization, project, session, round and observation',
+      'INVENTORY_ROUND_CONCURRENT_MODIFICATION',
+      'RECONCILIATION_ALREADY_CONSOLIDATED',
     ])
       expect(content).toContain(value);
   });

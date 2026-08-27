@@ -485,3 +485,181 @@ isolamento, testes e OpenAPI suficientes. `PARCIAL` indica exatamente o item fal
    arquivo bruto no object storage e manter o mesmo modelo de staging/idempotência.
 5. Após definições de negócio: modelar catálogos e workflow de duplicidade como
    entidades explícitas, evitando enums/regras inferidos sem aprovação.
+
+---
+
+# Rodada cirúrgica de integração do inventário — 2026-08-26
+
+## Gaps confirmados
+
+A validação foi limitada aos `BACKEND_GAP` do relatório do frontend e confrontou
+controller, service, repositórios TypeORM usados pelo service, entities, DTOs,
+migrations, permissions, OpenAPI e testes. Não foi feita uma nova auditoria geral.
+
+| Gap                             | Classificação anterior | Evidência encontrada                                                            |
+| ------------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
+| Recuperação de rodadas          | CONFIRMADO             | rodada persistida, mas sem GET e sem referência ativa no detalhe                |
+| Lifecycle de sessão             | CONFIRMADO             | enum possuía `finished/cancelled`, sem ações explícitas                         |
+| Evidências da observação        | CONFIRMADO             | observação era somente textual; storage presigned existia em outros módulos     |
+| Contexto do histórico de placas | CONFIRMADO             | mapper retornava `observation_id` sem sessão/rodada                             |
+| Conflitos concorrentes          | PARCIAL                | replay idempotente existia; algumas constraints ainda podiam vazar erro técnico |
+
+## Alterações realizadas
+
+- endpoint paginado de rodadas, com filtros `status` e `type`, ordenado por
+  `round_number` decrescente;
+- `current_round_id` no detalhe da sessão, definido como a rodada ativa de maior
+  número;
+- lifecycle explícito `draft -> active -> finished` e
+  `draft|active -> cancelled`;
+- finish bloqueado enquanto houver rodada ativa; cancel exige motivo, cancela
+  rodadas ativas e mantém todo o histórico;
+- evidência append-only com metadata no MySQL e binário em object storage por URL
+  presigned;
+- histórico de placas enriquecido por joins, sem N+1 e sem alterar placa mestre;
+- tradução de corridas previsíveis de observação, idempotência, número de rodada e
+  consolidação para 409 com códigos estáveis.
+
+## Endpoints novos/alterados
+
+| Método | Endpoint                                                     | Permission                      |
+| ------ | ------------------------------------------------------------ | ------------------------------- |
+| GET    | `/projects/:projectId/inventory-sessions/:sessionId`         | `inventory-sessions:read`       |
+| GET    | `/projects/:projectId/inventory-sessions/:sessionId/rounds`  | `inventory-sessions:read`       |
+| POST   | `/projects/:projectId/inventory-sessions/:sessionId/finish`  | `inventory-sessions:update`     |
+| POST   | `/projects/:projectId/inventory-sessions/:sessionId/cancel`  | `inventory-sessions:update`     |
+| POST   | `.../observations/:observationId/evidence/upload-url`        | `inventory-observations:create` |
+| POST   | `.../evidence/:evidenceId/confirm-upload`                    | `inventory-observations:create` |
+| GET    | `.../observations/:observationId/evidence`                   | `inventory-sessions:read`       |
+| POST   | `.../evidence/:evidenceId/download-url`                      | `inventory-sessions:read`       |
+| GET    | `/projects/:projectId/inventory-items/:itemId/plate-history` | `plate-history:read`            |
+
+O detalhe de sessão apenas adiciona `current_round_id`; nenhum campo existente foi
+removido ou renomeado. Rodadas continuam expondo `kind` para compatibilidade e
+também expõem `type`, além de `created_at` e `created_by_id`.
+
+## Migrations
+
+`1741400000001-close-inventory-operation-gaps.ts` é incremental. Ela adiciona
+`cancelled_at` e `cancellation_reason` a `inventory_sessions` e cria
+`inventory_observation_evidence` com FKs para organization, project, session,
+round, observation e user, índices de escopo/paginação e storage key única. O
+`down()` remove primeiro a tabela e depois as colunas.
+
+MySQL 8 não estava disponível: não havia listener em `localhost:3306` e o daemon
+Docker não estava iniciado. Portanto a migration foi validada estruturalmente e
+via SQLite/test doubles, mas **não** foi marcada como executada em MySQL.
+
+## Permissions
+
+Nenhuma permission nova foi necessária. Controller, seed existente, spec 016 e
+testes usam as chaves semânticas já cadastradas:
+`inventory-sessions:read`, `inventory-sessions:update`,
+`inventory-observations:create` e `plate-history:read`.
+
+## Regras de lifecycle
+
+- `draft -> active`: `start`, criando a rodada inicial;
+- `active -> finished`: `finish`, somente com zero rodadas ativas;
+- `draft|active -> cancelled`: `cancel` com `reason` obrigatório;
+- cancelamento ativo transforma rodadas ativas em `cancelled` na mesma transação;
+- sessões `finished/cancelled` não podem iniciar, receber observações,
+  reinventários nem novas evidências;
+- listagem e download de evidências históricas continuam permitidos após o
+  fechamento;
+- auditoria de finish/cancel registra ator, timestamp implícito do log, status
+  anterior/novo, projeto, sessão e motivo quando aplicável.
+
+## Evidências
+
+O fluxo reutiliza `ConfiguredStorageSignerService` e
+`InventoryItemImageScopeService`. Tipos aceitos: JPEG/JPG, PNG e WebP. O limite
+padrão reutilizado é 10 MiB e o TTL padrão é 300 segundos, ambos configuráveis.
+O banco guarda provider, bucket, `storage_key`, nome original, MIME, tamanho,
+checksum, status, ator e timestamps; não guarda base64 nem binário.
+
+O fluxo é `upload-url -> PUT direto no storage -> confirm-upload`. Somente status
+`uploaded` recebe `download-url`. Toda ação resolve e valida organization, project,
+session, round, observation e evidence; conhecer um ID isolado não concede acesso.
+Não existe update ou delete de evidência nesta rodada.
+
+## Histórico de placas
+
+Cada linha agora inclui, quando a origem possui observação, `session_id`,
+`round_id`, `round_number`, `captured_at` e `field_agent_id`. Os campos são
+resolvidos em uma query com left joins; origens sem observação permanecem válidas
+com contexto nulo. A semântica permanece: placa observada é evidência e nunca
+sobrescreve `old_plate/new_plate` do item mestre.
+
+## Conflitos 409
+
+- `OBSERVATION_ALREADY_RECORDED`: mesma rodada/item;
+- `IDEMPOTENCY_KEY_REUSED`: mesma chave em outro contexto;
+- replay da mesma chave/contexto continua retornando a observação original;
+- `INVENTORY_ROUND_CONCURRENT_MODIFICATION`: disputa por número de rodada;
+- `RECONCILIATION_ALREADY_CONSOLIDATED`: consolidação concorrente/duplicada;
+- `INVENTORY_SESSION_HAS_ACTIVE_ROUNDS`: finish prematuro;
+- `INVENTORY_SESSION_STATUS_INVALID` e `INVENTORY_SESSION_NOT_ACTIVE`: transições
+  e mutações incompatíveis.
+
+## Testes
+
+O novo E2E cobre criação/início, refresh lógico, recuperação de rodada ativa,
+observação, evidência, reinventário, novo refresh, `prior_observation_id`, histórico
+de placas, finish/cancel, transições inválidas, 401, 403, outro tenant, outro
+projeto, recurso inexistente e evidência após sessão finalizada. Unit tests cobrem
+as policies de lifecycle; teste de migration cobre `up`, `down`, índices e FKs.
+
+Validação final executada nesta rodada:
+
+| Gate                                      | Resultado                                                           |
+| ----------------------------------------- | ------------------------------------------------------------------- |
+| Build                                     | aprovado                                                            |
+| Lint incremental dos arquivos alterados   | aprovado                                                            |
+| Testes unitários/integração/contrato      | 89 suítes e 363 testes aprovados                                    |
+| E2E completo                              | 30 suítes e 100 testes aprovados                                    |
+| Cobertura                                 | statements 84,61%; branches 65,97%; functions 78,22%; lines 84,96%  |
+| Threshold global de cobertura             | não aprovado: branches e functions abaixo dos 80% configurados      |
+| Migration e stress concorrente em MySQL 8 | não executados: daemon Docker e listener local `3306` indisponíveis |
+
+O código 1 do comando de cobertura decorre exclusivamente dos thresholds de
+branches/functions; as 89 suítes e os 363 testes executados com instrumentação
+foram aprovados.
+
+## OpenAPI
+
+O spec 016 foi elevado para versão 1.2.0 e descreve os endpoints, schemas,
+paginação, filtros, permissions, status codes, conflitos, exemplos de storage e
+campos enriquecidos. O teste de contrato verifica também retomada, lifecycle,
+storage autorizado e códigos concorrentes.
+
+## Compatibilidade frontend e contrato mobile
+
+O frontend atual não foi alterado. A mudança é backward-compatible: ele pode ler
+`current_round_id` no detalhe e/ou listar `rounds?status=active`. Após restart, o
+cliente não precisa inferir rodada por observações. Para reinventário, recupera a
+rodada ativa de maior número, envia a observação normalmente e recebe a cadeia
+`prior_observation_id` calculada pelo servidor.
+
+## Pendências restantes
+
+- executar `up -> down -> up` da migration em MySQL 8 quando o serviço estiver
+  disponível;
+- executar stress concorrente real em MySQL para confirmar locks e traduções sob
+  disputa simultânea;
+- integrar no frontend os novos contratos; nenhuma alteração de UI foi autorizada
+  nesta rodada.
+
+## Matriz final
+
+| Gap                             | Estado anterior | Implementação                           | Testes                 | OpenAPI | Estado final |
+| ------------------------------- | --------------- | --------------------------------------- | ---------------------- | ------- | ------------ |
+| Recuperação de rodadas          | CONFIRMADO      | GET paginado + `current_round_id`       | unit/E2E/contract      | 1.2.0   | READY        |
+| Lifecycle de sessão             | CONFIRMADO      | finish/cancel transacionais e auditados | unit/E2E/migration     | 1.2.0   | PARTIAL      |
+| Evidências                      | CONFIRMADO      | presigned append-only e autorizada      | E2E/migration/contract | 1.2.0   | PARTIAL      |
+| Contexto do histórico de placas | CONFIRMADO      | joins com sessão/rodada/agente          | E2E                    | 1.2.0   | READY        |
+| Conflitos concorrentes          | PARCIAL         | tradução estável para 409               | unit/E2E               | 1.2.0   | PARTIAL      |
+
+Os itens `PARTIAL` têm código, testes SQLite e contrato concluídos; a única prova
+faltante é migration/stress concorrente em MySQL 8 real, indisponível nesta
+execução. Não há gap funcional conhecido nesses fluxos fora dessa validação.
