@@ -4,9 +4,24 @@ export class CloseInventoryOperationGaps1741400000001 implements MigrationInterf
   name = 'CloseInventoryOperationGaps1741400000001';
 
   async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`ALTER TABLE inventory_sessions
-      ADD COLUMN cancelled_at DATETIME(3) NULL AFTER finished_at,
-      ADD COLUMN cancellation_reason TEXT NULL AFTER cancelled_at`);
+    // utf8mb4 InnoDB max index length is 3072 bytes => 768 chars.
+    // Prefix unique index keeps VARCHAR(1024) while staying under the limit.
+    const sessionsColumns: Array<{ COLUMN_NAME: string }> =
+      (await queryRunner.query(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'inventory_sessions'
+           AND COLUMN_NAME IN ('cancelled_at', 'cancellation_reason')`,
+      )) ?? [];
+    const existing = new Set(sessionsColumns.map((c) => c.COLUMN_NAME));
+    if (!existing.has('cancelled_at')) {
+      await queryRunner.query(`ALTER TABLE inventory_sessions
+        ADD COLUMN cancelled_at DATETIME(3) NULL AFTER finished_at`);
+    }
+    if (!existing.has('cancellation_reason')) {
+      await queryRunner.query(`ALTER TABLE inventory_sessions
+        ADD COLUMN cancellation_reason TEXT NULL AFTER cancelled_at`);
+    }
 
     await queryRunner.query(`CREATE TABLE inventory_observation_evidence (
       id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -28,7 +43,7 @@ export class CloseInventoryOperationGaps1741400000001 implements MigrationInterf
       created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
       PRIMARY KEY (id),
-      UNIQUE INDEX uq_inventory_observation_evidence_storage_key (storage_key),
+      UNIQUE INDEX uq_inventory_observation_evidence_storage_key (storage_key(768)),
       INDEX idx_inventory_observation_evidence_observation_created (observation_id, created_at),
       INDEX idx_inventory_observation_evidence_scope (organization_id, project_id, session_id, round_id),
       CONSTRAINT fk_inventory_observation_evidence_org FOREIGN KEY (organization_id) REFERENCES organizations(id),

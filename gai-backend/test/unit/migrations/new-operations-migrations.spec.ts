@@ -10,6 +10,7 @@ describe('new operations migrations', () => {
       queryRunner: {
         query: jest.fn((sql: string) => {
           queries.push(sql);
+          if (/information_schema/i.test(sql)) return Promise.resolve([]);
           return Promise.resolve();
         }),
       },
@@ -76,7 +77,7 @@ describe('new operations migrations', () => {
     expect(sql).toContain('ADD COLUMN cancelled_at');
     expect(sql).toContain('CREATE TABLE inventory_observation_evidence');
     expect(sql).toContain(
-      'UNIQUE INDEX uq_inventory_observation_evidence_storage_key',
+      'UNIQUE INDEX uq_inventory_observation_evidence_storage_key (storage_key(768))',
     );
     expect(sql).toContain('FOREIGN KEY (observation_id)');
 
