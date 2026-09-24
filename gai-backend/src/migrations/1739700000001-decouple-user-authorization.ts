@@ -132,7 +132,9 @@ export class DecoupleUserAuthorization1739700000001 implements MigrationInterfac
     await queryRunner.query('DROP TABLE IF EXISTS org_roles');
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    throw new Error('DecoupleUserAuthorization1739700000001 is not reversible');
+  public down(): Promise<void> {
+    return Promise.reject(
+      new Error('DecoupleUserAuthorization1739700000001 is not reversible'),
+    );
   }
 }

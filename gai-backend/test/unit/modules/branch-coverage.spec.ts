@@ -14,10 +14,7 @@ import { RequestPasswordResetUseCase } from '../../../src/modules/auth/applicati
 import { RolesGuard } from '../../../src/modules/auth/presentation/guards/roles.guard';
 import { SessionAuthGuard } from '../../../src/modules/auth/presentation/guards/session-auth.guard';
 import { User } from '../../../src/modules/auth/domain/entities/user';
-import {
-  UserRole,
-  UserStatus,
-} from '../../../src/modules/auth/domain/enums/user.enums';
+import { UserStatus } from '../../../src/modules/auth/domain/enums/user.enums';
 import { Reflector } from '@nestjs/core';
 import { GetOrganizationUseCase } from '../../../src/modules/organizations/application/use-cases/get-organization.use-case';
 import { ListOrganizationsUseCase } from '../../../src/modules/organizations/application/use-cases/list-organizations.use-case';
@@ -245,7 +242,7 @@ describe('Branch coverage boosters', () => {
       mockAssignments,
       mockRoleAuth,
       mockConfigService,
-      { isActive: jest.fn().mockResolvedValue(true) } as never,
+      { isActive: jest.fn().mockResolvedValue(true) },
     );
     const request: { headers: Record<string, string>; user?: unknown } = {
       headers: { authorization: 'Bearer session-1' },
@@ -484,7 +481,7 @@ describe('Branch coverage boosters', () => {
       mockAssignments,
       mockRoleAuth,
       mockConfigService,
-      { isActive: jest.fn().mockResolvedValue(true) } as never,
+      { isActive: jest.fn().mockResolvedValue(true) },
     );
     await expect(guard.canActivate(context as never)).rejects.toBeInstanceOf(
       UnauthorizedException,
@@ -500,7 +497,7 @@ describe('Branch coverage boosters', () => {
       mockAssignments,
       mockRoleAuth,
       { get: () => 8 } as never,
-      { isActive: jest.fn().mockResolvedValue(true) } as never,
+      { isActive: jest.fn().mockResolvedValue(true) },
     );
     await expect(guard2.canActivate(context as never)).rejects.toBeInstanceOf(
       UnauthorizedException,

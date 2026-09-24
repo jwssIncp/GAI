@@ -712,35 +712,29 @@ export class ImportSessionsService {
       throw new Error('inventory item not found');
 
     const [operationSession, round, assignment] = await Promise.all([
-      manager
-        .getRepository(InventorySessionEntity)
-        .findOne({
-          where: {
-            id: inventorySessionId,
-            organizationId: importSession.organizationId,
-            projectId: importSession.projectId,
-          },
-        }),
-      manager
-        .getRepository(InventoryRoundEntity)
-        .findOne({
-          where: {
-            id: roundId,
-            organizationId: importSession.organizationId,
-            projectId: importSession.projectId,
-            sessionId: inventorySessionId,
-          },
-        }),
-      manager
-        .getRepository(ProjectFieldAgentEntity)
-        .findOne({
-          where: {
-            organizationId: importSession.organizationId,
-            projectId: importSession.projectId,
-            fieldAgentId,
-            status: ProjectFieldAgentStatus.ACTIVE,
-          },
-        }),
+      manager.getRepository(InventorySessionEntity).findOne({
+        where: {
+          id: inventorySessionId,
+          organizationId: importSession.organizationId,
+          projectId: importSession.projectId,
+        },
+      }),
+      manager.getRepository(InventoryRoundEntity).findOne({
+        where: {
+          id: roundId,
+          organizationId: importSession.organizationId,
+          projectId: importSession.projectId,
+          sessionId: inventorySessionId,
+        },
+      }),
+      manager.getRepository(ProjectFieldAgentEntity).findOne({
+        where: {
+          organizationId: importSession.organizationId,
+          projectId: importSession.projectId,
+          fieldAgentId,
+          status: ProjectFieldAgentStatus.ACTIVE,
+        },
+      }),
     ]);
     if (
       !operationSession ||

@@ -163,12 +163,12 @@ export class ExpenseAccountabilitiesService {
       },
     });
     if (!expense) this.notFound('Expense');
-    if (expense!.fieldAgentId !== accountability.fieldAgentId)
+    if (expense.fieldAgentId !== accountability.fieldAgentId)
       throw new ConflictException({
         code: 'EXPENSE_FIELD_AGENT_MISMATCH',
         message: 'Expense must belong to the accountability field agent',
       });
-    const expenseDate = this.date(this.dateKey(expense!.expenseDate));
+    const expenseDate = this.date(this.dateKey(expense.expenseDate));
     if (
       expenseDate < this.date(this.dateKey(accountability.periodStart)) ||
       expenseDate > this.date(this.dateKey(accountability.periodEnd))
@@ -181,7 +181,7 @@ export class ExpenseAccountabilitiesService {
       if (
         await manager
           .getRepository(ExpenseAccountabilityItemEntity)
-          .findOne({ where: { expenseId: expense!.id } })
+          .findOne({ where: { expenseId: expense.id } })
       )
         throw new ConflictException({
           code: 'EXPENSE_ALREADY_ACCOUNTED',
@@ -193,15 +193,15 @@ export class ExpenseAccountabilitiesService {
           organizationId: project.organizationId,
           projectId,
           accountabilityId: id,
-          expenseId: expense!.id,
+          expenseId: expense.id,
         });
       await this.audit(
         manager,
         accountability,
-        expense!.id,
+        expense.id,
         'ADD_EXPENSE',
         actor.id,
-        { amount: expense!.amount },
+        { amount: expense.amount },
       );
       const links = await manager
         .getRepository(ExpenseAccountabilityItemEntity)
@@ -234,7 +234,7 @@ export class ExpenseAccountabilitiesService {
           : {}),
       });
       if (!row) this.notFound('Expense accountability');
-      if (row!.status !== ExpenseAccountabilityStatus.OPEN)
+      if (row.status !== ExpenseAccountabilityStatus.OPEN)
         throw new ConflictException({
           code: 'ACCOUNTABILITY_NOT_OPEN',
           message: 'Only open accountabilities can be closed',
@@ -258,16 +258,16 @@ export class ExpenseAccountabilitiesService {
         (sum, expense) => sum + Math.round(Number(expense.amount) * 100),
         0,
       );
-      row!.totalAmount = (totalCents / 100).toFixed(2);
-      row!.status = ExpenseAccountabilityStatus.CLOSED;
-      row!.closedById = actor.id;
-      row!.closedAt = new Date();
-      await repo.save(row!);
-      await this.audit(manager, row!, null, 'CLOSE', actor.id, {
-        total_amount: row!.totalAmount,
+      row.totalAmount = (totalCents / 100).toFixed(2);
+      row.status = ExpenseAccountabilityStatus.CLOSED;
+      row.closedById = actor.id;
+      row.closedAt = new Date();
+      await repo.save(row);
+      await this.audit(manager, row, null, 'CLOSE', actor.id, {
+        total_amount: row.totalAmount,
         expense_count: links.length,
       });
-      return this.response(row!, links);
+      return this.response(row, links);
     });
   }
 
@@ -292,7 +292,7 @@ export class ExpenseAccountabilitiesService {
         message: 'Installments already exist for expense',
       });
     const amounts = InstallmentAllocationPolicy.allocate(
-      expense!.amount,
+      expense.amount,
       dto.count,
     );
     const first = this.date(dto.first_due_date);
@@ -324,7 +324,7 @@ export class ExpenseAccountabilitiesService {
         expenseId,
         operation: 'GENERATE_INSTALLMENTS',
         performedBy: actor.id,
-        changes: { count: dto.count, total_amount: expense!.amount },
+        changes: { count: dto.count, total_amount: expense.amount },
       });
       return saved.map((row) => this.installmentResponse(row));
     });
@@ -369,7 +369,7 @@ export class ExpenseAccountabilitiesService {
     if (!row) this.notFound('Project');
     if (
       !actor.systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
-      actor.organizationId !== row!.organizationId
+      actor.organizationId !== row.organizationId
     )
       throw new ForbiddenException({
         code: 'FORBIDDEN',
@@ -377,20 +377,20 @@ export class ExpenseAccountabilitiesService {
       });
     if (
       mutation &&
-      ['inactive', 'finished', 'cancelled', 'archived'].includes(row!.status)
+      ['inactive', 'finished', 'cancelled', 'archived'].includes(row.status)
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
         message: 'Project status blocks this operation',
       });
-    return row!;
+    return row;
   }
   private async requireAccountability(projectId: number, id: number) {
     const row = await this.accountabilities.findOne({
       where: { id, projectId },
     });
     if (!row) this.notFound('Expense accountability');
-    return row!;
+    return row;
   }
   private date(value: string) {
     return new Date(`${value}T00:00:00.000Z`);

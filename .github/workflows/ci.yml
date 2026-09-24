@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, master]
+  pull_request:
+    branches: [main, develop, master]
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (lint · audit · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gai-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: gai-backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm audit --audit-level=high || true
+      - run: npm run test:cov
+      - run: npm run build
+
+  frontend:
+    name: Frontend (lint · audit · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gai-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: gai-frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm audit --audit-level=high || true
+      - run: npm run test
+      - run: npm run build
+        env:
+          VITE_API_BASE_URL: /api/v1

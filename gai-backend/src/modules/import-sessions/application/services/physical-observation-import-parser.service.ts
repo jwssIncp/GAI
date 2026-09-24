@@ -116,16 +116,37 @@ export class PhysicalObservationImportParserService {
     return undefined;
   }
   private text(value: unknown): string | undefined {
-    return value === undefined ? undefined : String(value).trim() || undefined;
+    if (value === undefined || value === null) return undefined;
+    if (
+      typeof value !== 'string' &&
+      typeof value !== 'number' &&
+      typeof value !== 'boolean' &&
+      typeof value !== 'bigint'
+    ) {
+      return undefined;
+    }
+    return String(value).trim() || undefined;
   }
   private integer(value: unknown): number | undefined {
     const parsed = Number(value);
     return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
   }
   private dateTime(value: unknown): string | undefined {
-    if (value === undefined) return undefined;
-    const date = value instanceof Date ? value : new Date(String(value));
-    return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
+    if (value === undefined || value === null) return undefined;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
+    }
+    if (
+      typeof value !== 'string' &&
+      typeof value !== 'number' &&
+      typeof value !== 'boolean' &&
+      typeof value !== 'bigint'
+    ) {
+      return undefined;
+    }
+    const raw = String(value);
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? raw : date.toISOString();
   }
   private result(value: unknown): InventoryObservationResult | undefined {
     const normalized = this.text(value)

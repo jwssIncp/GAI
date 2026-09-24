@@ -49,6 +49,9 @@ describe('Common infrastructure', () => {
   });
 
   it('HttpExceptionFilter handles unknown errors', () => {
+    const errorSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
     const filter = new HttpExceptionFilter();
     const json = jest.fn();
     const host = {
@@ -60,10 +63,14 @@ describe('Common infrastructure', () => {
       }),
     } as unknown as ArgumentsHost;
 
-    filter.catch(new Error('boom'), host);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'INTERNAL_ERROR' }),
-    );
+    try {
+      filter.catch(new Error('boom'), host);
+      expect(json).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'INTERNAL_ERROR' }),
+      );
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('HttpExceptionFilter does not serialize a sensitive non-Error value', () => {
@@ -169,7 +176,7 @@ describe('SessionAuthGuard', () => {
         resolvePrimaryRole: jest.fn().mockReturnValue(null),
       } as never,
       { get: () => 8 } as never,
-      { isActive: jest.fn().mockResolvedValue(true) } as never,
+      { isActive: jest.fn().mockResolvedValue(true) },
     );
     const context = {
       switchToHttp: () => ({

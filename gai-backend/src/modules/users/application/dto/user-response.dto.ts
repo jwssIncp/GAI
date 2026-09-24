@@ -74,8 +74,8 @@ export class UserResponseDto {
       email: user.email,
       status: user.status,
       organization_id: user.organizationId,
-      role_assignments: roleAssignments.map(
-        RoleAssignmentResponseDto.fromAssignedRole,
+      role_assignments: roleAssignments.map((assignment) =>
+        RoleAssignmentResponseDto.fromAssignedRole(assignment),
       ),
       created_at: user.createdAt.toISOString(),
       updated_at: user.updatedAt.toISOString(),

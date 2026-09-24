@@ -37,6 +37,8 @@ export class ListUserRoleAssignmentsUseCase {
     this.scope.assertCanAccessUser(actor, user);
 
     const items = await this.assignments.findActiveByUserId(userId);
-    return items.map(RoleAssignmentResponseDto.fromAssignedRole);
+    return items.map((item) =>
+      RoleAssignmentResponseDto.fromAssignedRole(item),
+    );
   }
 }

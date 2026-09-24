@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateCompaniesCompanyUnits1740700000001
-  implements MigrationInterface
-{
+export class CreateCompaniesCompanyUnits1740700000001 implements MigrationInterface {
   name = 'CreateCompaniesCompanyUnits1740700000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -166,8 +164,12 @@ export class CreateCompaniesCompanyUnits1740700000001
     await queryRunner.query('DROP TABLE company_unit_audit_logs');
     await queryRunner.query('DROP TABLE company_audit_logs');
     await queryRunner.query('DROP TABLE project_units');
-    await queryRunner.query('ALTER TABLE projects DROP FOREIGN KEY fk_projects_company');
-    await queryRunner.query('ALTER TABLE projects DROP INDEX idx_projects_company_id');
+    await queryRunner.query(
+      'ALTER TABLE projects DROP FOREIGN KEY fk_projects_company',
+    );
+    await queryRunner.query(
+      'ALTER TABLE projects DROP INDEX idx_projects_company_id',
+    );
     await queryRunner.query('ALTER TABLE projects DROP COLUMN company_id');
     await queryRunner.query('DROP TABLE company_units');
     await queryRunner.query('DROP TABLE companies');
