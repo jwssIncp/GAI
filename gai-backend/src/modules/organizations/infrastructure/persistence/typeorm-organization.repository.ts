@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organization } from '../../domain/entities/organization';
-import { OrganizationStatus } from '../../domain/enums/organization-status.enum';
 import {
   ListOrganizationsParams,
   OrganizationAuditEntry,

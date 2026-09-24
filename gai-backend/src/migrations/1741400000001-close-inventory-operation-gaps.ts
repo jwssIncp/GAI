@@ -6,13 +6,12 @@ export class CloseInventoryOperationGaps1741400000001 implements MigrationInterf
   async up(queryRunner: QueryRunner): Promise<void> {
     // utf8mb4 InnoDB max index length is 3072 bytes => 768 chars.
     // Prefix unique index keeps VARCHAR(1024) while staying under the limit.
-    const sessionsColumns: Array<{ COLUMN_NAME: string }> =
-      (await queryRunner.query(
-        `SELECT COLUMN_NAME FROM information_schema.COLUMNS
+    const sessionsColumns = (await queryRunner.query(
+      `SELECT COLUMN_NAME FROM information_schema.COLUMNS
          WHERE TABLE_SCHEMA = DATABASE()
            AND TABLE_NAME = 'inventory_sessions'
            AND COLUMN_NAME IN ('cancelled_at', 'cancellation_reason')`,
-      )) ?? [];
+    )) as Array<{ COLUMN_NAME: string }>;
     const existing = new Set(sessionsColumns.map((c) => c.COLUMN_NAME));
     if (!existing.has('cancelled_at')) {
       await queryRunner.query(`ALTER TABLE inventory_sessions

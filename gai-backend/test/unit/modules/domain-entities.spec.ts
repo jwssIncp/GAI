@@ -2,10 +2,7 @@ import { Organization } from '../../../src/modules/organizations/domain/entities
 import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
 import { Cnpj } from '../../../src/modules/organizations/domain/value-objects/cnpj';
 import { User } from '../../../src/modules/auth/domain/entities/user';
-import {
-  UserRole,
-  UserStatus,
-} from '../../../src/modules/auth/domain/enums/user.enums';
+import { UserStatus } from '../../../src/modules/auth/domain/enums/user.enums';
 import { LogoutUseCase } from '../../../src/modules/auth/application/use-cases/logout.use-case';
 import { GetCurrentUserUseCase } from '../../../src/modules/auth/application/use-cases/get-current-user.use-case';
 import { UnauthorizedException } from '@nestjs/common';

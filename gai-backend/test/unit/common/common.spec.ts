@@ -169,7 +169,7 @@ describe('SessionAuthGuard', () => {
         resolvePrimaryRole: jest.fn().mockReturnValue(null),
       } as never,
       { get: () => 8 } as never,
-      { isActive: jest.fn().mockResolvedValue(true) } as never,
+      { isActive: jest.fn().mockResolvedValue(true) },
     );
     const context = {
       switchToHttp: () => ({

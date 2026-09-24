@@ -50,21 +50,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
   }
 
   private statusToCode(status: number): string {
-    switch (status) {
-      case HttpStatus.BAD_REQUEST:
-        return 'VALIDATION_ERROR';
-      case HttpStatus.UNAUTHORIZED:
-        return 'UNAUTHORIZED';
-      case HttpStatus.FORBIDDEN:
-        return 'FORBIDDEN';
-      case HttpStatus.NOT_FOUND:
-        return 'NOT_FOUND';
-      case HttpStatus.CONFLICT:
-        return 'CONFLICT';
-      case HttpStatus.LOCKED:
-        return 'ACCOUNT_LOCKED';
-      default:
-        return 'INTERNAL_ERROR';
-    }
+    const codes: Record<number, string> = {
+      [HttpStatus.BAD_REQUEST]: 'VALIDATION_ERROR',
+      [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',
+      [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
+      [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
+      [HttpStatus.CONFLICT]: 'CONFLICT',
+      [HttpStatus.LOCKED]: 'ACCOUNT_LOCKED',
+    };
+    return codes[status] ?? 'INTERNAL_ERROR';
   }
 }

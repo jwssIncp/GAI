@@ -66,7 +66,6 @@ export class ProjectSummaryService {
       'project_summary_requested',
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const mandatorySummaryPromises: [
       Promise<ProjectInventorySummaryDto>,
       Promise<ProjectImagesSummaryDto>,
