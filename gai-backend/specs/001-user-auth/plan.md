@@ -21,7 +21,7 @@ com camadas SOLID e persistência **MySQL**; implementar após `002-organization
 
 **Testing**: Jest, Supertest, testcontainers (mysql); SES mockado em testes
 
-**Target Platform**: AWS ECS Fargate (Node.js 22 LTS)
+**Target Platform**: AWS ECS Fargate (Node.js 24 LTS)
 
 **Environments**: Homologação + Produção (AWS Secrets Manager)
 

@@ -22,7 +22,7 @@ por organization usam `roles.type = ORGANIZATION`.
 
 **Testing**: Jest, Supertest, @nestjs/testing, jest coverage ≥ 80%
 
-**Target Platform**: Local Docker Compose (dev) + AWS ECS Fargate (Linux container Node.js 22 LTS)
+**Target Platform**: Local Docker Compose (dev) + AWS ECS Fargate (Linux container Node.js 24 LTS)
 
 **API Contract**: OpenAPI 3.1 em `contracts/users-api.yaml`, `contracts/rbac-api.yaml`; amend em `001-user-auth/contracts/auth-api.yaml`
 

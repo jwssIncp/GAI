@@ -26,7 +26,7 @@ por tipo de erro e fluxos paralelos documentados (fonte para geração do fronte
 
 **Testing**: Jest, Supertest, @nestjs/testing, testcontainers (mysql), jest coverage ≥ 80%; testes locais no host contra MySQL publicado em `:3306`
 
-**Target Platform**: Local Docker Compose (dev) + AWS ECS Fargate (Linux container Node.js 22 LTS)
+**Target Platform**: Local Docker Compose (dev) + AWS ECS Fargate (Linux container Node.js 24 LTS)
 
 **Environments**: **Local** (Docker Compose + `.env`) | **Homologação** | **Produção** (AWS PS + RDS isolados)
 
