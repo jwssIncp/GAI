@@ -1,5 +1,5 @@
 # Replace YOUR_ACCOUNT_ID and bucket name after bootstrap apply.
-bucket         = "gai-terraform-state-YOUR_ACCOUNT_ID"
+bucket         = "gai-terraform-state-989232581501"
 key            = "gai/homolog/terraform.tfstate"
 region         = "us-east-1"
 dynamodb_table = "gai-terraform-locks"

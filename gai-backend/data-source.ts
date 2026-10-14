@@ -1,8 +1,12 @@
 import 'reflect-metadata';
+import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 
 config();
+
+// Runs both via ts-node (project root, .ts) and compiled (dist/, .js).
+const ext = __filename.endsWith('.ts') ? 'ts' : 'js';
 
 export default new DataSource({
   type: 'mysql',
@@ -15,8 +19,8 @@ export default new DataSource({
   extra: {
     bigNumberStrings: false,
   },
-  entities: ['src/**/*.entity.ts'],
-  migrations: ['src/migrations/*.ts'],
+  entities: [join(__dirname, `src/**/*.entity.${ext}`)],
+  migrations: [join(__dirname, `src/migrations/*.${ext}`)],
   synchronize: false,
   logging: process.env.DB_LOGGING === 'true',
 });
