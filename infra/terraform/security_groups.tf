@@ -1,6 +1,6 @@
 resource "aws_security_group" "alb" {
   name        = "${local.name_prefix}-alb"
-  description = "ALB — CloudFront origin only"
+  description = "ALB - CloudFront origin only"
   vpc_id      = aws_vpc.main.id
 
   tags = {
@@ -25,7 +25,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_all" {
 
 resource "aws_security_group" "ecs" {
   name        = "${local.name_prefix}-ecs"
-  description = "ECS tasks — traffic from ALB only"
+  description = "ECS tasks - traffic from ALB only"
   vpc_id      = aws_vpc.main.id
 
   tags = {
@@ -51,7 +51,7 @@ resource "aws_vpc_security_group_egress_rule" "ecs_all" {
 
 resource "aws_security_group" "rds" {
   name        = "${local.name_prefix}-rds"
-  description = "RDS MySQL — ECS only"
+  description = "RDS MySQL - ECS only"
   vpc_id      = aws_vpc.main.id
 
   tags = {

@@ -46,7 +46,7 @@ resource "aws_acm_certificate_validation" "cloudfront" {
 resource "aws_cloudfront_distribution" "main" {
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "${local.name_prefix} — SPA + API"
+  comment             = "${local.name_prefix} - SPA + API"
   default_root_object = "index.html"
   price_class         = "PriceClass_100"
   aliases             = local.use_custom_domain ? [var.domain_name] : []
