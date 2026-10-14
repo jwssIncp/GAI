@@ -83,6 +83,22 @@ variable "db_username" {
   default   = "gai_admin"
 }
 
+variable "platform_admin_login" {
+  type    = string
+  default = "platform.admin"
+}
+
+variable "platform_admin_email" {
+  type    = string
+  default = "admin@gai.local"
+}
+
+variable "enable_db_bastion" {
+  type        = bool
+  description = "Create an SSM-only EC2 bastion for DB port forwarding (DBeaver)"
+  default     = false
+}
+
 variable "ecs_cpu" {
   type    = number
   default = 256

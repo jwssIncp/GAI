@@ -20,7 +20,7 @@ Internet ─► CloudFront (HTTPS)
               └─ /api/*  → ALB → ECS Fargate (NestJS)
                                    ├─ RDS MySQL 8 (privado)
                                    ├─ S3 (imagens)
-                                   └─ Secrets Manager (credenciais do banco)
+                                   └─ SSM Parameter Store (/gai/<env>/: config + senhas)
 ```
 
 | Ambiente    | Branch    | GitHub Environment | Observação                      |
@@ -151,36 +151,10 @@ git checkout -b main master && git push -u origin main
 No GitHub: **Settings → Environments** → crie `homolog` e `production` (nomes exatos).
 Em `production`, ative **Required reviewers** (aprovação manual antes do deploy).
 
-Gere os valores de homologação:
+O único secret por environment é **`AWS_ROLE_ARN`** (`terraform output -raw github_actions_role_arn`, ou IAM → Roles → `gai-<env>-github-actions`).
+Todo o resto (cluster, service, subnets, buckets, CloudFront) o Terraform grava no Parameter Store em `/gai/<env>/deploy/*` e os workflows leem de lá (`.github/scripts/load-deploy-config.sh`). Senhas ficam em `/gai/<env>/db/password` e `/gai/<env>/platform-admin/password` (SecureString, geradas no apply e **fora** do state do Terraform).
 
-```bash
-cd ~/GAI/infra/terraform
-terraform init -backend-config=env/homolog.backend.hcl -reconfigure
-echo "AWS_ROLE_ARN=$(terraform output -raw github_actions_role_arn)"
-echo "ECR_REPOSITORY=$(terraform output -raw ecr_repository_url | cut -d/ -f2)"
-echo "ECS_CLUSTER=$(terraform output -raw ecs_cluster_name)"
-echo "ECS_SERVICE=$(terraform output -raw ecs_service_name)"
-echo "ECS_TASK_DEFINITION=$(terraform output -raw ecs_task_definition_family)"
-echo "ECS_SUBNETS=$(terraform output -json private_subnet_ids | jq -r 'join(",")')"
-echo "ECS_SECURITY_GROUPS=$(terraform output -raw ecs_security_group_id)"
-echo "FRONTEND_S3_BUCKET=$(terraform output -raw frontend_bucket_name)"
-echo "CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)"
-echo "APP_URL=$(terraform output -raw app_url)"
-```
-
-Cadastre cada linha (exceto `APP_URL`) como **Environment secret** do environment `homolog`:
-
-| Secret                       | Origem                                        |
-|------------------------------|-----------------------------------------------|
-| `AWS_ROLE_ARN`               | `github_actions_role_arn`                     |
-| `ECR_REPOSITORY`             | nome do repo ECR (parte após a `/`)           |
-| `ECS_CLUSTER`                | `ecs_cluster_name`                            |
-| `ECS_SERVICE`                | `ecs_service_name`                            |
-| `ECS_TASK_DEFINITION`        | `ecs_task_definition_family`                  |
-| `ECS_SUBNETS`                | `private_subnet_ids` separados por vírgula    |
-| `ECS_SECURITY_GROUPS`        | `ecs_security_group_id`                       |
-| `FRONTEND_S3_BUCKET`         | `frontend_bucket_name`                        |
-| `CLOUDFRONT_DISTRIBUTION_ID` | `cloudfront_distribution_id`                  |
+Os antigos secrets `ECR_REPOSITORY`, `ECS_*`, `FRONTEND_S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID` podem ser apagados.
 
 Opcional: variable `AWS_REGION = us-east-1` (o padrão já é esse).
 

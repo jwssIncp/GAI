@@ -1,0 +1,123 @@
+name: Deploy app (reusable)
+
+# Called by deploy-homolog.yml / deploy-production.yml.
+# Config comes from Parameter Store (/gai/<env>/deploy/*, written by Terraform);
+# the only GitHub secret is AWS_ROLE_ARN in each environment.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Load deploy config (Parameter Store)
+        run: bash .github/scripts/load-deploy-config.sh "${{ inputs.environment }}"
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        working-directory: gai-backend
+        env:
+          IMAGE: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+        run: |
+          docker build --target production \
+            -t "$IMAGE:${{ github.sha }}" \
+            -t "$IMAGE:${{ inputs.environment }}" \
+            -t "$IMAGE:latest" .
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:${{ inputs.environment }}"
+          docker push "$IMAGE:latest"
+
+      - name: Download current task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition "$ECS_TASK_FAMILY" \
+            --query taskDefinition \
+            > task-definition.json
+
+      - name: Render new image into task definition
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: gai-backend
+          image: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Register task definitions (app + release)
+        id: register
+        run: |
+          jq 'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          ) | with_entries(select(.value != null))' \
+            "${{ steps.render.outputs.task-definition }}" > task-definition-clean.json
+          bash .github/scripts/register-task-definitions.sh task-definition-clean.json
+
+      - name: Release (migrations, permissions, platform admin)
+        env:
+          ECS_TASK_DEFINITION: ${{ steps.register.outputs.release_task_definition_arn }}
+        run: bash .github/scripts/ecs-run-migrations.sh
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "${{ steps.register.outputs.task_definition_arn }}" \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: gai-frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: gai-frontend
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_API_BASE_URL: /api/v1
+
+      - name: Sync frontend to S3
+        run: |
+          aws s3 sync gai-frontend/dist/ "s3://${FRONTEND_BUCKET}/" --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html"
+          aws s3 cp gai-frontend/dist/index.html "s3://${FRONTEND_BUCKET}/index.html" \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --paths "/*"

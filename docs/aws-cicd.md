@@ -101,14 +101,7 @@ Principais:
 | Output | Uso |
 |--------|-----|
 | `github_actions_role_arn` | Secret `AWS_ROLE_ARN` |
-| `ecr_repository_url` | Secret `ECR_REPOSITORY` (só o **nome** após a `/`, ex. `gai-homolog-backend`) |
-| `ecs_cluster_name` | `ECS_CLUSTER` |
-| `ecs_service_name` | `ECS_SERVICE` |
-| `ecs_task_definition_family` | `ECS_TASK_DEFINITION` |
-| `frontend_bucket_name` | `FRONTEND_S3_BUCKET` |
-| `cloudfront_distribution_id` | `CLOUDFRONT_DISTRIBUTION_ID` |
-| `private_subnet_ids` | `ECS_SUBNETS` (CSV) |
-| `ecs_security_group_id` | `ECS_SECURITY_GROUPS` |
+| `ssm_prefix` | Prefixo no Parameter Store (`/gai/<env>`) com config de deploy e senhas |
 | `app_url` | URL do ambiente |
 
 ### Imagem inicial (obrigatório uma vez)
@@ -155,14 +148,12 @@ Em **production**, ative **Required reviewers** (approval manual antes do deploy
 | Secret | Exemplo / origem |
 |--------|------------------|
 | `AWS_ROLE_ARN` | `terraform output -raw github_actions_role_arn` |
-| `ECR_REPOSITORY` | Nome do repo ECR, ex. `gai-homolog-backend` |
-| `ECS_CLUSTER` | `gai-homolog` |
-| `ECS_SERVICE` | `gai-homolog-backend` |
-| `ECS_TASK_DEFINITION` | `gai-homolog-backend` |
-| `ECS_SUBNETS` | `subnet-aaa,subnet-bbb` (`private_subnet_ids`) |
-| `ECS_SECURITY_GROUPS` | SG do ECS |
-| `FRONTEND_S3_BUCKET` | bucket do frontend |
-| `CLOUDFRONT_DISTRIBUTION_ID` | id da distribuição |
+
+Só isso. A configuração de deploy vem do Parameter Store (`/gai/<env>/deploy/*`, escrito pelo Terraform) e as senhas de `/gai/<env>/db/password` e `/gai/<env>/platform-admin/password` (SecureString, injetadas pelo ECS; nunca passam pelo GitHub nem pelo state do Terraform).
+
+### Terraform no CI
+
+Workflow **Infra (Terraform)**: PR → plan (role `gai-terraform-plan`, sem acesso a segredos); merge na `develop` → apply homolog; produção só por disparo manual na `main` (plan por padrão, `apply` marcado para aplicar). Role `gai-terraform-apply`, environments `infra-homolog`/`infra-production`. Variáveis de repositório: `TF_PLAN_ROLE_ARN`, `TF_APPLY_ROLE_ARN` (outputs de `infra/bootstrap`).
 
 ### Variable (opcional, repo ou environment)
 
@@ -279,7 +270,7 @@ docs/aws-cicd.md          # este arquivo
 - Subnets privadas para ECS e RDS; saída via NAT  
 - ALB só aceita prefix list do **CloudFront**  
 - Buckets S3 privados; frontend só via OAC  
-- Secrets no **Secrets Manager** (senha RDS gerada)  
+- Config e senhas no **SSM Parameter Store** (`/gai/<env>/*`; senhas SecureString geradas no apply, fora do state)  
 - Deploy via **OIDC** (sem keys estáticas no GitHub)  
 - Roles IAM separadas por ambiente  
 - RDS deletion protection + final snapshot em produção  

@@ -10,6 +10,7 @@ db_username          = "gai_admin"
 ecs_cpu              = 256
 ecs_memory           = 512
 ecs_desired_count    = 1
+enable_db_bastion    = true
 
 # GitHub — adjust to your org/user
 github_org            = "jwssIncp"

@@ -107,6 +107,21 @@ resource "aws_iam_role_policy" "github_actions" {
         ]
       },
       {
+        Sid    = "DeployConfig"
+        Effect = "Allow"
+        Action = ["ssm:GetParametersByPath", "ssm:GetParameters", "ssm:GetParameter"]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/deploy",
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/deploy/*"
+        ]
+      },
+      {
+        Sid      = "ReleaseTaskLogs"
+        Effect   = "Allow"
+        Action   = ["logs:GetLogEvents"]
+        Resource = ["${aws_cloudwatch_log_group.ecs.arn}:*"]
+      },
+      {
         Sid    = "CloudFrontInvalidation"
         Effect = "Allow"
         Action = [

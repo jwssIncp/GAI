@@ -39,7 +39,7 @@ Os secrets dos environments **não** precisam ser repassados — o GitHub Action
 
 ### 1.3 Repassar credenciais da aplicação
 
-Envie por canal seguro a senha do usuário da aplicação (ou, melhor, crie um usuário próprio para ele pela tela do GAI). A senha do banco ele obtém sozinho via Secrets Manager (Parte 2.5).
+Envie por canal seguro a senha do usuário da aplicação (ou, melhor, crie um usuário próprio para ele pela tela do GAI). Adicione o usuário IAM dele ao grupo `gai-homolog-operators`: a senha do banco ele obtém sozinho via Parameter Store (Parte 2.5).
 
 ---
 
@@ -123,7 +123,8 @@ aws ecs describe-services --cluster gai-homolog --services gai-homolog-backend \
   --query 'services[0].{running:runningCount,desired:desiredCount}'
 
 # Credenciais do banco
-aws secretsmanager get-secret-value --secret-id gai-homolog/app --query SecretString --output text
+aws ssm get-parameters-by-path --path /gai/homolog/db --with-decryption \
+  --query 'Parameters[].[Name,Value]' --output text
 ```
 
 ### 2.6 O que você pode fazer a partir daqui
@@ -132,8 +133,10 @@ aws secretsmanager get-secret-value --secret-id gai-homolog/app --query SecretSt
 |---|---|
 | Deploy de homologação | GitHub → Actions → **Deploy Homolog** → Run workflow (`develop`) |
 | Deploy de produção | GitHub → Actions → **Deploy Production** (`main`, requer aprovação) |
-| Alterar infraestrutura | Editar `infra/terraform/*.tf` → PR → `plan` → `apply` |
-| Criar/redefinir admin + diagnosticar login | `ADMIN_PASSWORD='...' ./infra/scripts/reset-admin.sh homolog` |
+| Alterar infraestrutura | Editar `infra/terraform/*.tf` → PR (plan automático no GitHub) → merge (apply automático: `develop` = homolog, `main` = production com aprovação) |
+| Senha do `platform.admin` | `aws ssm get-parameter --name /gai/homolog/platform-admin/password --with-decryption --query Parameter.Value --output text` |
+| Redefinir/desbloquear admin | GitHub → Actions → **Ops - Reset platform admin** |
+| Acessar o banco (DBeaver) | `./infra/scripts/db-tunnel.sh homolog` → `localhost:13306` (requer grupo `gai-homolog-operators`) |
 | Ver logs | `aws logs tail /ecs/gai-homolog --follow` |
 | Rodar seed | Ver [`deploy-aws-do-zero.md`](./deploy-aws-do-zero.md), seção do seed |
 
@@ -230,4 +233,5 @@ docker run --rm --network gai-backend_default \
 | `plan` mostra mudanças inesperadas | Checkout desatualizado (`git pull`) ou mudanças não commitadas de alguém |
 | `terraform output` vazio | `init` apontando para o backend errado |
 | `jq: command not found` | `sudo apt install -y jq` |
-| Login no sistema retorna "Invalid credentials" | Rodar `reset-admin.sh` — ele mostra o motivo das falhas |
+| Login no sistema retorna "Invalid credentials" | Conta bloqueada ou senha divergente do secret → workflow **Ops - Reset platform admin** |
+| `db-tunnel.sh`: `AccessDeniedException` | Usuário IAM fora do grupo `gai-<env>-operators` |

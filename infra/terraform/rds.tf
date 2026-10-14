@@ -1,9 +1,3 @@
-resource "random_password" "db" {
-  length           = 32
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
-}
-
 resource "aws_db_subnet_group" "main" {
   name       = "${local.name_prefix}-db"
   subnet_ids = aws_subnet.private[*].id
@@ -39,9 +33,10 @@ resource "aws_db_instance" "main" {
   storage_type          = "gp3"
   storage_encrypted     = true
 
-  db_name  = "gai"
-  username = var.db_username
-  password = random_password.db.result
+  db_name             = "gai"
+  username            = var.db_username
+  password_wo         = ephemeral.random_password.db.result
+  password_wo_version = local.db_password_version
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
