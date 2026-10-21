@@ -24,7 +24,7 @@ export function DashboardPage() {
   const loading = Object.values(queries).some((q) => q.isLoading);
   const error = Object.values(queries).find((q) => q.isError);
   const visibleCards = [
-    { key: 'orgs', label: 'Organizações', value: queries.orgs.data ? normalizePage(queries.orgs.data).totalItems : null, icon: <Landmark size={19} />, hint: 'Tenants ativos na plataforma', show: canAccess(['organizations:read']) },
+    { key: 'orgs', label: 'Organizações', value: queries.orgs.data ? normalizePage(queries.orgs.data).totalItems : null, icon: <Landmark size={19} />, hint: 'Organizações ativas na plataforma', show: canAccess(['organizations:read']) },
     { key: 'users', label: 'Usuários', value: queries.users.data ? normalizePage(queries.users.data).totalItems : null, icon: <Users size={19} />, hint: 'Contas com acesso ao GAI', show: canAccess(['users:read']) },
     { key: 'companies', label: 'Empresas', value: queries.companies.data ? normalizePage(queries.companies.data).totalItems : null, icon: <Building2 size={19} />, hint: 'Empresas operacionais cadastradas', show: canAccess(['companies:read']) },
     { key: 'projects', label: 'Projetos', value: queries.projects.data ? normalizePage(queries.projects.data).totalItems : null, icon: <ClipboardList size={19} />, hint: 'Inventários patrimoniais em gestão', show: canAccess(['projects:read']) },
