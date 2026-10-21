@@ -26,6 +26,10 @@ on:
         description: Apply the plan (unchecked = plan only)
         type: boolean
         default: false
+      replace_rds:
+        description: Force replace aws_db_instance.main (same-VPC public/private flip)
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -115,9 +119,17 @@ jobs:
 
       - run: terraform init -backend-config=env/${TARGET_ENV}.backend.hcl
       - name: Plan
+        env:
+          REPLACE_RDS: ${{ inputs.replace_rds || false }}
         run: |
           set -o pipefail
-          terraform plan -no-color -var-file=env/${TARGET_ENV}.tfvars -out=tfplan | tee plan.txt
+          EXTRA=()
+          # AWS cannot move RDS between subnet groups in the same VPC — must replace.
+          if [ "$REPLACE_RDS" = "true" ] || grep -qE '^[[:space:]]*db_force_replace[[:space:]]*=[[:space:]]*true' "env/${TARGET_ENV}.tfvars"; then
+            echo "Forcing -replace=aws_db_instance.main"
+            EXTRA+=(-replace=aws_db_instance.main)
+          fi
+          terraform plan -no-color -var-file=env/${TARGET_ENV}.tfvars "${EXTRA[@]}" -out=tfplan | tee plan.txt
           {
             echo "### Terraform plan - ${TARGET_ENV} (apply: ${DO_APPLY})"
             echo '```'

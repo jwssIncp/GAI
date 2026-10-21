@@ -8,8 +8,8 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-# Homolog palliative: public subnets. AWS rejects same-VPC subnet-group *moves*;
-# changing identifier forces destroy/create into the public group instead.
+# Homolog palliative: public subnets. AWS rejects same-VPC subnet-group *moves*.
+# To flip public access, dispatch Infra with replace_rds=true (destroys + creates).
 resource "aws_db_subnet_group" "public" {
   count = var.db_publicly_accessible ? 1 : 0
 
@@ -37,10 +37,7 @@ resource "aws_db_parameter_group" "main" {
 }
 
 resource "aws_db_instance" "main" {
-  # Suffix forces a new instance when flipping public access (ModifyDBInstance cannot
-  # change subnet group inside the same VPC).
-  identifier = var.db_publicly_accessible ? "${local.name_prefix}-pub" : local.name_prefix
-
+  identifier     = local.name_prefix
   engine         = "mysql"
   engine_version = "8.0"
 
@@ -78,9 +75,5 @@ resource "aws_db_instance" "main" {
 
   tags = {
     Name = local.name_prefix
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }

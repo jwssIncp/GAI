@@ -134,6 +134,13 @@ variable "db_operator_username" {
   default     = "gai_admin_ops"
 }
 
+# Read by Infra workflow (grep); declare so -var-file does not error. Not used in resources.
+variable "db_force_replace" {
+  type        = bool
+  description = "When true, CI plans with -replace=aws_db_instance.main (same-VPC public flip)"
+  default     = false
+}
+
 variable "ecs_cpu" {
   type    = number
   default = 256

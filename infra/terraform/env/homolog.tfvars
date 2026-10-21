@@ -22,6 +22,8 @@ db_allowed_cidrs       = [
   "187.102.30.28/32",  # Luiz
 ]
 db_operator_username   = "gai_admin_ops"
+# One-shot: forces RDS destroy/create (AWS same-VPC subnet limit). Set false after apply.
+db_force_replace       = true
 
 # GitHub — adjust to your org/user
 github_org            = "jwssIncp"
