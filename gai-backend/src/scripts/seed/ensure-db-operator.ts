@@ -34,11 +34,11 @@ async function ensureDbOperator(): Promise<void> {
   const qr = dataSource.createQueryRunner();
 
   try {
-    const [rows] = await qr.query(
+    const countRows = (await qr.query(
       `SELECT COUNT(*) AS n FROM mysql.user WHERE User = ? AND Host = '%'`,
       [username],
-    );
-    const exists = Number(rows[0]?.n ?? 0) > 0;
+    )) as Array<{ n: number | string }>;
+    const exists = Number(countRows[0]?.n ?? 0) > 0;
     const escapedPassword = password.replace(/'/g, "''");
 
     if (!exists) {
