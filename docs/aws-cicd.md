@@ -24,7 +24,7 @@ CloudFront (HTTPS)
 | Ambiente    | Branch   | GitHub Environment | VPC CIDR       | NAT | RDS        | ECS tasks |
 |-------------|----------|--------------------|----------------|-----|------------|-----------|
 | Homologação | `develop`| `homolog`          | `10.20.0.0/16` | 1   | single-AZ  | 1         |
-| Produção    | `main`   | `production`       | `10.30.0.0/16` | 2   | Multi-AZ   | 2         |
+| Produção    | `master` | `production`       | `10.30.0.0/16` | 2   | Multi-AZ   | 2         |
 
 **CI em todo PR/push:** lint → `npm audit --audit-level=high` → testes → build (backend e frontend).
 
@@ -39,7 +39,7 @@ CloudFront (HTTPS)
 3. [Terraform](https://developer.hashicorp.com/terraform/install) `>= 1.5`.
 4. Docker (para a imagem inicial do backend).
 5. Repositório GitHub `jwssIncp/GAI` (ajuste `github_org` nos `.tfvars` se for outro).
-6. Branches `main` e `develop`.
+6. Branches `master` (padrão) e `develop`.
 
 Região padrão: **`us-east-1`**.
 
@@ -101,14 +101,7 @@ Principais:
 | Output | Uso |
 |--------|-----|
 | `github_actions_role_arn` | Secret `AWS_ROLE_ARN` |
-| `ecr_repository_url` | Secret `ECR_REPOSITORY` (só o **nome** após a `/`, ex. `gai-homolog-backend`) |
-| `ecs_cluster_name` | `ECS_CLUSTER` |
-| `ecs_service_name` | `ECS_SERVICE` |
-| `ecs_task_definition_family` | `ECS_TASK_DEFINITION` |
-| `frontend_bucket_name` | `FRONTEND_S3_BUCKET` |
-| `cloudfront_distribution_id` | `CLOUDFRONT_DISTRIBUTION_ID` |
-| `private_subnet_ids` | `ECS_SUBNETS` (CSV) |
-| `ecs_security_group_id` | `ECS_SECURITY_GROUPS` |
+| `ssm_prefix` | Prefixo no Parameter Store (`/gai/<env>`) com config de deploy e senhas |
 | `app_url` | URL do ambiente |
 
 ### Imagem inicial (obrigatório uma vez)
@@ -148,34 +141,31 @@ No repositório: **Settings → Environments**.
 
 Crie `homolog` e `production`.
 
-Em **production**, ative **Required reviewers** (approval manual antes do deploy).
+Produção: deploy/infra só por **disparo manual** (sem Required reviewers obrigatório no plano gratuito).
 
 ### Secrets por environment
 
-| Secret | Exemplo / origem |
-|--------|------------------|
-| `AWS_ROLE_ARN` | `terraform output -raw github_actions_role_arn` |
-| `ECR_REPOSITORY` | Nome do repo ECR, ex. `gai-homolog-backend` |
-| `ECS_CLUSTER` | `gai-homolog` |
-| `ECS_SERVICE` | `gai-homolog-backend` |
-| `ECS_TASK_DEFINITION` | `gai-homolog-backend` |
-| `ECS_SUBNETS` | `subnet-aaa,subnet-bbb` (`private_subnet_ids`) |
-| `ECS_SECURITY_GROUPS` | SG do ECS |
-| `FRONTEND_S3_BUCKET` | bucket do frontend |
-| `CLOUDFRONT_DISTRIBUTION_ID` | id da distribuição |
+| Secret | Origem |
+|--------|--------|
+| `AWS_ROLE_ARN` | Role `gai-<env>-github-actions` (IAM) |
 
-### Variable (opcional, repo ou environment)
+Só isso. Apague secrets legados (`ECR_*`, `ECS_*`, buckets, CloudFront). Config de deploy = Parameter Store `/gai/<env>/deploy/*`; senhas = `/gai/<env>/db/password` e `/gai/<env>/platform-admin/password`.
+
+### Terraform no CI
+
+Workflow **Infra (Terraform)**: PR → plan (`gai-terraform-plan`); push na `develop` → apply homolog; produção = dispatch manual na branch **`master`** (plan por padrão; marcar `apply` para aplicar). Vars de repo: `TF_PLAN_ROLE_ARN`, `TF_APPLY_ROLE_ARN`.
+
+**Não** rode `terraform apply` na máquina para operar homolog. Bootstrap local é one-shot por conta AWS.
+
+### Variable (opcional)
 
 | Variable | Valor |
 |----------|-------|
 | `AWS_REGION` | `us-east-1` |
 
-**Não** coloque `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`. O role assume via OIDC.
+**Não** coloque `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`. OIDC assume o role.
 
-Trust do role (já no Terraform):
-
-- Branch de deploy (`develop` / `main`)
-- Environment GitHub (`homolog` / `production`)
+Trust: branch `develop` / `master` + environments `homolog` / `production` / `infra-*`.
 
 ---
 
@@ -196,32 +186,18 @@ Sem domínio, use o `app_url` (`*.cloudfront.net`).
 
 ## Passo 6 — Fluxo do dia a dia
 
-1. PR → workflow **CI** (audit + tests + build).
-2. Merge em `develop` → **Deploy Homolog** (quando o auto-deploy estiver reabilitado).
+1. PR → **CI**.
+2. Merge em `develop` → **Infra** só se `infra/terraform/**` mudou. App: Actions → **Deploy Homolog** (manual).
 3. Validar em homolog.
-4. Merge em `main` → **Deploy Production** (com approval se configurado).
-
-Deploy manual: Actions → Deploy Homolog / Deploy Production → **Run workflow**.
-
-### Testar pipelines sem deploy (sem AWS)
-
-Enquanto os secrets OIDC/AWS não existirem:
-
-1. Os workflows de deploy disparam **somente** via `workflow_dispatch` (push em `develop`/`main` **não** faz deploy).
-2. O workflow **CI** roda em push/PR para `main`/`develop`/`master` e também pode ser disparado manualmente.
-3. Fluxo recomendado:
-   - Branch de feature → push → abra PR para `develop` (ou `master` enquanto `main`/`develop` não existirem).
-   - Confirme em **Actions** que **CI** passou (lint, audit, test, build).
-   - **Não** rode Deploy Homolog/Production até o Passo 4 (secrets) estar completo.
-4. Quando a AWS estiver pronta, reabilite o `on.push` nos arquivos `deploy-homolog.yml` e `deploy-production.yml` (há comentário no topo de cada um).
+4. Produção (quando provisionada): merge em `master` + Actions → **Deploy Production** / **Infra** manual.
 
 Ordem no deploy:
 
 1. Quality gates  
-2. Build/push imagem ECR  
-3. Register task definition  
-4. **Migrations** (RunTask one-shot)  
-5. Update ECS service + wait stable  
+2. Build/push ECR  
+3. Register task definitions (app + release)  
+4. **release:prod** (migrations + permissions + platform admin)  
+5. Update ECS + wait stable  
 6. Build frontend (`VITE_API_BASE_URL=/api/v1`)  
 7. Sync S3 + invalidate CloudFront  
 
@@ -279,7 +255,7 @@ docs/aws-cicd.md          # este arquivo
 - Subnets privadas para ECS e RDS; saída via NAT  
 - ALB só aceita prefix list do **CloudFront**  
 - Buckets S3 privados; frontend só via OAC  
-- Secrets no **Secrets Manager** (senha RDS gerada)  
+- Config e senhas no **SSM Parameter Store** (`/gai/<env>/*`; senhas SecureString geradas no apply, fora do state)  
 - Deploy via **OIDC** (sem keys estáticas no GitHub)  
 - Roles IAM separadas por ambiente  
 - RDS deletion protection + final snapshot em produção  

@@ -6,7 +6,7 @@ O projeto já possui:
 
 - Terraform da infraestrutura em `infra/` (bootstrap + stack por ambiente)
 - Workflows de CI/CD em `.github/workflows/`
-- Script da imagem inicial em `infra/scripts/bootstrap-backend-image.sh`
+- Script da imagem inicial em `infra/scripts/bootstrap-backend-image.sh` (one-shot; depois use Deploy Homolog)
 
 O que falta é: criar a conta, instalar as ferramentas, rodar o Terraform e cadastrar os secrets no GitHub.
 
@@ -20,13 +20,13 @@ Internet ─► CloudFront (HTTPS)
               └─ /api/*  → ALB → ECS Fargate (NestJS)
                                    ├─ RDS MySQL 8 (privado)
                                    ├─ S3 (imagens)
-                                   └─ Secrets Manager (credenciais do banco)
+                                   └─ SSM Parameter Store (/gai/<env>/: config + senhas)
 ```
 
 | Ambiente    | Branch    | GitHub Environment | Observação                      |
 |-------------|-----------|--------------------|---------------------------------|
 | Homologação | `develop` | `homolog`          | 1 NAT, RDS single-AZ, 1 task    |
-| Produção    | `main`    | `production`       | 2 NAT, RDS Multi-AZ, 2 tasks    |
+| Produção    | `master`  | `production`       | 2 NAT, RDS Multi-AZ, 2 tasks    |
 
 > **Recomendação:** suba primeiro **homologação**. Produção custa bem mais.
 
@@ -135,56 +135,29 @@ chmod +x infra/scripts/bootstrap-backend-image.sh
 
 ### 4.1 Branches
 
-Os workflows usam `develop` (homolog) e `main` (produção). O repositório hoje usa `master`, então crie as duas:
+Os workflows usam `develop` (homolog) e `master` (produção / branch padrão). Se ainda não existir `develop`:
 
 ```bash
 cd ~/GAI
 git checkout master && git pull
 git checkout -b develop && git push -u origin develop
-git checkout -b main master && git push -u origin main
 ```
 
-> Se preferir manter só `master`, ajuste `github_branch_deploy` nos `.tfvars` e os gatilhos dos workflows.
+`github_branch_deploy` em homolog = `develop`; em production = `master`.
 
 ### 4.2 Environments e secrets
 
-No GitHub: **Settings → Environments** → crie `homolog` e `production` (nomes exatos).
-Em `production`, ative **Required reviewers** (aprovação manual antes do deploy).
+No GitHub: **Settings → Environments** → `homolog`, `production`, `infra-homolog`, `infra-production`.
 
-Gere os valores de homologação:
+O único secret por environment de app é **`AWS_ROLE_ARN`** (IAM → Roles → `gai-<env>-github-actions`).  
+Vars de repositório: `TF_PLAN_ROLE_ARN`, `TF_APPLY_ROLE_ARN`.
 
-```bash
-cd ~/GAI/infra/terraform
-terraform init -backend-config=env/homolog.backend.hcl -reconfigure
-echo "AWS_ROLE_ARN=$(terraform output -raw github_actions_role_arn)"
-echo "ECR_REPOSITORY=$(terraform output -raw ecr_repository_url | cut -d/ -f2)"
-echo "ECS_CLUSTER=$(terraform output -raw ecs_cluster_name)"
-echo "ECS_SERVICE=$(terraform output -raw ecs_service_name)"
-echo "ECS_TASK_DEFINITION=$(terraform output -raw ecs_task_definition_family)"
-echo "ECS_SUBNETS=$(terraform output -json private_subnet_ids | jq -r 'join(",")')"
-echo "ECS_SECURITY_GROUPS=$(terraform output -raw ecs_security_group_id)"
-echo "FRONTEND_S3_BUCKET=$(terraform output -raw frontend_bucket_name)"
-echo "CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)"
-echo "APP_URL=$(terraform output -raw app_url)"
-```
+Config de deploy = Parameter Store `/gai/<env>/deploy/*` (workflow `.github/scripts/load-deploy-config.sh`).  
+Senhas = `/gai/<env>/db/password` e `/gai/<env>/platform-admin/password` (fora do state Terraform).
 
-Cadastre cada linha (exceto `APP_URL`) como **Environment secret** do environment `homolog`:
+Apague secrets legados: `ECR_REPOSITORY`, `ECS_*`, `FRONTEND_S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`.
 
-| Secret                       | Origem                                        |
-|------------------------------|-----------------------------------------------|
-| `AWS_ROLE_ARN`               | `github_actions_role_arn`                     |
-| `ECR_REPOSITORY`             | nome do repo ECR (parte após a `/`)           |
-| `ECS_CLUSTER`                | `ecs_cluster_name`                            |
-| `ECS_SERVICE`                | `ecs_service_name`                            |
-| `ECS_TASK_DEFINITION`        | `ecs_task_definition_family`                  |
-| `ECS_SUBNETS`                | `private_subnet_ids` separados por vírgula    |
-| `ECS_SECURITY_GROUPS`        | `ecs_security_group_id`                       |
-| `FRONTEND_S3_BUCKET`         | `frontend_bucket_name`                        |
-| `CLOUDFRONT_DISTRIBUTION_ID` | `cloudfront_distribution_id`                  |
-
-Opcional: variable `AWS_REGION = us-east-1` (o padrão já é esse).
-
-> **Não** cadastre `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`. A autenticação é via OIDC.
+> **Não** cadastre access keys no GitHub. Auth = OIDC.
 
 ---
 
@@ -201,38 +174,16 @@ Opcional: variable `AWS_REGION = us-east-1` (o padrão já é esse).
    7. Sync para o S3 + invalidação do CloudFront
 3. Teste: `https://<APP_URL>/api/v1/health` → `{"status":"ok"}`
 
-### Criar o usuário admin (seed)
+### Usuário `platform.admin`
 
-O comando `npm run seed:bootstrap` **não funciona na imagem de produção** (não tem `ts-node`). Use o script compilado e **defina senhas próprias**:
+Cada deploy roda `release:prod` (migrations + catálogo de permissões + `ensure-platform-admin`). Senha em `/gai/<env>/platform-admin/password`.  
+Rotação: editar o parâmetro no SSM → Actions → **Ops - Reset platform admin**.
 
-```bash
-cd ~/GAI/infra/terraform
-CLUSTER=$(terraform output -raw ecs_cluster_name)
-TASKDEF=$(terraform output -raw ecs_task_definition_family)
-SUBNETS=$(terraform output -json private_subnet_ids | jq -r 'join(",")')
-SG=$(terraform output -raw ecs_security_group_id)
+Seed completo (`org.admin`, `test.user`) é opcional; preferir criar usuários pela UI. Se precisar do bootstrap legado, use a imagem compilada (`node dist/src/scripts/seed/bootstrap.js`) via task ECS — não use `terraform output` local; leia cluster/subnets de `/gai/<env>/deploy/*`.
 
-aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASKDEF" --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SG],assignPublicIp=DISABLED}" \
-  --overrides '{"containerOverrides":[{"name":"gai-backend","command":["node","dist/src/scripts/seed/bootstrap.js"],"environment":[{"name":"SEED_ADMIN_PASSWORD","value":"TroqueEstaSenha!2026"},{"name":"SEED_ORG_ADMIN_PASSWORD","value":"OutraSenha!2026"},{"name":"SEED_TEST_USER_PASSWORD","value":"MaisUma!2026"}]}]}'
+### Deploy
 
-aws logs tail /ecs/gai-homolog --follow
-```
-
-Depois faça login no `APP_URL` com o usuário `platform.admin`.
-
-### Ativar deploy automático
-
-Os workflows hoje só rodam manualmente. Quando homologação estiver estável, edite o topo de `.github/workflows/deploy-homolog.yml`:
-
-```yaml
-on:
-  workflow_dispatch:
-  push:
-    branches: [develop]
-```
-
-E em `.github/workflows/deploy-production.yml` use `branches: [main]`.
+Homolog e produção: só **manual** (Actions → Deploy Homolog / Deploy Production → Run workflow).
 
 ---
 
@@ -310,7 +261,7 @@ terraform destroy -var-file=env/homolog.tfvars
 1. Abra PR → workflow **CI** roda lint, audit, testes e build.
 2. Merge em `develop` → **Deploy Homolog**.
 3. Valide em homologação.
-4. Merge em `main` → **Deploy Production** (com aprovação).
+4. Merge em `master` → **Deploy Production** (manual).
 
 Comandos úteis:
 
@@ -331,7 +282,7 @@ aws ecs describe-services --cluster gai-homolog --services gai-homolog-backend \
 | Sintoma | Causa provável |
 |---------|----------------|
 | `Not authorized to perform sts:AssumeRoleWithWebIdentity` | Nome do environment no GitHub diferente de `homolog`/`production`, branch errada, ou `github_org`/`github_repo` incorretos |
-| `CannotPullContainerError` no ECS | `bootstrap-backend-image.sh` ainda não foi executado |
+| `CannotPullContainerError` no ECS | Primeira imagem ausente — one-shot `bootstrap-backend-image.sh` ou Deploy Homolog |
 | Backend reiniciando em loop | Migrations pendentes ou erro de conexão com o banco — veja os logs no CloudWatch |
 | Migrations com exit ≠ 0 | Ver logs da task one-shot em `/ecs/gai-<ambiente>` |
 | Frontend 404 em rotas | Aguardar a invalidação do CloudFront |
@@ -346,13 +297,12 @@ aws ecs describe-services --cluster gai-homolog --services gai-homolog-backend \
 - [ ] Usuário IAM admin + `aws configure`
 - [ ] AWS CLI, Terraform, Docker e jq instalados no WSL
 - [ ] Bootstrap aplicado e `*.backend.hcl` atualizados
-- [ ] Homologação provisionada (`terraform apply`)
-- [ ] Imagem inicial enviada (`bootstrap-backend-image.sh homolog`)
-- [ ] Branches `develop` e `main` criadas
-- [ ] Environments `homolog`/`production` com secrets no GitHub
-- [ ] Primeiro deploy de homologação executado
-- [ ] Health check OK e seed do admin executado
-- [ ] Produção provisionada + imagem inicial + secrets
-- [ ] SES verificado e fora do sandbox
-- [ ] (Opcional) Domínio próprio configurado
-- [ ] Deploy automático (`on.push`) reativado nos workflows
+- [ ] Homologação provisionada (primeiro apply; depois só via Actions)
+- [ ] Imagem inicial / Deploy Homolog OK
+- [ ] Branches `develop` e `master`
+- [ ] Environments + só `AWS_ROLE_ARN` + vars `TF_*`
+- [ ] Parameter Store `/gai/homolog/*` + grupo `gai-homolog-operators`
+- [ ] Health OK + `platform.admin` via `release:prod`
+- [ ] Deploy Homolog manual testado
+- [ ] Produção (depois): provisionar + SES + secrets
+- [ ] (Opcional) Domínio próprio

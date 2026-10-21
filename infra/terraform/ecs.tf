@@ -66,12 +66,13 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "DB_LOGGING", value = "false" }
       ]
 
+      # Initial revision only; CI (.github/scripts/register-task-definitions.sh) owns it afterwards.
       secrets = [
-        { name = "DB_HOST", valueFrom = "${aws_secretsmanager_secret.app.arn}:DB_HOST::" },
-        { name = "DB_PORT", valueFrom = "${aws_secretsmanager_secret.app.arn}:DB_PORT::" },
-        { name = "DB_USERNAME", valueFrom = "${aws_secretsmanager_secret.app.arn}:DB_USERNAME::" },
-        { name = "DB_PASSWORD", valueFrom = "${aws_secretsmanager_secret.app.arn}:DB_PASSWORD::" },
-        { name = "DB_DATABASE", valueFrom = "${aws_secretsmanager_secret.app.arn}:DB_DATABASE::" }
+        { name = "DB_HOST", valueFrom = aws_ssm_parameter.db["host"].arn },
+        { name = "DB_PORT", valueFrom = aws_ssm_parameter.db["port"].arn },
+        { name = "DB_USERNAME", valueFrom = aws_ssm_parameter.db["username"].arn },
+        { name = "DB_PASSWORD", valueFrom = aws_ssm_parameter.db_password.arn },
+        { name = "DB_DATABASE", valueFrom = aws_ssm_parameter.db["name"].arn }
       ]
 
       logConfiguration = {

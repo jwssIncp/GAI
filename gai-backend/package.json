@@ -23,7 +23,11 @@
     "migration:show": "typeorm-ts-node-commonjs migration:show -d data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d data-source.ts",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d data-source.ts",
-    "seed:bootstrap": "ts-node -r tsconfig-paths/register src/scripts/seed/bootstrap.ts"
+    "seed:bootstrap": "ts-node -r tsconfig-paths/register src/scripts/seed/bootstrap.ts",
+    "permissions:sync": "ts-node -r tsconfig-paths/register src/scripts/seed/sync-permissions.ts",
+    "permissions:sync:prod": "node dist/src/scripts/seed/sync-permissions.js",
+    "admin:ensure:prod": "node dist/src/scripts/seed/ensure-platform-admin.js",
+    "release:prod": "npm run migration:run:prod && npm run permissions:sync:prod && npm run admin:ensure:prod"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.1069.0",

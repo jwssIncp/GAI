@@ -22,15 +22,17 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
   name = "${local.name_prefix}-ecs-execution-secrets"
   role = aws_iam_role.ecs_execution.id
 
+  # SecureStrings use the AWS managed aws/ssm key: no kms:Decrypt grant needed.
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
+        Action = ["ssm:GetParameters"]
+        Resource = [
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/db/*",
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/platform-admin/*"
         ]
-        Resource = [aws_secretsmanager_secret.app.arn]
       }
     ]
   })

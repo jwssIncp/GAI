@@ -21,12 +21,15 @@ NETWORK_CONFIG=$(jq -nc \
     }
   }')
 
+TASK_COMMAND="${TASK_COMMAND:-[\"npm\", \"run\", \"release:prod\"]}"
+
 OVERRIDES=$(jq -nc \
   --arg name "$CONTAINER_NAME" \
+  --argjson command "$TASK_COMMAND" \
   '{
     containerOverrides: [{
       name: $name,
-      command: ["npm", "run", "migration:run:prod"]
+      command: $command
     }]
   }')
 
@@ -53,6 +56,13 @@ EXIT_CODE=$(aws ecs describe-tasks \
   --tasks "$TASK_ARN" \
   --query "tasks[0].containers[?name=='$CONTAINER_NAME'].exitCode | [0]" \
   --output text)
+
+echo "----- task logs -----"
+aws logs get-log-events \
+  --log-group-name "/ecs/${ECS_CLUSTER}" \
+  --log-stream-name "backend/${CONTAINER_NAME}/${TASK_ARN##*/}" \
+  --query 'events[].message' --output text | tr '\t' '\n' || true
+echo "---------------------"
 
 echo "Migration container exit code: $EXIT_CODE"
 if [[ "$EXIT_CODE" != "0" ]]; then

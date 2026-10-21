@@ -46,8 +46,16 @@ output "rds_endpoint" {
   value = aws_db_instance.main.address
 }
 
-output "app_secret_arn" {
-  value = aws_secretsmanager_secret.app.arn
+output "db_bastion_instance_id" {
+  value = try(aws_instance.bastion[0].id, "")
+}
+
+output "operators_group_name" {
+  value = aws_iam_group.operators.name
+}
+
+output "ssm_prefix" {
+  value = local.ssm_prefix
 }
 
 output "github_actions_role_arn" {

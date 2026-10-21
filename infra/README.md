@@ -1,9 +1,12 @@
 # Infraestrutura GAI
 
-Veja o tutorial completo em [`docs/aws-cicd.md`](../docs/aws-cicd.md).
+Operação do dia a dia: [`docs/handoff-aws-homolog.md`](../docs/handoff-aws-homolog.md) · CI/CD: [`docs/aws-cicd.md`](../docs/aws-cicd.md).
 
 ```
-bootstrap/     # uma vez por conta AWS (S3 state + DynamoDB lock + OIDC)
-terraform/     # stack de aplicação (aplicar 2×: homolog e production)
-scripts/       # bootstrap da imagem Docker inicial
+bootstrap/     # uma vez por conta AWS (state S3 + lock + OIDC + roles Terraform CI)
+terraform/     # stack (homolog/production) — apply via GitHub Actions, não na máquina
+scripts/       # bootstrap-backend-image (só 1ª imagem de um ambiente novo)
+# Acesso humano ao banco: pendente (bastion desligado: enable_db_bastion = false)
 ```
+
+**Não** rode `terraform apply` local para operar homolog. Infra = workflow **Infra (Terraform)**; app = **Deploy Homolog** (manual no Actions).

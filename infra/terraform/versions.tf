@@ -1,5 +1,6 @@
 terraform {
-  required_version = ">= 1.5.0"
+  # 1.11+: ephemeral resources and write-only arguments (passwords never in state).
+  required_version = ">= 1.11.0"
 
   required_providers {
     aws = {
@@ -8,7 +9,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.6"
+      version = "~> 3.7"
     }
   }
 

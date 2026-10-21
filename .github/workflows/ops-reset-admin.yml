@@ -1,0 +1,47 @@
+name: Ops - Reset platform admin
+
+# Sets the platform admin password to the value in Parameter Store
+# (/gai/<env>/platform-admin/password), unlocks the account, re-assigns PLATFORM_ADMIN
+# and syncs the permission catalog. To rotate: edit the parameter, then run this.
+# Requires one prior deploy (creates the <family>-release task definition).
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [homolog, production]
+        default: homolog
+
+concurrency:
+  group: ops-reset-admin-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  reset:
+    name: Reset platform admin (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Load deploy config (Parameter Store)
+        run: bash .github/scripts/load-deploy-config.sh "${{ inputs.environment }}"
+
+      - name: Run reset task
+        env:
+          TASK_COMMAND: '["sh", "-c", "npm run permissions:sync:prod && npm run admin:ensure:prod -- --reset-password"]'
+        run: ECS_TASK_DEFINITION="${ECS_TASK_FAMILY}-release" bash .github/scripts/ecs-run-migrations.sh
