@@ -13,6 +13,7 @@ locals {
 
   db_password_version             = 1
   platform_admin_password_version = 1
+  db_operator_password_version    = 1
 }
 
 ephemeral "random_password" "db" {
@@ -31,6 +32,16 @@ ephemeral "random_password" "platform_admin" {
   min_special      = 2
 }
 
+ephemeral "random_password" "db_operator" {
+  length           = 24
+  special          = true
+  override_special = "!#%*-_=+"
+  min_upper        = 2
+  min_lower        = 2
+  min_numeric      = 2
+  min_special      = 2
+}
+
 resource "aws_ssm_parameter" "db_password" {
   name             = "${local.ssm_prefix}/db/password"
   type             = "SecureString"
@@ -40,15 +51,23 @@ resource "aws_ssm_parameter" "db_password" {
 
 resource "aws_ssm_parameter" "db" {
   for_each = {
-    host     = aws_db_instance.main.address
-    port     = tostring(aws_db_instance.main.port)
-    name     = aws_db_instance.main.db_name
-    username = nonsensitive(var.db_username)
+    host              = aws_db_instance.main.address
+    port              = tostring(aws_db_instance.main.port)
+    name              = aws_db_instance.main.db_name
+    username          = nonsensitive(var.db_username)
+    operator-username = var.db_operator_username
   }
 
   name  = "${local.ssm_prefix}/db/${each.key}"
   type  = "String"
   value = each.value
+}
+
+resource "aws_ssm_parameter" "db_operator_password" {
+  name             = "${local.ssm_prefix}/db/operator-password"
+  type             = "SecureString"
+  value_wo         = ephemeral.random_password.db_operator.result
+  value_wo_version = local.db_operator_password_version
 }
 
 resource "aws_ssm_parameter" "platform_admin_password" {

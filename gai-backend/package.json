@@ -27,7 +27,8 @@
     "permissions:sync": "ts-node -r tsconfig-paths/register src/scripts/seed/sync-permissions.ts",
     "permissions:sync:prod": "node dist/src/scripts/seed/sync-permissions.js",
     "admin:ensure:prod": "node dist/src/scripts/seed/ensure-platform-admin.js",
-    "release:prod": "npm run migration:run:prod && npm run permissions:sync:prod && npm run admin:ensure:prod"
+    "db-operator:ensure:prod": "node dist/src/scripts/seed/ensure-db-operator.js",
+    "release:prod": "npm run migration:run:prod && npm run permissions:sync:prod && npm run admin:ensure:prod && npm run db-operator:ensure:prod"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.1069.0",

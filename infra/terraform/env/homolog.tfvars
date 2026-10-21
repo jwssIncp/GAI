@@ -12,6 +12,17 @@ ecs_memory           = 512
 ecs_desired_count    = 1
 enable_db_bastion    = false
 
+# Paliativo DBeaver (homolog only — never enable in production.tfvars):
+# 1) Cada pessoa: curl -s https://ifconfig.me   → use /32
+# 2) Preencha db_allowed_cidrs
+# 3) db_publicly_accessible = true
+# 4) Infra apply + Deploy Homolog (cria usuário gai_admin_ops)
+db_publicly_accessible = true
+db_allowed_cidrs       = [
+  "187.102.30.28/32",  # Luiz
+]
+db_operator_username   = "gai_admin_ops"
+
 # GitHub — adjust to your org/user
 github_org            = "jwssIncp"
 github_repo           = "GAI"

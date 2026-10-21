@@ -1,6 +1,11 @@
+# Public RDS (homolog palliative) must live in public subnets so the internet can reach it.
 resource "aws_db_subnet_group" "main" {
-  name       = "${local.name_prefix}-db"
-  subnet_ids = aws_subnet.private[*].id
+  name = "${local.name_prefix}-db"
+  subnet_ids = (
+    var.db_publicly_accessible
+    ? aws_subnet.public[*].id
+    : aws_subnet.private[*].id
+  )
 
   tags = {
     Name = "${local.name_prefix}-db"
@@ -41,7 +46,7 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   parameter_group_name   = aws_db_parameter_group.main.name
-  publicly_accessible    = false
+  publicly_accessible    = var.db_publicly_accessible
   multi_az               = var.db_multi_az
 
   backup_retention_period = var.db_backup_retention_days
