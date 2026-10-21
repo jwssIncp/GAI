@@ -1,4 +1,4 @@
-import { ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { navigation } from '@/constants/navigation';
