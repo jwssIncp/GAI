@@ -8,7 +8,8 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-# Homolog palliative: separate public subnet group so we do not delete in-use private subnets.
+# Homolog palliative: public subnets. AWS rejects same-VPC subnet-group moves on an
+# existing instance — switching exposure recreates the DB (see terraform_data below).
 resource "aws_db_subnet_group" "public" {
   count = var.db_publicly_accessible ? 1 : 0
 
@@ -18,6 +19,11 @@ resource "aws_db_subnet_group" "public" {
   tags = {
     Name = "${local.name_prefix}-db-public"
   }
+}
+
+# Bumps when public/private mode changes so the instance is replaced (not ModifyDBInstance).
+resource "terraform_data" "rds_exposure" {
+  input = var.db_publicly_accessible ? "public" : "private"
 }
 
 resource "aws_db_parameter_group" "main" {
@@ -74,5 +80,9 @@ resource "aws_db_instance" "main" {
 
   tags = {
     Name = local.name_prefix
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.rds_exposure]
   }
 }

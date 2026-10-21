@@ -11,7 +11,8 @@
 locals {
   ssm_prefix = "/${var.project_name}/${var.environment}"
 
-  db_password_version             = 1
+  # Bump when recreating RDS so SecureString tracks the new master password.
+  db_password_version             = 2
   platform_admin_password_version = 1
   db_operator_password_version    = 1
 }
