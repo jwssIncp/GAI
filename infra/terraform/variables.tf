@@ -95,7 +95,7 @@ variable "platform_admin_email" {
 
 variable "enable_db_bastion" {
   type        = bool
-  description = "Create an SSM-only EC2 bastion for DB port forwarding (DBeaver)"
+  description = "Optional SSM bastion for private DB access. Off by default until a secure operator flow exists."
   default     = false
 }
 

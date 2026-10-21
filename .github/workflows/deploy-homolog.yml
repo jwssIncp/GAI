@@ -1,10 +1,8 @@
 name: Deploy Homolog
 
-# Auto-deploy on push to develop is disabled until AWS OIDC/secrets are ready.
-# Re-enable with:
-#   push:
-#     branches: [develop]
 on:
+  push:
+    branches: [develop]
   workflow_dispatch:
 
 concurrency:

@@ -14,7 +14,7 @@ ecs_desired_count    = 2
 # GitHub — adjust to your org/user
 github_org            = "jwssIncp"
 github_repo           = "GAI"
-github_branch_deploy  = "main"
+github_branch_deploy  = "master"
 
 # Optional custom domain (leave empty to use *.cloudfront.net)
 domain_name   = ""
