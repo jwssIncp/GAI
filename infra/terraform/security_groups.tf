@@ -51,7 +51,8 @@ resource "aws_vpc_security_group_egress_rule" "ecs_all" {
 
 resource "aws_security_group" "rds" {
   name        = "${local.name_prefix}-rds"
-  description = "RDS MySQL - ECS and optional allowlisted CIDRs"
+  # Keep description stable — changing it forces SG replace and breaks attached RDS ENIs.
+  description = "RDS MySQL - ECS only"
   vpc_id      = aws_vpc.main.id
 
   tags = {
