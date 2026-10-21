@@ -19,11 +19,12 @@ enable_db_bastion    = false
 # 4) Infra apply + Deploy Homolog (cria usuário gai_admin_ops)
 db_publicly_accessible = true
 db_allowed_cidrs       = [
-  "187.102.30.28/32",  # Luiz
+  "187.102.30.28/32",  # L
+  "186.195.129.163/32",  # J
 ]
 db_operator_username   = "gai_admin_ops"
-# One-shot: forces RDS destroy/create (AWS same-VPC subnet limit). Set false after apply.
-db_force_replace       = true
+# One-shot: forces RDS destroy/create (AWS same-VPC subnet limit). Leave false.
+db_force_replace       = false
 
 # GitHub — adjust to your org/user
 github_org            = "jwssIncp"
