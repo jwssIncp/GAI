@@ -8,8 +8,8 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-# Homolog palliative: public subnets. AWS rejects same-VPC subnet-group moves on an
-# existing instance — switching exposure recreates the DB (see terraform_data below).
+# Homolog palliative: public subnets. AWS rejects same-VPC subnet-group *moves*;
+# changing identifier forces destroy/create into the public group instead.
 resource "aws_db_subnet_group" "public" {
   count = var.db_publicly_accessible ? 1 : 0
 
@@ -19,11 +19,6 @@ resource "aws_db_subnet_group" "public" {
   tags = {
     Name = "${local.name_prefix}-db-public"
   }
-}
-
-# Bumps when public/private mode changes so the instance is replaced (not ModifyDBInstance).
-resource "terraform_data" "rds_exposure" {
-  input = var.db_publicly_accessible ? "public" : "private"
 }
 
 resource "aws_db_parameter_group" "main" {
@@ -42,7 +37,10 @@ resource "aws_db_parameter_group" "main" {
 }
 
 resource "aws_db_instance" "main" {
-  identifier     = local.name_prefix
+  # Suffix forces a new instance when flipping public access (ModifyDBInstance cannot
+  # change subnet group inside the same VPC).
+  identifier = var.db_publicly_accessible ? "${local.name_prefix}-pub" : local.name_prefix
+
   engine         = "mysql"
   engine_version = "8.0"
 
@@ -83,6 +81,6 @@ resource "aws_db_instance" "main" {
   }
 
   lifecycle {
-    replace_triggered_by = [terraform_data.rds_exposure]
+    create_before_destroy = true
   }
 }
