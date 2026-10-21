@@ -9,4 +9,4 @@ scripts/       # bootstrap-backend-image (só 1ª imagem de um ambiente novo)
 # Acesso humano ao banco: pendente (bastion desligado: enable_db_bastion = false)
 ```
 
-**Não** rode `terraform apply` local para operar homolog. Infra = workflow **Infra (Terraform)**; app = **Deploy Homolog** (push em `develop`).
+**Não** rode `terraform apply` local para operar homolog. Infra = workflow **Infra (Terraform)**; app = **Deploy Homolog** (manual no Actions).

@@ -181,9 +181,9 @@ Rotação: editar o parâmetro no SSM → Actions → **Ops - Reset platform adm
 
 Seed completo (`org.admin`, `test.user`) é opcional; preferir criar usuários pela UI. Se precisar do bootstrap legado, use a imagem compilada (`node dist/src/scripts/seed/bootstrap.js`) via task ECS — não use `terraform output` local; leia cluster/subnets de `/gai/<env>/deploy/*`.
 
-### Deploy automático
+### Deploy
 
-Homolog: push na `develop` já dispara **Deploy Homolog**. Produção permanece `workflow_dispatch` na `master`.
+Homolog e produção: só **manual** (Actions → Deploy Homolog / Deploy Production → Run workflow).
 
 ---
 
@@ -303,6 +303,6 @@ aws ecs describe-services --cluster gai-homolog --services gai-homolog-backend \
 - [ ] Environments + só `AWS_ROLE_ARN` + vars `TF_*`
 - [ ] Parameter Store `/gai/homolog/*` + grupo `gai-homolog-operators`
 - [ ] Health OK + `platform.admin` via `release:prod`
-- [ ] Auto-deploy `on.push` develop ativo
+- [ ] Deploy Homolog manual testado
 - [ ] Produção (depois): provisionar + SES + secrets
 - [ ] (Opcional) Domínio próprio

@@ -92,7 +92,7 @@ aws ssm get-parameters-by-path --path /gai/homolog/db --with-decryption \
 
 | Tarefa | Como |
 |---|---|
-| Deploy homolog | Push/merge na `develop` (automático) ou Actions → **Deploy Homolog** |
+| Deploy homolog | Actions → **Deploy Homolog** → Run workflow (`develop`) |
 | Deploy produção | Actions → **Deploy Production** (branch `master`, quando existir) |
 | Alterar infra | PR em `infra/terraform/**` → plan no CI → merge na `develop` aplica homolog; produção = dispatch manual na `master` |
 | Senha `platform.admin` | `aws ssm get-parameter --name /gai/homolog/platform-admin/password --with-decryption --query Parameter.Value --output text` |

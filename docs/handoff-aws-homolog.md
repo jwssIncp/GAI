@@ -11,7 +11,7 @@ Estado da homologação e operação no dia a dia. Setup do zero (conta nova): [
 - Homologação **no ar** (`us-east-1`), CloudFront + ECS + RDS privada.
 - **Infra e deploy só no GitHub Actions** — não rode `terraform apply` na máquina para operar.
 - Config e senhas em **SSM Parameter Store** `/gai/homolog/*`.
-- Push na `develop` → **Deploy Homolog** automático (+ Infra se mexer em `infra/terraform/**`).
+- Deploy homolog: **manual** (Actions → Deploy Homolog). Infra: push em `infra/terraform/**` na `develop` aplica Terraform.
 - Branch padrão do repo: **`master`**. Produção ainda **não** provisionada.
 - `platform.admin` é garantido a cada deploy (`release:prod`).
 
@@ -56,7 +56,7 @@ Internet ─► CloudFront (HTTPS)
 
 | Tarefa | Como |
 |---|---|
-| Deploy homolog | Push/merge na `develop` (automático) ou Actions → **Deploy Homolog** |
+| Deploy homolog | Actions → **Deploy Homolog** → Run workflow (`develop`) |
 | Infra homolog | Push em `infra/terraform/**` na `develop` → workflow **Infra (Terraform)** aplica |
 | Infra produção (futuro) | Actions → **Infra (Terraform)** na branch **`master`**, `environment=production`, plan primeiro; depois com `apply` marcado |
 | Reset / desbloquear admin | Editar `/gai/homolog/platform-admin/password` no console SSM → Actions → **Ops - Reset platform admin** → `homolog` |
@@ -91,7 +91,7 @@ Checklist para quem tem admin no GitHub e root na AWS. Ordem importa.
 
 ### B. Código
 
-1. Merge/push na `develop` desta entrega (auto-deploy + `github_branch_deploy=master` + docs).
+1. Merge/push na `develop` desta entrega; depois Actions → **Deploy Homolog**.
 2. Abrir PR **`develop` → `master`** e mergear (para o workflow **Ops - Reset platform admin** ficar disparável no branch padrão).
 
 ### C. Rotação do `platform.admin` (sem CLI de senha no chat)
@@ -127,7 +127,7 @@ aws iam add-user-to-group --group-name gai-homolog-operators --user-name <usuari
 | 5 | Ops Reset admin após merge na `master` | Pendente (B+C) |
 | 6 | Apagar secrets GitHub legados | Pendente (A) |
 | 7 | Usuários no grupo `gai-homolog-operators` | Pendente (D) |
-| 8 | Auto-deploy `on.push` develop | Feito (código) |
+| 8 | Deploy homolog só manual (`workflow_dispatch`) | Feito |
 | 9+ | Produção / SES / domínio / SSO | Fora de escopo agora |
 
 ---

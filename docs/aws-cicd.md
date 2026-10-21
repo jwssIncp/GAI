@@ -187,7 +187,7 @@ Sem domínio, use o `app_url` (`*.cloudfront.net`).
 ## Passo 6 — Fluxo do dia a dia
 
 1. PR → **CI**.
-2. Merge em `develop` → **Deploy Homolog** automático (+ **Infra** se `infra/terraform/**` mudou).
+2. Merge em `develop` → **Infra** só se `infra/terraform/**` mudou. App: Actions → **Deploy Homolog** (manual).
 3. Validar em homolog.
 4. Produção (quando provisionada): merge em `master` + Actions → **Deploy Production** / **Infra** manual.
 
