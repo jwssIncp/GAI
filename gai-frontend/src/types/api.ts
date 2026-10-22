@@ -97,6 +97,17 @@ export type CreateOrganizationRequest = {
   status?: OrganizationStatus;
 };
 
+export type UpdateOrganizationRequest = {
+  legal_name?: string;
+  trade_name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+};
+
+export type OrganizationListParams = PageParams & {
+  status?: OrganizationStatus;
+};
+
 export type User = CurrentUser & { created_at: string; updated_at: string };
 export type CreateUserRequest = {
   login: string;

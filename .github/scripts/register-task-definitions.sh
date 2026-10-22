@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Register two task definitions from the rendered one, with secrets from Parameter Store:
 #   <family>          app (ECS service): DB_* only
-#   <family>-release  one-off release task (migrations + root user): DB_* + PLATFORM_ADMIN_*
-# The platform admin password never reaches the long-running app container.
+#   <family>-release  one-off release: DB_* + PLATFORM_ADMIN_* + DB_OPERATOR_*
 # Writes task_definition_arn and release_task_definition_arn to $GITHUB_OUTPUT.
 set -euo pipefail
 
@@ -29,7 +28,9 @@ register() {
           ] + (if $admin then [
             { name: "PLATFORM_ADMIN_LOGIN", valueFrom: ($p + "/platform-admin/login") },
             { name: "PLATFORM_ADMIN_EMAIL", valueFrom: ($p + "/platform-admin/email") },
-            { name: "PLATFORM_ADMIN_PASSWORD", valueFrom: ($p + "/platform-admin/password") }
+            { name: "PLATFORM_ADMIN_PASSWORD", valueFrom: ($p + "/platform-admin/password") },
+            { name: "DB_OPERATOR_USERNAME", valueFrom: ($p + "/db/operator-username") },
+            { name: "DB_OPERATOR_PASSWORD", valueFrom: ($p + "/db/operator-password") }
           ] else [] end)
         else . end
       )' "$FILE" > task-definition-final.json

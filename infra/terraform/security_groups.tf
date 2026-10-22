@@ -51,6 +51,7 @@ resource "aws_vpc_security_group_egress_rule" "ecs_all" {
 
 resource "aws_security_group" "rds" {
   name        = "${local.name_prefix}-rds"
+  # Keep description stable — changing it forces SG replace and breaks attached RDS ENIs.
   description = "RDS MySQL - ECS only"
   vpc_id      = aws_vpc.main.id
 
@@ -66,6 +67,17 @@ resource "aws_vpc_security_group_ingress_rule" "rds_from_ecs" {
   from_port                    = 3306
   to_port                      = 3306
   referenced_security_group_id = aws_security_group.ecs.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "rds_from_allowlist" {
+  for_each = var.db_publicly_accessible ? toset(var.db_allowed_cidrs) : toset([])
+
+  security_group_id = aws_security_group.rds.id
+  description       = "MySQL from allowlisted client (homolog palliative)"
+  ip_protocol       = "tcp"
+  from_port         = 3306
+  to_port           = 3306
+  cidr_ipv4         = each.value
 }
 
 resource "aws_vpc_security_group_egress_rule" "rds_all" {

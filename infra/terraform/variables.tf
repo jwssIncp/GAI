@@ -99,6 +99,48 @@ variable "enable_db_bastion" {
   default     = false
 }
 
+# Homolog-only palliative: DBeaver reaches the RDS endpoint directly (no VPN yet).
+# Production must keep db_publicly_accessible = false. Replace with Client VPN before prod.
+variable "db_publicly_accessible" {
+  type        = bool
+  description = "Expose RDS with a public IP (homolog palliative only)"
+  default     = false
+
+  validation {
+    condition     = !(var.environment == "production" && var.db_publicly_accessible)
+    error_message = "db_publicly_accessible must be false in production"
+  }
+}
+
+variable "db_allowed_cidrs" {
+  type        = list(string)
+  description = "CIDRs allowed to MySQL when db_publicly_accessible (e.g. [\"1.2.3.4/32\"]). Never 0.0.0.0/0."
+  default     = []
+
+  validation {
+    condition = (
+      !var.db_publicly_accessible || (
+        length(var.db_allowed_cidrs) > 0 &&
+        !contains(var.db_allowed_cidrs, "0.0.0.0/0")
+      )
+    )
+    error_message = "When db_publicly_accessible is true, set db_allowed_cidrs to one or more /32 (or narrow) CIDRs; 0.0.0.0/0 is forbidden"
+  }
+}
+
+variable "db_operator_username" {
+  type        = string
+  description = "MySQL user for DBeaver/ops (created by release:prod); not the master user"
+  default     = "gai_admin_ops"
+}
+
+# Read by Infra workflow (grep); declare so -var-file does not error. Not used in resources.
+variable "db_force_replace" {
+  type        = bool
+  description = "When true, CI plans with -replace=aws_db_instance.main (same-VPC public flip)"
+  default     = false
+}
+
 variable "ecs_cpu" {
   type    = number
   default = 256

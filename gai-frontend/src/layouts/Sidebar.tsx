@@ -1,4 +1,4 @@
-import { ShieldCheck, Sparkles, X } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { navigation } from '@/constants/navigation';
@@ -105,15 +105,6 @@ function SidebarContent() {
           );
         })}
       </nav>
-      <div className="p-3">
-        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/45 p-3.5 shadow-inner-highlight">
-          <div className="flex items-center gap-2 text-xs font-bold text-sidebar-foreground">
-            <span className="grid size-7 place-items-center rounded-lg bg-primary/15 text-primary"><ShieldCheck size={14} /></span>
-            Ambiente protegido
-          </div>
-          <p className="mt-2 text-[0.6875rem] leading-5 text-sidebar-muted">Acesso segmentado por perfil e organização.</p>
-        </div>
-      </div>
     </div>
   );
 }

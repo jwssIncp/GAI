@@ -9,6 +9,8 @@ import type {
   CreateExpenseAttachmentUploadRequest,
   CreateInventoryItemImageUploadRequest,
   CreateOrganizationRequest,
+  OrganizationListParams,
+  UpdateOrganizationRequest,
   CreateProjectRequest,
   CreateUserRequest,
   CurrentUser,
@@ -113,10 +115,10 @@ export const authApi = {
 };
 
 export const organizationsApi = {
-  list: (params: PageParams) => api.get<PaginatedItems<Organization>>('/organizations', { params }).then((r) => r.data),
+  list: (params: OrganizationListParams) => api.get<PaginatedItems<Organization>>('/organizations', { params }).then((r) => r.data),
   create: (payload: CreateOrganizationRequest) => api.post<Organization>('/organizations', payload).then((r) => r.data),
   get: (id: number) => api.get<Organization>(`/organizations/${id}`).then((r) => r.data),
-  update: (id: number, payload: Partial<CreateOrganizationRequest>) => api.patch<Organization>(`/organizations/${id}`, payload).then((r) => r.data),
+  update: (id: number, payload: UpdateOrganizationRequest) => api.patch<Organization>(`/organizations/${id}`, payload).then((r) => r.data),
   deactivate: (id: number) => api.post<Organization>(`/organizations/${id}/deactivate`).then((r) => r.data),
   activate: (id: number) => api.post<Organization>(`/organizations/${id}/activate`).then((r) => r.data),
 };

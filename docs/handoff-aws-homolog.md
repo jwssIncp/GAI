@@ -48,7 +48,13 @@ Internet ─► CloudFront (HTTPS)
   ```bash
   aws ssm get-parameter --name /gai/homolog/platform-admin/password --with-decryption --query Parameter.Value --output text
   ```
-- **Banco:** RDS privada. Acesso humano (DBeaver etc.) **ainda não liberado** — bastion desligado (`enable_db_bastion = false`). Pendência: definir um fluxo seguro (sem script local que imprime senha mestre; usuário DB dedicado, não o `gai_admin`).
+- **Banco (DBeaver — paliativo homolog):** RDS pode ficar pública **só com IPs allowlist** (`db_publicly_accessible` + `db_allowed_cidrs` em `env/homolog.tfvars`). Usuário **`gai_admin_ops`** (não o master). Credenciais:
+  ```bash
+  aws ssm get-parameter --name /gai/homolog/db/host --query Parameter.Value --output text
+  aws ssm get-parameter --name /gai/homolog/db/operator-username --query Parameter.Value --output text
+  aws ssm get-parameter --name /gai/homolog/db/operator-password --with-decryption --query Parameter.Value --output text
+  ```
+  DBeaver: Host = valor de `/db/host`, porta `3306`, database `gai`, user/senha do operator. **Produção:** manter privado + VPN (não copiar este paliativo).
 
 ---
 
