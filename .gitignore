@@ -33,3 +33,13 @@ terraform.rc
 *.tmp
 *.swp
 Thumbs.db
+
+# Local validation and generated evidence
+.local/
+**/test-results/
+**/playwright-report/
+docs/**/evidencias/
+!docs/**/evidencias/README.md
+docs/**/exemplos/*.pdf
+docs/**/exemplos/*.docx
+gai-frontend/*.png
