@@ -1,0 +1,62 @@
+[
+  {
+    "file": "laudo-aprovado.docx",
+    "bytes": 14677,
+    "sha256": "eebd9ee1b69942fb78e8f5611f931ba783fda6d1c6899cfc3f7f970e9c86ac5b",
+    "browser_sections": 2
+  },
+  {
+    "file": "laudo-aprovado.pdf",
+    "bytes": 19838,
+    "sha256": "f77eee921bb3325aaba9e85cbc61822da2f3810a51a3a9d21e80466bd31d1b39",
+    "pages": 6,
+    "page_numbers": [
+      "1 / 6",
+      "2 / 6",
+      "3 / 6",
+      "4 / 6",
+      "5 / 6",
+      "6 / 6"
+    ]
+  },
+  {
+    "file": "laudo-regenerado.pdf",
+    "bytes": 19838,
+    "sha256": "f77eee921bb3325aaba9e85cbc61822da2f3810a51a3a9d21e80466bd31d1b39",
+    "pages": 6,
+    "page_numbers": [
+      "1 / 6",
+      "2 / 6",
+      "3 / 6",
+      "4 / 6",
+      "5 / 6",
+      "6 / 6"
+    ]
+  },
+  {
+    "file": "orcamento-nao-aprovado.pdf",
+    "bytes": 4567,
+    "sha256": "f5e4c9b93c268f5757db0a513832cb72df28ebf21fc21a763c9a127c2e103643",
+    "pages": 2,
+    "page_numbers": [
+      "1 / 2",
+      "2 / 2"
+    ]
+  },
+  {
+    "file": "proposta-aprovada.docx",
+    "bytes": 12355,
+    "sha256": "d6d2929cffbfe54018650427cd009480a250bba582bb6854abbc74bcba26df14",
+    "browser_sections": 2
+  },
+  {
+    "file": "proposta-aprovada.pdf",
+    "bytes": 4505,
+    "sha256": "e52765a58d5f9ce61f7617e5e8a45ef7d49ac05da5c3d115d2af29233671475d",
+    "pages": 2,
+    "page_numbers": [
+      "1 / 2",
+      "2 / 2"
+    ]
+  }
+]

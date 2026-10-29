@@ -1,0 +1,25 @@
+{
+  "environment": "local",
+  "database": "localhost:3306/gai",
+  "project_id": 44,
+  "report_id": 5,
+  "approved_version_id": 23,
+  "source_hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+  "approved_snapshot_unchanged": true,
+  "files": [
+    {
+      "format": "pdf",
+      "id": "1",
+      "size_bytes": 30563,
+      "sha256": "50d386861e0c86ffa221817c15760b2e7926fccb0dbab8a70f7cbb94c5fc1c53",
+      "visual_version": "gai-a4-v1"
+    },
+    {
+      "format": "docx",
+      "id": "2",
+      "size_bytes": 13188,
+      "sha256": "87e3aa5c9f59bf955a11d0fe3ac16f71211ee08f9b38dc269c5bfa5ea394852e",
+      "visual_version": "gai-a4-v1"
+    }
+  ]
+}

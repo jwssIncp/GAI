@@ -1,0 +1,116 @@
+{
+  "auditDate": "2026-10-27",
+  "userTimezone": "America/Sao_Paulo",
+  "method": "Static source inspection; legacy scripts not executed; no service/database accessed",
+  "legacyZip": {
+    "path": "C:/Users/Jonathan/Downloads/deploy-6adf9b21af66f3795090e396.zip",
+    "sha256": "8cf1c889b2d5b913a8ba18833cf0962fced07924190f6bc4ee9928d7ead6adfc",
+    "files": 118,
+    "html": 45,
+    "javascript": 6,
+    "json": 2,
+    "toml": 1
+  },
+  "gaiSourceFilesHashCompared": 645,
+  "matrixRows": 98,
+  "classifications": {
+    "EXISTENTE": 15,
+    "PARCIAL": 22,
+    "AUSENTE": 44,
+    "INCOMPATÍVEL": 10,
+    "NÃO VERIFICADA": 7
+  },
+  "staticIndexStatistics": {
+    "legacy": {
+      "files": 34,
+      "scripts": 186,
+      "parseErrors": 0,
+      "controls": 1969,
+      "functions": 10431,
+      "listeners": 2136,
+      "workerMessages": 480
+    },
+    "gaiFiles": 645,
+    "testFiles": 119,
+    "migrations": 22,
+    "entities": 58,
+    "manifestRows": 771
+  },
+  "checks": {
+    "sourceFilesUnchanged": true,
+    "extractedFilesUnchanged": true,
+    "allMatrixFieldsFilled": true,
+    "matrixIdsUnique": true,
+    "statusesValid": true,
+    "matrixCSVMatchesJSON": true,
+    "sourcePathsAndLinesValid": true,
+    "markdownLinksResolve": true,
+    "markdownTablesConsistent": true,
+    "noUserJSONPasswordValuesInDeliverables": true
+  },
+  "errors": {
+    "changed": [],
+    "extractionMismatch": [],
+    "missingSources": [],
+    "lineErrors": [],
+    "missingLinks": [],
+    "tableErrors": [],
+    "passwordLeakFiles": []
+  },
+  "notRun": [
+    "Legacy HTML/JS",
+    "Netlify endpoints",
+    "GAI runtime/tests/build/lint",
+    "Database queries/migrations/seeds",
+    "Deploy",
+    "Commit/push"
+  ],
+  "limitations": [
+    "Static evidence is not production homologation",
+    "Backend Netlify and APK absent",
+    "Binary PowerPoint/font fidelity not validated",
+    "Tests inspected, not executed; SQLite/mocks differ from MySQL/storage"
+  ],
+  "artifacts": [
+    {
+      "file": "anexo-gai.md",
+      "bytes": 367895,
+      "sha256": "68aeb302b77b014f95fa458b3ac86809f53d7ab0e0eefa8d2034783d70a3dbaf"
+    },
+    {
+      "file": "anexo-legado.md",
+      "bytes": 619917,
+      "sha256": "0a36dd663a6a3c1fdc60ae3b6339b6ab44c23673ce2437b960763232d68c2ed3"
+    },
+    {
+      "file": "inventario-funcional.md",
+      "bytes": 48193,
+      "sha256": "4f54fbf652782e4609a765675679e27109fd74cff506fe4f57758735956cc2d2"
+    },
+    {
+      "file": "manifesto-arquivos.csv",
+      "bytes": 128461,
+      "sha256": "2727721e70c85b63ba539ebb425900e5ee79ce7b87d3e3f0a76c4007a9b7e3de"
+    },
+    {
+      "file": "matriz-comparativa.csv",
+      "bytes": 64464,
+      "sha256": "5c969c7d3749bd1850c94818ad16c0958126c0f1b11856ff6ba4105e255d36cc"
+    },
+    {
+      "file": "matriz-comparativa.json",
+      "bytes": 96660,
+      "sha256": "51e4bd68589cc54aa9f177de8ca3f2f38b8fbbc4e2ed598ef5cad07fcd0ac252"
+    },
+    {
+      "file": "matriz-comparativa.md",
+      "bytes": 66663,
+      "sha256": "65dc4ee29f6fbcaea36120d653d60aadbeaf8bb798b5bcdfe3a663748106f381"
+    },
+    {
+      "file": "README.md",
+      "bytes": 38006,
+      "sha256": "35681e393fe42e2d9c166d02ab8f74f3bd6a0c858873a278de99b51cac554f83"
+    }
+  ]
+}

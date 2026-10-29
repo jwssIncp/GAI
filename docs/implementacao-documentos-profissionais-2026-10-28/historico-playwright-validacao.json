@@ -1,0 +1,21 @@
+{
+  "environment": "local",
+  "org_admin": true,
+  "project_id": 44,
+  "report_id": 5,
+  "version_id": 23,
+  "actual_browser_downloads": [
+    {
+      "format": "PDF",
+      "filename": "report-5-versao-23.pdf",
+      "bytes": 30563,
+      "sha256": "50d386861e0c86ffa221817c15760b2e7926fccb0dbab8a70f7cbb94c5fc1c53"
+    },
+    {
+      "format": "DOCX",
+      "filename": "report-5-versao-23.docx",
+      "bytes": 13188,
+      "sha256": "87e3aa5c9f59bf955a11d0fe3ac16f71211ee08f9b38dc269c5bfa5ea394852e"
+    }
+  ]
+}

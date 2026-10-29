@@ -1,0 +1,138 @@
+{
+  "verified_at": "2026-10-28T18:40:45.606Z",
+  "backend": {
+    "distinct_passed": 73,
+    "technical_reports_and_permissions": {
+      "suites": 4,
+      "passed": 49,
+      "new_report_tests": 30,
+      "log": ".local/reports-backend-tests.log"
+    },
+    "source_regressions": {
+      "suites": 2,
+      "passed": 24,
+      "modules": [
+        "batch valuations",
+        "assisted reconciliation"
+      ],
+      "log": ".local/reports-source-regression.log"
+    },
+    "database": {
+      "host": "127.0.0.1",
+      "port": 33317,
+      "database": "gai_validation_disposable",
+      "container": "gai-reports-mysql-test",
+      "disposable_only": true,
+      "removed": true
+    }
+  },
+  "frontend": {
+    "suites": 42,
+    "passed": 245,
+    "new_report_tests": 6,
+    "post_change_targeted_tests": 6,
+    "log": ".local/reports-frontend-tests.log"
+  },
+  "playwright": {
+    "passed": 1,
+    "browser": "Chromium",
+    "seconds": 45.1,
+    "real_org_admin": true,
+    "synthetic_only": true,
+    "mocks": false,
+    "javascript_errors": [],
+    "http_errors": [],
+    "project_id": 44,
+    "report_id": 5,
+    "approved_version_id": 23,
+    "approved_hash_verified": true,
+    "checks": [
+      "project navigation",
+      "responsible registry",
+      "template creation and publication",
+      "report creation",
+      "content editing",
+      "refresh persistence",
+      "server validation",
+      "review and approval",
+      "history",
+      "professional preview",
+      "JSON download",
+      "stale sources notice",
+      "reopening",
+      "source refresh",
+      "old approval preserved",
+      "mobile viewport",
+      "browser back and forward",
+      "reports to items and return"
+    ]
+  },
+  "checks": [
+    {
+      "name": "typescript-backend",
+      "exit_code": 0,
+      "seconds": 23.2,
+      "log": ".local\\reports-typescript-backend.log"
+    },
+    {
+      "name": "build-backend",
+      "exit_code": 0,
+      "seconds": 45.19,
+      "log": ".local\\reports-build-backend.log"
+    },
+    {
+      "name": "lint-backend",
+      "exit_code": 0,
+      "seconds": 28.87,
+      "log": ".local\\reports-lint-backend.log"
+    },
+    {
+      "name": "typescript-frontend",
+      "exit_code": 0,
+      "seconds": 21.41,
+      "log": ".local\\reports-typescript-frontend.log"
+    },
+    {
+      "name": "build-frontend",
+      "exit_code": 0,
+      "seconds": 18.32,
+      "log": ".local\\reports-build-frontend.log"
+    },
+    {
+      "name": "lint-frontend",
+      "exit_code": 0,
+      "seconds": 3.13,
+      "log": ".local\\reports-lint-frontend.log"
+    },
+    {
+      "name": "backend-tests",
+      "exit_code": 0,
+      "seconds": 32.17,
+      "log": ".local\\reports-backend-tests.log"
+    },
+    {
+      "name": "source-regression",
+      "exit_code": 0,
+      "seconds": 51.81,
+      "log": ".local\\reports-source-regression.log"
+    },
+    {
+      "name": "frontend-tests",
+      "exit_code": 0,
+      "seconds": 72.41,
+      "log": ".local\\reports-frontend-tests.log"
+    },
+    {
+      "name": "reports-ui-tests",
+      "exit_code": 0,
+      "seconds": 7.06,
+      "log": ".local\\reports-reports-ui-tests.log"
+    }
+  ],
+  "limitations": [
+    "Native PDF/DOCX generator not available; JSON snapshot and browser print preview delivered",
+    "No digital signature or independent credential verification",
+    "No report photo composition",
+    "No load test; Chromium only"
+  ]
+}

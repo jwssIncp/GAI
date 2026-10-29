@@ -1,0 +1,173 @@
+{
+  "verified_at": "2026-10-28T18:38:48.013Z",
+  "database": {
+    "environment": "local",
+    "host": "localhost",
+    "db": "gai",
+    "hostname": "f10269ba8da4",
+    "port": 3306,
+    "version": "8.0.46",
+    "migration_count": 31,
+    "last_migration": "CreateTechnicalReports1793900000001",
+    "permissions": [
+      {
+        "key": "technical-reports:approve",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "technical-reports:edit",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "technical-reports:export",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "technical-reports:read",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "technical-reports:templates",
+        "scope": "ORGANIZATION"
+      }
+    ],
+    "custom_role_permissions": [
+      "users:read"
+    ],
+    "report_versions": [
+      {
+        "id": 20,
+        "revision": 1,
+        "status": "draft",
+        "hash": "39656ba3f6a71e8440538f627d0e09f6eeb0eefdad9abbdfa0b79b87635e0f7c",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:07.707Z"
+      },
+      {
+        "id": 21,
+        "revision": 2,
+        "status": "draft",
+        "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:11.382Z"
+      },
+      {
+        "id": 22,
+        "revision": 3,
+        "status": "in_review",
+        "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:17.182Z"
+      },
+      {
+        "id": 23,
+        "revision": 4,
+        "status": "approved",
+        "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:20.051Z"
+      },
+      {
+        "id": 24,
+        "revision": 5,
+        "status": "reopened",
+        "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:27.671Z"
+      },
+      {
+        "id": 25,
+        "revision": 6,
+        "status": "reopened",
+        "hash": "86be3bf3ba3a07d68765d4344dd5924e5f8b843e186225b71683cf7c70766b38",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:30.818Z"
+      },
+      {
+        "id": 26,
+        "revision": 7,
+        "status": "reopened",
+        "hash": "78eefd530a35c581209435122bdd5ab2f4acb38dbab968a3a2d7f7c952c4aa1c",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T18:38:32.497Z"
+      }
+    ]
+  },
+  "backend_health": {
+    "status": "ok"
+  },
+  "frontend_status": 200,
+  "synthetic": {
+    "project": 44,
+    "company": 26,
+    "item": 226,
+    "template": 6,
+    "template_version": 12,
+    "report": 5,
+    "approved_version": 23,
+    "approved_hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+    "final_revision": 7,
+    "final_status": "reopened",
+    "errors": [],
+    "http": []
+  },
+  "report": {
+    "id": 5,
+    "project_id": 44,
+    "revision": 7,
+    "status": "reopened",
+    "approved_version_id": 23,
+    "current_source_hash": "62bd9cb7736208c03ba2b3db60e8949c060004ede9a395dd730b0388b79effb7"
+  },
+  "approved": {
+    "id": 23,
+    "revision": 4,
+    "status": "approved",
+    "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+    "hash_algorithm": "sha256-canonical-json-v1",
+    "source_hash": "648f9d05ae0ccce629f6770029b7cf635eabe91974d13d24a1a12a4fe976c870",
+    "template_version": 12,
+    "old_inventory_row": [
+      226,
+      "SYN1793212674812",
+      null,
+      "SINTETICO Equipamento original 1793212674812",
+      null,
+      null,
+      "pending"
+    ]
+  },
+  "current_inventory_row": [
+    226,
+    "SYN1793212674812",
+    null,
+    "SINTETICO Equipamento atualizado 1793212674812",
+    null,
+    null,
+    "pending"
+  ],
+  "validation": {
+    "engine": "technical-report-v1",
+    "hash_algorithm": "sha256-canonical-json-v1",
+    "valid": true,
+    "issues": [
+      {
+        "code": "INTERNAL_APPROVAL",
+        "severity": "warning",
+        "message": "Aprovação interna não é assinatura digital nem comprova habilitação ou conformidade normativa."
+      }
+    ],
+    "source_hash": "62bd9cb7736208c03ba2b3db60e8949c060004ede9a395dd730b0388b79effb7"
+  },
+  "export": {
+    "format": "gai-technical-report-snapshot-v1",
+    "approved_hash_verified": true,
+    "filename": "laudo-aprovado.json",
+    "pdf_docx_available": false
+  },
+  "urls": {
+    "list": "http://localhost:5173/app/projects/44/technical-reports",
+    "preserved": "http://localhost:5173/app/projects/44/technical-reports/5?view=preview&version=23"
+  },
+  "note": "Somente dados SINTETICO de desenvolvimento. Placas, avaliacoes, conciliacoes e financas anteriores preservadas; sem producao, commit, push ou deploy."
+}

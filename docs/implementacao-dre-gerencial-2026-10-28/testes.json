@@ -1,0 +1,125 @@
+{
+  "verified_at": "2026-10-28T15:57:47.509Z",
+  "backend": {
+    "distinct_passed": 79,
+    "dre_and_permissions": {
+      "suites": 5,
+      "passed": 49,
+      "new_dre_tests": 27,
+      "log": ".local/dre-backend-tests.log"
+    },
+    "receivables_and_budgets": {
+      "suites": 2,
+      "passed": 30,
+      "log": ".local/dre-financial-regression.log"
+    },
+    "mysql": {
+      "container": "gai-dre-mysql-test",
+      "host": "127.0.0.1",
+      "port": 33317,
+      "database": "gai_validation_disposable",
+      "schema": "recreated only in opt-in disposable database"
+    }
+  },
+  "frontend": {
+    "suites": 41,
+    "passed": 239,
+    "new_dre_tests": 4,
+    "log": ".local/dre-frontend-tests.log",
+    "post_change_dre_tests": 4
+  },
+  "playwright": {
+    "browser": "Chromium",
+    "passed": 1,
+    "seconds": 26.2,
+    "real_backend": true,
+    "role": "ORG_ADMIN",
+    "mocked_requests": false,
+    "synthetic_only": true,
+    "steps": [
+      "login",
+      "project DRE shortcut",
+      "account create",
+      "receivable explicit accrual January vs October issuance",
+      "adjustment with two versions",
+      "20.00 residual not recognized",
+      "refresh persistence",
+      "subtotal drill-down",
+      "XLSX create/download",
+      "back/forward",
+      "partial period close and reopen",
+      "mobile navigation"
+    ],
+    "javascript_errors": [],
+    "http_errors": [],
+    "artifacts": "docs/implementacao-dre-gerencial-2026-10-28/evidencias"
+  },
+  "checks": [
+    {
+      "name": "typescript-backend",
+      "exit_code": 0,
+      "seconds": 16.46,
+      "log": ".local\\dre-typescript-backend.log"
+    },
+    {
+      "name": "build-backend",
+      "exit_code": 0,
+      "seconds": 25.95,
+      "log": ".local\\dre-build-backend.log"
+    },
+    {
+      "name": "lint-backend",
+      "exit_code": 0,
+      "seconds": 22.55,
+      "log": ".local\\dre-lint-backend.log"
+    },
+    {
+      "name": "typescript-frontend",
+      "exit_code": 0,
+      "seconds": 22.27,
+      "log": ".local\\dre-typescript-frontend.log"
+    },
+    {
+      "name": "build-frontend",
+      "exit_code": 0,
+      "seconds": 22.83,
+      "log": ".local\\dre-build-frontend.log"
+    },
+    {
+      "name": "lint-frontend",
+      "exit_code": 0,
+      "seconds": 3.44,
+      "log": ".local\\dre-lint-frontend.log"
+    },
+    {
+      "name": "backend-tests",
+      "exit_code": 0,
+      "seconds": 22.53,
+      "log": ".local\\dre-backend-tests.log"
+    },
+    {
+      "name": "financial-regression",
+      "exit_code": 0,
+      "seconds": 31.93,
+      "log": ".local\\dre-financial-regression.log"
+    },
+    {
+      "name": "frontend-tests",
+      "exit_code": 0,
+      "seconds": 84.15,
+      "log": ".local\\dre-frontend-tests.log"
+    },
+    {
+      "name": "dre-ui-tests",
+      "exit_code": 0,
+      "seconds": 7.34,
+      "log": ".local\\dre-dre-ui-tests.log"
+    }
+  ],
+  "limitations": [
+    "No load test",
+    "Chromium only",
+    "Source database gaps remain explicit; no invented recognition or tax rates"
+  ],
+  "disposable_container_removed": true
+}

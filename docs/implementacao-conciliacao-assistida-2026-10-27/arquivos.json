@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "sha256": "b17cd65a8b74a411b5bdf69c3ba0598bbd1308ac86017e7ac0884fca709b2682"
+    },
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/assisted.dto.ts",
+      "sha256": "960344d88146261ebdbb679c7c4b570b9081abc75706e7166d434baadec06b1e"
+    },
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/assisted.entity.ts",
+      "sha256": "b282ba5cbf6d7025edccb78cc6fda671a1a221e1bf5a65f68794f4b78dbbee32"
+    },
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/assisted.module.ts",
+      "sha256": "89f99a0a8fd63bd477ba2204ed54c941c900d4d1e8a0a46cf4fc82a34f22d5a2"
+    },
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/assisted.service.ts",
+      "sha256": "71d121142a041c477a105651e20110bc5ec685507673823e59703354468d103c"
+    },
+    {
+      "path": "gai-backend/src/modules/assisted-reconciliation/matching.policy.ts",
+      "sha256": "53ba27e752794de400a6b11ef2f47ef02cbc100a77bf1c3f611a2cca19878e2e"
+    },
+    {
+      "path": "gai-backend/src/migrations/1793300000001-create-assisted-reconciliation.ts",
+      "sha256": "ffbde2120bd5813b0c9d5801a2e1ebad37f9d2633604cc163d07b7059559457c"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-inputs.ts",
+      "sha256": "c83857c9b507f09874ea151b5d2ccef64929fb0ea8dd4553dbbc21db16539dff"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-response.dto.ts",
+      "sha256": "26cb67fd208be4c94d59347366d0068184f7dbe7d2425c3c957aa9e6ba1b3b84"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/application/services/accounting-import-parser.service.ts",
+      "sha256": "b0a002d22c5922c0386f4b0c91e947f0193ccb765529bf3d9c8277ee1d00c2d2"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-items.service.ts",
+      "sha256": "f8ba62b0d039261eae88ae5ecd16187659146a2d89e210a02403cc066db07c25"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/domain/entities/inventory-accounting-item.ts",
+      "sha256": "155b4be45f8ca638de47b63425e9713646d02cd13056924c6054a021d799c23d"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity.ts",
+      "sha256": "887849bc16124a5333b8a6cf44b24de7a52f0f559e38ccff343ad1a54fca41f4"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/typeorm-inventory-accounting-item.repository.ts",
+      "sha256": "a262cdc4b97f36d4ada91d870193ad64f47dd5add343ce77abde3ec92155969e"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+      "sha256": "a32d07a3609beaf39c194ac62f524a0a08b86affab6d102aa2de2011f08345d4"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/inventory-operations.module.ts",
+      "sha256": "8429ec3dc6edc3dbd10af52ab369d008dd4d6c1076d0479e1fae56c0901bd03e"
+    },
+    {
+      "path": "gai-backend/src/app.module.ts",
+      "sha256": "598d8b94f3aed18f0f4590765d11c741d5923b60866e5c7d10f855dbfeea9046"
+    },
+    {
+      "path": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "sha256": "d3e2b0707d0279e634f287cfc5f75ed005b73fbd746078762c6c09e07542f09e"
+    },
+    {
+      "path": "gai-backend/test/integration/test-app.helper.ts",
+      "sha256": "d1b0d2e03702201241529c228651d24fabdeb58fee26bda6b89d70a1c1a867df"
+    },
+    {
+      "path": "gai-backend/test/integration/assisted-reconciliation/assisted.e2e-spec.ts",
+      "sha256": "32716a6572ad24d35e0c5c5ff11969e63270572199d5b102cae6e9c31a39721c"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/assisted-reconciliation/matching.policy.spec.ts",
+      "sha256": "c26b69ec47d3ff7d31692c836a69640930d51f749e75e1558a41f9675185a181"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/inventory-accounting-items/inventory-accounting-item.spec.ts",
+      "sha256": "ca4f8d80edc9b69fc1735ef7cc93bc23e402d8dfc786efba7ceab8b16dabaa5e"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-operations/assistedApi.ts",
+      "sha256": "63d4132a59630dc35dadadb54108a9a7c45600c42b0ff50c92ca2c9aa5dba0aa"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.tsx",
+      "sha256": "22c428f7ff4bcb08a2a455cb3490b583d8bae5471e6effe7f827d829082dc7ab"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.test.tsx",
+      "sha256": "d4391295bba405e500f4383ade1fe6cabbfe18974cd7460b8ae368d9e86c13d8"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.tsx",
+      "sha256": "d8acbd69048212c072b84cfa818c86d0c97b2cc0a60bcc48814a850e0833f1c8"
+    },
+    {
+      "path": "gai-frontend/src/types/api.ts",
+      "sha256": "144163d26943ceb408ab64a0315e2578724e1e03ed6d9918a949c518b2b6dab3"
+    },
+    {
+      "path": "gai-frontend/src/features/accounting-items/AccountingItemForm.tsx",
+      "sha256": "788212f2eea057b3e36a518747a83debd3d11766c40fc836e70561d6eac196e6"
+    },
+    {
+      "path": "gai-frontend/src/features/accounting-items/accountingItemSchemas.ts",
+      "sha256": "9cad56f3df043c410469ffaa4dda3225fba258b1b7ba28608b4e23002a3a8e4d"
+    },
+    {
+      "path": "gai-frontend/e2e/assisted-reconciliation-real.spec.ts",
+      "sha256": "e0a702382462bbc1a00c78fc38099b8ba0f578a2857995be4c92a86ff2d7987c"
+    },
+    {
+      "path": "docs/implementacao-conciliacao-assistida-2026-10-27/README.md",
+      "sha256": "5b8e087f138fef385bc7b80eb9c0780455225c935af14109b530cd70db484c9a"
+    },
+    {
+      "path": "docs/implementacao-conciliacao-assistida-2026-10-27/testes.json",
+      "sha256": "5c292d28b1d108af6427be07678b39e6ca6b40223996b895a8831aeac7ef9c36"
+    },
+    {
+      "path": "docs/implementacao-conciliacao-assistida-2026-10-27/runtime-local.json",
+      "sha256": "d77d95edb79aff6e408cb5e42ef7debebb9e3327c8682627e4e09b7007519302"
+    }
+  ]
+}

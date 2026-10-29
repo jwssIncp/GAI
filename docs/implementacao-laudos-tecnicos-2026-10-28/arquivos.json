@@ -1,0 +1,192 @@
+[
+  {
+    "file": ".local/reports-evidence.cjs",
+    "bytes": 5906,
+    "sha256": "b95ffcbd9098a6b08d41997a2527ad3b9c758d7fea2f66f9406020c7644aac3d"
+  },
+  {
+    "file": ".local/reports-manifest.cjs",
+    "bytes": 3723,
+    "sha256": "4ec7e495aa278dce292523d9b616daad23d4eaeef30947f643a7727de97e6b84"
+  },
+  {
+    "file": ".local/run-reports-checks.cjs",
+    "bytes": 2455,
+    "sha256": "1f3bef354cdb23d68c28376b007d214c073c16e02e83113a44c4e1116ee20701"
+  },
+  {
+    "file": ".local/run-reports-playwright.cjs",
+    "bytes": 506,
+    "sha256": "a2302b8bb7ac9d8cdb71e3cda77a7539758042bc22aee7fc5ca9fbbc54099dcb"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/README.md",
+    "bytes": 20942,
+    "sha256": "ee4930b180bd92cfee621347a57b9eb4dc02bf09b79088fbf020ad6877339507"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/evidencias/laudo-aprovado.json",
+    "bytes": 7014,
+    "sha256": "24ed4b6a31c3d596c20b491ea7cdf2ae62a7cd5fbeeadca3016ffe471604ea4d"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/evidencias/previa-aprovada.png",
+    "bytes": 284718,
+    "sha256": "2210c1c6a30e96159bfeab13f3ab7725128ad7f1eb4bc2eda1191157004bca0d"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/evidencias/previa-mobile.png",
+    "bytes": 238289,
+    "sha256": "b20367a73949b10e7affc9a46ee0e76fd0a07225b56832a37bf52ba0bc309604"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/runtime-local.json",
+    "bytes": 4870,
+    "sha256": "a85a1d72d5aaf914b66f856098b8ee50999871b29c97864bf7b3c9f861633a71"
+  },
+  {
+    "file": "docs/implementacao-laudos-tecnicos-2026-10-28/testes.json",
+    "bytes": 3418,
+    "sha256": "3c51d9dcc3c1e5bd284c08954269e8d3340b293cdf88112f6dcc3822796bdf73"
+  },
+  {
+    "file": "gai-backend/src/app.module.ts",
+    "bytes": 12915,
+    "sha256": "8a70a0e5fc7887a883277df97b8d0941046a81e60045a8356c1cb052874ff327"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793900000001-create-technical-reports.ts",
+    "bytes": 4419,
+    "sha256": "7bdaec53010a116b9417b892646ac44905b17f3a2779abd6051d275deef3575c"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+    "bytes": 5781,
+    "sha256": "cbe90564e7b5475ba0ae0f52712a56f88e415b9c1b68ec1b50a6207d0531bb3f"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.dto.ts",
+    "bytes": 5202,
+    "sha256": "04cdffa038674231c73e25c8af70349a73c777b0644ffce80394a29b5236588a"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.entity.ts",
+    "bytes": 5886,
+    "sha256": "1de102118b26c212000303c5fc0b684b37618dc25eef116cda3ec5c89e10f6fa"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.hash.ts",
+    "bytes": 645,
+    "sha256": "ed13d724f8f91129510bbbc728c8329b6fe6d8ca100dd97894bbdbfbc3765c00"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.policy.ts",
+    "bytes": 6811,
+    "sha256": "8aad54f1358f1165f2d27f6dcc5070b2b5cda5d41d9575a694339acccf11d984"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.service.ts",
+    "bytes": 25031,
+    "sha256": "281a86e8bf465556f28d45d04b9b318223ebb6763292ca72a849e9869ca83698"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/report.sources.ts",
+    "bytes": 15076,
+    "sha256": "87a38e35038a185de6c7e5d7893b1b3325e1278d735e2e4030f87384837894df"
+  },
+  {
+    "file": "gai-backend/src/modules/technical-reports/technical-reports.module.ts",
+    "bytes": 536,
+    "sha256": "c6789db1967509377e9898b63867e155bbc5db09c97679f57269ec04bf35e758"
+  },
+  {
+    "file": "gai-backend/src/scripts/seed/permissions.seed.ts",
+    "bytes": 23792,
+    "sha256": "9f5bfcc3ee707af13671039b4027b04181e3dd7e69459426b87b019733fceb0b"
+  },
+  {
+    "file": "gai-backend/test/integration/technical-reports/reports.e2e-spec.ts",
+    "bytes": 20115,
+    "sha256": "2cca8c5cc26a754f67b3ae608ea3baaae6657454626e5109a99bd2c1cbcdfe5e"
+  },
+  {
+    "file": "gai-backend/test/integration/test-app.helper.ts",
+    "bytes": 23816,
+    "sha256": "8f49f8aa200e89e3f8bec83eb63cc145246b7552fb715d1f51e24a9be66395d7"
+  },
+  {
+    "file": "gai-backend/test/unit/modules/technical-reports/report.fixtures.ts",
+    "bytes": 2506,
+    "sha256": "b98837c9bb2888f0757be87ea41dad96c7e4c4e9f9a76d221395567f060e2b4d"
+  },
+  {
+    "file": "gai-backend/test/unit/modules/technical-reports/report.policy.spec.ts",
+    "bytes": 3577,
+    "sha256": "5469333386061304b45cc3325b4fdd60642355923cbd9085be688b07ce67b1a5"
+  },
+  {
+    "file": "gai-frontend/e2e/reports-real.spec.ts",
+    "bytes": 12566,
+    "sha256": "99ecfab1a26e9362fdf8ba93010def87e6c3db2d5aa4dc0e5e3f9b0ca14b425e"
+  },
+  {
+    "file": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "bytes": 6170,
+    "sha256": "f42abf7fbbda3b4945e7505ff6e5ef6638f19418061861f4815189bdf062af40"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportDetailPage.tsx",
+    "bytes": 16625,
+    "sha256": "ec11daa44690a7f5c82abfde5631b084fd55d41280bf9ed4aacabb1cefc0dc8d"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportForms.tsx",
+    "bytes": 13572,
+    "sha256": "3124c0585438fa2d442fd6ab1f33a80b19d92c9af4ee4f4923eb2ab1b6331a48"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportPreview.tsx",
+    "bytes": 10004,
+    "sha256": "548931a161001cc01edf49b4dec1d79f5ea21c7577dd254f35b00dfea272619a"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportTemplatesPage.tsx",
+    "bytes": 11277,
+    "sha256": "532a655f13874b761cff00bda7264fad986e98fc2b03d5ab6b7a0774a1190a24"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportsLayout.tsx",
+    "bytes": 1368,
+    "sha256": "3e714285ac34ebf3fbb7143efbddcd978a31a92684ca3d2c5b72538fad810276"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportsNavigation.test.tsx",
+    "bytes": 9506,
+    "sha256": "55879a449fa82d2616d9435d5c2aaef5df0366e27019f1c5dde815efa2721386"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/ReportsPage.tsx",
+    "bytes": 4958,
+    "sha256": "341931becf2610150ab9658ab8707fe6d02cea042d4426be895efebdedb6e3f5"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/reportApi.ts",
+    "bytes": 7519,
+    "sha256": "38637b65601182cc0da9497eabbc37aab892bd2ef4580d30777e2aed9e0a76fc"
+  },
+  {
+    "file": "gai-frontend/src/features/technical-reports/reports.css",
+    "bytes": 1035,
+    "sha256": "dc9f460577e648aa8f05eb306a22a73d6a02c9909ab83d7ae7beeae51a8dde64"
+  },
+  {
+    "file": "gai-frontend/src/layouts/Topbar.tsx",
+    "bytes": 6330,
+    "sha256": "8ab5facdc23d0292a02b8fa747b853ee62a0001c0483ebc9a9eea6a09313c64e"
+  },
+  {
+    "file": "gai-frontend/src/router/projectRoutes.tsx",
+    "bytes": 5943,
+    "sha256": "e8857a748319de00d5a8c83072bc8f971344a06c65bdcd2fab77422366e07e78"
+  }
+]

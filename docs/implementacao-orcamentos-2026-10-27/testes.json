@@ -1,0 +1,43 @@
+{
+  "backend": {
+    "suites": 5,
+    "tests_passed": 54,
+    "duration_seconds": 55.473,
+    "log": ".local/budgets-backend-final.log",
+    "command": "$env:GAI_TEST_MYSQL_DISPOSABLE='1'; node node_modules/jest/bin/jest.js --runInBand test/integration/budgets/budgets.e2e-spec.ts test/unit/modules/budgets/budget.policy.spec.ts test/integration/contracts/contracts.e2e-spec.ts test/unit/modules/contracts/commercial.policy.spec.ts test/unit/modules/auth/permissions-negative.spec.ts",
+    "coverage": ["12 testes HTTP/SQL de cadastro, parâmetros/vigência, versões, cenários, aprovação, imutabilidade, arquivamento, propostas, RBAC, vínculos, tenant, concorrência, rollback e revalidação de responsável", "14 testes de dimensionamento, centavos, limites, parâmetros, gross-up, cenários, pagamentos, calendário e hidratação BIGINT", "regressão da gestão contratual e relatórios comerciais", "catálogo e PermissionsGuard fail-closed"],
+    "mysql": { "disposable": true, "host": "127.0.0.1", "port": 33317, "database": "gai_validation_disposable", "container": "gai-budgets-mysql-test", "migrations_run": true, "container_removed_after_tests": true }
+  },
+  "frontend": {
+    "files": 38,
+    "tests_passed": 227,
+    "duration_seconds": 80.99,
+    "log": ".local/budgets-frontend-final.log",
+    "command": "npm.cmd test -- --reporter=dot",
+    "coverage": ["formulário de orçamento anterior ao projeto", "cálculo exclusivamente pela resposta backend", "invalidação de prévia ao alterar entrada", "ajustes ocultos sem permissão específica", "erros de validação sem resultado fictício", "navegação por layout/rotas/abas reais", "URL direta e seleção de versão", "transição com revisão/versão escolhida", "parâmetros comerciais sem defaults oficiais", "prévia exclusivamente da versão aprovada", "regressão completa frontend"],
+    "execution_note": "Uma repetição com builds simultâneos teve timeout de 5 s em um teste anterior de ValuationBatchPanel. Nenhum arquivo de inventário foi alterado; a suíte foi repetida sem os builds concorrentes."
+  },
+  "checks": {
+    "backend_typescript": "passed",
+    "backend_build": "passed",
+    "frontend_typescript_and_build": "passed",
+    "backend_changed_files_lint": "passed",
+    "frontend_changed_files_lint": "passed",
+    "targeted_git_diff_check": "passed",
+    "notes": ["O build Vite mantém o aviso de chunk maior que 500 kB.", "JSDOM emite avisos de dimensões de gráficos em testes anteriores; renderização real foi inspecionada no navegador.", "O teste de atomicidade injeta uma falha sintética e espera HTTP 500 e rollback, gerando log de erro intencional.", "Lint executado nos arquivos desta etapa; não foi afirmado lint global limpo."]
+  },
+  "playwright": {
+    "status": "passed",
+    "tests_passed": 1,
+    "duration_seconds": 37.6,
+    "browser": "chromium",
+    "actor": "org.admin / ORG_ADMIN",
+    "test": "gai-frontend/e2e/budgets-real.spec.ts",
+    "runner": ".local/run-budgets-playwright.cjs",
+    "log": ".local/budgets-playwright-final.log",
+    "coverage": ["login real sem interceptar APIs", "empresa e unidade sintéticas", "publicação explícita de todos os parâmetros pela interface", "orçamento sem projeto e unidade/endereço vinculados", "prévia backend 1913.72 e gravação", "cenário com equipe 3, despesa extra 1.11 e margem 20%", "comparação e aprovação do preço 2376.79", "cenário posterior não modifica a proposta aprovada", "três versões persistidas após refresh", "condições com 31/01, 28/02 e 31/03", "voltar/avançar e links diretos", "filtro de listagem mantido após refresh", "viewport móvel 390x844", "preparação de dados para futuro contrato sem criação automática", "projeto → orçamento filtrado → detalhe → projeto → contratos relacionados", "zero pageerrors e zero respostas HTTP >= 400 no fluxo final"],
+    "screenshots_directory": ".local/budgets-playwright/budgets-real-ORG-ADMIN-pub-2f70c-roves-an-immutable-proposal-chromium",
+    "visual_inspection": ["budget-memory-desktop.png", "budget-proposal-mobile.png"],
+    "confirmed_runtime_fix": "O navegador reproduziu Duplicate entry na segunda gravação por hidratação BIGINT como string, ausente na metadata integer do teste. O módulo passou a normalizar IDs e atualizar o cabeçalho por UPDATE com revisão; o fluxo real foi repetido integralmente."
+  }
+}

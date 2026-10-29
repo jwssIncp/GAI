@@ -1,0 +1,55 @@
+{
+  "destination": {
+    "environment": "local",
+    "host": "localhost",
+    "port": "3306",
+    "database": "gai"
+  },
+  "migrations": [
+    {
+      "name": "CreateFieldCoordination1793200000001"
+    },
+    {
+      "name": "CreateProjectPreparation1793100000001"
+    }
+  ],
+  "permissions": [
+    {
+      "resource": "field-coordination",
+      "action": "read",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "resource": "field-coordination",
+      "action": "edit",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "resource": "field-coordination",
+      "action": "coordinate",
+      "scope": "ORGANIZATION"
+    }
+  ],
+  "checklists": [
+    {
+      "id": 2,
+      "project_id": 7,
+      "title": "SINTETICO Checklist Campo 1793119766795",
+      "status": "open",
+      "revision": 5
+    },
+    {
+      "id": 1,
+      "project_id": 6,
+      "title": "SINTETICO Checklist Campo 1793119241219",
+      "status": "open",
+      "revision": 5
+    }
+  ],
+  "customGrants": [
+    {
+      "role_id": 3,
+      "count": 1
+    }
+  ]
+}
