@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { Project } from '../../../projects/domain/entities/project';
+import { BadRequestException } from '@nestjs/common';
+import { isCivilDate } from '../../../../common/validation/civil-date';
 
 export interface PaymentsExpensesActorContext {
   id: number;
@@ -42,11 +44,13 @@ export class PaymentsExpensesScopeService {
     return trimmed.length === 0 ? null : trimmed;
   }
   parseDate(value: string | null | undefined): Date | null {
-    if (!value) return null;
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) return null;
-    const date = new Date(`${value}T00:00:00.000Z`);
-    return Number.isNaN(date.getTime()) ? null : date;
+    if (value === null || value === undefined) return null;
+    if (!isCivilDate(value))
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: 'Invalid civil date; use YYYY-MM-DD',
+      });
+    return new Date(`${value}T00:00:00.000Z`);
   }
   nextDateString(value: string | null | undefined): string | undefined {
     const date = this.parseDate(value);

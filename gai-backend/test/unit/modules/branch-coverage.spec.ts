@@ -62,7 +62,14 @@ describe('Branch coverage boosters', () => {
     resolvePrimaryRole: jest.fn().mockReturnValue(null),
   } as never;
 
-  const makeLoginUseCase = (overrides: Record<string, unknown> = {}) => {
+  const makeLoginUseCase = (
+    overrides: Partial<
+      Record<
+        'users' | 'sessions' | 'hasher' | 'orgGate' | 'audit',
+        Record<string, unknown>
+      >
+    > = {},
+  ) => {
     const users = {
       findByLoginOrEmail: jest.fn(),
       save: jest.fn().mockImplementation(async (u: User) => u),
@@ -94,9 +101,9 @@ describe('Branch coverage boosters', () => {
       useCase: new LoginUseCase(
         users as never,
         sessions as never,
-        hasher as never,
-        orgGate as never,
-        audit as never,
+        hasher,
+        orgGate,
+        audit,
         mockAssignments,
         mockPermissionResolver,
         configService,

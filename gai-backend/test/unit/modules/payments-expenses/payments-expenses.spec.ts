@@ -1,6 +1,7 @@
 import { ExpenseAttachment } from '../../../../src/modules/payments-expenses/domain/entities/expense-attachment';
 import { Expense } from '../../../../src/modules/payments-expenses/domain/entities/expense';
 import { FieldAgentPayment } from '../../../../src/modules/payments-expenses/domain/entities/field-agent-payment';
+import { PaymentStateConflict } from '../../../../src/modules/payments-expenses/domain/entities/payment-state-conflict';
 import { ExpenseAttachmentStatus } from '../../../../src/modules/payments-expenses/domain/enums/expense-attachment-status.enum';
 import { ExpenseStatus } from '../../../../src/modules/payments-expenses/domain/enums/expense-status.enum';
 import { PaymentStatus } from '../../../../src/modules/payments-expenses/domain/enums/payment-status.enum';
@@ -58,6 +59,58 @@ describe('FieldAgentPayment domain', () => {
           endDate: new Date('2026-06-30T00:00:00.000Z'),
         }),
     ).toThrow('end_date cannot be earlier than start_date');
+  });
+  it('preserves direct settlement of a pending payment and records its amount', () => {
+    const payment = makePayment();
+    const changes = payment.markAsPaid(
+      2,
+      new Date('2026-07-05T12:00:00Z'),
+      null,
+    );
+    expect(changes.status).toEqual({
+      before: PaymentStatus.PENDING,
+      after: PaymentStatus.PAID,
+    });
+    expect(changes.final_amount).toEqual({ before: '330.00', after: '330.00' });
+  });
+  it('rejects every later mutation without losing settlement metadata', () => {
+    const payment = makePayment();
+    payment.markAsPaid(2, new Date('2026-07-05T12:00:00Z'), null);
+    const before = payment.toProps();
+    for (const mutate of [
+      () => payment.approve(3, new Date()),
+      () => payment.markAsPaid(3, new Date(), null),
+      () => payment.cancel(3),
+      () => payment.updateFields({ dailyRate: '1.00', updatedById: 3 }),
+    ]) {
+      expect(mutate).toThrow(PaymentStateConflict);
+      expect(payment.toProps()).toEqual(before);
+    }
+  });
+  it.each(['paidAt', 'paidById'] as const)(
+    'fails closed on historical settlement metadata: %s',
+    (field) => {
+      const payment = new FieldAgentPayment({
+        ...makePayment().toProps(),
+        status: PaymentStatus.APPROVED,
+        [field]: field === 'paidAt' ? new Date('2026-07-05T12:00:00Z') : 2,
+      });
+      const before = payment.toProps();
+      expect(() => payment.markAsPaid(3, new Date(), null)).toThrow(
+        PaymentStateConflict,
+      );
+      expect(() => payment.cancel(3)).toThrow(PaymentStateConflict);
+      expect(payment.toProps()).toEqual(before);
+    },
+  );
+  it('retains actual before/after amounts on edits', () => {
+    const payment = makePayment();
+    const changes = payment.updateFields({
+      dailyRate: '101.01',
+      updatedById: 2,
+    });
+    expect(changes.daily_total).toEqual({ before: '300.00', after: '303.03' });
+    expect(changes.final_amount).toEqual({ before: '330.00', after: '333.03' });
   });
 });
 

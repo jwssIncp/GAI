@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -26,7 +27,12 @@ export class ExpenseEntity {
   fieldAgentId!: number | null;
   @Column({ type: 'text' }) description!: string;
   @Column({ type: 'text', nullable: true }) reason!: string | null;
-  @Column({ name: 'expense_date', type: 'date' }) expenseDate!: Date;
+  @Column({
+    name: 'expense_date',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  expenseDate!: Date;
   @Column({ type: 'decimal', precision: 15, scale: 2 }) amount!: string;
   @Column({ type: 'varchar', length: 20, default: ExpenseStatus.PENDING })
   status!: ExpenseStatus;

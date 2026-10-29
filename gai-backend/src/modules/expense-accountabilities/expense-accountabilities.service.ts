@@ -1,3 +1,4 @@
+import { monthlyDueDate } from './monthly-due-date.policy';
 import {
   ConflictException,
   ForbiddenException,
@@ -5,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from '../auth/domain/enums/user.enums';
 import { ProjectFieldAgentStatus } from '../field-agents/domain/enums/project-field-agent-status.enum';
 import { ProjectFieldAgentEntity } from '../field-agents/infrastructure/persistence/project-field-agent.entity';
@@ -177,37 +178,47 @@ export class ExpenseAccountabilitiesService {
         code: 'EXPENSE_OUTSIDE_ACCOUNTABILITY_PERIOD',
         message: 'Expense date must be inside the accountability period',
       });
-    return this.dataSource.transaction(async (manager) => {
-      if (
-        await manager
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        if (
+          await manager
+            .getRepository(ExpenseAccountabilityItemEntity)
+            .findOne({ where: { expenseId: expense.id } })
+        )
+          throw new ConflictException({
+            code: 'EXPENSE_ALREADY_ACCOUNTED',
+            message: 'Expense already belongs to an accountability',
+          });
+        const link = await manager
           .getRepository(ExpenseAccountabilityItemEntity)
-          .findOne({ where: { expenseId: expense.id } })
-      )
+          .save({
+            organizationId: project.organizationId,
+            projectId,
+            accountabilityId: id,
+            expenseId: expense.id,
+          });
+        await this.audit(
+          manager,
+          accountability,
+          expense.id,
+          'ADD_EXPENSE',
+          actor.id,
+          { amount: expense.amount },
+        );
+        const links = await manager
+          .getRepository(ExpenseAccountabilityItemEntity)
+          .find({ where: { accountabilityId: id } });
+        return this.response(accountability, links.length ? links : [link]);
+      });
+    } catch (error) {
+      if (this.isDuplicateExpenseMembership(error)) {
         throw new ConflictException({
           code: 'EXPENSE_ALREADY_ACCOUNTED',
           message: 'Expense already belongs to an accountability',
         });
-      const link = await manager
-        .getRepository(ExpenseAccountabilityItemEntity)
-        .save({
-          organizationId: project.organizationId,
-          projectId,
-          accountabilityId: id,
-          expenseId: expense.id,
-        });
-      await this.audit(
-        manager,
-        accountability,
-        expense.id,
-        'ADD_EXPENSE',
-        actor.id,
-        { amount: expense.amount },
-      );
-      const links = await manager
-        .getRepository(ExpenseAccountabilityItemEntity)
-        .find({ where: { accountabilityId: id } });
-      return this.response(accountability, links.length ? links : [link]);
-    });
+      }
+      throw error;
+    }
   }
 
   async get(projectId: number, id: number, actor: ExpenseAccountabilityActor) {
@@ -299,8 +310,7 @@ export class ExpenseAccountabilitiesService {
     return this.dataSource.transaction(async (manager) => {
       const rows = [] as ExpenseInstallmentEntity[];
       for (let i = 0; i < dto.count; i++) {
-        const due = new Date(first);
-        due.setUTCMonth(due.getUTCMonth() + i);
+        const due = monthlyDueDate(first, i);
         rows.push(
           manager.getRepository(ExpenseInstallmentEntity).create({
             organizationId: project.organizationId,
@@ -308,7 +318,7 @@ export class ExpenseAccountabilitiesService {
             expenseId,
             installmentNumber: i + 1,
             installmentCount: dto.count,
-            dueDate: due,
+            dueDate: due.toISOString().slice(0, 10),
             amount: amounts[i],
             origin: dto.origin?.trim() || null,
           }),
@@ -399,6 +409,20 @@ export class ExpenseAccountabilitiesService {
     return value instanceof Date
       ? value.toISOString().slice(0, 10)
       : value.slice(0, 10);
+  }
+  private isDuplicateExpenseMembership(error: unknown): boolean {
+    if (!(error instanceof QueryFailedError)) return false;
+    const driverError = error.driverError as {
+      code?: string;
+      errno?: number;
+      sqlMessage?: string;
+      message?: string;
+    };
+    const message = driverError.sqlMessage ?? driverError.message ?? '';
+    return (
+      (driverError.code === 'ER_DUP_ENTRY' || driverError.errno === 1062) &&
+      message.includes('uq_expense_accountability_items_expense')
+    );
   }
   private notFound(name: string): never {
     throw new NotFoundException({

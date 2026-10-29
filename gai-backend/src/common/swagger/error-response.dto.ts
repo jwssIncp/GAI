@@ -13,8 +13,11 @@ export class ErrorResponseDto {
   @ApiProperty({ enum: ErrorCode, example: ErrorCode.VALIDATION_ERROR })
   code!: ErrorCode;
 
-  @ApiProperty({ example: 'Validation failed' })
-  message!: string;
+  @ApiProperty({
+    example: 'Validation failed',
+    oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+  })
+  message!: string | string[];
 
   @ApiPropertyOptional({
     oneOf: [

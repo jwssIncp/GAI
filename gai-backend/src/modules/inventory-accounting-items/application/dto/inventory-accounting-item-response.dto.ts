@@ -8,6 +8,8 @@ import { AccountingImportBatchStatus } from '../../domain/enums/accounting-impor
 import { InventoryAccountingItemStatus } from '../../domain/enums/inventory-accounting-item-status.enum';
 
 export class InventoryAccountingItemResponseDto {
+  @ApiPropertyOptional({ nullable: true })
+  serial_number!: string | null;
   @ApiProperty({ type: 'integer', format: 'int64' })
   id!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -71,6 +73,7 @@ export class InventoryAccountingItemResponseDto {
       description: props.description,
       accounting_account_description: props.accountingAccountDescription,
       location: props.location,
+      serial_number: props.serialNumber ?? null,
       acquisition_date:
         props.acquisitionDate?.toISOString().slice(0, 10) ?? null,
       acquisition_value: props.acquisitionValue,

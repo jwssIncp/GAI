@@ -1,7 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
+import { PermissionActor } from '../../../auth/application/services/permission-access';
 
-export interface ProjectActorContext {
+export interface ProjectActorContext extends PermissionActor {
   id: number;
   systemRoles: UserRole[];
   organizationId: number | null;

@@ -7,7 +7,11 @@ function toBoolean(value: unknown): boolean {
 }
 
 export class ProjectSummaryQueryDto {
-  @ApiPropertyOptional({ default: false })
+  @ApiPropertyOptional({
+    default: false,
+    description:
+      'Includes financial totals only when both payments:read and expenses:read are authorized; otherwise the optional block is omitted.',
+  })
   @IsOptional()
   @Transform(({ value }) => toBoolean(value))
   @IsBoolean()

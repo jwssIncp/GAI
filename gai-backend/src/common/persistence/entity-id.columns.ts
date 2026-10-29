@@ -1,5 +1,7 @@
 const useIntegerIds =
-  process.env.NODE_ENV === 'test' || process.env.DB_TYPE === 'sqlite';
+  (process.env.NODE_ENV === 'test' &&
+    process.env.GAI_TEST_MYSQL_DISPOSABLE !== '1') ||
+  process.env.DB_TYPE === 'sqlite';
 
 export const PRIMARY_KEY_COLUMN = useIntegerIds
   ? { type: 'integer' as const }

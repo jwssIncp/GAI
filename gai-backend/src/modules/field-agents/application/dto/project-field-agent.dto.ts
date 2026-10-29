@@ -1,7 +1,7 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsDateString,
   IsEnum,
   IsInt,
   IsOptional,
@@ -27,12 +27,12 @@ export class AssignProjectFieldAgentDto {
 
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   start_date?: string | null;
 
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   end_date?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
@@ -55,12 +55,12 @@ export class UpdateProjectFieldAgentDto {
 
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   start_date?: string | null;
 
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   end_date?: string | null;
 
   @ApiPropertyOptional({ nullable: true })

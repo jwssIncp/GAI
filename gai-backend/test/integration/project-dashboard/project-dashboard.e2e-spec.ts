@@ -4,6 +4,7 @@ import request from 'supertest';
 import { Repository } from 'typeorm';
 import { ProjectFieldAgentStatus } from '../../../src/modules/field-agents/domain/enums/project-field-agent-status.enum';
 import { ProjectFieldAgentEntity } from '../../../src/modules/field-agents/infrastructure/persistence/project-field-agent.entity';
+import { FieldAgentEntity } from '../../../src/modules/field-agents/infrastructure/persistence/field-agent.entity';
 import { ImportSessionStatus } from '../../../src/modules/import-sessions/domain/enums/import-session-status.enum';
 import { ImportSessionSource } from '../../../src/modules/import-sessions/domain/enums/import-session-source.enum';
 import { ImportSessionType } from '../../../src/modules/import-sessions/domain/enums/import-session-type.enum';
@@ -332,11 +333,18 @@ async function seedDashboardProject(app: INestApplication): Promise<number> {
     }),
   ]);
 
+  // Real migrations enforce this foreign key; SQLite synchronize did not.
+  const fieldAgent = await app
+    .get<Repository<FieldAgentEntity>>(getRepositoryToken(FieldAgentEntity))
+    .save({
+      organizationId: 1,
+      name: `Synthetic dashboard agent ${project.id}`,
+    });
   await assignmentRepo.save(
     assignmentRepo.create({
       organizationId: 1,
       projectId: project.id,
-      fieldAgentId: 1,
+      fieldAgentId: fieldAgent.id,
       status: ProjectFieldAgentStatus.ACTIVE,
     }),
   );
@@ -345,7 +353,7 @@ async function seedDashboardProject(app: INestApplication): Promise<number> {
     paymentRepo.create({
       organizationId: 1,
       projectId: project.id,
-      fieldAgentId: 1,
+      fieldAgentId: fieldAgent.id,
       startDate: new Date('2026-01-01T00:00:00.000Z'),
       endDate: new Date('2026-01-01T00:00:00.000Z'),
       days: 1,
@@ -359,7 +367,7 @@ async function seedDashboardProject(app: INestApplication): Promise<number> {
     paymentRepo.create({
       organizationId: 1,
       projectId: project.id,
-      fieldAgentId: 1,
+      fieldAgentId: fieldAgent.id,
       startDate: new Date('2026-01-02T00:00:00.000Z'),
       endDate: new Date('2026-01-02T00:00:00.000Z'),
       days: 1,

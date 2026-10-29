@@ -1,6 +1,6 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsOptional,
   IsString,
   Matches,
@@ -45,7 +45,7 @@ export class UpdateProjectDto {
     normalizeOptionalDate(params.value as unknown),
   )
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   start_date?: string | null;
 
@@ -54,7 +54,7 @@ export class UpdateProjectDto {
     normalizeOptionalDate(params.value as unknown),
   )
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   end_date?: string | null;
 }

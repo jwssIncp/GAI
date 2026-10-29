@@ -1,4 +1,5 @@
 import { PaymentStatus } from '../enums/payment-status.enum';
+import { PaymentStateConflict } from './payment-state-conflict';
 
 export type JsonRecord = Record<string, unknown>;
 
@@ -74,9 +75,12 @@ export class FieldAgentPayment {
       >
     > & { updatedById: number | null },
   ): Record<string, { before: unknown; after: unknown }> {
+    this.assertNotPaid();
     if (this.props.status !== PaymentStatus.PENDING) {
-      throw new Error('Only pending payments can be updated');
+      throw new PaymentStateConflict('Only pending payments can be updated');
     }
+    const previousDailyTotal = this.props.dailyTotal;
+    const previousFinalAmount = this.props.finalAmount;
     const changes = this.apply(fields);
     if (Object.keys(changes).length > 0)
       this.props.updatedById = fields.updatedById;
@@ -86,8 +90,14 @@ export class FieldAgentPayment {
       this.props.paymentDate,
     );
     this.recalculate();
-    changes.daily_total = { before: null, after: this.props.dailyTotal };
-    changes.final_amount = { before: null, after: this.props.finalAmount };
+    changes.daily_total = {
+      before: previousDailyTotal,
+      after: this.props.dailyTotal,
+    };
+    changes.final_amount = {
+      before: previousFinalAmount,
+      after: this.props.finalAmount,
+    };
     return changes;
   }
 
@@ -95,8 +105,9 @@ export class FieldAgentPayment {
     actorId: number,
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
+    this.assertNotPaid();
     if (this.props.status !== PaymentStatus.PENDING)
-      throw new Error('Only pending payments can be approved');
+      throw new PaymentStateConflict('Only pending payments can be approved');
     const changes = this.statusChange(PaymentStatus.APPROVED);
     changes.approved_by_id = {
       before: this.props.approvedById,
@@ -114,12 +125,13 @@ export class FieldAgentPayment {
     paidAt: Date,
     paymentDate: Date | null,
   ): Record<string, { before: unknown; after: unknown }> {
+    this.assertNotPaid();
     if (
       ![PaymentStatus.PENDING, PaymentStatus.APPROVED].includes(
         this.props.status,
       )
     )
-      throw new Error(
+      throw new PaymentStateConflict(
         'Only pending or approved payments can be marked as paid',
       );
     const effectivePaymentDate = paymentDate ?? paidAt;
@@ -135,6 +147,10 @@ export class FieldAgentPayment {
     };
     changes.paid_by_id = { before: this.props.paidById, after: actorId };
     changes.paid_at = { before: this.props.paidAt, after: paidAt };
+    changes.final_amount = {
+      before: this.props.finalAmount,
+      after: this.props.finalAmount,
+    };
     this.props.paymentDate = effectivePaymentDate;
     this.props.paidById = actorId;
     this.props.paidAt = paidAt;
@@ -143,8 +159,7 @@ export class FieldAgentPayment {
   }
 
   cancel(actorId: number): Record<string, { before: unknown; after: unknown }> {
-    if (this.props.status === PaymentStatus.PAID)
-      throw new Error('Paid payments cannot be cancelled');
+    this.assertNotPaid();
     const changes = this.statusChange(PaymentStatus.CANCELLED);
     this.props.updatedById = actorId;
     return changes;
@@ -152,6 +167,19 @@ export class FieldAgentPayment {
 
   toProps(): FieldAgentPaymentProps {
     return { ...this.props };
+  }
+
+  private assertNotPaid(): void {
+    // Also fail closed for historical rows left inconsistent by a stale write.
+    // Reads remain possible; this does not rewrite or repair historical data.
+    if (
+      this.props.status === PaymentStatus.PAID ||
+      this.props.paidAt ||
+      this.props.paidById !== null
+    )
+      throw new PaymentStateConflict(
+        'Payment already has a settlement; mutation is not allowed',
+      );
   }
 
   private apply(
