@@ -55,7 +55,7 @@ export function ProjectFieldAgentsPanel({ project }: { project: Pick<Project, 'i
   }
 
   return (
-    <section id="inventariantes" className="grid gap-4">
+    <section id="inventariantes" className="grid scroll-mt-44 gap-4">
       <div className="flex flex-col gap-3 border-t pt-6 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">Inventariantes do projeto</h2>

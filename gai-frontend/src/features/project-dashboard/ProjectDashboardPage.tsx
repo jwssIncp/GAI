@@ -75,9 +75,9 @@ export function ProjectDashboardPage() {
   return (
     <PageContainer>
       <div className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-panel">
-        <Link className="text-primary hover:text-primary/80" to="/app/projects">Projetos</Link>
+        <Link className="text-primary hover:text-primary-text hover:underline" to="/app/projects">Projetos</Link>
         <span>/</span>
-        {query.data ? <Link className="text-primary hover:text-primary/80" to={`/app/projects/${projectId}/summary`}>{query.data.project.name}</Link> : <span>Projeto</span>}
+        {query.data ? <Link className="text-primary hover:text-primary-text hover:underline" to={`/app/projects/${projectId}/summary`}>{query.data.project.name}</Link> : <span>Projeto</span>}
         <span>/</span>
         <span>Dashboard</span>
       </div>
@@ -118,7 +118,7 @@ function DashboardFilters({
 }) {
   const custom = filters.period === 'custom';
   return (
-    <section className="premium-panel sticky top-[76px] z-20 grid gap-4 border-sidebar-border bg-brand-navy p-4 text-white backdrop-blur-xl lg:grid-cols-6" aria-label="Filtros do dashboard">
+    <section className="premium-panel grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" aria-label="Filtros do dashboard">
       <FilterField label="Período">
         <select aria-label="Período" value={filters.period ?? '30d'} onChange={(event) => onChange('period', event.target.value)}>
           {periods.map((period) => <option key={period.value} value={period.value}>{period.label}</option>)}
@@ -159,9 +159,9 @@ function DashboardFilters({
 
 function FilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-white/65">
+    <label className="grid min-w-0 gap-1.5 text-xs font-semibold text-muted-foreground">
       {label}
-      <span className="[&>input]:h-10 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-white/15 [&>input]:bg-white [&>input]:px-3 [&>input]:text-sm [&>input]:font-normal [&>input]:tracking-normal [&>input]:text-brand-ink [&>select]:h-10 [&>select]:w-full [&>select]:rounded-lg [&>select]:border [&>select]:border-white/15 [&>select]:bg-white [&>select]:px-3 [&>select]:text-sm [&>select]:font-normal [&>select]:tracking-normal [&>select]:text-brand-ink">
+      <span className="[&>input]:min-h-11 [&>input]:w-full [&>input]:rounded-lg [&>input]:border [&>input]:border-input [&>input]:bg-background [&>input]:px-3 [&>input]:text-sm [&>input]:font-normal [&>select]:min-h-11 [&>select]:w-full [&>select]:rounded-lg [&>select]:border [&>select]:border-input [&>select]:bg-background [&>select]:px-3 [&>select]:text-sm [&>select]:font-normal">
         {children}
       </span>
     </label>

@@ -94,6 +94,7 @@ import type {
   InventoryEvidenceUploadUrlResponse,
   InventoryObservation,
   InventoryReconciliation,
+  InventoryReconciliationRun,
   InventoryRound,
   InventoryRoundKind,
   InventoryRoundStatus,
@@ -459,7 +460,7 @@ export const inventoryOperationsApi = {
   evidenceDownloadUrl: (projectId: number, sessionId: number, roundId: number, observationId: number, evidenceId: number) =>
     api.post<InventoryEvidenceDownloadUrlResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence/${evidenceId}/download-url`).then((r) => r.data),
   reconcile: (projectId: number, sessionId: number) =>
-    api.post<InventoryReconciliation[]>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
+    api.post<InventoryReconciliationRun>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
   listReconciliations: (projectId: number, sessionId: number, params: PageParams & { run_number?: number; status?: ReconciliationStatus | '' }) =>
     api.get<PaginatedItems<InventoryReconciliation>>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`, { params }).then((r) => r.data),
   consolidate: (projectId: number, sessionId: number, id: number, payload: { decision: ConsolidationDecision; notes?: string | null }) =>

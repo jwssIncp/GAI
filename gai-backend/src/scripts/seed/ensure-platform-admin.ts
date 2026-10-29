@@ -2,7 +2,10 @@ import 'reflect-metadata';
 import { config } from 'dotenv';
 import { IsNull } from 'typeorm';
 import dataSource from '../../../data-source';
-import { UserRole, UserStatus } from '../../modules/auth/domain/enums/user.enums';
+import {
+  UserRole,
+  UserStatus,
+} from '../../modules/auth/domain/enums/user.enums';
 import { UserEntity } from '../../modules/auth/infrastructure/persistence/user.entity';
 import { Argon2PasswordHasher } from '../../modules/auth/infrastructure/security/argon2-password-hasher';
 import { RoleType } from '../../modules/users/domain/enums/role-type.enum';

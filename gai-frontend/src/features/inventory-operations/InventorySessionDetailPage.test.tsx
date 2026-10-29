@@ -189,7 +189,7 @@ describe('InventorySessionDetailPage', () => {
     mocks.requestReinventory.mockResolvedValue(currentRound);
     mocks.createObservation.mockResolvedValue(observation);
     mocks.finishRound.mockResolvedValue({ ...currentRound, status: 'finished' });
-    mocks.reconcile.mockResolvedValue([]);
+    mocks.reconcile.mockResolvedValue({ run_number: 1, records: [] });
     mocks.consolidate.mockResolvedValue({});
     mocks.createEvidenceUploadUrl.mockResolvedValue({ evidence: { ...evidence, status: 'pending_upload' }, upload_url: 'https://storage.example/upload', expires_in_seconds: 300 });
     mocks.confirmEvidenceUpload.mockResolvedValue(evidence);

@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -36,10 +37,20 @@ export class ProjectEntity {
   @Column({ type: 'varchar', length: 20, default: ProjectStatus.DRAFT })
   status!: ProjectStatus;
 
-  @Column({ name: 'start_date', type: 'date', nullable: true })
+  @Column({
+    name: 'start_date',
+    type: 'date',
+    nullable: true,
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
   startDate!: Date | null;
 
-  @Column({ name: 'end_date', type: 'date', nullable: true })
+  @Column({
+    name: 'end_date',
+    type: 'date',
+    nullable: true,
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
   endDate!: Date | null;
 
   @Column({

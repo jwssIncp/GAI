@@ -1,0 +1,195 @@
+{
+  "date": "2026-10-27",
+  "authoredCodeFiles": [
+    {
+      "file": "gai-backend/src/common/swagger/error-response.dto.ts",
+      "bytes": 786,
+      "sha256": "9a900181a8443705958003e351e2d297dd67a410e644115eb73acdbc34408a85"
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/application/inventory-reconciliation-response.dto.ts",
+      "bytes": 1408,
+      "sha256": "9343ff3afb317d0cfb32aeb05194ddc41f10f35db490b40ef1082f4946587753"
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+      "bytes": 49507,
+      "sha256": "76ddd27b873bf30110ee9bb96004044e994053508f22ec84f677ccab4cdc1aee"
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "bytes": 13675,
+      "sha256": "d53e47d86519fa22de53c94fc7d0b53e2fbf7252d77cf0547aee49da3a087646"
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/infrastructure/persistence/typeorm-project-summary.repository.ts",
+      "bytes": 28781,
+      "sha256": "655852136359cde14309be0b4d8bcd49db3cf27586552435673b6a0b73fadcc1"
+    },
+    {
+      "file": "gai-backend/test/integration/test-app.helper.ts",
+      "bytes": 21609,
+      "sha256": "7d308759c5a1654ef508f45383386f8996a95550a418dc8d33f9d9b8794e5351"
+    },
+    {
+      "file": "gai-backend/test/integration/project-dashboard/project-dashboard.e2e-spec.ts",
+      "bytes": 15603,
+      "sha256": "3aa3d712889cbe4af48968ea7b9c7a1f3d1a05833034b46d1dbf819940ce5b99"
+    },
+    {
+      "file": "gai-backend/test/integration/technical-validation/security-storage.e2e-spec.ts",
+      "bytes": 16910,
+      "sha256": "91f45653cc4108cf335c8fe60c425b787f7c77244ff72464ed977d8def21feab"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/auth/permissions-negative.spec.ts",
+      "bytes": 4318,
+      "sha256": "91d620e0738175bc2bf7e083cceaf83215ad32d962abf1acfecc37f592b4b463"
+    },
+    {
+      "file": "gai-backend/test/unit/common/storage-signer-validation.spec.ts",
+      "bytes": 1868,
+      "sha256": "d334ea308d49c9423bd8a7e6c44563a1b1a0bc37c2b3b5e46fd9ab13864390e6"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/project-dashboard/project-summary-dates.spec.ts",
+      "bytes": 1414,
+      "sha256": "8c526e61c9ff578d051e728c6d83b3a6f52083ae62d3d4cd28ab64d572b79004"
+    },
+    {
+      "file": "gai-frontend/src/api/endpoints.ts",
+      "bytes": 34258,
+      "sha256": "f0e238a4bc17902854a46607635a81dd614f98340fcd77e571c379cfb6acc143"
+    },
+    {
+      "file": "gai-frontend/src/types/api.ts",
+      "bytes": 33103,
+      "sha256": "c3d3351f4e922560c4961d1ef23a11fda332fd136ca1c4ae96bee65760cd873f"
+    },
+    {
+      "file": "gai-frontend/src/api/http.ts",
+      "bytes": 2535,
+      "sha256": "58ef2088ef45db35fdc8ce392c4a0cf691652a71804cdbee9d9f32f68e476f7d"
+    },
+    {
+      "file": "gai-frontend/src/api/http.test.ts",
+      "bytes": 1106,
+      "sha256": "51700b3f2d202995d1de36b79594c723181f9d87473e6e47a1bf07b9f5c4bca5"
+    },
+    {
+      "file": "gai-frontend/src/features/inventory-items/inventoryItemsQueries.ts",
+      "bytes": 3754,
+      "sha256": "732a71a39103da341cc22908a8fec8b4299cd1aa11b2f5066ae0afc0494be994"
+    },
+    {
+      "file": "gai-frontend/src/features/project-dashboard/projectDashboardQueries.ts",
+      "bytes": 928,
+      "sha256": "c824cb53c70c6fadce4f58aab46d533ebb7a534160d15b32ab8d4a35918b42fb"
+    },
+    {
+      "file": "gai-frontend/src/features/inventory-items/inventoryCache.test.tsx",
+      "bytes": 2362,
+      "sha256": "e427a3fde3b7fa1d20c21dbe9a0b1dd425a09a387a8404006e5a51479825d5bd"
+    },
+    {
+      "file": "gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.test.tsx",
+      "bytes": 14162,
+      "sha256": "75ab5a28949dd26f621296965d1eae0544df592b5339595c63fdbc2851787ca1"
+    },
+    {
+      "file": "gai-frontend/src/features/inventory-operations/reconciliationContract.test.tsx",
+      "bytes": 3070,
+      "sha256": "8e6493f47d8d7845e74e17e33ca3bf9d601a57cdcc3ffff9bf3d6c057c60ed65"
+    }
+  ],
+  "baselineStatus": [
+    "⁍朠楡戭捡敫摮猯捲洯摯汵獥支灸湥敳愭捣畯瑮扡汩瑩敩⽳硥数獮ⵥ捡潣湵慴楢楬楴獥献牥楶散琮൳䴊†慧⵩慢正湥⽤牳⽣潭畤敬⽳湩敶瑮牯⵹灯牥瑡潩獮椯普慲瑳畲瑣牵⽥数獲獩整据⽥湩敶瑮牯⵹灯牥瑡潩⹮湥楴祴琮൳ ⁍慧⵩慢正湥⽤牳⽣潭畤敬⽳牰橯捥⵴慤桳潢牡⽤牰橯捥⵴慤桳潢牡⹤潭畤敬琮൳䴊†慧⵩慢正湥⽤整瑳甯楮⽴業牧瑡潩獮港睥漭数慲楴湯⵳業牧瑡潩獮献数⹣獴਍䴠朠楡昭潲瑮湥⽤牳⽣敦瑡牵獥搯獡扨慯摲䐯獡扨慯摲慐敧琮硳਍䴠朠楡昭潲瑮湥⽤獴潣普杩愮灰琮扳極摬湩潦਍㼿搠捯⽳畡楤潴楲ⵡ敬慧潤札楡㈭㈰ⴶ〱㈭⼷਍㼿搠捯⽳慧⵩湩整牧瑡摥栭浯汯杯瑡潩⵮敲潰瑲洮൤㼊‿潤獣术瑩挭湯汦捩⵴敲潳畬楴湯爭灥牯⹴摭਍㼿搠捯⽳潬慣⵬敤敶潬浰湥⵴敲潰瑲洮൤㼊‿潤獣漯杲愭浤湩漭敶癲敩⵷潣灭敬敭瑮爭灥牯⹴摭਍㼿搠捯⽳牯ⵧ摡業⵮癯牥楶睥爭灥牯⹴摭਍㼿朠楡戭捡敫摮猯捲洯杩慲楴湯⽳㜱㌹〰〰〰〰ⴱ楦⵸癥摩湥散猭潴慲敧欭祥椭摮硥琮൳㼊‿慧⵩慢正湥⽤牳⽣潭畤敬⽳牰橯捥⵴慤桳潢牡⽤灡汰捩瑡潩⽮瑤⽯牯慧楮慺楴湯漭敶癲敩⵷畱牥⹹瑤⹯獴਍㼿朠楡戭捡敫摮猯捲洯摯汵獥瀯潲敪瑣搭獡扨慯摲愯灰楬慣楴湯猯牥楶散⽳牯慧楮慺楴湯漭敶癲敩⹷敳癲捩⹥獴਍㼿朠楡戭捡敫摮猯捲洯摯汵獥瀯潲敪瑣搭獡扨慯摲瀯敲敳瑮瑡潩⽮牯慧楮慺楴湯漭敶癲敩⹷潣瑮潲汬牥琮൳㼊‿慧⵩慢正湥⽤整瑳甯楮⽴潭畤敬⽳硥数獮ⵥ捡潣湵慴楢楬楴獥支灸湥敳愭捣畯瑮扡汩瑩敩⹳敳癲捩⹥灳捥琮൳㼊‿慧⵩慢正湥⽤整瑳甯楮⽴潭畤敬⽳湩敶瑮牯⵹灯牥瑡潩獮椯癮湥潴祲漭数慲楴湯攮瑮瑩⹹灳捥琮൳㼊‿慧⵩慢正湥⽤整瑳甯楮⽴潭畤敬⽳牰橯捥⵴慤桳潢牡⽤牯慧楮慺楴湯漭敶癲敩⹷灳捥琮൳㼊‿慧⵩牦湯整摮支攲栯浯汯杯瑡潩⵮敲污献数⹣獴਍㼿朠楡昭潲瑮湥⽤牳⽣敦瑡牵獥搯獡扨慯摲伯杲湡穩瑡潩佮敶癲敩偷条⹥整瑳琮硳਍㼿朠楡昭潲瑮湥⽤牳⽣敦瑡牵獥搯獡扨慯摲伯杲湡穩瑡潩佮敶癲敩偷条⹥獴൸㼊‿慧⵩牦湯整摮猯捲是慥畴敲⽳慤桳潢牡⽤癏牥楶睥敄慴汩⹳獴൸㼊‿慧⵩牦湯整摮猯捲是慥畴敲⽳慤桳潢牡⽤牢穡汩瑓瑡健瑡獨樮潳൮㼊‿捳楲瑰⽳潬慣⵬瑳牡⹴獰റ㼊‿捳楲瑰⽳潬慣⵬瑳灯瀮ㅳ਍"
+  ],
+  "statusAfter": [
+    " M gai-backend/src/common/swagger/error-response.dto.ts",
+    "M  gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts",
+    " M gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+    "M  gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts",
+    " M gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+    " M gai-backend/src/modules/project-dashboard/infrastructure/persistence/typeorm-project-summary.repository.ts",
+    " M gai-backend/src/modules/project-dashboard/project-dashboard.module.ts",
+    " M gai-backend/test/integration/project-dashboard/project-dashboard.e2e-spec.ts",
+    " M gai-backend/test/integration/test-app.helper.ts",
+    "M  gai-backend/test/unit/migrations/new-operations-migrations.spec.ts",
+    " M gai-frontend/src/api/endpoints.ts",
+    " M gai-frontend/src/api/http.ts",
+    " M gai-frontend/src/features/dashboard/DashboardPage.tsx",
+    " M gai-frontend/src/features/inventory-items/inventoryItemsQueries.ts",
+    " M gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.test.tsx",
+    " M gai-frontend/src/features/project-dashboard/projectDashboardQueries.ts",
+    " M gai-frontend/src/types/api.ts",
+    " M gai-frontend/test-results/.last-run.json",
+    " M gai-frontend/test-results/app-abre-atalho-rapido-de-novo-item-no-workspace-chromium/error-context.md",
+    " M gai-frontend/test-results/app-abre-detalhe-de-item-contabil-chromium/error-context.md",
+    " M gai-frontend/test-results/app-abre-modal-e-valida-arquivo-invalido-da-base-contabil-chromium/error-context.md",
+    " M gai-frontend/test-results/app-acessa-base-contabil-a-partir-de-um-projeto-autenticado-chromium/error-context.md",
+    " M gai-frontend/test-results/app-acessa-dashboard-analitico-do-projeto-e-aplica-filtro-chromium/error-context.md",
+    " M gai-frontend/test-results/app-acessa-financeiro-do-projeto-com-listagem-paginada-chromium/error-context.md",
+    " M gai-frontend/tsconfig.app.tsbuildinfo",
+    "?? docs/auditoria-legado-gai-2026-10-27/",
+    "?? docs/gai-integrated-homologation-report.md",
+    "?? docs/git-conflict-resolution-report.md",
+    "?? docs/local-development-report.md",
+    "?? docs/org-admin-overview-complement-report.md",
+    "?? docs/org-admin-overview-report.md",
+    "?? docs/validacao-tecnica-gai-2026-10-27/",
+    "?? gai-backend/src/migrations/1793000000001-fix-evidence-storage-key-index.ts",
+    "?? gai-backend/src/modules/inventory-operations/application/inventory-reconciliation-response.dto.ts",
+    "?? gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "?? gai-backend/src/modules/project-dashboard/application/services/organization-overview.service.ts",
+    "?? gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+    "?? gai-backend/test/integration/technical-validation/",
+    "?? gai-backend/test/unit/common/storage-signer-validation.spec.ts",
+    "?? gai-backend/test/unit/modules/auth/permissions-negative.spec.ts",
+    "?? gai-backend/test/unit/modules/expense-accountabilities/expense-accountabilities.service.spec.ts",
+    "?? gai-backend/test/unit/modules/inventory-operations/inventory-operation.entity.spec.ts",
+    "?? gai-backend/test/unit/modules/project-dashboard/organization-overview.spec.ts",
+    "?? gai-backend/test/unit/modules/project-dashboard/project-summary-dates.spec.ts",
+    "?? gai-frontend/e2e/homologation-real.spec.ts",
+    "?? gai-frontend/src/api/http.test.ts",
+    "?? gai-frontend/src/features/dashboard/OrganizationOverviewPage.test.tsx",
+    "?? gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx",
+    "?? gai-frontend/src/features/dashboard/OverviewDetails.tsx",
+    "?? gai-frontend/src/features/dashboard/brazilStatePaths.json",
+    "?? gai-frontend/src/features/inventory-items/inventoryCache.test.tsx",
+    "?? gai-frontend/src/features/inventory-operations/reconciliationContract.test.tsx",
+    "?? scripts/local-start.ps1",
+    "?? scripts/local-stop.ps1"
+  ],
+  "unchangedTypeDiagnosticFiles": [
+    {
+      "file": "gai-backend/test/unit/modules/branch-coverage.spec.ts",
+      "unchangedFromHead": true
+    },
+    {
+      "file": "gai-backend/test/unit/modules/domain-entities.spec.ts",
+      "unchangedFromHead": true
+    },
+    {
+      "file": "gai-backend/test/unit/modules/field-agents/brazilian-contact.spec.ts",
+      "unchangedFromHead": true
+    },
+    {
+      "file": "gai-backend/test/unit/modules/projects/update-project.use-case.spec.ts",
+      "unchangedFromHead": true
+    }
+  ],
+  "disposableContainer": {
+    "name": "gai-validation-20261027",
+    "id": "6301d07d986b9f5845ad39f06c0e73349e610ea7d6d3097f7adc5580080591ae",
+    "removed": true,
+    "preexistingContainerPreserved": "gai-mysql (healthy)"
+  },
+  "generatedArtifacts": [
+    ".local/technical-validation-20261027/",
+    "gai-frontend/dist/",
+    "gai-frontend/tsconfig.app.tsbuildinfo",
+    "build/test caches"
+  ],
+  "originalAuditDocsUnchanged": true
+}

@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -26,8 +27,18 @@ export class ExpenseAccountabilityEntity {
   @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN }) projectId!: number;
   @Column({ name: 'field_agent_id', ...FOREIGN_KEY_COLUMN })
   fieldAgentId!: number;
-  @Column({ name: 'period_start', type: 'date' }) periodStart!: Date;
-  @Column({ name: 'period_end', type: 'date' }) periodEnd!: Date;
+  @Column({
+    name: 'period_start',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  periodStart!: Date;
+  @Column({
+    name: 'period_end',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  periodEnd!: Date;
   @Column({
     type: 'varchar',
     length: 20,
@@ -87,7 +98,13 @@ export class ExpenseInstallmentEntity {
   installmentNumber!: number;
   @Column({ name: 'installment_count', type: 'int', unsigned: true })
   installmentCount!: number;
-  @Column({ name: 'due_date', type: 'date' }) dueDate!: Date;
+  // SQL DATE is a civil date, not a local-time JavaScript instant.
+  @Column({
+    name: 'due_date',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  dueDate!: string;
   @Column({ type: 'decimal', precision: 15, scale: 2 }) amount!: string;
   @Column({ type: 'varchar', length: 255, nullable: true }) origin!:
     | string

@@ -1,0 +1,45 @@
+{
+  "target": "disposable loopback MySQL:33317",
+  "version": "8.0.46",
+  "applied": [
+    "CreateOrganizations1739500000001",
+    "CreateAuthTables1739500000002",
+    "MigrateToNumericIdsAndRbac1739600000001",
+    "DecoupleUserAuthorization1739700000001",
+    "CreateProjects1739800000001",
+    "CreateFieldAgents1739900000001",
+    "CreateInventoryItems1740000000001",
+    "CreateInventoryItemImages1740100000001",
+    "CreateCatalogAssets1740200000001",
+    "CreateInventoryAccountingItems1740300000001",
+    "CreateInventoryPendingIssues1740400000001",
+    "CreatePaymentsExpenses1740500000001",
+    "CreateImportSessions1740600000001",
+    "CreateCompaniesCompanyUnits1740700000001",
+    "ProtectActiveFieldAgentAssignments1740800000001",
+    "AddProjectUnitSoftDelete1740900000001",
+    "CreateExportJobs1741000000001",
+    "AddProjectDashboardIndexes1741100000001",
+    "CreateInventoryOperations1741200000001",
+    "CreateExpenseAccountabilities1741300000001",
+    "CloseInventoryOperationGaps1741400000001",
+    "FixEvidenceStorageKeyIndex1793000000001"
+  ],
+  "pendingBefore": false,
+  "countAfterLastDown": 21,
+  "reapplied": [
+    "FixEvidenceStorageKeyIndex1793000000001"
+  ],
+  "countAfterReplay": 22,
+  "storageKey": [
+    {
+      "charset": "ascii",
+      "collation": "ascii_bin"
+    }
+  ],
+  "indexes": [
+    {
+      "prefix_length": null
+    }
+  ]
+}

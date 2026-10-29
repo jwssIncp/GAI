@@ -103,5 +103,56 @@ describe('Inventory Accounting Items (e2e)', () => {
           }),
         );
       });
+    const list = await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/inventory-accounting-items`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(200);
+    const id = (list.body as AccountingItemListResponseBody).items[0].id;
+    const itemUrl = `/api/v1/projects/${project.id}/inventory-accounting-items/${id}`;
+    for (const acquisition_date of ['2026-02-30', '0999-01-01', '']) {
+      await request(app.getHttpServer())
+        .patch(itemUrl)
+        .set('Authorization', `Bearer ${orgAdminToken}`)
+        .send({ acquisition_date })
+        .expect(400);
+      await request(app.getHttpServer())
+        .get(itemUrl)
+        .set('Authorization', `Bearer ${orgAdminToken}`)
+        .expect(200)
+        .expect((response) =>
+          expect(response.body.acquisition_date).toBe('2024-01-15'),
+        );
+    }
+    const invalidWorkbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      invalidWorkbook,
+      XLSX.utils.json_to_sheet(
+        ['2026-02-30', '0999-01-01', '2026-13-01'].map(
+          (data_aquisicao, index) => ({
+            placa: `INVALID${index}`,
+            data_aquisicao,
+          }),
+        ),
+      ),
+      'Invalid dates',
+    );
+    const invalidBuffer = XLSX.write(invalidWorkbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+    }) as Buffer;
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${project.id}/accounting-imports`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .attach('file', invalidBuffer, 'invalid-dates.xlsx')
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.success_rows).toBe(0);
+        expect(response.body.failed_rows).toBe(3);
+      });
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/inventory-accounting-items`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(200)
+      .expect((response) => expect(response.body.total_items).toBe(1));
   });
 });

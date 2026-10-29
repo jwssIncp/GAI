@@ -1,0 +1,84 @@
+{
+  "backend": [
+    {
+      "name": "typescript-backend",
+      "exit_code": 0,
+      "seconds": 25.001
+    },
+    {
+      "name": "build-backend",
+      "exit_code": 0,
+      "seconds": 38.591
+    },
+    {
+      "name": "lint-backend",
+      "exit_code": 0,
+      "seconds": 20.1
+    }
+  ],
+  "frontend": [
+    {
+      "name": "typescript-frontend",
+      "exit_code": 0,
+      "seconds": 33.98
+    },
+    {
+      "name": "build-frontend",
+      "exit_code": 0,
+      "seconds": 96.789
+    },
+    {
+      "name": "lint-frontend",
+      "exit_code": 0,
+      "seconds": 7.463
+    },
+    {
+      "name": "tests-frontend",
+      "exit_code": 0,
+      "seconds": 50.431
+    }
+  ],
+  "backend_tests": [
+    {
+      "name": "tests-backend",
+      "exit_code": 0,
+      "seconds": 70.246
+    }
+  ],
+  "backend_suites": 9,
+  "backend_test_count": 90,
+  "frontend_test_files": 4,
+  "frontend_test_count": 17,
+  "playwright": {
+    "file": "gai-frontend/e2e/documents-real.spec.ts",
+    "passed": true,
+    "seconds": 31.3,
+    "real_browser": "Chromium",
+    "role": "ORG_ADMIN",
+    "mocked": false
+  },
+  "pdf": {
+    "native": true,
+    "rendered": true,
+    "pagination_checked": true,
+    "horizontal_margins_checked": true
+  },
+  "docx": {
+    "native_ooxml": true,
+    "zip_crc_checked": true,
+    "xml_and_relationships_checked": true,
+    "browser_opened": true,
+    "office_pagination_validated": false,
+    "reason": "Bundled runtime libreOfficeVersion=null on Windows"
+  },
+  "local_migration": {
+    "database": "localhost:3306/gai",
+    "applied": "CreateProfessionalDocuments1793900000002",
+    "migration_count": 32
+  },
+  "disposable_mysql": {
+    "address": "127.0.0.1:33317/gai_validation_disposable",
+    "container": "gai-documents-mysql-test",
+    "removed": true
+  }
+}

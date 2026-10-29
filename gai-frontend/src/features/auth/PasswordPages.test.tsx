@@ -1,0 +1,33 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { ForgotPasswordPage, ResetPasswordPage } from './PasswordPages';
+const mocks = vi.hoisted(() => ({ request: vi.fn(), confirm: vi.fn() }));
+vi.mock('@/api/endpoints', () => ({ authApi: { requestPasswordReset: mocks.request, confirmPasswordReset: mocks.confirm } }));
+beforeEach(() => vi.resetAllMocks());
+it('shows a recovery API error and allows retry without success feedback', async () => {
+  mocks.request.mockRejectedValueOnce(new Error('Serviço temporariamente indisponível')).mockResolvedValueOnce({ message: 'Solicitação recebida' });
+  render(<MemoryRouter><ForgotPasswordPage /></MemoryRouter>);
+  await userEvent.type(screen.getByLabelText('Email'), 'synthetic@gai.test');
+  await userEvent.click(screen.getByRole('button', { name: 'Enviar instrucoes' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Serviço temporariamente indisponível');
+  expect(screen.queryByText('Solicitação recebida')).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Enviar instrucoes' }));
+  expect(await screen.findByText('Solicitação recebida')).toBeVisible();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+it('shows an invalid-token response and prevents duplicate pending submissions', async () => {
+  let reject!: (error: Error) => void;
+  mocks.confirm.mockImplementation(() => new Promise((_resolve, fail) => { reject = fail; }));
+  render(<MemoryRouter initialEntries={['/reset-password?token=synthetic-invalid']}><ResetPasswordPage /></MemoryRouter>);
+  await userEvent.type(screen.getByLabelText('Nova senha'), 'Synthetic@123');
+  const submit = screen.getByRole('button', { name: 'Redefinir senha' });
+  await userEvent.click(submit);
+  await waitFor(() => expect(submit).toBeDisabled());
+  await userEvent.click(submit);
+  expect(mocks.confirm).toHaveBeenCalledTimes(1);
+  reject(new Error('Token inválido ou expirado'));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Token inválido ou expirado');
+  expect(submit).toBeEnabled();
+});

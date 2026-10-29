@@ -32,10 +32,12 @@ resource "aws_ecs_task_definition" "backend" {
   family                   = "${local.name_prefix}-backend"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = var.ecs_cpu
-  memory                   = var.ecs_memory
-  execution_role_arn       = aws_iam_role.ecs_execution.arn
-  task_role_arn            = aws_iam_role.ecs_task.arn
+  # Two bounded 256 MiB renderer heaps plus Node, native buffers and HTTP work.
+  # Capacity floor is prepared locally; AWS load/restore validation is pending.
+  cpu                = max(var.ecs_cpu, 1024)
+  memory             = max(var.ecs_memory, max(var.ecs_cpu, 1024) * 2)
+  execution_role_arn = aws_iam_role.ecs_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([
     {
@@ -53,6 +55,7 @@ resource "aws_ecs_task_definition" "backend" {
 
       environment = [
         { name = "NODE_ENV", value = "production" },
+        { name = "DOCUMENT_STORAGE", value = "database" },
         { name = "PORT", value = tostring(var.container_port) },
         { name = "AWS_REGION", value = var.aws_region },
         { name = "CORS_ORIGINS", value = local.cors_origins },
@@ -63,6 +66,12 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "INVENTORY_ITEM_IMAGE_MAX_SIZE_BYTES", value = "10485760" },
         { name = "INVENTORY_ITEM_IMAGE_MAX_PER_ITEM", value = "3" },
         { name = "INVENTORY_ITEM_IMAGE_PRESIGNED_URL_TTL_SECONDS", value = "300" },
+        { name = "STORAGE_PROVIDER", value = "s3" },
+        { name = "STORAGE_BUCKET", value = aws_s3_bucket.assets.bucket },
+        { name = "STORAGE_PRESIGNED_URL_TTL_SECONDS", value = "300" },
+        { name = "STORAGE_MAX_SIZE_BYTES", value = "52428800" },
+        { name = "STORAGE_ALLOWED_MIME_TYPES", value = "image/jpeg,image/jpg,image/png,image/webp,application/pdf,application/json,text/plain,text/csv,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+        { name = "STORAGE_FORCE_PATH_STYLE", value = "false" },
         { name = "DB_LOGGING", value = "false" }
       ]
 

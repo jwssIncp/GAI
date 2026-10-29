@@ -22,6 +22,8 @@ import {
 import { ExpenseAttachment } from '../../domain/entities/expense-attachment';
 import { Expense } from '../../domain/entities/expense';
 import { FieldAgentPayment } from '../../domain/entities/field-agent-payment';
+import { PaymentStateConflict } from '../../domain/entities/payment-state-conflict';
+import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
 import { ExpenseAttachmentStatus } from '../../domain/enums/expense-attachment-status.enum';
 import { ExpenseStatus } from '../../domain/enums/expense-status.enum';
 import { PaymentExpenseAuditOperation } from '../../domain/enums/payment-expense-audit-operation.enum';
@@ -29,6 +31,7 @@ import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import {
   PAYMENTS_EXPENSES_REPOSITORY,
   type PaymentsExpensesRepository,
+  type PaymentExpenseAuditEntry,
 } from '../../domain/ports/payments-expenses.repository.port';
 import {
   ConfirmExpenseAttachmentUploadDto,
@@ -168,32 +171,31 @@ export class PaymentsExpensesService {
     dto: PaymentInputDto,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
-    const payment = await this.findPayment(projectId, id, actor);
-    await this.getProject(projectId, actor, true);
-    const startDate = this.requiredDate(dto.start_date, 'start_date');
-    const endDate = this.requiredDate(dto.end_date, 'end_date');
-    const changes = payment.updateFields({
-      state: this.scope.cleanText(dto.state) ?? null,
-      startDate,
-      endDate,
-      paymentDate: this.scope.parseDate(dto.payment_date),
-      days: this.scope.daysBetweenInclusive(startDate, endDate),
-      dailyRate: dto.daily_rate,
-      additionalAmount: dto.additional_amount ?? '0.00',
-      discountAmount: dto.discount_amount ?? '0.00',
-      notes: this.scope.cleanText(dto.notes) ?? null,
-      metadata: dto.metadata ?? null,
-      updatedById: actor.id,
+    return this.mutatePayment(projectId, id, actor, (payment) => {
+      const startDate = this.requiredDate(dto.start_date, 'start_date');
+      const endDate = this.requiredDate(dto.end_date, 'end_date');
+      const changes = payment.updateFields({
+        state: this.scope.cleanText(dto.state) ?? null,
+        startDate,
+        endDate,
+        paymentDate: this.scope.parseDate(dto.payment_date),
+        days: this.scope.daysBetweenInclusive(startDate, endDate),
+        dailyRate: dto.daily_rate,
+        additionalAmount: dto.additional_amount ?? '0.00',
+        discountAmount: dto.discount_amount ?? '0.00',
+        notes: this.scope.cleanText(dto.notes) ?? null,
+        metadata: dto.metadata ?? null,
+        updatedById: actor.id,
+      });
+      return {
+        organizationId: payment.organizationId,
+        projectId,
+        paymentId: payment.id,
+        operation: PaymentExpenseAuditOperation.UPDATE_PAYMENT,
+        performedBy: actor.id,
+        changes,
+      };
     });
-    const saved = await this.repo.savePaymentWithAudit(payment, {
-      organizationId: payment.organizationId,
-      projectId,
-      paymentId: payment.id,
-      operation: PaymentExpenseAuditOperation.UPDATE_PAYMENT,
-      performedBy: actor.id,
-      changes,
-    });
-    return PaymentResponseDto.fromDomain(saved);
   }
   async approvePayment(
     projectId: number,
@@ -221,23 +223,8 @@ export class PaymentsExpensesService {
     projectId: number,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentSummaryResponseDto> {
-    const all = await this.repo.listPayments({
-      page: 1,
-      pageSize: 100,
-      organizationId: (await this.getProject(projectId, actor, false))
-        .organizationId,
-      projectId,
-    });
-    const sums = { pending: 0, approved: 0, paid: 0, cancelled: 0 };
-    for (const item of all.items)
-      sums[item.status] += Number(item.toProps().finalAmount);
-    return {
-      total_pending: sums.pending.toFixed(2),
-      total_approved: sums.approved.toFixed(2),
-      total_paid: sums.paid.toFixed(2),
-      total_cancelled: sums.cancelled.toFixed(2),
-      total_count: all.total,
-    };
+    const project = await this.getProject(projectId, actor, false);
+    return this.repo.summarizePayments(project.organizationId, projectId);
   }
 
   async createExpense(
@@ -415,6 +402,15 @@ export class PaymentsExpensesService {
       updatedAt: now,
       deletedAt: null,
     });
+    const signed = await this.storageSigner.createUploadUrl({
+      bucket: attachment.bucket,
+      path: attachment.path,
+      mimeType: attachment.mimeType,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(attachment.toProps().sizeBytes),
+      checksum: attachment.toProps().checksum,
+    });
+
     const saved = await this.repo.saveAttachmentWithAudit(attachment, {
       organizationId: expense.organizationId,
       projectId,
@@ -424,12 +420,6 @@ export class PaymentsExpensesService {
       changes: {
         status: { before: null, after: ExpenseAttachmentStatus.PENDING_UPLOAD },
       },
-    });
-    const signed = await this.storageSigner.createUploadUrl({
-      bucket: saved.bucket,
-      path: saved.path,
-      mimeType: saved.mimeType,
-      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
     });
     return {
       attachment: ExpenseAttachmentResponseDto.fromDomain(saved),
@@ -450,9 +440,25 @@ export class PaymentsExpensesService {
       attachmentId,
       actor,
     );
+    if (attachment.status !== ExpenseAttachmentStatus.PENDING_UPLOAD)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: 'Only pending attachments can be confirmed',
+      });
+    const props = attachment.toProps();
+    const verified = await this.storageSigner.verifyUpload({
+      bucket: attachment.bucket,
+      path: attachment.path,
+      mimeType: attachment.mimeType,
+      sizeBytes: Number(props.sizeBytes),
+      checksum: props.checksum,
+      createdAt: props.createdAt,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      assertion: { sizeBytes: dto.size_bytes, checksum: dto.checksum },
+    });
     const changes = attachment.confirmUpload({
-      checksum: dto.checksum,
-      sizeBytes: dto.size_bytes,
+      checksum: verified.checksum,
+      sizeBytes: verified.sizeBytes,
     });
     return ExpenseAttachmentResponseDto.fromDomain(
       await this.repo.saveAttachmentWithAudit(attachment, {
@@ -498,6 +504,8 @@ export class PaymentsExpensesService {
       path: attachment.path,
       mimeType: attachment.mimeType,
       expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(attachment.toProps().sizeBytes),
+      checksum: attachment.toProps().checksum,
     });
     await this.repo.audit({
       organizationId: attachment.organizationId,
@@ -547,34 +555,71 @@ export class PaymentsExpensesService {
     action: 'approve' | 'paid' | 'cancel',
     dto?: MarkAsPaidDto,
   ) {
-    const payment = await this.findPayment(projectId, id, actor);
-    await this.getProject(projectId, actor, true);
-    const changes =
-      action === 'approve'
-        ? payment.approve(actor.id, new Date())
-        : action === 'paid'
-          ? payment.markAsPaid(
-              actor.id,
-              new Date(),
-              this.scope.parseDate(dto?.payment_date),
-            )
-          : payment.cancel(actor.id);
-    const operation =
-      action === 'approve'
-        ? PaymentExpenseAuditOperation.APPROVE_PAYMENT
-        : action === 'paid'
-          ? PaymentExpenseAuditOperation.MARK_PAYMENT_AS_PAID
-          : PaymentExpenseAuditOperation.CANCEL_PAYMENT;
-    return PaymentResponseDto.fromDomain(
-      await this.repo.savePaymentWithAudit(payment, {
+    return this.mutatePayment(projectId, id, actor, (payment) => {
+      const changes =
+        action === 'approve'
+          ? payment.approve(actor.id, new Date())
+          : action === 'paid'
+            ? payment.markAsPaid(
+                actor.id,
+                new Date(),
+                this.scope.parseDate(dto?.payment_date),
+              )
+            : payment.cancel(actor.id);
+      const operation =
+        action === 'approve'
+          ? PaymentExpenseAuditOperation.APPROVE_PAYMENT
+          : action === 'paid'
+            ? PaymentExpenseAuditOperation.MARK_PAYMENT_AS_PAID
+            : PaymentExpenseAuditOperation.CANCEL_PAYMENT;
+      return {
         organizationId: payment.organizationId,
         projectId,
         paymentId: payment.id,
         operation,
         performedBy: actor.id,
         changes,
-      }),
-    );
+      };
+    });
+  }
+  private async mutatePayment(
+    projectId: number,
+    id: number,
+    actor: PaymentsExpensesActorContext,
+    mutate: (payment: FieldAgentPayment) => PaymentExpenseAuditEntry,
+  ): Promise<PaymentResponseDto> {
+    try {
+      const saved = await this.repo.mutatePaymentWithAudit(
+        projectId,
+        id,
+        (payment, projectStatus) => {
+          this.scope.assertCanAccessOrganization(actor, payment.organizationId);
+          if (
+            !ProjectStatusTransitionPolicy.allowsOperationalMutation(
+              projectStatus,
+            )
+          )
+            throw new ConflictException({
+              code: 'CONFLICT',
+              message: 'Project status blocks this operation',
+            });
+          return mutate(payment);
+        },
+      );
+      if (!saved)
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: 'Payment not found',
+        });
+      return PaymentResponseDto.fromDomain(saved);
+    } catch (error) {
+      if (error instanceof PaymentStateConflict)
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message: error.message,
+        });
+      throw error;
+    }
   }
   private async expenseTransition(
     projectId: number,

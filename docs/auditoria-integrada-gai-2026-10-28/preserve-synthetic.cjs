@@ -1,0 +1,7 @@
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process'),{createHash}=require('node:crypto');
+const out=path.join(__dirname,'evidencias'),result={recorded_at:new Date().toISOString(),targets:['gai-audit-20261028-mysql-fast','gai-audit-20261028-s3']};
+const dump=spawnSync('docker',['exec','gai-audit-20261028-mysql-fast','mysqldump','--single-transaction','--routines','--triggers','--no-tablespaces','-uroot','-pgai-validation-only','gai_validation_disposable'],{maxBuffer:64*1024*1024});
+result.mysql={exit_code:dump.status};if(dump.status===0){const file=path.join(out,'dados-sinteticos.sql');fs.writeFileSync(file,dump.stdout);result.mysql.file='dados-sinteticos.sql';result.mysql.bytes=dump.stdout.length;result.mysql.sha256=createHash('sha256').update(dump.stdout).digest('hex');}else result.mysql.error=dump.stderr.toString();
+const target=path.resolve(out,'storage-sintetico');if(!target.startsWith(path.resolve(__dirname)+path.sep))throw Error('Invalid backup target');fs.mkdirSync(target,{recursive:true});
+const copy=spawnSync('docker',['cp','gai-audit-20261028-s3:/data/.',target],{encoding:'utf8'});result.storage={exit_code:copy.status,directory:'storage-sintetico',error:copy.status===0?undefined:copy.stderr};
+fs.writeFileSync(path.join(out,'synthetic-preservation.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));process.exitCode=dump.status||copy.status||0;

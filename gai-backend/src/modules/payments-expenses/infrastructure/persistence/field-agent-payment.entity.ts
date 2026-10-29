@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -25,9 +26,24 @@ export class FieldAgentPaymentEntity {
   @Column({ name: 'field_agent_id', ...FOREIGN_KEY_COLUMN })
   fieldAgentId!: number;
   @Column({ type: 'varchar', length: 2, nullable: true }) state!: string | null;
-  @Column({ name: 'start_date', type: 'date' }) startDate!: Date;
-  @Column({ name: 'end_date', type: 'date' }) endDate!: Date;
-  @Column({ name: 'payment_date', type: 'date', nullable: true })
+  @Column({
+    name: 'start_date',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  startDate!: Date;
+  @Column({
+    name: 'end_date',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  endDate!: Date;
+  @Column({
+    name: 'payment_date',
+    type: 'date',
+    nullable: true,
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
   paymentDate!: Date | null;
   @Column({ type: 'int', unsigned: true, default: 0 }) days!: number;
   @Column({ name: 'daily_rate', type: 'decimal', precision: 15, scale: 2 })

@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-27",
+  "audit": [
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/anexo-gai.md",
+      "sha256": "68aeb302b77b014f95fa458b3ac86809f53d7ab0e0eefa8d2034783d70a3dbaf",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/anexo-legado.md",
+      "sha256": "0a36dd663a6a3c1fdc60ae3b6339b6ab44c23673ce2437b960763232d68c2ed3",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/inventario-funcional.md",
+      "sha256": "4f54fbf652782e4609a765675679e27109fd74cff506fe4f57758735956cc2d2",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/manifesto-arquivos.csv",
+      "sha256": "2727721e70c85b63ba539ebb425900e5ee79ce7b87d3e3f0a76c4007a9b7e3de",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.csv",
+      "sha256": "5c969c7d3749bd1850c94818ad16c0958126c0f1b11856ff6ba4105e255d36cc",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.json",
+      "sha256": "51e4bd68589cc54aa9f177de8ca3f2f38b8fbbc4e2ed598ef5cad07fcd0ac252",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.md",
+      "sha256": "65dc4ee29f6fbcaea36120d653d60aadbeaf8bb798b5bcdfe3a663748106f381",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/README.md",
+      "sha256": "35681e393fe42e2d9c166d02ab8f74f3bd6a0c858873a278de99b51cac554f83",
+      "unchangedFromValidation": true
+    },
+    {
+      "path": "docs/auditoria-legado-gai-2026-10-27/verificacao.json",
+      "sha256": "7ce023df6fa44e1ef3a03b4079f2fe1a5d913222fb7a0e13d73bad907f611085",
+      "unchangedFromValidation": true
+    }
+  ],
+  "previousReports": [
+    {
+      "path": "docs/validacao-tecnica-gai-2026-10-27/README.md",
+      "sha256": "81cdedf3d579883ccdad6b7635a3cd1a43c7e819fa3453a3d62b377f879a3145"
+    },
+    {
+      "path": "docs/correcao-pendencias-criticas-gai-2026-10-27/README.md",
+      "sha256": "53a0999309cc4f3af9dbadbc582812137e768e65c6a9c43b3cf4872c92c144f7"
+    }
+  ],
+  "legacySources": [
+    {
+      "name": "kickoff.html",
+      "path": "C:/Users/Jonathan/AppData/Local/Temp/gai-legacy-audit-20261027/paineis/kickoff.html",
+      "sha256": "cf8d9dfb35d370f43e89026b9b62d1d7ffe3f610432d108436f70c70ea6aa3ba",
+      "matchesAudit": true
+    },
+    {
+      "name": "checklist_cliente.html",
+      "path": "C:/Users/Jonathan/AppData/Local/Temp/gai-legacy-audit-20261027/paineis/checklist_cliente.html",
+      "sha256": "d2bafd953ffe87fa3cfd67f366559f73824fd5ca68f3e6b741e94155cae43654",
+      "matchesAudit": true
+    }
+  ]
+}

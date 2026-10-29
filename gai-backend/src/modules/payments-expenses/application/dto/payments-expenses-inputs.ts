@@ -1,3 +1,4 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -24,13 +25,16 @@ export class PaymentInputDto {
   state?: string | null;
   @ApiProperty({ format: 'date' })
   @IsString()
+  @IsCivilDate()
   start_date!: string;
   @ApiProperty({ format: 'date' })
   @IsString()
+  @IsCivilDate()
   end_date!: string;
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
   @IsString()
+  @IsCivilDate()
   payment_date?: string | null;
   @ApiProperty({ pattern: MONEY_PATTERN.source })
   @IsString()
@@ -76,6 +80,7 @@ export class ExpenseInputDto {
   reason?: string | null;
   @ApiProperty({ format: 'date' })
   @IsString()
+  @IsCivilDate()
   expense_date!: string;
   @ApiProperty({ pattern: MONEY_PATTERN.source })
   @IsString()
@@ -95,6 +100,7 @@ export class MarkAsPaidDto {
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
   @IsString()
+  @IsCivilDate()
   payment_date?: string | null;
 }
 

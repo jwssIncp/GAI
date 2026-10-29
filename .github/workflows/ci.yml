@@ -27,6 +27,7 @@ jobs:
           cache: npm
           cache-dependency-path: gai-backend/package-lock.json
       - run: npm ci
+      - run: node --test ../.github/scripts/prepare-document-task.test.cjs
       - run: npm run lint
       - run: npm audit --audit-level=high || true
       - run: npm run test:cov
@@ -52,3 +53,44 @@ jobs:
       - run: npm run build
         env:
           VITE_API_BASE_URL: /api/v1
+
+  integration:
+    name: Backend integration (disposable MySQL and S3)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gai-backend
+    services:
+      mysql:
+        image: mysql:8.0.46
+        env:
+          MYSQL_ROOT_PASSWORD: gai-validation-only
+          MYSQL_DATABASE: gai_validation_disposable
+        ports:
+          - 33337:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pgai-validation-only"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: gai-backend/package-lock.json
+      - run: npm ci
+      - run: npm run test:integration:mysql
+      - name: Start disposable S3-compatible service
+        run: >-
+          docker run -d --name gai-ci-s3 -p 127.0.0.1:33318:9000
+          -e MINIO_ROOT_USER=gai-validation
+          -e MINIO_ROOT_PASSWORD=gai-validation-only
+          minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e server /data
+      - name: Wait for isolated storage
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:33318/minio/health/ready; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - run: npm run test:integration:s3

@@ -12,15 +12,21 @@ import { IconInput } from '@/components/ui/icon-input';
 
 export function ForgotPasswordPage() {
   const [done, setDone] = useState('');
+  const [error, setError] = useState('');
   const form = useForm<{ email: string }>({ resolver: zodResolver(z.object({ email: z.string().email('Email invalido') })) });
   return (
     <AuthPanel title="Recuperar senha" description="Enviaremos as instruções para o seu email corporativo.">
-      <form className="grid gap-5" onSubmit={form.handleSubmit(async ({ email }) => setDone((await authApi.requestPasswordReset(email)).message))}>
+      <form className="grid gap-5" onSubmit={form.handleSubmit(async ({ email }) => {
+        setError(''); setDone('');
+        try { setDone((await authApi.requestPasswordReset(email)).message); }
+        catch (e) { setError(e instanceof Error ? e.message : 'Não foi possível enviar as instruções. Tente novamente.'); }
+      })}>
         <FormField label="Email" error={form.formState.errors.email?.message}>
           <IconInput icon={<Mail size={17} />} type="email" autoComplete="email" placeholder="nome@empresa.com" {...form.register('email')} />
         </FormField>
         <Button size="lg" loading={form.formState.isSubmitting}>Enviar instrucoes</Button>
       </form>
+      {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
       {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-success"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
       <BackToLogin />
     </AuthPanel>
@@ -30,17 +36,23 @@ export function ForgotPasswordPage() {
 export function ResetPasswordPage() {
   const [params] = useSearchParams();
   const [done, setDone] = useState('');
+  const [error, setError] = useState('');
   const form = useForm<{ token: string; new_password: string }>({
     defaultValues: { token: params.get('token') ?? '' },
     resolver: zodResolver(z.object({ token: z.string().min(1, 'Token obrigatorio'), new_password: z.string().min(8, 'Senha minima de 8 caracteres') })),
   });
   return (
     <AuthPanel title="Redefinir senha" description="Crie uma nova senha segura para continuar.">
-      <form className="grid gap-5" onSubmit={form.handleSubmit(async ({ token, new_password }) => setDone((await authApi.confirmPasswordReset(token, new_password)).message))}>
+      <form className="grid gap-5" onSubmit={form.handleSubmit(async ({ token, new_password }) => {
+        setError(''); setDone('');
+        try { setDone((await authApi.confirmPasswordReset(token, new_password)).message); }
+        catch (e) { setError(e instanceof Error ? e.message : 'Não foi possível redefinir a senha. Revise o token e tente novamente.'); }
+      })}>
         <FormField label="Token" error={form.formState.errors.token?.message}><IconInput icon={<KeyRound size={17} />} {...form.register('token')} /></FormField>
         <FormField label="Nova senha" error={form.formState.errors.new_password?.message}><IconInput icon={<KeyRound size={17} />} type="password" autoComplete="new-password" {...form.register('new_password')} /></FormField>
         <Button size="lg" loading={form.formState.isSubmitting}>Redefinir senha</Button>
       </form>
+      {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
       {done ? <p className="mt-5 flex items-start gap-2 rounded-xl border border-success/20 bg-success-subtle p-3.5 text-sm text-success"><CheckCircle2 className="mt-0.5 shrink-0" size={16} />{done}</p> : null}
       <BackToLogin />
     </AuthPanel>

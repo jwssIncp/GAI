@@ -1,0 +1,128 @@
+{
+  "verified_at": "2026-10-28T14:58:54.540Z",
+  "checks": [
+    {
+      "kind": "backend_http_mysql_regression",
+      "suites": 3,
+      "passed": 34,
+      "log": ".local/receivables-http-final.log",
+      "coverage": "18 recebíveis, 12 orçamentos, 4 export jobs; inclui tenant real, custom role, rollback e concorrência"
+    },
+    {
+      "kind": "backend_http_mysql_final_validation",
+      "suites": 1,
+      "passed": 18,
+      "log": ".local/receivables-http-validation.log",
+      "coverage": "Validação posterior dos payloads obrigatórios e bloqueio da origem; 18 casos já incluídos na regressão"
+    },
+    {
+      "kind": "backend_policy_unit",
+      "suites": 2,
+      "passed": 26,
+      "log": ".local/receivables-unit-final.log",
+      "coverage": "12 política de recebíveis/caixa e 14 orçamento/parcelas"
+    },
+    {
+      "kind": "backend_permissions_export_contract_unit",
+      "suites": 3,
+      "passed": 22,
+      "log": ".local/receivables-permissions-unit.log",
+      "coverage": "Catálogo fail-closed, resolução e contrato de exportações"
+    },
+    {
+      "kind": "frontend_full_regression",
+      "suites": 39,
+      "passed": 232,
+      "log": ".local/receivables-frontend-final.log",
+      "coverage": "Todos os testes frontend antes do acréscimo dos três testes de apresentação exata"
+    },
+    {
+      "kind": "frontend_financial_module_final",
+      "suites": 2,
+      "passed": 8,
+      "log": ".local/receivables-frontend-module.log",
+      "coverage": "5 navegação/formulário já incluídos na regressão e 3 testes novos de moeda/precisão"
+    },
+    {
+      "kind": "playwright_real_org_admin",
+      "suites": 1,
+      "passed": 1,
+      "seconds": 34.2,
+      "log": ".local/receivables-playwright-final.log",
+      "coverage": "Criação, três parcelas, baixa parcial, quitação, estorno, dashboard, refresh, links diretos, mobile, back/forward, projeto e XLSX; zero erros HTTP/pageerror no fluxo positivo"
+    }
+  ],
+  "builds_and_lint": [
+    {
+      "name": "typescript-backend",
+      "exit_code": 0,
+      "seconds": 11.96,
+      "log": ".local\\receivables-typescript-backend.log"
+    },
+    {
+      "name": "build-backend",
+      "exit_code": 0,
+      "seconds": 48.14,
+      "log": ".local\\receivables-build-backend.log"
+    },
+    {
+      "name": "lint-backend-final",
+      "exit_code": 0,
+      "seconds": 25.75,
+      "log": ".local\\receivables-lint-backend-final.log"
+    },
+    {
+      "name": "permissions-unit",
+      "exit_code": 0,
+      "seconds": 9.3,
+      "log": ".local\\receivables-permissions-unit.log"
+    },
+    {
+      "name": "typescript-frontend",
+      "exit_code": 0,
+      "seconds": 25.82,
+      "log": ".local\\receivables-typescript-frontend.log"
+    },
+    {
+      "name": "build-frontend",
+      "exit_code": 0,
+      "seconds": 38.68,
+      "log": ".local\\receivables-build-frontend.log"
+    },
+    {
+      "name": "lint-frontend-final",
+      "exit_code": 0,
+      "seconds": 10.87,
+      "log": ".local\\receivables-lint-frontend-final.log"
+    }
+  ],
+  "unique_tests": {
+    "backend": 82,
+    "frontend": 235,
+    "playwright": 1
+  },
+  "count_note": "Os 18 casos HTTP finais e 5 casos React finais repetem casos anteriores; não foram somados novamente. A suíte completa React passou 232 e depois os 8 casos finais do módulo passaram, incluindo 3 casos novos.",
+  "warnings": [
+    "Build Vite informa chunk acima de 500 kB; não impede o build.",
+    "Logs PowerShell antigos podem reportar NativeCommandError ao capturar stderr de Jest, apesar do resumo de sucesso; checks finais via spawnSync registram exit_code real.",
+    "Falhas HTTP 500 sintéticas em testes de rollback são esperadas, não falhas da suíte."
+  ],
+  "real_evidence": [
+    ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/cash-mobile.png",
+    ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/cash-statement.xlsx",
+    ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/receivable-history-desktop.png"
+  ],
+  "scope": {
+    "database": "MySQL descartável 127.0.0.1:33317/gai_validation_disposable",
+    "container": "gai-receivables-mysql-test",
+    "container_removed": true,
+    "local_database": "localhost:3306/gai",
+    "production_accessed": false,
+    "commit_push_deploy": false
+  },
+  "supplemental_runtime_http": {
+    "passed": true,
+    "evidence": "docs/implementacao-contas-receber-2026-10-28/saidas-runtime-local.json",
+    "note": "Pagamento de inventariante sintético aprovado: previsão 3.33; depois pago: realizado 3.33 em 2026-10-03, previsão zero, uma única linha e moeda não informada."
+  }
+}

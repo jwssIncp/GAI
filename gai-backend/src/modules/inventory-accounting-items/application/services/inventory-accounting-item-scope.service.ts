@@ -1,3 +1,4 @@
+import { isCivilDate } from '../../../../common/validation/civil-date';
 import {
   ConflictException,
   ForbiddenException,
@@ -59,33 +60,22 @@ export class InventoryAccountingItemScopeService {
   parseDate(value: unknown): Date | null | undefined {
     if (value === undefined) return undefined;
     if (value === null || value === '') return null;
-    if (value instanceof Date) {
-      return Number.isNaN(value.getTime())
-        ? null
-        : new Date(
-            Date.UTC(
-              value.getUTCFullYear(),
-              value.getUTCMonth(),
-              value.getUTCDate(),
-            ),
-          );
+    if (value instanceof Date || typeof value === 'number') {
+      const date =
+        value instanceof Date
+          ? value
+          : new Date(Date.UTC(1899, 11, 30) + value * 86400000);
+      if (
+        !Number.isFinite(date.getTime()) ||
+        !isCivilDate(date.toISOString().slice(0, 10))
+      )
+        return null;
+      return value instanceof Date
+        ? new Date(date.toISOString().slice(0, 10) + 'T00:00:00.000Z')
+        : date;
     }
-    if (typeof value === 'number') {
-      const epoch = Date.UTC(1899, 11, 30);
-      return new Date(epoch + value * 24 * 60 * 60 * 1000);
-    }
-    const match = this.toScalarString(value)
-      .trim()
-      .match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) {
-      return null;
-    }
-    const date = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00.000Z`);
-    return Number(date.getUTCFullYear()) === Number(match[1]) &&
-      date.getUTCMonth() + 1 === Number(match[2]) &&
-      date.getUTCDate() === Number(match[3])
-      ? date
-      : null;
+    const day = this.toScalarString(value).trim();
+    return isCivilDate(day) ? new Date(day + 'T00:00:00.000Z') : null;
   }
 
   normalizeMoney(value: unknown): string | null | undefined {

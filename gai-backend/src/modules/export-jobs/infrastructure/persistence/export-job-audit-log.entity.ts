@@ -24,8 +24,8 @@ export class ExportJobAuditLogEntity {
   @Column({ name: 'organization_id', ...FOREIGN_KEY_COLUMN })
   organizationId!: number;
 
-  @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN })
-  projectId!: number;
+  @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  projectId!: number | null;
 
   @Column({ type: 'varchar', length: 50 })
   operation!: ExportJobAuditOperation;

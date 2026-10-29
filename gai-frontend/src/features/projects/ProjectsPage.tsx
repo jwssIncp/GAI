@@ -1,3 +1,4 @@
+import { navigationHref } from "./navigationContext";
 import { Link, useSearchParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable } from '@/components/base/DataTable';
@@ -68,7 +69,7 @@ export function ProjectsPage() {
   }
 
   const columns = [
-    { header: 'Projeto', cell: (item: Project) => <Link className="font-semibold text-primary transition hover:text-primary/80" to={`/app/projects/${item.id}/summary`}>{item.name}</Link> },
+    { header: 'Projeto', cell: (item: Project) => <Link className="font-semibold text-primary transition hover:text-primary-text hover:underline" to={navigationHref(`/app/projects/${item.id}/summary`, searchParams)}>{item.name}</Link> },
     { header: 'Organizacao', cell: (item: Project) => isPlatformAdmin ? `Tenant #${item.organization_id}` : 'Sua organizacao' },
     { header: 'Empresa', cell: (item: Project) => item.company_id ? `Empresa #${item.company_id}` : '-' },
     { header: 'Status', cell: (item: Project) => <StatusBadge value={item.status} /> },

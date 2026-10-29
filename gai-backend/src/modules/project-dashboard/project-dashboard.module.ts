@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { CommercialController } from '../contracts/commercial.controller';
+import { CommercialService } from '../contracts/commercial.service';
+import { OrganizationOverviewService } from './application/services/organization-overview.service';
+import { OrganizationOverviewController } from './presentation/organization-overview.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { ProjectFieldAgentEntity } from '../field-agents/infrastructure/persistence/project-field-agent.entity';
@@ -53,8 +57,14 @@ import { ExpenseAccountabilityEntity } from '../expense-accountabilities/expense
     AuthModule,
     ProjectsModule,
   ],
-  controllers: [ProjectDashboardController],
+  controllers: [
+    ProjectDashboardController,
+    OrganizationOverviewController,
+    CommercialController,
+  ],
   providers: [
+    OrganizationOverviewService,
+    CommercialService,
     ProjectSummaryService,
     ProjectDashboardAnalyticsService,
     {

@@ -1,0 +1,133 @@
+{
+  "count": 32,
+  "files": [
+    {
+      "file": "docs/implementacao-gestao-contratual-2026-10-27/README.md",
+      "sha256": "e42e1e518cc847140d0751ee88485a3c148cb8d04cb79eede9076e2507880f7a"
+    },
+    {
+      "file": "docs/implementacao-gestao-contratual-2026-10-27/runtime-local.json",
+      "sha256": "fcd8050e4cc61c13e4f41461b42ba0241e426c097c759795cb35122164b90893"
+    },
+    {
+      "file": "docs/implementacao-gestao-contratual-2026-10-27/testes.json",
+      "sha256": "e6787465f36bd2c6fbc37fec0fbec1425a89bb455148586db76531601695b34a"
+    },
+    {
+      "file": "gai-backend/src/app.module.ts",
+      "sha256": "763d3ffe21ecbf2aa911ceac54a0ec6c790cea29b53328f5d3f8066486217adc"
+    },
+    {
+      "file": "gai-backend/src/migrations/1793500000001-create-project-contracts.ts",
+      "sha256": "32bfee93ecabc62915191438ba827e9b36538d5c9e21ad3d44a695903ddfc253"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial-filters.ts",
+      "sha256": "365511e6d3ba9e8da6d4955f9857653134ad7e6af5858ad19372c43a8e358b06"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.controller.ts",
+      "sha256": "e8011cad0ed823b2391f408bc19176941f7e66afb0ea56d4da569c4a9e242a58"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.service.ts",
+      "sha256": "46c8708194f88116ec92e30205e0aab582d3fdd2f975d5f8568fb832416d0681"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "sha256": "ea22a244fe3a4c553af5de26e31fc40f772ae334c551b902b2ad9c882482b931"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+      "sha256": "437f04cf9385f352e75d3e99daab6f0280fe9902a3bbad3c79f55f8e8992ac13"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.entity.ts",
+      "sha256": "5f1c2151149e91006930a1184f34fc0cb97ab11b5784b80ba49aa0626aa5d800"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.policy.ts",
+      "sha256": "83532b12a7f68242a059a866cfff897dc0542b5b1a1947ecf5a70160be0160d5"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.service.ts",
+      "sha256": "db2b0450588ba25d6d3fc890125ccd4dcbffadbd17365cddcc21d857852a3bf2"
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contracts.module.ts",
+      "sha256": "e4193a4c5bda5447d9101a60d3befb88e454620e7114fbb8624024f72a3c914c"
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+      "sha256": "da3f01f277082a8e9905d73b84f4b43db71923a3c63eae184e9c9149b9bdc674"
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/application/services/organization-overview.service.ts",
+      "sha256": "7b57cc1d7b205cf7813f08716941ca9f1171a2ef5392090b2a6b634253b386bc"
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/project-dashboard.module.ts",
+      "sha256": "fa9b0dccf0c7b15e861d23a54cbef1910fdfd24e690b0743f77849eac5f71e83"
+    },
+    {
+      "file": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "sha256": "baddf13a4d15b50951ee4df1bb375cb6caa38f5f3960f181d91e7cc60d773d3b"
+    },
+    {
+      "file": "gai-backend/test/integration/contracts/contracts.e2e-spec.ts",
+      "sha256": "26fbaac2ef7e9808e6468b9f60f76c4efb611df70ac950850ece4f261fe36c95"
+    },
+    {
+      "file": "gai-backend/test/integration/test-app.helper.ts",
+      "sha256": "40f52e4703ef8d539bbc0d2edc2444ba50ecfd813c272da3a77606086b97e80e"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/contracts/commercial.policy.spec.ts",
+      "sha256": "bee478b96c28190f4fdb23ea17161cba2abcd05246320fa460789507efc7eb58"
+    },
+    {
+      "file": "gai-frontend/e2e/contracts-real.spec.ts",
+      "sha256": "9516c110b4b0700512ea99ad3248f4bb40e6c24906893490efb5e8973d046ada"
+    },
+    {
+      "file": "gai-frontend/src/features/contracts/CommercialOverview.test.tsx",
+      "sha256": "f27290461d60a31af18b991305a888cc64cca24a0f1916a81efb805d2478fff6"
+    },
+    {
+      "file": "gai-frontend/src/features/contracts/CommercialOverview.tsx",
+      "sha256": "77097dec70d59739da8710c7df035ec7e511eb615c5ecdf5c57aa29bc4ab3ac1"
+    },
+    {
+      "file": "gai-frontend/src/features/contracts/ProjectContractsPage.test.tsx",
+      "sha256": "c293bce86f499b560489f967b1fd29499e3ce50166e99ac2c6f5f127ed893f0a"
+    },
+    {
+      "file": "gai-frontend/src/features/contracts/ProjectContractsPage.tsx",
+      "sha256": "fbae41229fab6f420bc274621737335ad202701ee00ae14b4f916ca4b05b34c0"
+    },
+    {
+      "file": "gai-frontend/src/features/contracts/contractsApi.ts",
+      "sha256": "7c016ba3ab2b628063b1d90d24a7102989ae3c8aec54a27e3eac38f402d0dda0"
+    },
+    {
+      "file": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.test.tsx",
+      "sha256": "6db7159b3772cc115874f0cd265bf95b69d9b5aa0802074290ec6737bfb6b9c7"
+    },
+    {
+      "file": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx",
+      "sha256": "a86fc1cf77ffc85c6936e12f1d6020f522293a33a6d1cd3276e3f3033698ed36"
+    },
+    {
+      "file": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+      "sha256": "9b6cde168ac5e8b506af62b32666124a1e834e3ef4491ec2a2fa6cadf437b31d"
+    },
+    {
+      "file": "gai-frontend/src/layouts/Topbar.tsx",
+      "sha256": "d94043d004c26a21a4cebb14b8cf8c390c8c27430591d7f77f76e8257cd0f93c"
+    },
+    {
+      "file": "gai-frontend/src/router/projectRoutes.tsx",
+      "sha256": "c9fd76ce5a922c3f64691c298582ec7873d79cc8c23dbc40341aaf8e3e0d1f93"
+    }
+  ]
+}

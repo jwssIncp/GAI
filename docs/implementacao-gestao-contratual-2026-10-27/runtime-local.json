@@ -1,0 +1,126 @@
+{
+  "verified_at": "2026-10-27T20:41:21.501Z",
+  "environment": "local",
+  "connection": [
+    {
+      "db": "gai",
+      "server": "f10269ba8da4",
+      "port": 3306
+    }
+  ],
+  "migrations_count": 27,
+  "last_migration": "CreateProjectContracts1793500000001",
+  "pending_migrations": [],
+  "permissions": [
+    {
+      "key": "commercial-indicators:read",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "contracts:amend",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "contracts:archive",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "contracts:edit",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "contracts:read",
+      "scope": "ORGANIZATION"
+    }
+  ],
+  "custom_permission_grants": 1,
+  "synthetic_contract": {
+    "id": 3,
+    "project_id": 23,
+    "company_id": 2,
+    "revision": 3,
+    "data": {
+      "scope": "Escopo sintético sem prestação real",
+      "number": "TESTE-1793133631659",
+      "status": "active",
+      "ends_on": "2029-12-31",
+      "segment": "SINTETICO-COMERCIAL-1793133631659",
+      "currency": "BRL",
+      "services": [
+        "Avaliação",
+        "Inventário"
+      ],
+      "recurring": true,
+      "starts_on": "2024-03-10",
+      "company_id": 2,
+      "company_name": "SINTETICO Preparacao 1793116864792",
+      "company_state": null,
+      "contracted_on": "2024-03-10",
+      "current_scope": "Ampliação sintética documentada",
+      "current_value": "100.30",
+      "original_value": "100.10",
+      "current_ends_on": "2030-12-31",
+      "commercial_terms": "Condições sintéticas revisadas",
+      "contracting_type": "Serviço sintético",
+      "estimated_assets": 100,
+      "commercial_origin": "Homologação local sintética"
+    },
+    "versions": 3,
+    "amendments": 1
+  },
+  "saved_report": {
+    "id": 3,
+    "organization_id": 1,
+    "recorded_at": "2026-10-27T20:40:44.449Z",
+    "hash": "934dbcb3c96e51bbbd636a5b11a1bafcc2a1152e54ab7d61c3fa6a703bfb2b9b",
+    "filters": {
+      "segment": "SINTETICO-COMERCIAL-1793133631659",
+      "service": "Inventário",
+      "recurring": "true",
+      "assets_max": 110,
+      "assets_min": 90,
+      "contract_to": "2024-12-31",
+      "contract_from": "2024-01-01"
+    },
+    "rows": [
+      {
+        "id": 3,
+        "revision": 3,
+        "original_value": "100.10",
+        "current_value": "100.30"
+      }
+    ],
+    "operational_stages": [
+      {
+        "stage": "Preparação aprovada",
+        "total": null,
+        "source": "project_preparations",
+        "completed": null,
+        "percentage": null
+      },
+      {
+        "stage": "Coordenação de campo concluída",
+        "total": null,
+        "source": "field_checklists",
+        "completed": null,
+        "percentage": null
+      },
+      {
+        "stage": "Sessões de inventário finalizadas",
+        "total": null,
+        "source": "inventory_sessions",
+        "completed": null,
+        "percentage": null
+      }
+    ]
+  },
+  "health": {
+    "frontend": 200,
+    "backend": 200
+  },
+  "urls": {
+    "overview": "http://localhost:5173/app/dashboard?segment=SINTETICO-COMERCIAL-1793133631659",
+    "contract": "http://localhost:5173/app/projects/23/contracts?contract=3",
+    "api_docs": "http://localhost:3000/api/docs"
+  }
+}

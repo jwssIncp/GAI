@@ -75,7 +75,11 @@ export class ExportJobsController {
   @Post()
   @HttpCode(201)
   @RequirePermissions('export-jobs:create')
-  @ApiOperation({ summary: 'Solicitar exportacao XLSX do projeto' })
+  @ApiOperation({
+    summary: 'Solicitar exportacao XLSX do projeto',
+    description:
+      'Requires export-jobs:create and read permission for every domain contained in the selected type. Downloads and retries revalidate the current content permissions.',
+  })
   @ApiCreatedResponse({ type: ExportJobResponseDto })
   create(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -210,6 +214,7 @@ export class ExportJobsController {
       id: req.user!.id,
       systemRoles: req.user!.systemRoles,
       organizationId: req.user!.organizationId,
+      permissions: req.user!.permissions,
     };
   }
 }
