@@ -9,8 +9,8 @@ import {
   Plus,
   UserPlus,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { companiesApi, organizationsApi } from '@/api/endpoints';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
@@ -40,14 +40,6 @@ const projectStatusLabels: Record<ProjectStatus, string> = {
 
 const lockedStatuses: ProjectStatus[] = ['finished', 'cancelled', 'archived', 'inactive'];
 
-type Tab = {
-  label: string;
-  to?: string;
-  permissions?: string[];
-  hint?: string;
-  disabled?: boolean;
-};
-
 type Alert = {
   title: string;
   description: string;
@@ -62,11 +54,17 @@ export function ProjectSummaryPage() {
   const projectData = project.data;
   const data = dashboard.data;
   const title = projectData?.name ?? data?.project.name ?? 'Workspace do projeto';
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (projectData && data && ['#unidades', '#inventariantes', '#configuracoes'].includes(hash)) {
+      document.getElementById(hash.slice(1))?.scrollIntoView?.({ block: 'start' });
+    }
+  }, [hash, projectData, data]);
 
   return (
     <PageContainer>
       <div className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-panel backdrop-blur">
-        <Link className="text-primary transition hover:text-primary/80" to="/app/projects">Projetos</Link>
+        <Link className="text-primary transition hover:text-primary-text hover:underline" to="/app/projects">Projetos</Link>
         <span className="text-border">/</span>
         <span className="font-semibold text-foreground">{title}</span>
         <span className="text-border">/</span>
@@ -93,7 +91,6 @@ function ProjectWorkspace({ project, summary }: { project: Project; summary: Pro
   return (
     <div className="grid gap-6">
       <ProjectHero project={project} summary={summary} />
-      <WorkspaceTabs projectId={project.id} />
       <MetricGrid summary={summary} />
       <ProjectProgress project={project} summary={summary} />
       <OperationalAlerts alerts={alerts} />
@@ -231,45 +228,6 @@ function OperationalAlerts({ alerts }: { alerts: Alert[] }) {
   );
 }
 
-function WorkspaceTabs({ projectId }: { projectId: number }) {
-  const tabs: Tab[] = [
-    { label: 'Visao geral', to: `/app/projects/${projectId}/summary`, permissions: ['projects:read'] },
-    { label: 'Dashboard', to: `/app/projects/${projectId}/dashboard`, permissions: ['projects:read'] },
-    { label: 'Itens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
-    { label: 'Inventario', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
-    { label: 'Imagens', to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'], hint: 'Imagens ficam no detalhe do item.' },
-    { label: 'Base contabil', to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
-    { label: 'Pendencias', to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
-    { label: 'Inventariantes', to: '#inventariantes', permissions: ['project-field-agents:read'] },
-    { label: 'Financeiro', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
-    { label: 'Prestacoes', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
-    { label: 'Importacoes', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
-    { label: 'Exportacoes', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
-    { label: 'Unidades', to: '#unidades', permissions: ['project-units:read'] },
-    { label: 'Configuracoes', to: '#configuracoes', permissions: ['projects:read'] },
-  ];
-  return (
-    <nav className="sticky top-[92px] z-20 flex gap-1.5 overflow-x-auto rounded-xl border border-border/70 bg-background/80 p-1.5 shadow-panel backdrop-blur-xl" aria-label="Abas do projeto">
-      {tabs.map((tab) => <WorkspaceTab key={tab.label} tab={tab} />)}
-    </nav>
-  );
-}
-
-function WorkspaceTab({ tab }: { tab: Tab }) {
-  const content = tab.disabled || !tab.to ? (
-    <span className="inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-xs font-semibold text-muted-foreground opacity-55" title={tab.hint}>{tab.label}</span>
-  ) : tab.to.startsWith('#') ? (
-    <Link className="inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground" to={tab.to} title={tab.hint}>
-      {tab.label}
-    </Link>
-  ) : (
-    <NavLink className={({ isActive }) => cn('inline-flex h-9 shrink-0 items-center rounded-lg px-3 text-xs font-semibold transition', isActive ? 'bg-card text-primary shadow-panel' : 'text-muted-foreground hover:bg-muted hover:text-foreground')} to={tab.to} title={tab.hint}>
-      {tab.label}
-    </NavLink>
-  );
-  return <PermissionGate permissions={tab.permissions}>{content}</PermissionGate>;
-}
-
 function QuickActions({ project }: { project: Project }) {
   const navigate = useNavigate();
   const locked = lockedStatuses.includes(project.status);
@@ -370,7 +328,7 @@ function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activi
 function ProjectSettings({ project }: { project: Project }) {
   const settings = project.settings && Object.keys(project.settings).length ? project.settings : null;
   return (
-    <section id="configuracoes" className="premium-panel scroll-mt-32 p-5 sm:p-6">
+    <section id="configuracoes" className="premium-panel scroll-mt-44 p-5 sm:p-6">
       <p className="eyebrow">Configuracoes</p>
       <h2 className="mt-2 text-lg font-bold tracking-tight">Configuracoes operacionais</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">Nenhuma configuracao operacional suportada pode ser alterada nesta versao.</p>

@@ -49,7 +49,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
   }
 
   return (
-    <section id="unidades" className="premium-panel scroll-mt-32 p-5 sm:p-6">
+    <section id="unidades" className="premium-panel scroll-mt-44 p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
           <p className="eyebrow">Escopo fisico</p>

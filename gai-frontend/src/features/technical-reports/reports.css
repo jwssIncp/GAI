@@ -1,0 +1,52 @@
+.report-source-table td {
+  overflow-wrap: anywhere;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+    @bottom-center {
+      content: "Página " counter(page);
+    }
+  }
+  body * {
+    visibility: hidden;
+  }
+  .technical-report-document,
+  .technical-report-document * {
+    visibility: visible;
+  }
+  .technical-report-document {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    font-family: Arial, sans-serif;
+    font-size: 10pt;
+  }
+  .technical-report-document .report-cover {
+    break-after: page;
+    min-height: 210mm;
+  }
+  .technical-report-document h2,
+  .technical-report-document h3 {
+    break-after: avoid;
+  }
+  .technical-report-document tr {
+    break-inside: avoid;
+  }
+  .technical-report-document thead {
+    display: table-header-group;
+  }
+  .technical-report-document .overflow-x-auto {
+    overflow: visible;
+  }
+  .technical-report-document a {
+    text-decoration: none;
+  }
+}

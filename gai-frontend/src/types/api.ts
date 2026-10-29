@@ -4,7 +4,7 @@ export type ApiValidationDetail = { field: string; message: string };
 
 export type ApiErrorResponse = {
   code: ErrorCode;
-  message: string;
+  message: string | string[];
   details?: unknown;
 };
 
@@ -229,6 +229,7 @@ export type ProjectUnitListResponse = {
 };
 
 export type ExportJobType =
+  | 'valuation_batches_xlsx'
   | 'inventory_items_xlsx'
   | 'inventory_accounting_items_xlsx'
   | 'pending_issues_xlsx'
@@ -632,6 +633,7 @@ export type InventoryAccountingItemStatus = 'pending' | 'matched' | 'divergent' 
 export type AccountingImportBatchStatus = 'pending' | 'processing' | 'finished' | 'failed' | 'cancelled';
 
 export type InventoryAccountingItemInput = {
+  serial_number?: string | null;
   plate?: string | null;
   description?: string | null;
   accounting_account_description?: string | null;
@@ -1107,11 +1109,17 @@ export type InventoryReconciliation = {
   physical_plate?: string | null;
   accounting_plate?: string | null;
   evidence?: Record<string, unknown> | null;
-  created_by_id: number;
+  created_by_id: number | null;
   created_at: string;
 };
 
+export type InventoryReconciliationRun = {
+  run_number: number;
+  records: InventoryReconciliation[];
+};
+
 export type AssetValuation = {
+  batch_operation_id?: number|null;
   id: number;
   inventory_item_id: number;
   source: string;

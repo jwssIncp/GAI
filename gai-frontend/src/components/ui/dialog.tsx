@@ -11,13 +11,13 @@ export function ModalForm({ open, onOpenChange, title, children }: { open: boole
         <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-topbar/70 backdrop-blur-md data-[state=open]:animate-fade-up" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className="glass-surface fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[min(94vw,580px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-border/80 bg-popover p-6 shadow-elevated data-[state=open]:animate-scale-in sm:p-7"
+          className="fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[min(94vw,580px)] min-w-0 -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-border bg-popover p-5 text-popover-foreground shadow-elevated data-[state=open]:animate-scale-in sm:p-7"
         >
           <div className="border-b border-border/70 pb-4 pr-10">
-            <p className="eyebrow">Ação segura</p>
+            <p className="eyebrow">Formulário</p>
             <DialogPrimitive.Title className="mt-1.5 text-xl font-bold tracking-tight text-popover-foreground">{title}</DialogPrimitive.Title>
           </div>
-          <DialogPrimitive.Close className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label="Fechar">
+          <DialogPrimitive.Close className="absolute right-3 top-3 grid size-11 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label="Fechar">
             <X size={17} />
           </DialogPrimitive.Close>
           <div className="mt-5">{children}</div>
@@ -34,13 +34,13 @@ export function DrawerForm({ open, onOpenChange, title, children }: { open: bool
         <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-topbar/65 backdrop-blur-sm data-[state=open]:animate-fade-up" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
-          className={cn('fixed right-0 top-0 z-50 h-dvh w-[min(94vw,580px)] overflow-y-auto border-l border-border/70 bg-popover p-6 shadow-elevated data-[state=open]:animate-slide-in-right sm:p-8')}
+          className={cn('fixed right-0 top-0 z-50 h-dvh w-[min(100vw,580px)] min-w-0 overflow-y-auto border-l border-border bg-popover p-5 text-popover-foreground shadow-elevated data-[state=open]:animate-slide-in-right sm:p-8')}
         >
           <div className="sticky -top-6 z-10 -mx-2 border-b border-border/70 bg-popover/90 px-2 pb-4 pr-12 pt-1 backdrop-blur-xl sm:-top-8">
             <p className="eyebrow">Detalhes</p>
             <DialogPrimitive.Title className="mt-1.5 text-xl font-bold tracking-tight text-popover-foreground">{title}</DialogPrimitive.Title>
           </div>
-          <DialogPrimitive.Close className="fixed right-4 top-4 z-20 grid size-9 place-items-center rounded-lg border border-border/60 bg-popover/80 text-muted-foreground shadow-panel backdrop-blur transition hover:bg-muted hover:text-foreground sm:right-6 sm:top-6" aria-label="Fechar">
+          <DialogPrimitive.Close className="fixed right-3 top-3 z-20 grid size-11 place-items-center rounded-lg border border-border/60 bg-popover text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground sm:right-6 sm:top-6" aria-label="Fechar">
             <X size={17} />
           </DialogPrimitive.Close>
           <div className="mt-6">{children}</div>
