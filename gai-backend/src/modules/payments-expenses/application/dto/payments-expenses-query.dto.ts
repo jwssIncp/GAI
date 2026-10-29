@@ -1,14 +1,7 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ExpenseStatus } from '../../domain/enums/expense-status.enum';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 
@@ -42,15 +35,15 @@ export class ListPaymentsQueryDto {
   state?: string;
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   start_date?: string;
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   end_date?: string;
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   payment_date?: string;
   @ApiPropertyOptional()
   @IsOptional()
@@ -84,11 +77,11 @@ export class ListExpensesQueryDto {
   status?: ExpenseStatus;
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   start_date?: string;
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   end_date?: string;
   @ApiPropertyOptional()
   @IsOptional()

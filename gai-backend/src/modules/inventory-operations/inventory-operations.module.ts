@@ -1,4 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ProjectsModule } from '../projects/projects.module';
+import {
+  ValuationBatch,
+  ValuationBatchRow,
+} from './infrastructure/persistence/valuation-batch.entity';
+import { ValuationBatchService } from './application/valuation-batch.service';
+import { ValuationBatchController } from './presentation/valuation-batch.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfiguredStorageSignerService } from '../../common/storage/configured-storage-signer.service';
 import { STORAGE_SIGNER } from '../../common/storage/storage-signer.port';
@@ -23,6 +30,8 @@ import {
 import { InventoryOperationsController } from './presentation/inventory-operations.controller';
 
 export const INVENTORY_OPERATION_ENTITIES = [
+  ValuationBatch,
+  ValuationBatchRow,
   InventorySessionEntity,
   InventoryRoundEntity,
   InventoryObservationEntity,
@@ -44,13 +53,15 @@ export const INVENTORY_OPERATION_ENTITIES = [
       ProjectFieldAgentEntity,
     ]),
     AuthModule,
+    ProjectsModule,
   ],
-  controllers: [InventoryOperationsController],
+  controllers: [InventoryOperationsController, ValuationBatchController],
   providers: [
     InventoryOperationsService,
+    ValuationBatchService,
     InventoryItemImageScopeService,
     { provide: STORAGE_SIGNER, useClass: ConfiguredStorageSignerService },
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, InventoryOperationsService],
 })
 export class InventoryOperationsModule {}

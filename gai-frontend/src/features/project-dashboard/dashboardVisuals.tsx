@@ -46,7 +46,7 @@ export function InventoryTimelineChart({
           <YAxis allowDecimals={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip contentStyle={tooltipStyle} />
           <Legend />
-          <Area
+          <Area isAnimationActive={false}
             type="monotone"
             dataKey="inventoried_items"
             name="Inventariados"
@@ -54,7 +54,7 @@ export function InventoryTimelineChart({
             stroke="hsl(var(--chart-1))"
             strokeWidth={2}
           />
-          <Line
+          <Line isAnimationActive={false}
             type="monotone"
             dataKey="moving_average"
             name="Média móvel"
@@ -83,7 +83,7 @@ export function CumulativeProgressChart({
           <YAxis allowDecimals={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip contentStyle={tooltipStyle} />
           <Legend />
-          <Area
+          <Area isAnimationActive={false}
             type="monotone"
             dataKey="cumulative_inventoried_items"
             name="Inventariado acumulado"
@@ -91,7 +91,7 @@ export function CumulativeProgressChart({
             stroke="hsl(var(--chart-2))"
             strokeWidth={2.5}
           />
-          <Line
+          <Line isAnimationActive={false}
             type="monotone"
             dataKey="total_items_reference"
             name="Total no filtro"
@@ -119,7 +119,7 @@ export function StatusDistributionChart({
     <div className="h-80 w-full" role="img" aria-label="Distribuição dos itens por status">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie
+          <Pie isAnimationActive={false}
             data={chartData}
             dataKey="total_items"
             nameKey="label"
@@ -157,8 +157,8 @@ export function UnitsChart({ data }: { data: ProjectDashboardUnit[] }) {
           <YAxis type="category" dataKey="label" width={112} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip contentStyle={tooltipStyle} />
           <Legend />
-          <Bar dataKey="inventoried_items" name="Inventariados" stackId="items" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
-          <Bar dataKey="pending_items" name="Não inventariados" stackId="items" fill="hsl(var(--chart-4))" radius={[0, 4, 4, 0]} />
+          <Bar isAnimationActive={false} dataKey="inventoried_items" name="Inventariados" stackId="items" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+          <Bar isAnimationActive={false} dataKey="pending_items" name="Não inventariados" stackId="items" fill="hsl(var(--chart-4))" radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

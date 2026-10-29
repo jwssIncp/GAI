@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'crypto';
+import { isExplicitInstant } from '../../../../common/validation/instant-date';
 import {
   BadRequestException,
   ConflictException,
@@ -436,6 +437,15 @@ export class ImportSessionsService {
     file.checksum = null;
     file.status = ImportFileStatus.PENDING_UPLOAD;
     file.uploadedById = actor.id;
+    const signed = await this.storageSigner.createUploadUrl({
+      bucket: file.bucket,
+      path: file.path,
+      mimeType: file.mimeType,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(file.sizeBytes),
+      checksum: file.checksum,
+    });
+
     const saved = await this.repo.saveFileWithAudit(file, {
       organizationId: session.organizationId,
       projectId,
@@ -443,12 +453,6 @@ export class ImportSessionsService {
       operation: ImportOperation.CREATE_FILE,
       performedBy: actor.id,
       changes: { status: ImportFileStatus.PENDING_UPLOAD },
-    });
-    const signed = await this.storageSigner.createUploadUrl({
-      bucket: saved.bucket,
-      path: saved.path,
-      mimeType: saved.mimeType,
-      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
     });
     return {
       file: ImportFileResponseDto.fromEntity(saved),
@@ -470,13 +474,25 @@ export class ImportSessionsService {
       fileId,
       session.organizationId,
     );
-    if (dto.size_bytes && Number(file.sizeBytes) !== dto.size_bytes) {
+    if (file.status === ImportFileStatus.UPLOADED)
+      return ImportFileResponseDto.fromEntity(file);
+    if (file.status !== ImportFileStatus.PENDING_UPLOAD)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'File size mismatch',
+        message: 'Only pending files can be confirmed',
       });
-    }
-    file.checksum = dto.checksum ?? file.checksum;
+    const verified = await this.storageSigner.verifyUpload({
+      bucket: file.bucket,
+      path: file.path,
+      mimeType: file.mimeType,
+      sizeBytes: Number(file.sizeBytes),
+      checksum: file.checksum,
+      createdAt: file.createdAt,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      assertion: { sizeBytes: dto.size_bytes, checksum: dto.checksum },
+    });
+    file.checksum = verified.checksum;
+    file.sizeBytes = verified.sizeBytes;
     file.status = ImportFileStatus.UPLOADED;
     if (file.type === ImportFileType.RAW_BACKUP) {
       session.rawBackupPath = file.path;
@@ -525,11 +541,18 @@ export class ImportSessionsService {
       fileId,
       session.organizationId,
     );
+    if (file.status !== ImportFileStatus.UPLOADED)
+      throw new ConflictException({
+        code: 'IMPORT_FILE_NOT_UPLOADED',
+        message: 'Only uploaded files can be downloaded',
+      });
     const signed = await this.storageSigner.createDownloadUrl({
       bucket: file.bucket,
       path: file.path,
       mimeType: file.mimeType,
       expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(file.sizeBytes),
+      checksum: file.checksum,
     });
     await this.repo.audit({
       organizationId: session.organizationId,
@@ -679,6 +702,10 @@ export class ImportSessionsService {
     actor: ImportSessionActorContext,
     rowNumber: number,
   ): Promise<'created'> {
+    if (item.captured_at != null && !isExplicitInstant(item.captured_at))
+      throw new Error(
+        'captured_at must be a valid timestamp with an explicit offset',
+      );
     const config = (importSession.metadata ?? {}) as Record<string, unknown>;
     const inventorySessionId =
       item.inventory_session_id ??

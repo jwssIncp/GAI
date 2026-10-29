@@ -1,0 +1,13 @@
+const path=require('node:path'),fs=require('node:fs'),assert=require('node:assert/strict');const root=path.resolve(__dirname,'../..');
+process.env.NODE_ENV='test';process.env.GAI_TEST_MYSQL_DISPOSABLE='1';process.env.GAI_TEST_MYSQL_WAVE1='1';process.env.TS_NODE_PROJECT=path.join(root,'gai-backend/tsconfig.json');
+require(path.join(root,'gai-backend/node_modules/ts-node/register/transpile-only'));
+const request=require(path.join(root,'gai-backend/node_modules/supertest'));const {DataSource}=require(path.join(root,'gai-backend/node_modules/typeorm'));
+const {createTestApp,seedTestData,loginAsOrgAdmin}=require(path.join(root,'gai-backend/test/integration/test-app.helper.ts'));
+(async()=>{const app=await createTestApp();try{await seedTestData(app);const token=await loginAsOrgAdmin(app),http=app.getHttpServer(),ds=app.get(DataSource);const post=async(url,body)=>{const r=await request(http).post('/api/v1'+url).auth(token,{type:'bearer'}).send(body);assert.ok(r.status<300,JSON.stringify(r.body));return r.body;};
+const p=await post('/projects',{organization_id:1,company_id:1,name:'SINTETICO ONDA1 baseline'}),a=await post('/field-agents',{name:'SINTETICO ONDA1 baseline'});await post(`/projects/${p.id}/field-agents`,{field_agent_id:a.id});
+const payment=await post(`/projects/${p.id}/payments`,{field_agent_id:a.id,start_date:'2026-10-28',end_date:'2026-10-28',daily_rate:'1.00'});await post(`/projects/${p.id}/payments/${payment.id}/approve`,{});const paid=await post(`/projects/${p.id}/payments/${payment.id}/mark-as-paid`,{});
+const expense=await post(`/projects/${p.id}/expenses`,{description:'SINTETICO data impossivel',expense_date:'2026-02-30',amount:'1.00'});
+const sql=await ds.query("SELECT DATE_FORMAT(paid_at,'%Y-%m-%d %H:%i:%s.%f') paid_raw, DATE_FORMAT(updated_at,'%Y-%m-%d %H:%i:%s.%f') updated_raw, DATE_FORMAT(UTC_TIMESTAMP(3),'%Y-%m-%d %H:%i:%s.%f') utc_now,@@session.time_zone session_timezone FROM field_agent_payments WHERE id=?",[payment.id]);
+const qr=ds.createQueryRunner();let metadata;try{const tables=await qr.getTables(['project_field_agents']);metadata={success:true,tables:tables.length};}catch(e){metadata={success:false,error:e.message};}finally{await qr.release();}
+const result={target:'127.0.0.1:33337/gai_validation_disposable',node_timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,invalid_civil:expense,payment:paid,sql,metadata};fs.writeFileSync(path.join(__dirname,'evidencias/reproduction-before.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+}finally{await app.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

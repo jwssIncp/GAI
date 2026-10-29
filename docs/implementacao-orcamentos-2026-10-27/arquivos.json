@@ -1,0 +1,129 @@
+{
+  "count": 31,
+  "files": [
+    {
+      "file": "docs/implementacao-orcamentos-2026-10-27/README.md",
+      "sha256": "6d875cf650a371d0c8e982322de9737611dbdb7182f1f9ad2a008ff48ace680f"
+    },
+    {
+      "file": "docs/implementacao-orcamentos-2026-10-27/runtime-local.json",
+      "sha256": "3bd77b0f7baa5f34fd032aace95c1f6027bec575240a27077be65552a62c9f3e"
+    },
+    {
+      "file": "docs/implementacao-orcamentos-2026-10-27/testes.json",
+      "sha256": "47f9509254d58ba75eeae5f04877d9e2a74db4934a0b40317e316875ee096390"
+    },
+    {
+      "file": "gai-backend/src/app.module.ts",
+      "sha256": "26075a8787e88a78a59abcdac08266e879e6341342e0bfb676a8d37f623ba6ae"
+    },
+    {
+      "file": "gai-backend/src/migrations/1793600000001-create-budgets.ts",
+      "sha256": "fc06ecc927a584580c958fa17cbb396ab2ad464f4e072c48e1afb39473b466fa"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "sha256": "79009c5811532a2a9802d36240a927a975c0c644765a48955c25c9534d94413a"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+      "sha256": "b7420ddbb3d5e8e827407f017438a7a4746b9f6eca4f43345f6df6e20e9208f8"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.entity.ts",
+      "sha256": "b7dbcb14cb6181b08b76358819b2712fa7de3243b3a55c4533707a6426516b24"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.policy.ts",
+      "sha256": "5de472efd9ee37ef968402703de15771442f0220b50e7f1a52c06fd2317a0326"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.service.ts",
+      "sha256": "d2836544cdc3448fe6ac48a0a756c390d74570204b70b0ceb63a6f932a88f61d"
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budgets.module.ts",
+      "sha256": "06c989f9301774791b8e06c6f80002764ec69e3b5e417f799e3e12870ca20eb4"
+    },
+    {
+      "file": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "sha256": "27a76cff3d7e4fe4e76d61c1306a8142c9c2581f5334e571f64804bc477b74c7"
+    },
+    {
+      "file": "gai-backend/test/integration/budgets/budgets.e2e-spec.ts",
+      "sha256": "1f51db5ac4bf3a8ac7984c5b1d443977ac936c3f24280c6eadfee496dc908311"
+    },
+    {
+      "file": "gai-backend/test/integration/test-app.helper.ts",
+      "sha256": "269a736b728ce15ac67fc8e7b9bf0a1334f771faa13e05d59912914124024e6d"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/budgets/budget.fixtures.ts",
+      "sha256": "685031fe5707978d737084484f6fa1cc88838f6be1e32857a20fa8505cbc6813"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/budgets/budget.policy.spec.ts",
+      "sha256": "31a5f4bcfdd3eacfb876a8454a4fe43e650a9262ea9bbeefb4061504567eb3cb"
+    },
+    {
+      "file": "gai-frontend/e2e/budgets-real.spec.ts",
+      "sha256": "3bc13b2d6aa3341a4a223132af16ab444a6351e50ff1d39e380f9910885dcae8"
+    },
+    {
+      "file": "gai-frontend/src/constants/navigation.ts",
+      "sha256": "1f7e84f1df76da9e033b7676a072b40edc1db34eee1ea177ffd2a99965e915a9"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetDetailPage.tsx",
+      "sha256": "bf55baf90e1ff11b32c531d2eaeb829d86a8b4aa3e92f75260435e0733243c7f"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetForm.test.tsx",
+      "sha256": "ff967a8706eb48d6ba1014edcd3e1d01f19965784c070759176b45dc7640a312"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetForm.tsx",
+      "sha256": "b14fd5d43a214fcf763a1dfc92200f5721b64211d3676259eafb55fde74292a9"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetLayout.tsx",
+      "sha256": "b7dfffc57051af0c6914798e8d5104df147c35b15c84937f38e61e8b3001de84"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetMemory.tsx",
+      "sha256": "593fa0a4fc834039e534891ab8c4eab2749bfbad86648aa7333537139a99293c"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetNavigation.test.tsx",
+      "sha256": "6cdbd7ab31751d18f506087df461007fd0c2e666304072f1ef8f47b53aa4c8e2"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetPricingPage.tsx",
+      "sha256": "ef37130fc36418d932845c3a38a5645bcf5fc800d599c4527ef2700ae74106a9"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/BudgetsPage.tsx",
+      "sha256": "56fbe8395a2953c40fe065e1f0a5af9a268100f2fbcea71cbbe8c313783c5803"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/budgetApi.ts",
+      "sha256": "3dda39a178f8430138d685f7055d4b7757702a53dc6da15e7a371dd7dea8f1c7"
+    },
+    {
+      "file": "gai-frontend/src/features/budgets/budgetTestFixture.ts",
+      "sha256": "3b35974f0afff86374fffe771c69927cd495b2591fa4e7ddc85086ef5fcaac65"
+    },
+    {
+      "file": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+      "sha256": "641d3fbf90171ad00ab07bea7dc725cb02fdc584e6ef73dc7a5f1a91823ddd83"
+    },
+    {
+      "file": "gai-frontend/src/layouts/Topbar.tsx",
+      "sha256": "7454b888f3d8948fec11756bd0766dc4be83edc775b9d6546e443925797774f7"
+    },
+    {
+      "file": "gai-frontend/src/router/router.tsx",
+      "sha256": "030fdaf061a38be14db7fd5212c447dfc5a6313b720db100ad5248a5b742d14c"
+    }
+  ]
+}

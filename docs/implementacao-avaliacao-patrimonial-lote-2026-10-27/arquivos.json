@@ -1,0 +1,128 @@
+{
+  "files": [
+    {
+      "path": "gai-backend/.env.example",
+      "sha256": "b0b64eddbde0c97fad8d38108c0201eb8f9628b655abb222cbd2b059d3777b88"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/valuation.policy.ts",
+      "sha256": "7bbd550123b586152e2e1dc740399d3386ae7f930637bfb3bcce484ddeeb32a0"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/valuation-batch.dto.ts",
+      "sha256": "8ba10807c7b02f9ea37b26a3ac658a2f7ec6d9dfc7350723b7bc53e1b638f4e5"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/valuation-batch.service.ts",
+      "sha256": "04706f1dd7e2c7257f43bfaf41d8db8b8083322fd185d5329ef6d8591a6b15de"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+      "sha256": "552018967b987dbea977ca6931ffac49ad92912494b8953fd24c985b924373d7"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/valuation-batch.entity.ts",
+      "sha256": "5bffcf70722ac8f145c1168a4fa3c3c5717f325f0736d025c1cb14eb4d4215ee"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts",
+      "sha256": "a81804954085bec8c5b694f97667633903416705138edcca85fe304569820bc8"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "sha256": "4fe140a7f0804e63523704a9bdaf9b73a3fcbd2a1f02eb0db3fb481b1bcdb408"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/inventory-operations.module.ts",
+      "sha256": "2eaed763b4027da29d2961ce5b5b87aa4eb110ab7fd77ee335f7cbefa3a35068"
+    },
+    {
+      "path": "gai-backend/src/migrations/1793400000001-create-valuation-batches.ts",
+      "sha256": "cc22712304d6c0f4cc761f34d22741d7e3b882e6e20ff8a43c5b1a09787d6441"
+    },
+    {
+      "path": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "sha256": "d28ac71689d2102b0d8ab0efa5a76c58e6d8ff00df1413e47305fae9fe82405e"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/domain/enums/export-job-type.enum.ts",
+      "sha256": "a3422b9ea3eb6b707b5dace4a1dfc7383d436f71c30ab0c5baded2b615a909e9"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts",
+      "sha256": "c432f6a50c5e52e504dc36218439f54342d276489a81fb9f1312a1818035ed35"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/application/services/export-workbook-builder.service.ts",
+      "sha256": "efacc70e450b781354a27773de401a1b9d65672a3d705ded0765b9c835a70678"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/inventory-operations/valuation.policy.spec.ts",
+      "sha256": "19261f262be38c97ea14c5f4e318af76ac43d65b2ddcfeefbc64c96e39458bd4"
+    },
+    {
+      "path": "gai-backend/test/integration/valuation-batches/valuation-batch.e2e-spec.ts",
+      "sha256": "4f43f063677976b66c670ad2e2ea55205985c8e413b5992286831fdc4ecd0bac"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/valuationBatchApi.ts",
+      "sha256": "ab7f0e5e26e5c274f2e4b417db6f0b2c70fe86960db06e9acd7d5e992fedb87a"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/ValuationBatchPanel.tsx",
+      "sha256": "402fe6c7f741c3c50191049d951752e67ae57bea3df6a623cedd71b9cf9e2950"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/ValuationBatchPanel.test.tsx",
+      "sha256": "6f13ddc155b7e3f9eb130a8946b7fb594bb5b3d1c6cff68f40910681e1b1d5e4"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/valuationFormatting.ts",
+      "sha256": "f473ca58c09fb8df678af292a6c3a6ee71c5fc11a8b321dfe8cdb67d6421c936"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/valuationFormatting.test.ts",
+      "sha256": "0dafd451290dd7af1d150fbe1ee4f854064d2fe35ac9be4aa697a522d23989d1"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.tsx",
+      "sha256": "94a90ccdc69c70e0391e95454858d863a3e59fd4693b52bd0b41cb355943668d"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.test.tsx",
+      "sha256": "38b5181eb93baca9f429da39b1922ee3e8b127d2dd562da2266ce023ceedfdbd"
+    },
+    {
+      "path": "gai-frontend/src/features/inventory-items/ItemEvidencePanels.tsx",
+      "sha256": "0b6ac2cce454b12684038f9101035c6889ca22237ca1f5c1c96660f20646544e"
+    },
+    {
+      "path": "gai-frontend/src/types/api.ts",
+      "sha256": "86b7c9bf9f7a21eac251d1d440541ce9b765a2e40601534e331beff945a7c1f1"
+    },
+    {
+      "path": "gai-frontend/src/features/export-jobs/exportJobSchemas.ts",
+      "sha256": "3f916e56de2bf8b69e7c6efa34ebb4136b99d3b66ac3000d1e95874d7b07b095"
+    },
+    {
+      "path": "gai-frontend/src/features/export-jobs/exportContentPermissions.ts",
+      "sha256": "2277e4a00fa1ea6057c2147f89137409710a93f1c4f2f534afdba086daa9e4e7"
+    },
+    {
+      "path": "gai-frontend/e2e/valuation-batches-real.spec.ts",
+      "sha256": "36ca09350d4451626e5dc1e8df70293a24ba97fbb4c79cb3fb28c0440318673d"
+    },
+    {
+      "path": "docs/implementacao-avaliacao-patrimonial-lote-2026-10-27/README.md",
+      "sha256": "d17fa4b819e754bbefbbe3a633e3c8acbe791d05575a0162e262fba2913dc625"
+    },
+    {
+      "path": "docs/implementacao-avaliacao-patrimonial-lote-2026-10-27/testes.json",
+      "sha256": "9c4ddda501200dce1130bbc4000421425fea06d0391af37d828c108a58430669"
+    },
+    {
+      "path": "docs/implementacao-avaliacao-patrimonial-lote-2026-10-27/runtime-local.json",
+      "sha256": "bc836fd22ee61a948106888b6c964c776508f2f485373fe6c2fc8b6dd75c056b"
+    }
+  ]
+}

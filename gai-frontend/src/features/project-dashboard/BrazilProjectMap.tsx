@@ -26,13 +26,13 @@ export function BrazilProjectMap({
   const points = new Map(data.map((point) => [point.state, point]));
   const maxCompletion = Math.max(1, ...data.map((point) => point.completion_percentage));
   return (
-    <div>
+    <div className="gai-map-container min-w-0">
       <div
-        className="mx-auto grid max-w-3xl grid-cols-8 grid-rows-10 gap-1.5"
+        className="gai-cartogram mx-auto grid max-w-3xl grid-cols-8 grid-rows-10 gap-1.5"
         role="group"
         aria-label="Cartograma do Brasil por Unidade Federativa"
       >
-        {Object.entries(positions).map(([state, position]) => {
+        {Object.entries(positions).sort(([a], [b]) => a.localeCompare(b)).map(([state, position]) => {
           const point = points.get(state);
           const intensity = point ? Math.max(0.16, point.completion_percentage / maxCompletion) : 0;
           const active = selectedState === state;
@@ -41,8 +41,8 @@ export function BrazilProjectMap({
               key={state}
               type="button"
               className={cn(
-                'group relative aspect-square min-h-9 rounded-lg border text-[0.65rem] font-black transition hover:-translate-y-0.5 hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                active ? 'border-primary ring-2 ring-primary/30' : 'border-border/70',
+                'group relative aspect-square min-h-9 rounded-lg border text-xs font-bold transition hover:-translate-y-0.5 hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                active ? 'border-primary-text ring-2 ring-primary-text/30' : 'border-border/70',
                 point ? 'text-primary-foreground shadow-panel' : 'bg-muted/45 text-muted-foreground',
               )}
               style={{
@@ -59,7 +59,7 @@ export function BrazilProjectMap({
               aria-pressed={active}
               onClick={() => onSelectState(active ? undefined : state)}
             >
-              {state}
+              {point ? <span className="rounded bg-card px-1 py-0.5 text-foreground">{state}</span> : state}
               {point ? (
                 <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-44 -translate-x-1/2 rounded-lg border border-border bg-popover p-2 text-left text-xs font-medium text-popover-foreground shadow-elevated group-hover:block group-focus:block">
                   {point.inventoried_items} de {point.total_items} itens · {point.total_units} unidades

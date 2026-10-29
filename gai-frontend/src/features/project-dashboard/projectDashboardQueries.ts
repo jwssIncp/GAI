@@ -4,8 +4,9 @@ import type { ProjectDashboardParams } from '@/types/api';
 
 export const projectDashboardKeys = {
   all: ['project-dashboard-analytics'] as const,
+  project: (projectId: number | undefined) => [...projectDashboardKeys.all, projectId] as const,
   detail: (projectId: number | undefined, params: ProjectDashboardParams) =>
-    [...projectDashboardKeys.all, projectId, params] as const,
+    [...projectDashboardKeys.project(projectId), params] as const,
 };
 
 export function useProjectDashboardAnalytics(

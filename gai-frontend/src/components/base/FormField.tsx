@@ -20,7 +20,7 @@ export function FormField({ label, error, hint, optional, help, helpTitle, child
     ? cloneElement(element, {
         id: controlId,
         'aria-invalid': Boolean(error) || undefined,
-        'aria-describedby': descriptionId,
+        'aria-describedby': [element.props['aria-describedby'], descriptionId].filter(Boolean).join(' ') || undefined,
       })
     : children;
 
@@ -29,6 +29,7 @@ export function FormField({ label, error, hint, optional, help, helpTitle, child
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
           <label htmlFor={controlId}>{label}</label>
+          {element?.props.required ? <span className="text-destructive" aria-hidden="true">*</span> : null}
           {help ? <HelpPopover label={`Ajuda sobre ${label}`} title={helpTitle}>{help}</HelpPopover> : null}
         </div>
         {optional ? <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">Opcional</span> : null}

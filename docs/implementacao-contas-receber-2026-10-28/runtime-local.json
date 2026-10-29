@@ -1,0 +1,196 @@
+{
+  "verified_at": "2026-10-28T12:12:41.088Z",
+  "environment": "local",
+  "connection": [
+    {
+      "db": "gai",
+      "server": "f10269ba8da4",
+      "port": 3306,
+      "version": "8.0.46"
+    }
+  ],
+  "migrations_count": 29,
+  "last_migration": "CreateReceivables1793700000001",
+  "permissions": [
+    {
+      "key": "cash-flow:read",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "finance:export",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "receivables:edit",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "receivables:read",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "receivables:receive",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "receivables:reverse",
+      "scope": "ORGANIZATION"
+    }
+  ],
+  "custom_permission_grants": 1,
+  "synthetic_receivable": {
+    "id": 3,
+    "organization_id": 1,
+    "company_id": 16,
+    "project_id": 34,
+    "source_key": null,
+    "amount": "100.01",
+    "currency": "BRL",
+    "revision": 6,
+    "cancelled": 0,
+    "data": {
+      "notes": "",
+      "amount": "100.01",
+      "origin": "manual",
+      "reason": "Homologação exclusivamente sintética",
+      "payment": {
+        "mode": "equal",
+        "count": 3,
+        "first_due_on": "2026-01-31"
+      },
+      "currency": "BRL",
+      "document": "",
+      "issued_on": "2026-01-01",
+      "company_id": 16,
+      "project_id": 34,
+      "description": "SINTETICO Recebível 1793189016769",
+      "organization_id": 1,
+      "source_snapshot": null
+    },
+    "received": "90.01",
+    "open": "10.00",
+    "installments": [
+      {
+        "id": 7,
+        "position": 1,
+        "kind": "installment",
+        "due_on": "2026-01-31T03:00:00.000Z",
+        "amount": "33.33"
+      },
+      {
+        "id": 8,
+        "position": 2,
+        "kind": "installment",
+        "due_on": "2026-02-28T03:00:00.000Z",
+        "amount": "33.33"
+      },
+      {
+        "id": 9,
+        "position": 3,
+        "kind": "installment",
+        "due_on": "2026-03-31T03:00:00.000Z",
+        "amount": "33.35"
+      }
+    ],
+    "events": [
+      {
+        "id": 8,
+        "revision": 1,
+        "operation": "create",
+        "installment_id": null,
+        "reverses_id": null,
+        "amount": null,
+        "effective_on": null,
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:43.311Z",
+        "reason": "Homologação exclusivamente sintética"
+      },
+      {
+        "id": 9,
+        "revision": 2,
+        "operation": "receipt",
+        "installment_id": 7,
+        "reverses_id": null,
+        "amount": "10.00",
+        "effective_on": "2026-10-01T03:00:00.000Z",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:45.376Z",
+        "reason": "Recebimento sintético de homologação"
+      },
+      {
+        "id": 10,
+        "revision": 3,
+        "operation": "receipt",
+        "installment_id": 7,
+        "reverses_id": null,
+        "amount": "23.33",
+        "effective_on": "2026-10-01T03:00:00.000Z",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:48.864Z",
+        "reason": "Recebimento sintético de homologação"
+      },
+      {
+        "id": 11,
+        "revision": 4,
+        "operation": "receipt",
+        "installment_id": 8,
+        "reverses_id": null,
+        "amount": "33.33",
+        "effective_on": "2026-10-01T03:00:00.000Z",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:50.743Z",
+        "reason": "Recebimento sintético de homologação"
+      },
+      {
+        "id": 12,
+        "revision": 5,
+        "operation": "receipt",
+        "installment_id": 9,
+        "reverses_id": null,
+        "amount": "33.35",
+        "effective_on": "2026-10-01T03:00:00.000Z",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:52.708Z",
+        "reason": "Recebimento sintético de homologação"
+      },
+      {
+        "id": 13,
+        "revision": 6,
+        "operation": "reversal",
+        "installment_id": 7,
+        "reverses_id": 9,
+        "amount": "-10.00",
+        "effective_on": "2026-10-02T03:00:00.000Z",
+        "actor_id": 2,
+        "recorded_at": "2026-10-28T12:03:55.301Z",
+        "reason": "Estorno sintético preservando histórico"
+      }
+    ]
+  },
+  "synthetic_export": {
+    "id": 13,
+    "status": "finished",
+    "size_bytes": 13230,
+    "checksum": "58ca16160afde1b8b25f92fc47ca44867dbf4df4a212382067ff3e6232e423f9",
+    "requested_by_id": 2,
+    "expires_at": "2026-11-04T12:04:00.814Z",
+    "kind": "statement",
+    "filters": {
+      "page": 1,
+      "page_size": 20,
+      "company_id": 16
+    },
+    "snapshot_hash": "6b3c8f99389ad9d9224136c97c38446c9cc8093af437cbe66eb2aeca78e064b3"
+  },
+  "health": {
+    "frontend": 200,
+    "backend": 200
+  },
+  "urls": {
+    "receivables": "http://localhost:5173/app/finance/receivables",
+    "detail": "http://localhost:5173/app/finance/receivables/3",
+    "history": "http://localhost:5173/app/finance/receivables/3?tab=history",
+    "cash": "http://localhost:5173/app/finance/cash-flow?company_id=16",
+    "project": "http://localhost:5173/app/projects/34/summary"
+  }
+}

@@ -1,5 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
+import { hasAllPermissions } from '../../../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../../auth/domain/ports/permission-resolver.port';
 import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
@@ -32,6 +37,8 @@ export class ProjectSummaryService {
     private readonly summaries: ProjectSummaryRepository,
     private readonly scope: ProjectScopeService,
     private readonly logger: PinoLogger,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
   ) {
     this.logger.setContext(ProjectSummaryService.name);
   }
@@ -91,7 +98,14 @@ export class ProjectSummaryService {
       field_agents: fieldAgents,
     };
 
-    if (query.include_financial) {
+    if (
+      query.include_financial &&
+      (await hasAllPermissions(
+        actor,
+        ['payments:read', 'expenses:read'],
+        this.permissions,
+      ))
+    ) {
       response.financial = await this.summaries.getFinancialSummary(projectId);
     }
     if (query.include_imports) {

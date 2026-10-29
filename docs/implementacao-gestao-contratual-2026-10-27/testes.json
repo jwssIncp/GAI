@@ -1,0 +1,36 @@
+{
+  "backend": {
+    "suites": 10,
+    "tests_passed": 59,
+    "distinct_tests_including_additional_security_case": 60,
+    "additional_security_case": { "new_distinct_tests": 1, "targeted_suite_tests_passed": 6, "log": ".local/contracts-security-tests.log", "case": "revogação de permissão da fonte bloqueia leitura de relatório histórico; autorização válida mantém snapshot intacto" },
+    "duration_seconds": 125.129,
+    "log": ".local/contracts-backend-final.log",
+    "coverage": ["11 casos HTTP/SQL de contratos, aditivos, histórico, relatórios, RBAC, escopo, filtros, concorrência e rollback", "5 casos de centavos, ticket, limites agregados e dados ausentes", "regressão do overview e dashboards por projeto", "catálogo e PermissionsGuard fail-closed", "policy de lifecycle"],
+    "mysql": { "disposable": true, "host": "127.0.0.1", "port": 33317, "database": "gai_validation_disposable", "migrations_run": true, "container_removed_after_tests": true }
+  },
+  "frontend": { "files": 36, "tests_passed": 218, "duration_seconds": 104.69, "log": ".local/contracts-frontend-final.log", "coverage": ["formulários contratuais e decimais preservados como texto", "histórico e seleção por URL", "navegação compartilhada por projeto", "leitura sem controles de mutação", "filtros comerciais enviados ao servidor", "originais e vigentes", "ausência e falha sem zero fictício", "regressão completa frontend"] },
+  "checks": {
+    "backend_typescript": "passed",
+    "backend_build": "passed",
+    "frontend_typescript_and_build": "passed",
+    "backend_changed_files_lint": "passed",
+    "frontend_changed_files_lint": "passed",
+    "targeted_git_diff_check": "passed",
+    "notes": ["Vite mantém aviso preexistente de chunk maior que 500 kB.", "JSDOM emite aviso de dimensões de gráficos; a renderização real é validada no navegador.", "O teste de rollback injeta intencionalmente uma falha de persistência e verifica HTTP 500 e rollback integral; seu log de erro é esperado.", "Não foi afirmado lint global limpo; o lint executado cobre os arquivos desta alteração."]
+  },
+  "playwright": {
+    "status": "passed",
+    "tests_passed": 1,
+    "duration_seconds": 23.7,
+    "test": "gai-frontend/e2e/contracts-real.spec.ts",
+    "runner": ".local/run-contracts-playwright.cjs",
+    "browser": "chromium",
+    "actor": "org.admin / ORG_ADMIN",
+    "data": "somente projetos e contratos explicitamente sintéticos no desenvolvimento",
+    "coverage": ["login real sem mocks de API", "cadastro de contrato ativo pela interface", "aditivo misto de 0.20, prazo e escopo", "edição comercial versionada", "refresh preservando três versões", "abas e projectId persistente", "voltar/avançar", "troca entre dois projetos autorizados", "overview com período contratual, segmento, recorrência, serviço e faixa de bens", "Excel baixado e lido: um contrato, original 100.10, vigente 100.30, versão 3", "URL e refresh dos filtros", "viewport móvel 390x844", "verificação de erros HTTP e pageerror"],
+    "log": ".local/contracts-playwright-final.log",
+    "screenshots_directory": ".local/contracts-playwright/contracts-real-ORG-ADMIN-m-a3b58-iltered-commercial-overview-chromium",
+    "runtime_note": "Após build, o watch local encerrou; a tentativa de preflight não prosseguiu ao login. A API foi reiniciada pelo script local e a execução foi repetida."
+  }
+}

@@ -4,6 +4,15 @@ import { FieldAgentPayment } from '../entities/field-agent-payment';
 import { ExpenseStatus } from '../enums/expense-status.enum';
 import { PaymentExpenseAuditOperation } from '../enums/payment-expense-audit-operation.enum';
 import { PaymentStatus } from '../enums/payment-status.enum';
+import { ProjectStatus } from '../../../projects/domain/enums/project-status.enum';
+
+export interface PaymentSummary {
+  total_pending: string;
+  total_approved: string;
+  total_paid: string;
+  total_cancelled: string;
+  total_count: number;
+}
 
 export interface ListPaymentsParams {
   page: number;
@@ -52,6 +61,18 @@ export interface PaymentsExpensesRepository {
     payment: FieldAgentPayment,
     audit: PaymentExpenseAuditEntry,
   ): Promise<FieldAgentPayment>;
+  mutatePaymentWithAudit(
+    projectId: number,
+    paymentId: number,
+    mutate: (
+      payment: FieldAgentPayment,
+      projectStatus: ProjectStatus,
+    ) => PaymentExpenseAuditEntry,
+  ): Promise<FieldAgentPayment | null>;
+  summarizePayments(
+    organizationId: number,
+    projectId: number,
+  ): Promise<PaymentSummary>;
   findExpenseById(id: number): Promise<Expense | null>;
   listExpenses(
     params: ListExpensesParams,

@@ -11,6 +11,7 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
   const form = useForm<AccountingItemFormValues>({
     resolver: zodResolver(accountingItemFormSchema),
     defaultValues: {
+      serial_number: initial.serial_number ?? '',
       plate: initial.plate ?? '',
       description: initial.description ?? '',
       accounting_account_description: initial.accounting_account_description ?? '',
@@ -32,6 +33,7 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
     <form className="grid gap-4" onSubmit={form.handleSubmit((values) => onSubmit(clean(values as unknown as InventoryAccountingItemInput)))}>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Placa"><Input {...form.register('plate')} /></FormField>
+        <FormField label="Número de série contábil" error={form.formState.errors.serial_number?.message}><Input maxLength={100} {...form.register('serial_number')} /></FormField>
         <FormField label="Codigo base"><Input {...form.register('base_code')} /></FormField>
         <FormField label="Codigo investor"><Input {...form.register('investor_code')} /></FormField>
         <FormField label="Localizacao"><Input {...form.register('location')} /></FormField>

@@ -1,10 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import {
   IsEnum,
   IsObject,
   IsOptional,
   IsString,
   Matches,
+  MaxLength,
 } from 'class-validator';
 import { JsonRecord } from '../../domain/entities/inventory-accounting-item';
 import { InventoryAccountingItemStatus } from '../../domain/enums/inventory-accounting-item-status.enum';
@@ -12,6 +14,11 @@ import { InventoryAccountingItemStatus } from '../../domain/enums/inventory-acco
 const MONEY_PATTERN = /^\d{1,13}(\.\d{1,2})?$/;
 
 export class UpdateInventoryAccountingItemDto {
+  @ApiPropertyOptional({ nullable: true, maxLength: 100 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  serial_number?: string | null;
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
@@ -35,6 +42,7 @@ export class UpdateInventoryAccountingItemDto {
   @ApiPropertyOptional({ format: 'date', nullable: true })
   @IsOptional()
   @IsString()
+  @IsCivilDate()
   acquisition_date?: string | null;
 
   @ApiPropertyOptional({ pattern: MONEY_PATTERN.source, nullable: true })

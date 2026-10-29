@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import { ProjectSummaryPage } from './ProjectSummaryPage';
+import { ProjectLayout } from './ProjectLayout';
 import type { CurrentUser, Project, ProjectSummary } from '@/types/api';
 
 const mocks = vi.hoisted(() => ({
@@ -82,9 +83,11 @@ function renderPage(user: CurrentUser = admin) {
       <AuthContext.Provider value={auth}>
         <MemoryRouter initialEntries={['/app/projects/10/summary']}>
           <Routes>
-            <Route path="/app/projects/:projectId/summary" element={<ProjectSummaryPage />} />
-            <Route path="/app/projects/:projectId/inventory-items" element={<h1>Itens do projeto</h1>} />
-            <Route path="/app/projects/:projectId/accounting-items" element={<h1>Base contabil</h1>} />
+            <Route path="/app/projects/:projectId" element={<ProjectLayout />}>
+              <Route path="summary" element={<ProjectSummaryPage />} />
+              <Route path="inventory-items" element={<h1>Itens do projeto</h1>} />
+              <Route path="accounting-items" element={<h1>Base contabil</h1>} />
+            </Route>
           </Routes>
         </MemoryRouter>
       </AuthContext.Provider>

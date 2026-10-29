@@ -114,6 +114,15 @@ export class CreateInventoryItemImageUploadUrlUseCase {
       deletedAt: null,
     });
 
+    const signed = await this.storageSigner.createUploadUrl({
+      bucket: image.bucket,
+      path: image.path,
+      mimeType: image.mimeType,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: image.toProps().sizeBytes,
+      checksum: image.toProps().checksum,
+    });
+
     const saved = await this.repository.saveWithAudit(image, {
       inventoryItemImageId: 0,
       organizationId: image.organizationId,
@@ -126,13 +135,6 @@ export class CreateInventoryItemImageUploadUrlUseCase {
         mime_type: { before: null, after: image.mimeType },
         size_bytes: { before: null, after: image.toProps().sizeBytes },
       },
-    });
-
-    const signed = await this.storageSigner.createUploadUrl({
-      bucket: saved.bucket,
-      path: saved.path,
-      mimeType: saved.mimeType,
-      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
     });
 
     this.logger.info({

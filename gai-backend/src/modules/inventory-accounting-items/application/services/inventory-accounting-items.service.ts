@@ -237,6 +237,7 @@ export class InventoryAccountingItemsService {
         dto.accounting_account_description,
       ),
       location: this.scope.cleanText(dto.location),
+      serialNumber: this.scope.cleanText(dto.serial_number),
       acquisitionDate: this.scope.parseDate(dto.acquisition_date),
       acquisitionValue: this.scope.normalizeMoney(dto.acquisition_value),
       baseCode: this.scope.cleanText(dto.base_code),

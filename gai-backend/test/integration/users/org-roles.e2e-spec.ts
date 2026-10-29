@@ -1,5 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
+import { PermissionEntity } from '../../../src/modules/users/infrastructure/persistence/permission.entity';
 import {
   createTestApp,
   loginAsAdmin,
@@ -11,12 +13,19 @@ describe('Users - Org Roles (e2e)', () => {
   let app: INestApplication;
   let adminToken: string;
   let orgToken: string;
+  let usersReadPermissionId: number;
 
   beforeAll(async () => {
     app = await createTestApp();
     await seedTestData(app);
     adminToken = await loginAsAdmin(app);
     orgToken = await loginAsOrgAdmin(app);
+    usersReadPermissionId = (
+      await app
+        .get(DataSource)
+        .getRepository(PermissionEntity)
+        .findOneByOrFail({ key: 'users:read' })
+    ).id;
   });
 
   afterAll(async () => {
@@ -43,7 +52,7 @@ describe('Users - Org Roles (e2e)', () => {
       .send({
         name: 'Auditor',
         description: 'Somente leitura',
-        permission_ids: [3],
+        permission_ids: [usersReadPermissionId],
       })
       .expect(201);
 

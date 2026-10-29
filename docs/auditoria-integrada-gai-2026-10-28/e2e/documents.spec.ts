@@ -1,0 +1,81 @@
+import { test, expect } from '../../../gai-frontend/node_modules/@playwright/test/index.mjs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+test.skip(process.env.GAI_DOCUMENTS_REAL !== '1', 'Requires explicitly enabled local synthetic environment');
+test.use({ baseURL: 'http://127.0.0.1:33320' });
+test('ORG_ADMIN generates and downloads approved PDF/DOCX and commercial versions', async ({ page }, info) => {
+  test.setTimeout(240000);
+  page.setDefaultTimeout(15000);
+  await expect.poll(async () => {
+    try { const r = await page.request.get('/api/v1/projects'); return r.status(); }
+    catch { return 0; }
+  }, { timeout: 60000 }).toBe(401);
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/login');
+  await page.getByLabel('Login ou email').fill(process.env.GAI_E2E_LOGIN ?? 'org.admin');
+  await page.getByLabel('Senha', { exact: true }).fill(process.env.GAI_E2E_PASSWORD!);
+  await page.getByRole('button', { name: /entrar/i }).click();
+  await page.waitForURL('**/app/dashboard');
+  const session = await page.evaluate(() => JSON.parse(sessionStorage.getItem('gai.session.v1')!) as { accessToken: string });
+  const headers = { Authorization: 'Bearer ' + session.accessToken };
+  const api = async (method: 'post' | 'get' | 'patch', route: string, data?: object) => {
+    const res = await page.request[method]('/api/v1' + route, { headers, ...(data ? { data } : {}) });
+    expect(res.ok(), await res.text()).toBe(true); return res.json();
+  };
+  const stamp = Date.now(), command = () => ({ command_key: crypto.randomUUID(), reason: 'SINTETICO homologação de documentos' });
+  const company = (await api('post', '/companies', { organization_id: 1, name: 'SINTETICO São Luís · Cliente ' + stamp })).id;
+  const project = (await api('post', '/projects', { organization_id: 1, company_id: company, name: 'SINTETICO Conciliação patrimonial ' + stamp })).id;
+  for (let batch = 0; batch < 6; batch++) await Promise.all(Array.from({ length: 10 }, (_, i) => api('post', `/projects/${project}/inventory-items`, { old_plate: `PDF-${batch * 10 + i}`, description: `SINTETICO Máquina de precisão ${batch * 10 + i} · São Luís` })));
+  const base = `/projects/${project}/technical-reports`;
+  await page.goto(`/app${base}/templates`);
+  await page.getByText('Identidade visual de PDF e DOCX', { exact: true }).click();
+  await page.getByLabel('Nome da organização', { exact: true }).fill('SINTETICO GAI · Documentos profissionais');
+  await page.getByLabel('Informações institucionais', { exact: true }).fill('Homologação local com dados sintéticos');
+  await page.getByLabel('Cabeçalho', { exact: true }).fill('GAI · Relatório patrimonial');
+  await page.getByLabel('Rodapé', { exact: true }).fill('SINTETICO · Uso em homologação');
+  await page.getByRole('button', { name: 'Publicar nova versão visual' }).click();
+  await expect(page.getByText('Nova versão visual publicada.')).toBeVisible();
+  let template = await api('post', base + '/templates', { ...command(), data: { name: 'SINTETICO Modelo PDF DOCX', report_type: 'Laudo Técnico Patrimonial', description: 'Homologação', sections: [{ key: 'objetivo', title: 'Objetivo e escopo', text: 'Avaliar o recorte patrimonial do projeto {{projeto}}. João acompanha a conciliação e a avaliação.', required: true }, { key: 'metodologia', title: 'Metodologia', text: 'Conferência documental sintética. Valores de referência: BRL 1.234,56 em 28/10/2026.', required: true }], fields: [{ key: 'projeto', label: 'Projeto', required: true, system_key: 'project.name' }], tables: ['identity', 'inventory'], rules: { responsible_required: false, professional_registration_required: false, reconciliation_required: false, valuation_required: false, unresolved_divergences: 'warning', incomplete_indicators: 'warning', stale_sources: 'block' } } });
+  template = await api('post', `${base}/templates/${template.id}/publish`, { ...command(), revision: template.revision });
+  let report = await api('post', base, { ...command(), title: 'SINTETICO Laudo São Luís · PDF e DOCX', template_version_id: template.publishedVersionId, selection: { families: ['identity', 'inventory'] } });
+  report = await api('post', `${base}/${report.id}/transitions`, { ...command(), revision: report.revision, action: 'review' });
+  report = await api('post', `${base}/${report.id}/transitions`, { ...command(), revision: report.revision, action: 'approve' });
+  const versionId = report.approvedVersionId;
+  const frozen = await api('get', `${base}/${report.id}/versions/${versionId}`);
+  await page.goto(`/app${base}/${report.id}?view=preview&version=${versionId}`);
+  const out = path.resolve("C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\documentos"); await mkdir(out, { recursive: true });
+  async function download(format: 'PDF' | 'DOCX', filename: string) {
+    const wait = page.waitForEvent('download'); await page.getByRole('button', { name: 'Baixar ' + format, exact: true }).click();
+    const download = await wait; expect(download.suggestedFilename()).toMatch(new RegExp('\\.' + format.toLowerCase() + '$'));
+    await download.saveAs(path.join(out, filename));
+    await expect(page.getByRole('status')).toHaveText('Documento gerado. Download iniciado.');
+    const bytes = await readFile(path.join(out, filename));
+    expect(bytes.subarray(0, format === 'PDF' ? 5 : 2).toString()).toBe(format === 'PDF' ? '%PDF-' : 'PK');
+    return createHash('sha256').update(bytes).digest('hex');
+  }
+  const pdfHash = await download('PDF', 'laudo-aprovado.pdf');
+  const docxHash = await download('DOCX', 'laudo-aprovado.docx');
+  await page.getByText('Consultar versão do documento', { exact: true }).click();
+  await expect(page.getByText(new RegExp(`Versão ID ${versionId} · Modelo visual-`))).toBeVisible();
+  await page.screenshot({ path: info.outputPath('laudo-exportado-desktop.png'), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Baixar PDF', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('laudo-exportado-mobile.png'), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await api('post', '/organizations/1/document-templates', { organization_name: 'SINTETICO Modelo posterior', institutional: '', primary_color: '#990000', header: 'Novo', footer: 'Novo', font: 'Times', cover: true, logo_png: null });
+  expect(await download('PDF', 'laudo-regenerado.pdf')).toBe(pdfHash);
+  const preserved = await api('get', `${base}/${report.id}/versions/${versionId}`); expect(preserved.hash).toBe(frozen.hash);
+  const pricing = await api('post', '/budgets/pricing', { name: 'SINTETICO Preços ' + stamp, valid_from: '2026-01-01', valid_to: '2029-12-31', reason: 'SINTETICO publicação de preços', currency: 'BRL', productivity: 100, default_days: 5, default_professionals: 1, addresses_per_person_day: 2, address_factor: '1.0000', daily_rate: '100.10', operational_fixed: '10.20', travel_fixed: '0.00', transport_per_day: '2.00', lodging_per_room_day: '20.00', food_per_person_day: '5.00', materials_fixed: '1.10', tags_per_asset: '0.10', administration_fixed: '3.30', minimum_price: '0.00', room_capacity: 2, extra_every_days: 5, extra_days: 2, tax_pct: '10.00', commission_pct: '5.00', margin_pct: '15.00' });
+  let budget = await api('post', '/budgets', { organization_id: 1, company_id: company, project_id: project, number: 'SINTETICO-DOC-' + stamp, prepared_on: '2026-10-28', valid_until: '2029-12-31', services: ['Inventário patrimonial', 'Conciliação físico-contábil'], estimated_assets: 60, unit_ids: [], addresses: ['SINTETICO Rua A, 100'], scope: 'Conferência patrimonial de 60 bens em São Luís.', responsible_id: 2, pricing_id: pricing.id, sizing: {}, payment: { mode: 'equal', count: 3, entry_percent: '10.00', first_due_on: '2027-01-31', entry_due_on: '2026-10-28' } });
+  await page.goto(`/app/budgets/${budget.id}`);
+  await download('PDF', 'orcamento-nao-aprovado.pdf');
+  expect(await page.getByLabel('Incluir memória de cálculo interna neste documento').isChecked()).toBe(false);
+  for (const status of ['review', 'approved']) budget = await api('post', `/budgets/${budget.id}/transitions`, { revision: budget.revision, version_id: budget.headVersionId, status, reason: 'SINTETICO aprovação comercial' });
+  await page.goto(`/app/budgets/${budget.id}?tab=proposal`);
+  await download('PDF', 'proposta-aprovada.pdf'); await download('DOCX', 'proposta-aprovada.docx');
+  await page.screenshot({ path: info.outputPath('proposta-exportada.png'), fullPage: true });
+  expect(errors).toEqual([]);
+  await writeFile(path.join(out, '../playwright-evidence.json'), JSON.stringify({ project, report: report.id, approved_version: versionId, approved_hash: frozen.hash, pdf_sha256: pdfHash, docx_sha256: docxHash, budget: budget.id, budget_version: budget.approvedVersionId, errors }, null, 2));
+});

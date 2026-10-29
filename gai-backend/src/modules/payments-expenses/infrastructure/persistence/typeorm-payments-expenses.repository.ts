@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
+import { ProjectStatus } from '../../../projects/domain/enums/project-status.enum';
 import { ExpenseAttachment } from '../../domain/entities/expense-attachment';
 import { Expense } from '../../domain/entities/expense';
 import { FieldAgentPayment } from '../../domain/entities/field-agent-payment';
@@ -9,6 +11,7 @@ import {
   ListExpensesParams,
   ListPaymentsParams,
   PaymentExpenseAuditEntry,
+  PaymentSummary,
   PaymentsExpensesRepository,
 } from '../../domain/ports/payments-expenses.repository.port';
 import { ExpenseAttachmentEntity } from './expense-attachment.entity';
@@ -72,15 +75,105 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
     payment: FieldAgentPayment,
     audit: PaymentExpenseAuditEntry,
   ): Promise<FieldAgentPayment> {
+    if (payment.id > 0)
+      throw new Error('Existing payments require mutatePaymentWithAudit');
     return this.paymentRepo.manager.transaction(async (manager) => {
-      const saved = await manager
-        .getRepository(FieldAgentPaymentEntity)
-        .save(this.toPaymentEntity(payment));
-      await manager
-        .getRepository(PaymentExpenseAuditLogEntity)
-        .save({ ...audit, paymentId: audit.paymentId ?? saved.id });
-      return this.toPayment(saved);
+      return this.persistPayment(manager, payment, audit);
     });
+  }
+  async mutatePaymentWithAudit(
+    projectId: number,
+    paymentId: number,
+    mutate: (
+      payment: FieldAgentPayment,
+      projectStatus: ProjectStatus,
+    ) => PaymentExpenseAuditEntry,
+  ): Promise<FieldAgentPayment | null> {
+    return this.paymentRepo.manager.transaction(async (manager) => {
+      const projectQuery = manager
+        .getRepository(ProjectEntity)
+        .createQueryBuilder('project')
+        .where('project.id = :projectId', { projectId });
+      const paymentQuery = manager
+        .getRepository(FieldAgentPaymentEntity)
+        .createQueryBuilder('payment')
+        .withDeleted()
+        .where('payment.id = :paymentId', { paymentId })
+        .andWhere('payment.projectId = :projectId', { projectId });
+      if (manager.connection.options.type !== 'sqlite') {
+        // Shared project lock first: lifecycle writes wait, while independent
+        // payment rows in the same project can proceed concurrently.
+        projectQuery.setLock('pessimistic_read');
+        paymentQuery.setLock('pessimistic_write');
+      }
+      const project = await projectQuery.getOne();
+      if (!project) return null;
+      // A locking read sees the latest committed row even at REPEATABLE READ.
+      const entity = await paymentQuery
+        .andWhere('payment.organizationId = :organizationId', {
+          organizationId: project.organizationId,
+        })
+        .getOne();
+      if (!entity) return null;
+      const payment = this.toPayment(entity);
+      const audit = mutate(payment, project.status);
+      return this.persistPayment(manager, payment, audit);
+    });
+  }
+  async summarizePayments(
+    organizationId: number,
+    projectId: number,
+  ): Promise<PaymentSummary> {
+    const qb = this.paymentRepo
+      .createQueryBuilder('payment')
+      .withDeleted()
+      .where('payment.organizationId = :organizationId', { organizationId })
+      .andWhere('payment.projectId = :projectId', { projectId })
+      .select('COUNT(*)', 'total_count');
+    for (const status of ['pending', 'approved', 'paid', 'cancelled']) {
+      qb.addSelect(
+        `ROUND(COALESCE(SUM(CASE WHEN payment.status = :${status} THEN payment.finalAmount ELSE 0 END), 0), 2)`,
+        `total_${status}`,
+      ).setParameter(status, status);
+    }
+    const row = await qb.getRawOne<Record<string, string | number>>();
+    return {
+      total_pending: this.decimalTotal(row!.total_pending),
+      total_approved: this.decimalTotal(row!.total_approved),
+      total_paid: this.decimalTotal(row!.total_paid),
+      total_cancelled: this.decimalTotal(row!.total_cancelled),
+      total_count: Number(row!.total_count),
+    };
+  }
+  private decimalTotal(value: string | number): string {
+    // MySQL SUM(DECIMAL) stays a decimal string, including totals beyond the
+    // precision of JS Number. SQLite's ROUND is only a test compatibility path.
+    const match = /^(-?\d+)(?:\.(\d{0,2})0*)?$/.exec(String(value));
+    if (!match) throw new Error('Invalid decimal payment total');
+    return `${match[1]}.${(match[2] ?? '').padEnd(2, '0')}`;
+  }
+  private async persistPayment(
+    manager: EntityManager,
+    payment: FieldAgentPayment,
+    audit: PaymentExpenseAuditEntry,
+  ): Promise<FieldAgentPayment> {
+    const saved = await manager
+      .getRepository(FieldAgentPaymentEntity)
+      .save(this.toPaymentEntity(payment));
+    await manager.getRepository(PaymentExpenseAuditLogEntity).save({
+      ...audit,
+      changes: {
+        final_amount: {
+          before: payment.id > 0 ? payment.toProps().finalAmount : null,
+          after: payment.toProps().finalAmount,
+        },
+        ...audit.changes,
+      },
+      organizationId: payment.organizationId,
+      projectId: payment.projectId,
+      paymentId: saved.id,
+    });
+    return this.toPayment(saved);
   }
   async findExpenseById(id: number): Promise<Expense | null> {
     const entity = await this.expenseRepo

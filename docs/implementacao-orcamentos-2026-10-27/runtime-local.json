@@ -1,0 +1,314 @@
+{
+  "verified_at": "2026-10-27T21:28:38.694Z",
+  "environment": "local",
+  "connection": [
+    {
+      "db": "gai",
+      "server": "f10269ba8da4",
+      "port": 3306
+    }
+  ],
+  "migrations_count": 28,
+  "last_migration": "CreateBudgets1793600000001",
+  "pending_migrations": [],
+  "permissions": [
+    {
+      "key": "budgets:approve",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "budgets:configure-prices",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "budgets:edit",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "budgets:read",
+      "scope": "ORGANIZATION"
+    }
+  ],
+  "custom_permission_grants": 1,
+  "synthetic_budget": {
+    "id": 4,
+    "organization_id": 1,
+    "company_id": 7,
+    "project_id": null,
+    "number": "SINTETICO-ORC-1793136291958",
+    "status": "approved",
+    "revision": 5,
+    "head_version_id": 8,
+    "approved_version_id": 8,
+    "created_at": "2026-10-27T21:25:01.641Z",
+    "versions": [
+      {
+        "id": 7,
+        "version": 1,
+        "kind": "draft",
+        "name": "Versão inicial",
+        "hash": "11c25b862dbfbffcad58cc145ecaeb1ab333dd09d6012dc3c5df3211c4037d4b",
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:01.646Z",
+        "parameter_id": 4,
+        "parameter_version": 1,
+        "currency": "BRL",
+        "cost_total": "1339.60",
+        "final_price": "1913.72",
+        "sizing": {
+          "team": 2,
+          "rooms": 1,
+          "stay_days": 7,
+          "extra_days": 2,
+          "field_days": 5,
+          "person_days": 10,
+          "effort_assets": 10,
+          "required_team": 2,
+          "effort_addresses": 1
+        },
+        "payment": {
+          "mode": "equal",
+          "rows": [
+            {
+              "kind": "entry",
+              "amount": "191.37",
+              "due_on": "2026-10-27",
+              "position": 0,
+              "percentage": "9.9998"
+            },
+            {
+              "kind": "installment",
+              "amount": "574.11",
+              "due_on": "2027-01-31",
+              "position": 1,
+              "percentage": "29.9996"
+            },
+            {
+              "kind": "installment",
+              "amount": "574.11",
+              "due_on": "2027-02-28",
+              "position": 2,
+              "percentage": "29.9996"
+            },
+            {
+              "kind": "installment",
+              "amount": "574.13",
+              "due_on": "2027-03-31",
+              "position": 3,
+              "percentage": "30.0010"
+            }
+          ],
+          "entry": "191.37",
+          "total": "1913.72",
+          "financed_balance": "1722.35",
+          "remaining_balance": "0.00"
+        }
+      },
+      {
+        "id": 8,
+        "version": 2,
+        "kind": "scenario",
+        "name": "Equipe ampliada",
+        "hash": "cd63d114939d9811bf902776582b3c66a482650ec50a462b1c17368cca8fd8fa",
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:03.692Z",
+        "parameter_id": 4,
+        "parameter_version": 1,
+        "currency": "BRL",
+        "cost_total": "1544.91",
+        "final_price": "2376.79",
+        "sizing": {
+          "team": 3,
+          "rooms": 2,
+          "stay_days": 4,
+          "extra_days": 0,
+          "field_days": 4,
+          "person_days": 10,
+          "effort_assets": 10,
+          "required_team": 2,
+          "effort_addresses": 1
+        },
+        "payment": {
+          "mode": "equal",
+          "rows": [
+            {
+              "kind": "entry",
+              "amount": "237.68",
+              "due_on": "2026-10-27",
+              "position": 0,
+              "percentage": "10.0000"
+            },
+            {
+              "kind": "installment",
+              "amount": "713.03",
+              "due_on": "2027-01-31",
+              "position": 1,
+              "percentage": "29.9997"
+            },
+            {
+              "kind": "installment",
+              "amount": "713.03",
+              "due_on": "2027-02-28",
+              "position": 2,
+              "percentage": "29.9997"
+            },
+            {
+              "kind": "installment",
+              "amount": "713.05",
+              "due_on": "2027-03-31",
+              "position": 3,
+              "percentage": "30.0006"
+            }
+          ],
+          "entry": "237.68",
+          "total": "2376.79",
+          "financed_balance": "2139.11",
+          "remaining_balance": "0.00"
+        }
+      },
+      {
+        "id": 9,
+        "version": 3,
+        "kind": "scenario",
+        "name": "Cenário após aprovação",
+        "hash": "a365951d957f013598482f74558e2e6f907b12eaf7e08183b08684b959865277",
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:10.580Z",
+        "parameter_id": 4,
+        "parameter_version": 1,
+        "currency": "BRL",
+        "cost_total": "1544.91",
+        "final_price": "2574.85",
+        "sizing": {
+          "team": 3,
+          "rooms": 2,
+          "stay_days": 4,
+          "extra_days": 0,
+          "field_days": 4,
+          "person_days": 10,
+          "effort_assets": 10,
+          "required_team": 2,
+          "effort_addresses": 1
+        },
+        "payment": {
+          "mode": "equal",
+          "rows": [
+            {
+              "kind": "entry",
+              "amount": "257.49",
+              "due_on": "2026-10-27",
+              "position": 0,
+              "percentage": "10.0001"
+            },
+            {
+              "kind": "installment",
+              "amount": "772.45",
+              "due_on": "2027-01-31",
+              "position": 1,
+              "percentage": "29.9998"
+            },
+            {
+              "kind": "installment",
+              "amount": "772.45",
+              "due_on": "2027-02-28",
+              "position": 2,
+              "percentage": "29.9998"
+            },
+            {
+              "kind": "installment",
+              "amount": "772.46",
+              "due_on": "2027-03-31",
+              "position": 3,
+              "percentage": "30.0003"
+            }
+          ],
+          "entry": "257.49",
+          "total": "2574.85",
+          "financed_balance": "2317.36",
+          "remaining_balance": "0.00"
+        }
+      }
+    ],
+    "audit": [
+      {
+        "revision": 1,
+        "operation": "create",
+        "details": {
+          "version_id": "7"
+        },
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:01.668Z",
+        "reason": "Cadastro do orçamento"
+      },
+      {
+        "revision": 2,
+        "operation": "scenario",
+        "details": {
+          "version_id": "8",
+          "base_version_id": 7
+        },
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:03.736Z",
+        "reason": "Comparar prazo, equipe, despesas e margem"
+      },
+      {
+        "revision": 3,
+        "operation": "transition",
+        "details": {
+          "to": "review",
+          "from": "draft",
+          "version_id": 8
+        },
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:05.359Z",
+        "reason": "Cenário selecionado para revisão comercial"
+      },
+      {
+        "revision": 4,
+        "operation": "transition",
+        "details": {
+          "to": "approved",
+          "from": "review",
+          "version_id": 8
+        },
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:07.080Z",
+        "reason": "Aprovação comercial sintética da versão escolhida"
+      },
+      {
+        "revision": 5,
+        "operation": "scenario",
+        "details": {
+          "version_id": "9",
+          "base_version_id": 8
+        },
+        "actor_id": 2,
+        "recorded_at": "2026-10-27T21:25:10.639Z",
+        "reason": "Comparação sem alterar a proposta aprovada"
+      }
+    ]
+  },
+  "linked_synthetic_budget": {
+    "id": 5,
+    "project_id": 25,
+    "number": "SINTETICO-ORC-1793136291958-PROJETO"
+  },
+  "linked_project_related_records": {
+    "contracts": 0,
+    "expenses": 0,
+    "items": 0
+  },
+  "health": {
+    "frontend": 200,
+    "backend": 200
+  },
+  "urls": {
+    "list": "http://localhost:5173/app/budgets",
+    "pricing": "http://localhost:5173/app/budgets/pricing",
+    "approved_budget": "http://localhost:5173/app/budgets/4?tab=proposal&version=8",
+    "memory": "http://localhost:5173/app/budgets/4?tab=memory&version=8",
+    "linked_budget": "http://localhost:5173/app/budgets/5",
+    "linked_project": "http://localhost:5173/app/projects/25/summary",
+    "api_docs": "http://localhost:3000/api/docs"
+  }
+}

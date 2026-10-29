@@ -3,7 +3,7 @@ import { CheckCircle2, CreditCard, Eye, FileText, Pencil, Plus, Receipt, XCircle
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { MetricCard } from '@/components/base/Cards';
 import { DataTable, type Column } from '@/components/base/DataTable';
@@ -53,7 +53,13 @@ type Tab = 'payments' | 'expenses';
 
 export function ProjectFinancePage() {
   const projectId = Number(useParams().projectId);
-  const [tab, setTab] = useState<Tab>('payments');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: Tab = searchParams.get('tab') === 'expenses' ? 'expenses' : 'payments';
+  function setTab(value: Tab) {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', value);
+    setSearchParams(next);
+  }
   const fieldAgents = useFinanceFieldAgents();
   const agents = fieldAgents.data?.items ?? [];
 

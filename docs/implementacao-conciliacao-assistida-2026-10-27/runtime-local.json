@@ -1,0 +1,111 @@
+{
+  "destination": {
+    "db": "gai",
+    "host": "f10269ba8da4",
+    "port": 3306
+  },
+  "migrationCount": 25,
+  "lastMigration": "CreateAssistedReconciliation1793300000001",
+  "permissions": [
+    {
+      "key": "assisted-reconciliation:generate",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "assisted-reconciliation:read",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "assisted-reconciliation:review",
+      "scope": "ORGANIZATION"
+    }
+  ],
+  "customGrantCount": 1,
+  "syntheticFixtures": [
+    {
+      "run_id": 5,
+      "project_id": 12,
+      "session_id": 5,
+      "summary": {
+        "physical": 1,
+        "probable": 1,
+        "ambiguous": 0,
+        "candidates": 1,
+        "descriptionAlerts": 0,
+        "withoutCandidates": 0
+      },
+      "status": "approved",
+      "action": "approved",
+      "revision": 2,
+      "reconciliation_id": 5
+    },
+    {
+      "run_id": 4,
+      "project_id": 11,
+      "session_id": 4,
+      "summary": {
+        "physical": 1,
+        "probable": 1,
+        "ambiguous": 0,
+        "candidates": 1,
+        "descriptionAlerts": 0,
+        "withoutCandidates": 0
+      },
+      "status": "approved",
+      "action": "approved",
+      "revision": 2,
+      "reconciliation_id": 4
+    },
+    {
+      "run_id": 3,
+      "project_id": 10,
+      "session_id": 3,
+      "summary": {
+        "physical": 1,
+        "probable": 1,
+        "ambiguous": 0,
+        "candidates": 1,
+        "descriptionAlerts": 0,
+        "withoutCandidates": 0
+      },
+      "status": "approved",
+      "action": "approved",
+      "revision": 2,
+      "reconciliation_id": 3
+    }
+  ],
+  "health": {
+    "http://localhost:3000/api/v1/health": 200,
+    "http://localhost:5173/api/v1/health": 200
+  },
+  "explainLatest": [
+    {
+      "id": 1,
+      "select_type": "SIMPLE",
+      "table": "o",
+      "partitions": null,
+      "type": "ref",
+      "possible_keys": "fk_inventory_observations_session,idx_assisted_latest_observation",
+      "key": "fk_inventory_observations_session",
+      "key_len": "8",
+      "ref": "const",
+      "rows": 1,
+      "filtered": 25,
+      "Extra": "Using where; Using filesort"
+    },
+    {
+      "id": 1,
+      "select_type": "SIMPLE",
+      "table": "newer",
+      "partitions": null,
+      "type": "ref",
+      "possible_keys": "PRIMARY,idx_inventory_observations_item_captured,fk_inventory_observations_session,idx_assisted_latest_observation",
+      "key": "fk_inventory_observations_session",
+      "key_len": "8",
+      "ref": "const",
+      "rows": 1,
+      "filtered": 100,
+      "Extra": "Using where; Not exists"
+    }
+  ]
+}
