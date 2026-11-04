@@ -1,0 +1,11 @@
+{
+  "name": "e2e",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-backend",
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "e2e"
+  ],
+  "exit_code": 1,
+  "seconds": 123.884
+}

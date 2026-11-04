@@ -1,0 +1,46 @@
+{
+  "checked_files": 1080,
+  "changed": [
+    {
+      "file": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+      "before": "d910654e512bd7b2bde4be0dae930dc50a4c16617fb04ba80106a391bf84a336",
+      "after": "bc198646d8ff2527e6ec1a40a510170e452beb085a0c712964e20d351fe13fbf"
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/domain/entities/field-agent-payment.ts",
+      "before": "6f72d89b648d073f480b9f3b5686d916380dd84cecce6ec3725dff316896903b",
+      "after": "b209334353bbca0beb91d2d60e37b5676cb9e33275d0dd89a04186a8e44c05c9"
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts",
+      "before": "7502618ddcc56237db11fcf2af04e8b59126cf2f1ef5151ea714525841f8fadc",
+      "after": "438094112be36ae98f6d349af399c972f7b7a9b25a1f522929417410281a4edd"
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts",
+      "before": "2c0341e25ef6c71924a649f75840e1ef6cc87abe8329e4baa258d2ee79f6e713",
+      "after": "da56ad805140527b4ab4c8c08917b222c00fba49cbd95f17d17fa0d6bf84e4c7"
+    },
+    {
+      "file": "gai-backend/test/integration/test-app.helper.ts",
+      "before": "2254dd26e483b34f163d925ae370db3003e0ca0f59fc58ffe513c44f7e20be51",
+      "after": "30448da87600c032db081a91417a65d74bf0a8b011e2f3ee7568e99b577a4521"
+    },
+    {
+      "file": "gai-backend/test/unit/modules/payments-expenses/payments-expenses.spec.ts",
+      "before": "045af41b129d9ec490c8df4210375f9e484f09661ba7b1709b61f3610934b72e",
+      "after": "9dc48bdd6c14a3ae6310eb9ba58647dc57094208374bcae3ef92a89a361a9f4e"
+    }
+  ],
+  "missing": [],
+  "original_reproductions": [
+    {
+      "file": "docs/auditoria-integrada-gai-2026-10-28/evidencias/payment-race.json",
+      "sha256": "ef90d5c528fa47bd1e2d08483e3e188d41f7a17ffe104edfe12bc2d4ea17ba75"
+    },
+    {
+      "file": "docs/auditoria-integrada-gai-2026-10-28/evidencias/finance-reproduction.json",
+      "sha256": "623e96d72cc6d915fbcad133ac257e2ed59c6271188ecf9e16e9d0ab3f16571a"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -14,6 +15,12 @@ import {
 } from '../../../organizations/domain/ports/organization.repository.port';
 import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
 import { CompanyAuditOperation } from '../../domain/enums/company-audit-operation.enum';
+import { isValidCnpj, normalizeCnpj } from '../../domain/cnpj';
+import {
+  isValidBrazilianPhone,
+  normalizeBrazilianPhone,
+} from '../../../field-agents/domain/validation/brazilian-contact';
+import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { CompanyStatus } from '../../domain/enums/company-status.enum';
 import { CompanyUnitStatus } from '../../domain/enums/company-unit-status.enum';
 import {
@@ -79,9 +86,15 @@ export class CompaniesService {
       });
     }
     const document = this.normalizeDocument(dto.document);
+    this.normalizeContactFields(dto, dto.country ?? 'BR');
     if (document) {
       await this.assertUniqueDocument(organizationId, document);
     }
+    this.assertStatusPermission(
+      actor,
+      CompanyStatus.ACTIVE,
+      dto.status ?? CompanyStatus.ACTIVE,
+    );
     const company = new CompanyEntity();
     Object.assign(company, {
       organizationId,
@@ -100,7 +113,8 @@ export class CompaniesService {
       city: this.clean(dto.city),
       state: this.clean(dto.state),
       country: this.clean(dto.country) ?? 'BR',
-      status: CompanyStatus.ACTIVE,
+      status: dto.status ?? CompanyStatus.ACTIVE,
+      deletedAt: dto.status === CompanyStatus.INACTIVE ? new Date() : null,
       metadata: dto.metadata ?? null,
       createdById: actor.id,
       updatedById: actor.id,
@@ -167,6 +181,16 @@ export class CompaniesService {
   ): Promise<CompanyResponseDto> {
     const company = await this.findCompanyOrFail(id);
     this.scope.assertCanAccessOrganization(actor, company.organizationId);
+    if (company.deletedAt) {
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: 'Reative a empresa antes de editar seus dados.',
+      });
+    }
+    this.normalizeContactFields(
+      dto,
+      dto.country === undefined ? company.country : dto.country,
+    );
     const changes: Record<string, { before: unknown; after: unknown }> = {};
     if (dto.name !== undefined) {
       this.change(
@@ -194,6 +218,50 @@ export class CompaniesService {
         );
       }
       this.change(changes, company, 'document', document);
+    }
+    if (dto.state_registration !== undefined)
+      this.change(
+        changes,
+        company,
+        'stateRegistration',
+        this.clean(dto.state_registration),
+      );
+    if (dto.municipal_registration !== undefined)
+      this.change(
+        changes,
+        company,
+        'municipalRegistration',
+        this.clean(dto.municipal_registration),
+      );
+    if (dto.email !== undefined)
+      this.change(changes, company, 'email', this.clean(dto.email));
+    if (dto.phone !== undefined)
+      this.change(changes, company, 'phone', this.clean(dto.phone));
+    if (dto.zipcode !== undefined)
+      this.change(changes, company, 'zipcode', this.clean(dto.zipcode));
+    if (dto.address !== undefined)
+      this.change(changes, company, 'address', this.clean(dto.address));
+    if (dto.number !== undefined)
+      this.change(changes, company, 'number', this.clean(dto.number));
+    if (dto.complement !== undefined)
+      this.change(changes, company, 'complement', this.clean(dto.complement));
+    if (dto.district !== undefined)
+      this.change(changes, company, 'district', this.clean(dto.district));
+    if (dto.city !== undefined)
+      this.change(changes, company, 'city', this.clean(dto.city));
+    if (dto.state !== undefined)
+      this.change(changes, company, 'state', this.clean(dto.state));
+    if (dto.country !== undefined)
+      this.change(changes, company, 'country', this.clean(dto.country));
+    if (dto.status !== undefined && dto.status !== company.status) {
+      this.assertStatusPermission(actor, company.status, dto.status);
+      this.change(changes, company, 'status', dto.status);
+      this.change(
+        changes,
+        company,
+        'deletedAt',
+        dto.status === CompanyStatus.INACTIVE ? new Date() : null,
+      );
     }
     if (dto.metadata !== undefined) {
       this.change(changes, company, 'metadata', dto.metadata ?? null);
@@ -625,36 +693,68 @@ export class CompaniesService {
   }
 
   private normalizeDocument(value: string | null | undefined): string | null {
-    const digits = value?.replace(/\D/g, '') ?? '';
-    if (!digits) {
-      return null;
-    }
-    if (!this.isValidCnpj(digits)) {
+    const document = value == null ? '' : normalizeCnpj(value);
+    if (!document) return null;
+    if (!isValidCnpj(document)) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'document must be a valid CNPJ',
+        message:
+          'CNPJ invalido. Confira os 14 caracteres e os digitos verificadores.',
+        details: [{ field: 'document', message: 'CNPJ invalido.' }],
       });
     }
-    return digits;
+    return document;
   }
 
-  private isValidCnpj(value: string): boolean {
-    if (!/^\d{14}$/.test(value) || /^(\d)\1+$/.test(value)) {
-      return false;
+  private assertStatusPermission(
+    actor: CompanyActorContext,
+    before: CompanyStatus,
+    after: CompanyStatus,
+  ): void {
+    if (before === after || actor.systemRoles.includes(UserRole.PLATFORM_ADMIN))
+      return;
+    const permission =
+      after === CompanyStatus.ACTIVE
+        ? 'companies:reactivate'
+        : 'companies:deactivate';
+    if (!actor.permissions?.includes(permission))
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: 'Sem permissao para alterar a situacao da empresa.',
+      });
+  }
+
+  private normalizeContactFields(
+    dto: UpdateCompanyDto,
+    country: string | null,
+  ): void {
+    if (dto.country) dto.country = dto.country.trim().toUpperCase();
+    if (country?.trim().toUpperCase() !== 'BR') return;
+    if (dto.phone?.trim()) {
+      if (!isValidBrazilianPhone(dto.phone))
+        throw new BadRequestException({
+          code: 'VALIDATION_ERROR',
+          message: 'Telefone inválido. Informe DDD e telefone.',
+          details: [
+            {
+              field: 'phone',
+              message: 'Informe DDD e telefone fixo ou celular.',
+            },
+          ],
+        });
+      dto.phone = normalizeBrazilianPhone(dto.phone);
     }
-    const calc = (length: number): number => {
-      const weights =
-        length === 12
-          ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-          : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      const sum = value
-        .slice(0, length)
-        .split('')
-        .reduce((acc, digit, index) => acc + Number(digit) * weights[index], 0);
-      const mod = sum % 11;
-      return mod < 2 ? 0 : 11 - mod;
-    };
-    return calc(12) === Number(value[12]) && calc(13) === Number(value[13]);
+    if (dto.zipcode?.trim()) {
+      if (!/^\d{5}-?\d{3}$/.test(dto.zipcode.trim()))
+        throw new BadRequestException({
+          code: 'VALIDATION_ERROR',
+          message: 'CEP inválido.',
+          details: [
+            { field: 'zipcode', message: 'Informe um CEP com 8 dígitos.' },
+          ],
+        });
+      dto.zipcode = dto.zipcode.replace(/\D/g, '');
+    }
   }
 
   private clean(value: string | null | undefined): string | null {
@@ -664,7 +764,7 @@ export class CompaniesService {
 
   private cleanRequired(value: string, field: string): string {
     const cleaned = this.clean(value);
-    if (!cleaned) {
+    if (!cleaned || cleaned.length < 2) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
         message: `${field} is required`,

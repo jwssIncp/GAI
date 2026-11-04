@@ -10,6 +10,7 @@ if(mode==='tests'){
   const result={start:start.toISOString(),seconds:(Date.now()-start)/1000,exit_code:r.status,command:['node',...args],target:'127.0.0.1:33317/gai_validation_disposable'};
   fs.writeFileSync(path.join(out,'mysql-checks.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));process.exitCode=r.status||0;
 }else if(mode==='server'){
+  process.env.GAI_TEST_BROWSER_FIXTURES='1';
   require(path.join(root,'gai-backend/node_modules/ts-node/register/transpile-only'));
   const {createTestApp,seedTestData}=require(path.join(root,'gai-backend/test/integration/test-app.helper.ts'));
   (async()=>{const app=await createTestApp();await seedTestData(app);const express=app.getHttpAdapter().getInstance();const server=require('node:http').createServer((req,res)=>{if(req.url==='/api/v1/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({status:'ok',scope:'audit-harness'}));}else express(req,res);});await new Promise(resolve=>server.listen(33319,'127.0.0.1',resolve));console.log('AUDIT_SERVER_READY http://127.0.0.1:33319/api/v1 PID='+process.pid);process.on('SIGINT',async()=>{server.close();await app.close();process.exit(0)});})().catch(e=>{console.error(e);process.exitCode=1});

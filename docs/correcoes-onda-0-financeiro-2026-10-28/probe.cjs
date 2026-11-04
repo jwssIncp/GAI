@@ -1,10 +1,11 @@
+const { requireCredential, adminPassword } = require('../../scripts/runtime-credentials.cjs');
 // Real HTTP + MySQL 8. Only the fixed, disposable Wave 0 database is reachable.
 const assert = require('node:assert/strict'), path = require('node:path'), fs = require('node:fs');
 const mysql = require(path.resolve(__dirname, '../../gai-backend/node_modules/mysql2/promise'));
 const evidence = path.join(__dirname, 'evidencias');
 async function runtime(base = 'http://127.0.0.1:33329/api/v1') {
   const db = await mysql.createConnection({ host: '127.0.0.1', port: 33327, user: 'root', password: 'gai-validation-only', database: 'gai_validation_disposable' });
-  const login = await fetch(base + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier: 'org.admin', password: 'Admin@123456' }) });
+  const login = await fetch(base + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifier: 'org.admin', password: adminPassword() }) });
   assert.equal(login.status, 200); const token = (await login.json()).access_token;
   async function api(method, url, body, extra = {}, bearer = token) {
     const r = await fetch(base + url, { method, headers: { Authorization: 'Bearer ' + bearer, 'Content-Type': 'application/json', ...extra }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });

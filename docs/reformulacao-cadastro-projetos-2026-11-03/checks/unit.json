@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "unit",
+    "test/unit/modules/projects"
+  ],
+  "cwd": "gai-backend",
+  "started_at": "2026-11-03T10:12:31.508Z",
+  "duration_seconds": 19.834,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\unit.log"
+}

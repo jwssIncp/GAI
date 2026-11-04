@@ -1,3 +1,4 @@
+import { runtimePassword } from './runtime-credentials';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +8,7 @@ const output = process.env.GAI_TEST_EVIDENCE_DIR!;
 async function login(page: Page) {
   await page.goto('/login');
   await page.getByLabel('Login ou email').fill('org.admin');
-  await page.getByLabel('Senha', { exact: true }).fill('Admin@123456');
+  await page.getByLabel('Senha', { exact: true }).fill(runtimePassword('org.admin'));
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await page.waitForURL('**/app/dashboard');
   await expect(page.getByRole('heading', { name: /Visão geral|Visão Geral/ }).first()).toBeVisible();
@@ -53,7 +54,7 @@ test.describe('redesign behaviour', () => {
   test.beforeAll(async ({ request }) => {
     const fixture = JSON.parse(fs.readFileSync(path.join(output, 'navigation-fixture.json'), 'utf8'));
     primary = fixture.primary;
-    const response = await request.post('/api/v1/auth/login', { data: { identifier: 'org.admin', password: 'Admin@123456' } });
+    const response = await request.post('/api/v1/auth/login', { data: { identifier: 'org.admin', password: runtimePassword('org.admin') } });
     expect(response.ok()).toBe(true);
     token = (await response.json()).access_token;
     const asset = await request.post('/api/v1/projects/' + primary + '/inventory-items', {

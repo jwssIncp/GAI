@@ -1,0 +1,169 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.real.config.ts"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\playwright.real.config.ts",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/workspace/gai-frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/e2e/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-real",
+        "name": "chromium-real",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/workspace/gai-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "receivables-real.spec.ts",
+          "dre-real.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\e2e\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dre-real.spec.ts",
+      "file": "dre-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15681,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T06:04:05.120Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcm9qZWN0IjogMSwKICAiY29tcGFueSI6IDIsCiAgInJlY2VpdmFibGUiOiAxLAogICJlbnRyeUlkIjogMSwKICAiYWNjb3VudCI6IDEsCiAgInJldmlzaW9uIjogMiwKICAibW9udGgiOiAiMjAyNi0wMSIsCiAgImlzc3VlZF9vbiI6ICIyMDI2LTEwLTAxIiwKICAiYW1vdW50IjogIjgwLjAxIiwKICAiZXJyb3JzIjogW10sCiAgImh0dHAiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17d1d91c481fcf249161-32be1bc35c5dc4bd5ad6",
+          "file": "dre-real.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "receivables-real.spec.ts",
+      "file": "receivables-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16852,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T06:04:21.052Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "37d8aba6d7dab189abb9-6cd4d3b4ee084608c9e3",
+          "file": "receivables-real.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T06:03:41.568Z",
+    "duration": 56868.768,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

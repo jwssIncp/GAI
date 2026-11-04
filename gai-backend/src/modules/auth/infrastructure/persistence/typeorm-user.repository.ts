@@ -19,7 +19,9 @@ export class TypeOrmUserRepository implements UserRepository {
 
   async findByLoginOrEmail(identifier: string): Promise<User | null> {
     const entity = await this.repo.findOne({
-      where: [{ login: identifier }, { email: identifier }],
+      where: identifier.trim().includes('@')
+        ? { email: identifier.trim().toLowerCase() }
+        : { login: identifier.trim().toLowerCase() },
     });
     return entity ? this.toDomain(entity) : null;
   }
@@ -81,6 +83,10 @@ export class TypeOrmUserRepository implements UserRepository {
       passwordChangedAt: entity.passwordChangedAt,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      authVersion: entity.authVersion,
+      mustChangePassword: entity.mustChangePassword,
+      fullName: entity.fullName,
+      temporaryPasswordExpiresAt: entity.temporaryPasswordExpiresAt,
     });
   }
 }

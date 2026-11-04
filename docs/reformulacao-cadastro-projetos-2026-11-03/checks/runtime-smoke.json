@@ -1,0 +1,40 @@
+{
+  "checked_at": "2026-11-03T10:23:03.238Z",
+  "health": {
+    "status": 200
+  },
+  "frontend": {
+    "status": 200
+  },
+  "protected_options": {
+    "status": 401
+  },
+  "openapi": {
+    "status": 200,
+    "project_paths": [
+      "/api/v1/projects/creation-options",
+      "/api/v1/projects/edit-options",
+      "/api/v1/projects/company-options",
+      "/api/v1/projects/{id}/history",
+      "/api/v1/projects/{projectId}/inventory-items/{itemId}/plate-history",
+      "/api/v1/projects/{projectId}/preparations/{id}/history",
+      "/api/v1/projects/{projectId}/field-coordination/{id}/history",
+      "/api/v1/projects/{projectId}/inventory-sessions/{sessionId}/assisted-reconciliation/candidates/{id}/history"
+    ],
+    "create_fields": [
+      "code",
+      "project_type",
+      "responsible_user_id",
+      "planning_responsible_user_id",
+      "planning_notes",
+      "organization_id",
+      "company_id",
+      "name",
+      "description",
+      "start_date",
+      "end_date",
+      "settings",
+      "metadata"
+    ]
+  }
+}

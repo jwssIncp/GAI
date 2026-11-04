@@ -1,0 +1,261 @@
+{
+  "@eslint/js": {
+    "current": "9.39.4",
+    "wanted": "9.39.5",
+    "latest": "10.0.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@eslint\\js"
+  },
+  "@hookform/resolvers": {
+    "current": "3.10.0",
+    "wanted": "3.10.0",
+    "latest": "6.0.2",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@hookform\\resolvers"
+  },
+  "@playwright/test": {
+    "current": "1.61.1",
+    "wanted": "1.64.1",
+    "latest": "1.64.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@playwright\\test"
+  },
+  "@radix-ui/react-dialog": {
+    "current": "1.1.19",
+    "wanted": "1.3.1",
+    "latest": "1.3.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@radix-ui\\react-dialog"
+  },
+  "@radix-ui/react-dropdown-menu": {
+    "current": "2.1.20",
+    "wanted": "2.2.1",
+    "latest": "2.2.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@radix-ui\\react-dropdown-menu"
+  },
+  "@radix-ui/react-popover": {
+    "current": "1.1.19",
+    "wanted": "1.3.1",
+    "latest": "1.3.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@radix-ui\\react-popover"
+  },
+  "@radix-ui/react-slot": {
+    "current": "1.3.0",
+    "wanted": "1.5.0",
+    "latest": "1.5.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@radix-ui\\react-slot"
+  },
+  "@tanstack/react-query": {
+    "current": "5.101.2",
+    "wanted": "5.105.0",
+    "latest": "5.105.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@tanstack\\react-query"
+  },
+  "@testing-library/jest-dom": {
+    "current": "6.9.1",
+    "wanted": "6.9.1",
+    "latest": "7.0.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@testing-library\\jest-dom"
+  },
+  "@testing-library/react": {
+    "current": "16.3.2",
+    "wanted": "16.3.3",
+    "latest": "16.3.3",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@testing-library\\react"
+  },
+  "@testing-library/user-event": {
+    "current": "14.6.1",
+    "wanted": "14.6.8",
+    "latest": "14.6.8",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@testing-library\\user-event"
+  },
+  "@types/node": {
+    "current": "24.13.6",
+    "wanted": "24.19.2",
+    "latest": "26.6.6",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@types\\node"
+  },
+  "@types/react": {
+    "current": "19.2.17",
+    "wanted": "19.3.0",
+    "latest": "19.3.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@types\\react"
+  },
+  "@types/react-dom": {
+    "current": "19.2.3",
+    "wanted": "19.3.0",
+    "latest": "19.3.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@types\\react-dom"
+  },
+  "@vitejs/plugin-react": {
+    "current": "4.7.0",
+    "wanted": "4.7.0",
+    "latest": "6.1.2",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@vitejs\\plugin-react"
+  },
+  "autoprefixer": {
+    "current": "10.5.2",
+    "wanted": "10.6.2",
+    "latest": "10.6.2",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\autoprefixer"
+  },
+  "axios": {
+    "current": "1.18.1",
+    "wanted": "1.21.0",
+    "latest": "1.21.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\axios"
+  },
+  "docx-preview": {
+    "current": "0.3.7",
+    "wanted": "0.3.7",
+    "latest": "0.4.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\docx-preview"
+  },
+  "eslint": {
+    "current": "9.39.4",
+    "wanted": "9.39.5",
+    "latest": "10.13.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\eslint"
+  },
+  "eslint-plugin-react-hooks": {
+    "current": "5.2.0",
+    "wanted": "5.2.0",
+    "latest": "7.1.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\eslint-plugin-react-hooks"
+  },
+  "eslint-plugin-react-refresh": {
+    "current": "0.4.26",
+    "wanted": "0.4.26",
+    "latest": "0.5.7",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\eslint-plugin-react-refresh"
+  },
+  "globals": {
+    "current": "15.15.0",
+    "wanted": "15.15.0",
+    "latest": "17.13.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\globals"
+  },
+  "jsdom": {
+    "current": "25.0.1",
+    "wanted": "25.0.1",
+    "latest": "30.1.3",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\jsdom"
+  },
+  "lucide-react": {
+    "current": "0.468.0",
+    "wanted": "0.468.0",
+    "latest": "1.63.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\lucide-react"
+  },
+  "postcss": {
+    "current": "8.5.16",
+    "wanted": "8.5.32",
+    "latest": "8.5.32",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\postcss"
+  },
+  "react": {
+    "current": "19.2.7",
+    "wanted": "19.3.1",
+    "latest": "19.3.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\react"
+  },
+  "react-dom": {
+    "current": "19.2.7",
+    "wanted": "19.3.1",
+    "latest": "19.3.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\react-dom"
+  },
+  "react-hook-form": {
+    "current": "7.81.0",
+    "wanted": "7.91.0",
+    "latest": "7.91.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\react-hook-form"
+  },
+  "react-router-dom": {
+    "current": "7.18.1",
+    "wanted": "7.18.5",
+    "latest": "7.18.5",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\react-router-dom"
+  },
+  "recharts": {
+    "current": "2.15.4",
+    "wanted": "2.15.4",
+    "latest": "3.10.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\recharts"
+  },
+  "tailwind-merge": {
+    "current": "2.6.1",
+    "wanted": "2.6.1",
+    "latest": "3.7.0",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\tailwind-merge"
+  },
+  "tailwindcss": {
+    "current": "3.4.19",
+    "wanted": "3.4.19",
+    "latest": "4.3.3",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\tailwindcss"
+  },
+  "typescript": {
+    "current": "5.9.3",
+    "wanted": "5.9.3",
+    "latest": "7.0.2",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\typescript"
+  },
+  "typescript-eslint": {
+    "current": "8.63.0",
+    "wanted": "8.72.1",
+    "latest": "8.72.1",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\typescript-eslint"
+  },
+  "vite": {
+    "current": "6.4.3",
+    "wanted": "6.4.5",
+    "latest": "8.3.5",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\vite"
+  },
+  "vitest": {
+    "current": "2.1.9",
+    "wanted": "2.1.9",
+    "latest": "5.0.5",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\vitest"
+  },
+  "zod": {
+    "current": "3.25.76",
+    "wanted": "3.25.76",
+    "latest": "4.6.7",
+    "dependent": "gai-frontend",
+    "location": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\zod"
+  }
+}

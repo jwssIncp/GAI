@@ -12,6 +12,12 @@ const baseUser: CurrentUser = {
 };
 
 describe('permissions', () => {
+  it('mantém a navegação administrativa compatível com o guard do backend', () => {
+    const operator: CurrentUser = { ...baseUser, organization_id: 1, permissions: [{ key: 'users:read', scope: 'ORGANIZATION' }, { key: 'org_roles:read', scope: 'ORGANIZATION' }], role_assignments: [] };
+    expect(hasPermission(operator, 'users:read')).toBe(true);
+    expect(canAccess(operator, ['users:read'])).toBe(false);
+    expect(canAccess(operator, ['org_roles:read'])).toBe(false);
+  });
   it('libera plataforma para qualquer permissao visual', () => {
     const user: CurrentUser = { ...baseUser, role_assignments: [{ assignment_id: 1, role_id: 1, role_key: 'PLATFORM_ADMIN', role_name: 'Platform', role_type: 'SYSTEM', organization_id: null, assigned_at: '2026-01-01' }] };
     expect(isPlatformAdmin(user)).toBe(true);

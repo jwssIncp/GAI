@@ -1,0 +1,29 @@
+[
+  {
+    "file": "volume-2500.docx",
+    "sha256": "5851ee0da59aaa6abcdbfb3b860c1a3410a1b4ff0939efab2220a1bd02cdf18b",
+    "zip_crc": true,
+    "xml_and_relationships_valid": true,
+    "native_rows_in_order": 2500,
+    "page_fields": true,
+    "word_pagination_certified": false
+  },
+  {
+    "file": "volume-2500.pdf",
+    "sha256": "e5cd874f38d9d9919e787aeac1ff79a2dd6f394d2dc72ae1790cf58ad84875de",
+    "pages": 135,
+    "all_pages_rendered": true,
+    "all_2500_row_markers_present": true,
+    "outside_margin_characters": 0,
+    "visual_review": {
+      "contact_sheets_all_pages": true,
+      "individual_pages": [
+        3,
+        68,
+        134,
+        135
+      ],
+      "result": "No clipping, overlap or broken table headers seen in reviewed images; text/margins checked on all pages."
+    }
+  }
+]

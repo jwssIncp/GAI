@@ -1,3 +1,5 @@
+import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
+import { ProjectRegistrationService } from './application/services/project-registration.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
@@ -17,7 +19,11 @@ import { ProjectsController } from './presentation/projects.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProjectEntity, ProjectAuditLogEntity]),
+    TypeOrmModule.forFeature([
+      ProjectEntity,
+      ProjectAuditLogEntity,
+      UserEntity,
+    ]),
     AuthModule,
     OrganizationsModule,
     CompaniesModule,
@@ -25,6 +31,7 @@ import { ProjectsController } from './presentation/projects.controller';
   controllers: [ProjectsController],
   providers: [
     ProjectScopeService,
+    ProjectRegistrationService,
     CreateProjectUseCase,
     ListProjectsUseCase,
     GetProjectUseCase,

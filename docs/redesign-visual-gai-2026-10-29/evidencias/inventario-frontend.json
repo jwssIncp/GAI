@@ -1,0 +1,962 @@
+[
+  {
+    "path": "gai-frontend/src/app/AppProviders.tsx",
+    "lines": 31,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/Cards.tsx",
+    "lines": 52,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 17,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/DataTable.tsx",
+    "lines": 34,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 1
+  },
+  {
+    "path": "gai-frontend/src/components/base/FilterPanel.tsx",
+    "lines": 14,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/FormField.tsx",
+    "lines": 43,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 5,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/GaiLogo.tsx",
+    "lines": 19,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/Inputs.tsx",
+    "lines": 15,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageContainer.tsx",
+    "lines": 6,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageHeader.tsx",
+    "lines": 15,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/Pagination.tsx",
+    "lines": 21,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/SearchInput.tsx",
+    "lines": 17,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 5,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/States.tsx",
+    "lines": 53,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 14,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/StatusBadge.tsx",
+    "lines": 87,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 74,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/base/Tabs.tsx",
+    "lines": 18,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/button.tsx",
+    "lines": 55,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 23,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/dialog.tsx",
+    "lines": 68,
+    "controls": 4,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/help-popover.tsx",
+    "lines": 47,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/icon-input.tsx",
+    "lines": 24,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/input.tsx",
+    "lines": 20,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 10,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/components/ui/toast.tsx",
+    "lines": 68,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 16,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/accountabilities/ProjectAccountabilitiesPage.tsx",
+    "lines": 34,
+    "controls": 15,
+    "literalColors": [],
+    "semanticColors": 13,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingImportsPanel.tsx",
+    "lines": 100,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 8,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingItemDetailDrawer.tsx",
+    "lines": 65,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingItemForm.tsx",
+    "lines": 69,
+    "controls": 17,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/ProjectAccountingItemsPage.tsx",
+    "lines": 129,
+    "controls": 11,
+    "literalColors": [],
+    "semanticColors": 9,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/auth/AuthProvider.tsx",
+    "lines": 83,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/auth/LoginPage.tsx",
+    "lines": 74,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 12,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PasswordPages.tsx",
+    "lines": 97,
+    "controls": 9,
+    "literalColors": [],
+    "semanticColors": 13,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PermissionGate.tsx",
+    "lines": 8,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/auth/ProfilePage.tsx",
+    "lines": 25,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetDetailPage.tsx",
+    "lines": 480,
+    "controls": 19,
+    "literalColors": [],
+    "semanticColors": 17,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetForm.tsx",
+    "lines": 655,
+    "controls": 35,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetLayout.tsx",
+    "lines": 41,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetMemory.tsx",
+    "lines": 168,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetPricingPage.tsx",
+    "lines": 246,
+    "controls": 14,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetsPage.tsx",
+    "lines": 195,
+    "controls": 9,
+    "literalColors": [],
+    "semanticColors": 5,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/companies/CompaniesPage.tsx",
+    "lines": 44,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/CommercialOverview.tsx",
+    "lines": 514,
+    "controls": 12,
+    "literalColors": [],
+    "semanticColors": 8,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/ProjectContractsPage.tsx",
+    "lines": 586,
+    "controls": 28,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/DashboardPage.tsx",
+    "lines": 128,
+    "controls": 2,
+    "literalColors": [
+      "rgba(255,255,255,.5)",
+      "rgba(255,255,255,.08)"
+    ],
+    "semanticColors": 19,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx",
+    "lines": 102,
+    "controls": 15,
+    "literalColors": [],
+    "semanticColors": 12,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OverviewDetails.tsx",
+    "lines": 73,
+    "controls": 20,
+    "literalColors": [],
+    "semanticColors": 23,
+    "rawTables": 2
+  },
+  {
+    "path": "gai-frontend/src/features/documents/DocumentExport.tsx",
+    "lines": 33,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/documents/VisualTemplateEditor.tsx",
+    "lines": 34,
+    "controls": 9,
+    "literalColors": [
+      "#16324F"
+    ],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreAccountsPage.tsx",
+    "lines": 266,
+    "controls": 14,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreEntriesPage.tsx",
+    "lines": 645,
+    "controls": 29,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreLayout.tsx",
+    "lines": 42,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DrePeriodsPage.tsx",
+    "lines": 250,
+    "controls": 13,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreReportPage.tsx",
+    "lines": 553,
+    "controls": 15,
+    "literalColors": [],
+    "semanticColors": 10,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/ProjectExportJobsPage.tsx",
+    "lines": 213,
+    "controls": 12,
+    "literalColors": [],
+    "semanticColors": 11,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentDetailDrawer.tsx",
+    "lines": 47,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentForm.tsx",
+    "lines": 75,
+    "controls": 7,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentSelect.tsx",
+    "lines": 69,
+    "controls": 5,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentsPage.tsx",
+    "lines": 144,
+    "controls": 9,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/ProjectFieldAgentsPanel.tsx",
+    "lines": 209,
+    "controls": 16,
+    "literalColors": [],
+    "semanticColors": 13,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/FieldCoordinationPage.tsx",
+    "lines": 1420,
+    "controls": 49,
+    "literalColors": [],
+    "semanticColors": 12,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/FieldTemplates.tsx",
+    "lines": 592,
+    "controls": 27,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ExpenseAttachmentsPanel.tsx",
+    "lines": 148,
+    "controls": 4,
+    "literalColors": [],
+    "semanticColors": 16,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ExpenseForm.tsx",
+    "lines": 45,
+    "controls": 7,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/finance/PaymentForm.tsx",
+    "lines": 55,
+    "controls": 11,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ProjectFinancePage.tsx",
+    "lines": 366,
+    "controls": 35,
+    "literalColors": [],
+    "semanticColors": 19,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/import-sessions/ProjectImportSessionsPage.tsx",
+    "lines": 392,
+    "controls": 34,
+    "literalColors": [],
+    "semanticColors": 37,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-item-images/InventoryItemImagesGallery.tsx",
+    "lines": 144,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 12,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/InventoryItemDetailDrawer.tsx",
+    "lines": 70,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/InventoryItemForm.tsx",
+    "lines": 77,
+    "controls": 20,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ItemEvidencePanels.tsx",
+    "lines": 19,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 5,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.tsx",
+    "lines": 143,
+    "controls": 12,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ValuationBatchPanel.tsx",
+    "lines": 664,
+    "controls": 18,
+    "literalColors": [],
+    "semanticColors": 9,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.tsx",
+    "lines": 555,
+    "controls": 11,
+    "literalColors": [],
+    "semanticColors": 14,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.tsx",
+    "lines": 236,
+    "controls": 30,
+    "literalColors": [],
+    "semanticColors": 18,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/ObservationEvidenceDrawer.tsx",
+    "lines": 154,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 12,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/ProjectInventorySessionsPage.tsx",
+    "lines": 62,
+    "controls": 7,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationDetailDrawer.tsx",
+    "lines": 48,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationForm.tsx",
+    "lines": 97,
+    "controls": 8,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationsPage.tsx",
+    "lines": 177,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/PendingIssueDetailDrawer.tsx",
+    "lines": 68,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 9,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/PendingIssueForm.tsx",
+    "lines": 70,
+    "controls": 12,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/ProjectPendingIssuesPage.tsx",
+    "lines": 214,
+    "controls": 22,
+    "literalColors": [],
+    "semanticColors": 15,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/placeholders/PlaceholderPage.tsx",
+    "lines": 13,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/BrazilProjectMap.tsx",
+    "lines": 80,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 9,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/dashboardVisuals.tsx",
+    "lines": 175,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 28,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/ProjectDashboardPage.tsx",
+    "lines": 364,
+    "controls": 11,
+    "literalColors": [],
+    "semanticColors": 29,
+    "rawTables": 2
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/PreparationForms.tsx",
+    "lines": 584,
+    "controls": 24,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.tsx",
+    "lines": 822,
+    "controls": 17,
+    "literalColors": [],
+    "semanticColors": 22,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/TemplateManager.tsx",
+    "lines": 773,
+    "controls": 31,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectContextLink.tsx",
+    "lines": 24,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectForm.tsx",
+    "lines": 167,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 8,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "lines": 179,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLifecycleActions.tsx",
+    "lines": 94,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSelectors.tsx",
+    "lines": 181,
+    "controls": 4,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectsPage.tsx",
+    "lines": 152,
+    "controls": 4,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSummaryPage.tsx",
+    "lines": 417,
+    "controls": 5,
+    "literalColors": [],
+    "semanticColors": 51,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectUnitsPanel.tsx",
+    "lines": 107,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 6,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/CashFlowPage.tsx",
+    "lines": 204,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceLayout.tsx",
+    "lines": 46,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceShared.tsx",
+    "lines": 185,
+    "controls": 10,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivableDetailPage.tsx",
+    "lines": 386,
+    "controls": 18,
+    "literalColors": [],
+    "semanticColors": 7,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivableForm.tsx",
+    "lines": 335,
+    "controls": 13,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivablesPage.tsx",
+    "lines": 107,
+    "controls": 2,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/roles/RolesPage.tsx",
+    "lines": 41,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/shared/ResourceListPage.tsx",
+    "lines": 81,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportDetailPage.tsx",
+    "lines": 490,
+    "controls": 24,
+    "literalColors": [],
+    "semanticColors": 3,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportForms.tsx",
+    "lines": 441,
+    "controls": 27,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportPreview.tsx",
+    "lines": 257,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 1
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/reports.css",
+    "lines": 53,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsLayout.tsx",
+    "lines": 41,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsPage.tsx",
+    "lines": 146,
+    "controls": 8,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportTemplatesPage.tsx",
+    "lines": 318,
+    "controls": 13,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/features/users/UsersPage.tsx",
+    "lines": 44,
+    "controls": 6,
+    "literalColors": [],
+    "semanticColors": 1,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/layouts/AppLayout.tsx",
+    "lines": 31,
+    "controls": 1,
+    "literalColors": [],
+    "semanticColors": 4,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/layouts/AuthLayout.tsx",
+    "lines": 56,
+    "controls": 2,
+    "literalColors": [
+      "rgba(255,255,255,.5)",
+      "rgba(255,255,255,.07)"
+    ],
+    "semanticColors": 16,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/layouts/Sidebar.tsx",
+    "lines": 92,
+    "controls": 3,
+    "literalColors": [],
+    "semanticColors": 2,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/layouts/Topbar.tsx",
+    "lines": 128,
+    "controls": 8,
+    "literalColors": [],
+    "semanticColors": 13,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/main.tsx",
+    "lines": 15,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/router/ContextRedirect.tsx",
+    "lines": 7,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/router/projectRoutes.tsx",
+    "lines": 163,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/router/ProtectedRoute.tsx",
+    "lines": 27,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/router/router.tsx",
+    "lines": 84,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 0,
+    "rawTables": 0
+  },
+  {
+    "path": "gai-frontend/src/styles/globals.css",
+    "lines": 376,
+    "controls": 0,
+    "literalColors": [],
+    "semanticColors": 67,
+    "rawTables": 0
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "stopped_processes": [
+    19528,
+    23480
+  ],
+  "preserved_running_containers": [
+    "gai-audit-20261028-mysql-fast",
+    "gai-audit-20261028-s3"
+  ],
+  "preserved_stopped_containers": [
+    "gai-audit-20261028-mysql"
+  ],
+  "mysql_port": 33317,
+  "s3_port": 33318,
+  "api_33319": "stopped",
+  "frontend_33320": "stopped",
+  "synthetic_backup": "evidencias/dados-sinteticos.sql",
+  "s3_backup": "evidencias/storage-sintetico",
+  "verified_ports": [
+    {
+      "port": 33319,
+      "status": "stopped",
+      "code": "ECONNREFUSED"
+    },
+    {
+      "port": 33320,
+      "status": "stopped",
+      "code": "ECONNREFUSED"
+    }
+  ],
+  "verified_at": "2026-10-28T21:48:20.991Z"
+}

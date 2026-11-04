@@ -1,0 +1,588 @@
+{
+  "date": "2026-10-29",
+  "runtime": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "passed": true,
+  "checks": [
+    {
+      "name": "deliverable:README.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:auditoria-visual.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:design-system.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:identidade-gai.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:navegacao-ux.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:interatividade.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:temas.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:responsividade.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:acessibilidade.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:testes.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:antes-depois.md",
+      "passed": true
+    },
+    {
+      "name": "deliverable:arquivos.json",
+      "passed": true
+    },
+    {
+      "name": "tests:backend",
+      "passed": true,
+      "details": {
+        "total": 683,
+        "passed": 683,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "tests:mysql",
+      "passed": true,
+      "details": {
+        "total": 325,
+        "passed": 325,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "tests:frontend",
+      "passed": true,
+      "details": {
+        "total": 273,
+        "passed": 273,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "tests:visual",
+      "passed": true,
+      "details": {
+        "total": 23,
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "title": "visual after light 1366",
+            "status": "passed"
+          },
+          {
+            "title": "visual after dark 1366",
+            "status": "passed"
+          },
+          {
+            "title": "visual after light 390",
+            "status": "passed"
+          },
+          {
+            "title": "visual after dark 390",
+            "status": "passed"
+          },
+          {
+            "title": "runtime evidence directory",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 360",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 360",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 390",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 390",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 768",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 768",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 1024",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 1024",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 1366",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 1366",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules light 1920",
+            "status": "passed"
+          },
+          {
+            "title": "responsive modules dark 1920",
+            "status": "passed"
+          },
+          {
+            "title": "theme persistence, system changes, portal menu, profile and keyboard skip link",
+            "status": "passed"
+          },
+          {
+            "title": "semantic contrast in both themes",
+            "status": "passed"
+          },
+          {
+            "title": "real project creation, filters, pagination, ordering, confirmation and export",
+            "status": "passed"
+          },
+          {
+            "title": "invalid reset token is explained with the real API",
+            "status": "passed"
+          },
+          {
+            "title": "preparation context and project financial view survive refresh and history",
+            "status": "passed"
+          },
+          {
+            "title": "touch phones and tablets keep UF targets and portal navigation usable",
+            "status": "passed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tests:flows",
+      "passed": true,
+      "details": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "title": "ORG_ADMIN reviews and persists assisted reconciliation while retaining project navigation",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN publishes explicit prices, builds a standalone budget, compares scenarios and approves an immutable proposal",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN manages contracts/amendments, refreshes history and exports filtered commercial overview",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN generates and downloads approved PDF/DOCX and commercial versions",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN creates a versioned field model, assigns and approves a task, completes/reopens field and retains workspace navigation",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN preserves context, history and tenant boundaries at 1440px",
+            "status": "passed"
+          },
+          {
+            "title": "restricted reader preserves context, history and tenant boundaries at 1440px",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN preserves context, history and tenant boundaries at 390px",
+            "status": "passed"
+          },
+          {
+            "title": "restricted reader preserves context, history and tenant boundaries at 390px",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN continuously navigates real project pages, history, deep links, mobile and tenant boundaries",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN creates model, drafts, validates, approves and preserves historical report",
+            "status": "passed"
+          },
+          {
+            "title": "ORG_ADMIN selects between pages, previews and applies common/individual valuations with persisted results and protected XLSX",
+            "status": "passed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tests:navigationRecheck",
+      "passed": true,
+      "details": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "title": "theme persistence, system changes, portal menu, profile and keyboard skip link",
+            "status": "passed"
+          },
+          {
+            "title": "semantic contrast in both themes",
+            "status": "passed"
+          },
+          {
+            "title": "preparation context and project financial view survive refresh and history",
+            "status": "passed"
+          },
+          {
+            "title": "touch phones and tablets keep UF targets and portal navigation usable",
+            "status": "passed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "gai-frontend-typescript",
+      "passed": true,
+      "details": 25.194
+    },
+    {
+      "name": "gai-frontend-node-typescript",
+      "passed": true,
+      "details": 3.103
+    },
+    {
+      "name": "gai-frontend-build",
+      "passed": true,
+      "details": 22.432
+    },
+    {
+      "name": "gai-frontend-lint",
+      "passed": true,
+      "details": 11.057
+    },
+    {
+      "name": "gai-backend-typescript",
+      "passed": true,
+      "details": 31.925
+    },
+    {
+      "name": "gai-backend-build",
+      "passed": true,
+      "details": 110.838
+    },
+    {
+      "name": "gai-backend-lint",
+      "passed": true,
+      "details": 106.691
+    },
+    {
+      "name": "frontend-eslint.json",
+      "passed": true,
+      "details": {
+        "files": 247,
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    {
+      "name": "backend-eslint.json",
+      "passed": true,
+      "details": {
+        "files": 632,
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    {
+      "name": "manifest hashes",
+      "passed": true
+    },
+    {
+      "name": "no backend modifications",
+      "passed": true
+    },
+    {
+      "name": "preserved:gai-frontend/package.json",
+      "passed": true
+    },
+    {
+      "name": "preserved:gai-frontend/package-lock.json",
+      "passed": true
+    },
+    {
+      "name": "preserved:gai-backend/package.json",
+      "passed": true
+    },
+    {
+      "name": "preserved:gai-backend/package-lock.json",
+      "passed": true
+    },
+    {
+      "name": "earlier local sources",
+      "passed": true,
+      "details": {
+        "compared": 1000,
+        "unchanged": 1000
+      }
+    },
+    {
+      "name": "brand palette:ink",
+      "passed": true
+    },
+    {
+      "name": "brand palette:navy",
+      "passed": true
+    },
+    {
+      "name": "brand palette:green",
+      "passed": true
+    },
+    {
+      "name": "brand palette:green-deep",
+      "passed": true
+    },
+    {
+      "name": "brand palette:teal",
+      "passed": true
+    },
+    {
+      "name": "semantic contrast",
+      "passed": true,
+      "details": {
+        "pairs": 26,
+        "minimum": 4.671410378805826
+      }
+    },
+    {
+      "name": "observed-dark-1024.json",
+      "passed": true
+    },
+    {
+      "name": "observed-dark-1366.json",
+      "passed": true
+    },
+    {
+      "name": "observed-dark-1920.json",
+      "passed": true
+    },
+    {
+      "name": "observed-dark-360.json",
+      "passed": true
+    },
+    {
+      "name": "observed-dark-390.json",
+      "passed": true
+    },
+    {
+      "name": "observed-dark-768.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-1024.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-1366.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-1920.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-360.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-390.json",
+      "passed": true
+    },
+    {
+      "name": "observed-light-768.json",
+      "passed": true
+    },
+    {
+      "name": "responsive matrix",
+      "passed": true,
+      "details": {
+        "pages": 96,
+        "widths": [
+          360,
+          390,
+          768,
+          1024,
+          1366,
+          1920
+        ]
+      }
+    },
+    {
+      "name": "touch phones and tablets",
+      "passed": true,
+      "details": {
+        "contexts": 8
+      }
+    },
+    {
+      "name": "final compact touch controls",
+      "passed": true,
+      "details": {
+        "contexts": 8
+      }
+    },
+    {
+      "name": "chart tooltips in both themes",
+      "passed": true,
+      "details": [
+        {
+          "theme": "light",
+          "foreground": "rgb(15, 23, 41)",
+          "item": "rgb(15, 23, 41)",
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "theme": "dark",
+          "foreground": "rgb(241, 245, 248)",
+          "item": "rgb(241, 245, 248)",
+          "background": "rgb(15, 26, 42)"
+        }
+      ]
+    },
+    {
+      "name": "raster logo:32",
+      "passed": true
+    },
+    {
+      "name": "raster logo:180",
+      "passed": true
+    },
+    {
+      "name": "raster logo:192",
+      "passed": true
+    },
+    {
+      "name": "raster logo:512",
+      "passed": true
+    },
+    {
+      "name": "vector logo:gai-horizontal-light",
+      "passed": true
+    },
+    {
+      "name": "vector logo:gai-horizontal-dark",
+      "passed": true
+    },
+    {
+      "name": "vector logo:gai-compact-light",
+      "passed": true
+    },
+    {
+      "name": "vector logo:gai-compact-dark",
+      "passed": true
+    },
+    {
+      "name": "vector logo:gai-symbol",
+      "passed": true
+    },
+    {
+      "name": "documentation links:README.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:auditoria-visual.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:design-system.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:identidade-gai.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:navegacao-ux.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:interatividade.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:temas.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:responsividade.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:acessibilidade.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:testes.md",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "documentation links:antes-depois.md",
+      "passed": true,
+      "details": []
+    }
+  ]
+}

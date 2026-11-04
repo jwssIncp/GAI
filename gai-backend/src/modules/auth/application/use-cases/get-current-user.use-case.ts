@@ -37,6 +37,8 @@ export class GetCurrentUserUseCase {
 
     return CurrentUserDto.fromUser({
       id: user.id,
+      fullName: user.fullName,
+      mustChangePassword: user.mustChangePassword,
       login: user.login,
       email: user.email,
       status: user.status,
@@ -44,7 +46,9 @@ export class GetCurrentUserUseCase {
       roleAssignments: roleAssignments.map((assignment) =>
         RoleAssignmentResponseDto.fromAssignedRole(assignment),
       ),
-      permissions: await this.permissions.resolveForUser(user.id),
+      permissions: user.mustChangePassword
+        ? []
+        : await this.permissions.resolveForUser(user.id),
     });
   }
 }

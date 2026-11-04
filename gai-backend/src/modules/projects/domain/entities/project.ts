@@ -1,3 +1,4 @@
+import { ProjectType } from '../enums/project-type.enum';
 import { ProjectStatus } from '../enums/project-status.enum';
 import {
   ProjectStatusAction,
@@ -11,6 +12,14 @@ export interface ProjectProps {
   organizationId: number;
   companyId: number | null;
   name: string;
+  code?: string | null;
+  projectType?: ProjectType | null;
+  responsibleUserId?: number | null;
+  planningResponsibleUserId?: number | null;
+  planningNotes?: string | null;
+  companyName?: string | null;
+  responsibleUserName?: string | null;
+  planningResponsibleUserName?: string | null;
   description: string | null;
   status: ProjectStatus;
   startDate: Date | null;
@@ -44,6 +53,31 @@ export class Project {
 
   get companyId(): number | null {
     return this.props.companyId;
+  }
+
+  get code(): string | null {
+    return this.props.code ?? null;
+  }
+  get projectType(): ProjectType | null {
+    return this.props.projectType ?? null;
+  }
+  get responsibleUserId(): number | null {
+    return this.props.responsibleUserId ?? null;
+  }
+  get planningResponsibleUserId(): number | null {
+    return this.props.planningResponsibleUserId ?? null;
+  }
+  get planningNotes(): string | null {
+    return this.props.planningNotes ?? null;
+  }
+  get companyName(): string | null {
+    return this.props.companyName ?? null;
+  }
+  get responsibleUserName(): string | null {
+    return this.props.responsibleUserName ?? null;
+  }
+  get planningResponsibleUserName(): string | null {
+    return this.props.planningResponsibleUserName ?? null;
   }
 
   get description(): string | null {
@@ -102,6 +136,11 @@ export class Project {
 
   updateFields(fields: {
     name?: string;
+    code?: string | null;
+    projectType?: ProjectType | null;
+    responsibleUserId?: number | null;
+    planningResponsibleUserId?: number | null;
+    planningNotes?: string | null;
     description?: string | null;
     startDate?: Date | null;
     endDate?: Date | null;
@@ -119,6 +158,36 @@ export class Project {
 
     const changes: Record<string, { before: unknown; after: unknown }> = {};
 
+    this.applyChange(changes, 'code', fields.code, (value) => {
+      this.props.code = value;
+    });
+    this.applyChange(changes, 'project_type', fields.projectType, (value) => {
+      this.props.projectType = value;
+    });
+    this.applyChange(
+      changes,
+      'responsible_user_id',
+      fields.responsibleUserId,
+      (value) => {
+        this.props.responsibleUserId = value;
+      },
+    );
+    this.applyChange(
+      changes,
+      'planning_responsible_user_id',
+      fields.planningResponsibleUserId,
+      (value) => {
+        this.props.planningResponsibleUserId = value;
+      },
+    );
+    this.applyChange(
+      changes,
+      'planning_notes',
+      fields.planningNotes,
+      (value) => {
+        this.props.planningNotes = value;
+      },
+    );
     this.applyChange(changes, 'name', fields.name, (value) => {
       this.props.name = value;
     });
@@ -248,6 +317,11 @@ export class Project {
   private toPropKey(key: string): keyof ProjectProps {
     const map: Record<string, keyof ProjectProps> = {
       name: 'name',
+      code: 'code',
+      project_type: 'projectType',
+      responsible_user_id: 'responsibleUserId',
+      planning_responsible_user_id: 'planningResponsibleUserId',
+      planning_notes: 'planningNotes',
       company_id: 'companyId',
       description: 'description',
       start_date: 'startDate',

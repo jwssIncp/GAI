@@ -1,0 +1,202 @@
+[
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "valid_from",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "valid_to",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "first_due_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "entry_due_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "dates",
+    "decorator": "@IsDateString({ strict: true }, { each: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "prepared_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "property": "valid_until",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "property": "contracted_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "property": "starts_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "property": "ends_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "property": "dated_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "property": "ends_on",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "property": "period_start",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "property": "period_end",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "property": "first_due_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "property": "period_start",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "property": "period_end",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/application/dto/export-job-query.dto.ts",
+    "property": "date_from",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/application/dto/export-job-query.dto.ts",
+    "property": "date_to",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/inventory-operations/application/inventory-operation.dto.ts",
+    "property": "captured_at",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/inventory-operations/application/inventory-operation.dto.ts",
+    "property": "valuation_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "property": "payment_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "property": "contract_from",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "property": "contract_to",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "property": "date_from",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "property": "date_to",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/project-dashboard-query.dto.ts",
+    "property": "date_from",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/project-dashboard/application/dto/project-dashboard-query.dto.ts",
+    "property": "date_to",
+    "decorator": "@IsDateString({ strict: true })"
+  },
+  {
+    "file": "gai-backend/src/modules/projects/application/dto/create-project.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/projects/application/dto/create-project.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/projects/application/dto/update-project.dto.ts",
+    "property": "start_date",
+    "decorator": "@IsDateString()"
+  },
+  {
+    "file": "gai-backend/src/modules/projects/application/dto/update-project.dto.ts",
+    "property": "end_date",
+    "decorator": "@IsDateString()"
+  }
+]

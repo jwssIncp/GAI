@@ -1,0 +1,26 @@
+﻿[
+    {
+        "sha256":  "6F72D89B648D073F480B9F3B5686D916380DD84CECCE6EC3725DFF316896903B",
+        "path":  "gai-backend/src/modules/payments-expenses/domain/entities/field-agent-payment.ts"
+    },
+    {
+        "sha256":  "7502618DDCC56237DB11FCF2AF04E8B59126CF2F1EF5151EA714525841F8FADC",
+        "path":  "gai-backend/src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts"
+    },
+    {
+        "sha256":  "2C0341E25EF6C71924A649F75840E1EF6CC87ABE8329E4BAA258D2EE79F6E713",
+        "path":  "gai-backend/src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts"
+    },
+    {
+        "sha256":  "D910654E512BD7B2BDE4BE0DAE930DC50A4C16617FB04BA80106A391BF84A336",
+        "path":  "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts"
+    },
+    {
+        "sha256":  "2254DD26E483B34F163D925AE370DB3003E0CA0F59FC58FFE513C44F7E20BE51",
+        "path":  "gai-backend/test/integration/test-app.helper.ts"
+    },
+    {
+        "sha256":  "045AF41B129D9EC490C8DF4210375F9E484F09661BA7B1709B61F3610934B72E",
+        "path":  "gai-backend/test/unit/modules/payments-expenses/payments-expenses.spec.ts"
+    }
+]

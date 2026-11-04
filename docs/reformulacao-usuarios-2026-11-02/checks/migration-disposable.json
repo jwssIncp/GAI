@@ -1,0 +1,9 @@
+{
+  "target": "127.0.0.1:33347/gai_users_migration_disposable",
+  "realLocalSchemaClonedWithoutData": true,
+  "syntheticLegacyUsers": 3,
+  "originalColumnsAndValuesPreserved": true,
+  "nullableIdentityDefaults": true,
+  "namespaceConstraintsEnforced": true,
+  "secondOfficialRunNoop": true
+}

@@ -1,3 +1,6 @@
+import { DataSource } from 'typeorm';
+import { RoleEntity } from '../../../src/modules/users/infrastructure/persistence/role.entity';
+import { RoleType } from '../../../src/modules/users/domain/enums/role-type.enum';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import {
@@ -12,10 +15,18 @@ describe('Users - Role Assignments (e2e)', () => {
   let adminToken: string;
   let orgToken: string;
   let userId: number;
+  let operatorRoleId: number;
 
   beforeAll(async () => {
     app = await createTestApp();
     await seedTestData(app);
+    operatorRoleId = (
+      await app.get(DataSource).getRepository(RoleEntity).findOneByOrFail({
+        name: 'Operador',
+        organizationId: 1,
+        type: RoleType.ORGANIZATION,
+      })
+    ).id;
     adminToken = await loginAsAdmin(app);
     orgToken = await loginAsOrgAdmin(app);
 
@@ -25,7 +36,10 @@ describe('Users - Role Assignments (e2e)', () => {
       .send({
         login: 'assign.target',
         email: 'assign@empresa.com.br',
-        password: 'Senha@123456',
+        full_name: 'Pessoa de teste',
+        role_ids: [operatorRoleId],
+        activation_method: 'TEMPORARY_PASSWORD',
+        password: 'Temporary password 2026!',
         organization_id: 1,
       })
       .expect(201);
@@ -41,11 +55,11 @@ describe('Users - Role Assignments (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post(`/api/v1/users/${userId}/role-assignments`)
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ role_id: 3 })
+      .send({ role_id: operatorRoleId })
       .expect(201);
 
     expect(response.body.assignment_id).toBeDefined();
-    expect(response.body.role_id).toBe(3);
+    expect(response.body.role_id).toBe(operatorRoleId);
     expect(response.body.role_name).toBe('Operador');
     expect(response.body.role_type).toBe('ORGANIZATION');
   });
@@ -58,7 +72,10 @@ describe('Users - Role Assignments (e2e)', () => {
 
     expect(response.body).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ role_id: 3, role_name: 'Operador' }),
+        expect.objectContaining({
+          role_id: operatorRoleId,
+          role_name: 'Operador',
+        }),
       ]),
     );
   });

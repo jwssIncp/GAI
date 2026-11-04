@@ -1,0 +1,12 @@
+{
+  "reason": "The final 24-column review identified pre-validation timestamp normalization in physical CSV and silent clearing/out-of-range acquisition dates in accounting input. All relevant paths were closed before final delivery.",
+  "interrupted_runs": [
+    "mysql",
+    "coverage",
+    "sqlite"
+  ],
+  "physical_predicate_shared": true,
+  "accounting_date_dto_strict": true,
+  "raw_spreadsheet_inference_disabled": true,
+  "staged_and_historical_data_untouched": true
+}

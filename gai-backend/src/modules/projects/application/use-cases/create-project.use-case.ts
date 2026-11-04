@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+import { ProjectRegistrationService } from '../services/project-registration.service';
 import {
   BadRequestException,
   ConflictException,
@@ -34,6 +36,7 @@ export class CreateProjectUseCase {
     private readonly organizations: OrganizationRepository,
     private readonly companies: CompaniesService,
     private readonly scope: ProjectScopeService,
+    private readonly registration: ProjectRegistrationService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(CreateProjectUseCase.name);
@@ -66,6 +69,10 @@ export class CreateProjectUseCase {
       dto.company_id,
     );
 
+    await this.registration.validateUsers(organizationId, [
+      dto.responsible_user_id,
+      dto.planning_responsible_user_id,
+    ]);
     const now = new Date();
     let project: Project;
     try {
@@ -74,6 +81,11 @@ export class CreateProjectUseCase {
         organizationId,
         companyId: dto.company_id,
         name: dto.name.trim(),
+        code: dto.code ?? `PRJ-${randomBytes(6).toString('hex').toUpperCase()}`,
+        projectType: dto.project_type ?? null,
+        responsibleUserId: dto.responsible_user_id ?? null,
+        planningResponsibleUserId: dto.planning_responsible_user_id ?? null,
+        planningNotes: dto.planning_notes ?? null,
         description: dto.description?.trim() ?? null,
         status: ProjectStatus.DRAFT,
         startDate: this.parseDate(dto.start_date),
@@ -101,6 +113,22 @@ export class CreateProjectUseCase {
         organization_id: { before: null, after: organizationId },
         company_id: { before: null, after: dto.company_id },
         status: { before: null, after: project.status },
+        code: { before: null, after: project.code },
+        project_type: { before: null, after: project.projectType },
+        description: { before: null, after: project.description },
+        start_date: { before: null, after: dto.start_date ?? null },
+        end_date: { before: null, after: dto.end_date ?? null },
+        finished_at: { before: null, after: null },
+        responsible_user_id: { before: null, after: project.responsibleUserId },
+        planning_responsible_user_id: {
+          before: null,
+          after: project.planningResponsibleUserId,
+        },
+        planning_notes: { before: null, after: project.planningNotes },
+        settings: { before: null, after: project.settings },
+        metadata: { before: null, after: project.metadata },
+        created_by_id: { before: null, after: actor.id },
+        created_at: { before: null, after: now.toISOString() },
       },
     });
 

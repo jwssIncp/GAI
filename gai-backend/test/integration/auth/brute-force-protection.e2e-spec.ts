@@ -22,7 +22,9 @@ describe('Auth - Brute force protection (e2e)', () => {
 
       if (i < 4) {
         expect(response.status).toBe(401);
-        expect(response.body.message).toBe('Invalid credentials');
+        expect(response.body.message).toBe(
+          'Credenciais inválidas ou conta indisponível.',
+        );
       } else {
         expect(response.status).toBe(423);
       }

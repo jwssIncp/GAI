@@ -1,3 +1,4 @@
+import { ProjectType } from '../../domain/enums/project-type.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JsonRecord, Project } from '../../domain/entities/project';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
@@ -33,6 +34,21 @@ export class ProjectResponseDto {
 
   @ApiProperty()
   name!: string;
+  @ApiPropertyOptional({ nullable: true }) code!: string | null;
+  @ApiPropertyOptional({ enum: ProjectType, nullable: true })
+  project_type!: ProjectType | null;
+  @ApiPropertyOptional({ nullable: true }) responsible_user_id!: number | null;
+  @ApiPropertyOptional({ nullable: true }) planning_responsible_user_id!:
+    | number
+    | null;
+  @ApiPropertyOptional({ nullable: true }) planning_notes!: string | null;
+  @ApiPropertyOptional({ nullable: true }) company_name!: string | null;
+  @ApiPropertyOptional({ nullable: true }) responsible_user_name!:
+    | string
+    | null;
+  @ApiPropertyOptional({ nullable: true }) planning_responsible_user_name!:
+    | string
+    | null;
 
   @ApiPropertyOptional({ nullable: true })
   description!: string | null;
@@ -87,6 +103,14 @@ export class ProjectResponseDto {
       organization_id: project.organizationId,
       company_id: project.companyId,
       name: project.name,
+      code: project.code,
+      project_type: project.projectType,
+      responsible_user_id: project.responsibleUserId,
+      planning_responsible_user_id: project.planningResponsibleUserId,
+      planning_notes: project.planningNotes,
+      company_name: project.companyName,
+      responsible_user_name: project.responsibleUserName,
+      planning_responsible_user_name: project.planningResponsibleUserName,
       description: project.description,
       status: project.status,
       start_date: project.startDate
@@ -111,6 +135,8 @@ export class ProjectResponseDto {
 }
 
 export class ProjectListResponseDto {
+  @ApiProperty({ type: 'object', additionalProperties: { type: 'number' } })
+  status_counts!: Partial<Record<ProjectStatus, number>>;
   @ApiProperty({ type: [ProjectResponseDto] })
   items!: ProjectResponseDto[];
 

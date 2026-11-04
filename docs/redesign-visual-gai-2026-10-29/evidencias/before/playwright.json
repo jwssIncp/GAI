@@ -1,0 +1,256 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.redesign.config.ts"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-frontend\\playwright.redesign.config.ts",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/.local/redesign-20261029/workspace/gai-frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/before/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-redesign",
+        "name": "chromium-redesign",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/.local/redesign-20261029/workspace/gai-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "redesign-real.spec.ts"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\before\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "redesign-real.spec.ts",
+      "file": "redesign-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "visual before light 1366",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-redesign",
+              "projectName": "chromium-redesign",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 53802,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:17:44.978Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "acc53712a70f53da88c4-58c369c28b7e1f76a61a",
+          "file": "redesign-real.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "visual before dark 1366",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-redesign",
+              "projectName": "chromium-redesign",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8126,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:18:39.333Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "acc53712a70f53da88c4-9795327b68a5deb7c42d",
+          "file": "redesign-real.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "visual before light 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-redesign",
+              "projectName": "chromium-redesign",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6530,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:18:47.493Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "acc53712a70f53da88c4-0744701bd75a72c0ad21",
+          "file": "redesign-real.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "visual before dark 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-redesign",
+              "projectName": "chromium-redesign",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6795,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:18:54.055Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "acc53712a70f53da88c4-ab831724451089859b12",
+          "file": "redesign-real.spec.ts",
+          "line": 20,
+          "column": 3
+        },
+        {
+          "title": "runtime evidence directory",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-redesign",
+              "projectName": "chromium-redesign",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:19:00.875Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "acc53712a70f53da88c4-39d4bf1a25805a0ca911",
+          "file": "redesign-real.spec.ts",
+          "line": 42,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T13:17:08.212Z",
+    "duration": 113261.89499999999,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

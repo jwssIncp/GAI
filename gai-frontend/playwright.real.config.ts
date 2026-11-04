@@ -1,10 +1,13 @@
+import { configureBrowserCredentials } from './e2e/runtime-credentials';
+import { runtimePassword } from './e2e/runtime-credentials';
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 const wave2 = process.env.GAI_TEST_MYSQL_WAVE2 === '1';
 const uiPort = wave2 ? 33350 : 33340, apiPort = wave2 ? 33349 : 33339;
-Object.assign(process.env,{GAI_RECEIVABLES_REAL:'1',GAI_DRE_REAL:'1',GAI_E2E_LOGIN:'org.admin',GAI_E2E_PASSWORD:'Admin@123456',GAI_E2E_BASE_URL:'http://127.0.0.1:' + uiPort});
+Object.assign(process.env,{GAI_RECEIVABLES_REAL:'1',GAI_DRE_REAL:'1',GAI_E2E_LOGIN:'org.admin',GAI_E2E_PASSWORD:runtimePassword('org.admin'),GAI_E2E_BASE_URL:'http://127.0.0.1:' + uiPort});
 if (wave2) Object.assign(process.env, { GAI_NAV_REAL:'1',GAI_BUDGETS_REAL:'1',GAI_CONTRACTS_REAL:'1',GAI_REPORTS_REAL:'1',GAI_DOCUMENTS_REAL:'1',GAI_VALUATIONS_REAL:'1',GAI_FIELD_REAL:'1',GAI_ASSISTED_REAL:'1' });
 const output = process.env.GAI_TEST_EVIDENCE_DIR ?? path.resolve('test-results/real');
+configureBrowserCredentials();
 export default defineConfig({
   testDir: './e2e', testMatch: wave2 ? ['receivables-real.spec.ts','dre-real.spec.ts','budgets-real.spec.ts','contracts-real.spec.ts','reports-real.spec.ts','documents-real.spec.ts','valuation-batches-real.spec.ts','field-coordination-real.spec.ts','assisted-reconciliation-real.spec.ts','integration-navigation-real.spec.ts','project-navigation-real.spec.ts'] : ['receivables-real.spec.ts','dre-real.spec.ts'], fullyParallel: false, workers: 1,
   outputDir: path.join(output,'playwright-artifacts'),

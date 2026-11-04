@@ -15,6 +15,8 @@ export class CurrentUserPermissionDto {
 export class CurrentUserDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   id!: number;
+  @ApiPropertyOptional({ nullable: true }) full_name!: string | null;
+  @ApiProperty() must_change_password!: boolean;
 
   @ApiProperty({ example: 'platform.admin' })
   login!: string;
@@ -36,6 +38,8 @@ export class CurrentUserDto {
 
   static fromUser(user: {
     id: number;
+    fullName?: string | null;
+    mustChangePassword?: boolean;
     login: string;
     email: string;
     status: UserStatus;
@@ -45,6 +49,8 @@ export class CurrentUserDto {
   }): CurrentUserDto {
     return {
       id: user.id,
+      full_name: user.fullName ?? null,
+      must_change_password: user.mustChangePassword ?? false,
       login: user.login,
       email: user.email,
       status: user.status,

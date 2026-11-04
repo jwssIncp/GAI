@@ -16,6 +16,11 @@ export interface AssignRoleInput {
   userId: number;
   roleId: number;
   assignedBy: number | null;
+  actor?: {
+    id: number;
+    systemRoles: UserRole[];
+    organizationId: number | null;
+  };
 }
 
 export const USER_ROLE_ASSIGNMENT_REPOSITORY = Symbol(
@@ -31,7 +36,24 @@ export interface UserRoleAssignmentRepository {
     roleId: number,
   ): Promise<AssignedRole | null>;
   assign(input: AssignRoleInput): Promise<AssignedRole>;
-  revoke(assignmentId: number, revokedAt: Date): Promise<void>;
+  revoke(
+    assignmentId: number,
+    revokedAt: Date,
+    actor?: {
+      id: number;
+      systemRoles: UserRole[];
+      organizationId: number | null;
+    },
+  ): Promise<void>;
+  replace(
+    userId: number,
+    roleIds: number[],
+    actor: {
+      id: number;
+      systemRoles: UserRole[];
+      organizationId: number | null;
+    },
+  ): Promise<void>;
   countActiveUsersWithSystemRole(
     roleKey: UserRole,
     excludeUserId?: number,

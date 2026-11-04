@@ -3,6 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../../src/modules/auth/infrastructure/persistence/user.entity';
+import { UserStatus } from '../../../src/modules/auth/domain/enums/user.enums';
+import { Argon2PasswordHasher } from '../../../src/modules/auth/infrastructure/security/argon2-password-hasher';
 import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
 import { OrganizationEntity } from '../../../src/modules/organizations/infrastructure/persistence/organization.entity';
 import { ProjectStatus } from '../../../src/modules/projects/domain/enums/project-status.enum';
@@ -414,12 +416,17 @@ describe('RBAC multi-tenancy isolation (e2e)', () => {
     password: string;
     organization_id?: number;
   }): Promise<number> {
-    const response = await request(app.getHttpServer())
-      .post('/api/v1/users')
-      .set('Authorization', `Bearer ${adminToken}`)
-      .send(payload)
-      .expect(201);
-    return (response.body as CreatedUserBody).id;
+    const created = await userRepo.save({
+      login: payload.login,
+      email: payload.email,
+      passwordHash: await new Argon2PasswordHasher().hash(payload.password),
+      organizationId: payload.organization_id ?? null,
+      status: UserStatus.ACTIVE,
+      passwordChangedAt: new Date(),
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+    });
+    return created.id;
   }
 
   async function login(identifier: string, password: string): Promise<string> {

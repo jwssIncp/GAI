@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "vitest.config.ts",
+    "src/features/projects"
+  ],
+  "cwd": "gai-frontend",
+  "started_at": "2026-11-03T10:11:44.518Z",
+  "duration_seconds": 46.228,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\frontend.log"
+}

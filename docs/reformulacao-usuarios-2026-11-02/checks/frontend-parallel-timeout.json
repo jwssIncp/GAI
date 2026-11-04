@@ -1,0 +1,17 @@
+{
+  "executedAt": "2026-11-03T01:49:02.783Z",
+  "results": [
+    {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.ts"
+      ],
+      "cwd": "gai-frontend",
+      "exitCode": 1,
+      "durationMs": 300671
+    }
+  ]
+}

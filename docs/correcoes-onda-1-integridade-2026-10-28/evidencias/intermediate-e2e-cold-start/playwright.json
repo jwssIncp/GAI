@@ -1,0 +1,198 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.real.config.ts"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\playwright.real.config.ts",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/workspace/gai-frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/e2e/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-real",
+        "name": "chromium-real",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/correcoes-onda-1-integridade-2026-10-28/evidencias/workspace/gai-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "receivables-real.spec.ts",
+          "dre-real.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\e2e\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dre-real.spec.ts",
+      "file": "dre-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 20515,
+                  "error": {
+                    "message": "TimeoutError: page.goto: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:33340/login\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "TimeoutError: page.goto: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:33340/login\", waiting until \"load\"\u001b[22m\n\n    at C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\e2e\\dre-real.spec.ts:33:14",
+                    "location": {
+                      "file": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\e2e\\dre-real.spec.ts",
+                      "column": 14,
+                      "line": 33
+                    },
+                    "snippet": "  31 |       http.push(r.status() + \" \" + r.url());\n  32 |   });\n> 33 |   await page.goto(\"/login\");\n     |              ^\n  34 |   await page.getByLabel(\"Login ou email\").fill(process.env.GAI_E2E_LOGIN!);\n  35 |   await page\n  36 |     .getByLabel(\"Senha\", { exact: true })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\e2e\\dre-real.spec.ts",
+                        "column": 14,
+                        "line": 33
+                      },
+                      "message": "TimeoutError: page.goto: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:33340/login\", waiting until \"load\"\u001b[22m\n\n\n  31 |       http.push(r.status() + \" \" + r.url());\n  32 |   });\n> 33 |   await page.goto(\"/login\");\n     |              ^\n  34 |   await page.getByLabel(\"Login ou email\").fill(process.env.GAI_E2E_LOGIN!);\n  35 |   await page\n  36 |     .getByLabel(\"Senha\", { exact: true })\n    at C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\e2e\\dre-real.spec.ts:33:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T05:59:22.040Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\e2e\\playwright-artifacts\\dre-real-ORG-ADMIN-classif-ea7ae-rills-exports-and-refreshes-chromium-real\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\e2e\\playwright-artifacts\\dre-real-ORG-ADMIN-classif-ea7ae-rills-exports-and-refreshes-chromium-real\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend\\e2e\\dre-real.spec.ts",
+                    "column": 14,
+                    "line": 33
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "17d1d91c481fcf249161-32be1bc35c5dc4bd5ad6",
+          "file": "dre-real.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "receivables-real.spec.ts",
+      "file": "receivables-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23667,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T05:59:51.754Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "37d8aba6d7dab189abb9-6cd4d3b4ee084608c9e3",
+          "file": "receivables-real.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T05:58:51.705Z",
+    "duration": 84425.58899999999,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

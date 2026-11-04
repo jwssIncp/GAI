@@ -1,3 +1,4 @@
+import { runtimePassword } from './runtime-credentials';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -7,7 +8,7 @@ import { testBudget, testPricing } from '../../gai-backend/test/unit/modules/bud
 test.skip(process.env.GAI_TEST_MYSQL_WAVE2 !== '1', 'Requires isolated Wave 2 API/MySQL');
 let fixture: { project: number; secondary: number; budget: number; receivable: number; foreign: number; name: string; description: string; contractNumber: string; reportTitle: string };
 test.beforeAll(async ({ request }) => {
-  const login = await request.post('/api/v1/auth/login', { data: { identifier: 'org.admin', password: 'Admin@123456' } });
+  const login = await request.post('/api/v1/auth/login', { data: { identifier: 'org.admin', password: runtimePassword('org.admin') } });
   expect(login.ok()).toBe(true);
   const headers = { Authorization: 'Bearer ' + (await login.json()).access_token };
   const post = async (route: string, data: object) => {
@@ -43,7 +44,7 @@ for (const width of [1440, 390]) for (const reader of [false, true]) {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/login');
     await page.getByLabel('Login ou email').fill(reader ? 'test.user' : 'org.admin');
-    await page.getByLabel('Senha', { exact: true }).fill(reader ? 'Test@123456' : 'Admin@123456');
+    await page.getByLabel('Senha', { exact: true }).fill(reader ? runtimePassword('test.user') : runtimePassword('org.admin'));
     await page.getByRole('button', { name: /entrar/i }).click();
     await page.waitForURL('**/app/dashboard');
     const query = new URLSearchParams({ search: fixture.name });

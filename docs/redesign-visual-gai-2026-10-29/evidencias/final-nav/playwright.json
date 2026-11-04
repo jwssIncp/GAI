@@ -1,0 +1,233 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.redesign.config.ts",
+      "--grep",
+      "theme persistence|preparation context|semantic contrast|touch phones"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend\\playwright.redesign.config.ts",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/workspace/gai-frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/final-nav/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-redesign",
+        "name": "chromium-redesign",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/workspace/gai-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "redesign-real.spec.ts"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\final-nav\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "redesign-real.spec.ts",
+      "file": "redesign-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "redesign behaviour",
+          "file": "redesign-real.spec.ts",
+          "line": 49,
+          "column": 6,
+          "specs": [
+            {
+              "title": "theme persistence, system changes, portal menu, profile and keyboard skip link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-redesign",
+                  "projectName": "chromium-redesign",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7737,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T14:20:53.183Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "acc53712a70f53da88c4-13441630e24286a9da64",
+              "file": "redesign-real.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "semantic contrast in both themes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-redesign",
+                  "projectName": "chromium-redesign",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6335,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T14:21:01.737Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "acc53712a70f53da88c4-54e8b0fd3454b1833acd",
+              "file": "redesign-real.spec.ts",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "preparation context and project financial view survive refresh and history",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-redesign",
+                  "projectName": "chromium-redesign",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6478,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T14:21:08.112Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "acc53712a70f53da88c4-9fc714c42e90ed5ddf1f",
+              "file": "redesign-real.spec.ts",
+              "line": 251,
+              "column": 3
+            },
+            {
+              "title": "touch phones and tablets keep UF targets and portal navigation usable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-redesign",
+                  "projectName": "chromium-redesign",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 49862,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-29T14:21:14.618Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "acc53712a70f53da88c4-04bc6fb3a3df23725df1",
+              "file": "redesign-real.spec.ts",
+              "line": 282,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T14:20:28.412Z",
+    "duration": 96855.884,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -25,5 +25,9 @@ export function hasPermission(user: CurrentUser | null, permission: string) {
 
 export function canAccess(user: CurrentUser | null, permissions?: string[]) {
   if (!permissions?.length) return Boolean(user);
+  if (permissions.some((permission) => permission.startsWith('users:') || permission.startsWith('org_roles:'))) {
+    const roles = getSystemRoles(user);
+    if (!roles.includes('PLATFORM_ADMIN') && !roles.includes('ORG_ADMIN')) return false;
+  }
   return permissions.every((permission) => hasPermission(user, permission));
 }

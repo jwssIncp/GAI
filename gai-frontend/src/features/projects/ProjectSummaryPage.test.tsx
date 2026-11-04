@@ -23,6 +23,7 @@ vi.mock('@/api/endpoints', () => ({
   projectsApi: {
     get: mocks.get,
     dashboard: mocks.dashboard,
+    history: vi.fn().mockResolvedValue({ items: [], page: 1, page_size: 20, total_items: 0, total_pages: 0 }),
   },
   companiesApi: { get: mocks.companyGet },
   organizationsApi: { get: mocks.organizationGet },

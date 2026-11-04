@@ -1,0 +1,13 @@
+{
+  "name": "mysql",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-backend",
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "mysql",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\mysql-jest.json"
+  ],
+  "exit_code": 0,
+  "seconds": 1007.956
+}

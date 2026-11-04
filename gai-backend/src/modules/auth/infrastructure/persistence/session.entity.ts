@@ -14,6 +14,8 @@ import { FOREIGN_KEY_COLUMN } from '../../../../common/persistence/entity-id.col
 export class SessionEntity {
   @PrimaryColumn('varchar', { length: 36 })
   id!: string;
+  @Column({ name: 'auth_version', type: 'int', default: 0 })
+  authVersion!: number;
 
   @Column({ name: 'user_id', ...FOREIGN_KEY_COLUMN })
   userId!: number;

@@ -1,0 +1,645 @@
+{
+  "observations": [
+    {
+      "url": "/app/projects",
+      "viewport": 768,
+      "document": 768,
+      "controls": [
+        {
+          "tag": "A",
+          "label": "Ir para o conteúdo",
+          "href": "#main-content",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Abrir navegação",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ativar tema claro",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Menu do usuário org.admin",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Novo projeto",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Buscar projeto",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filtrar projeto por status",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Buscar empresa",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Empresa",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "SINTETICO Navegação contínua secundário",
+          "href": "/app/projects/3/summary",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Editar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ativar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Cancelar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "SINTETICO Navegação contínua primário",
+          "href": "/app/projects/2/summary",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Editar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ativar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Cancelar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Pagina anterior",
+          "href": null,
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Proxima pagina",
+          "href": null,
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "url": "/app/projects/2/dashboard",
+      "viewport": 768,
+      "document": 768,
+      "controls": [
+        {
+          "tag": "A",
+          "label": "Ir para o conteúdo",
+          "href": "#main-content",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Abrir navegação",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Projetos",
+          "href": "/app/projects",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "#2",
+          "href": "/app/projects/2",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ativar tema claro",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Menu do usuário org.admin",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Visão geral",
+          "href": "/app/projects/2/summary",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Dashboard",
+          "href": "/app/projects/2/dashboard",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Orçamentos",
+          "href": "/app/budgets?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Contratos",
+          "href": "/app/projects/2/contracts",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Preparação",
+          "href": "/app/projects/2/preparation/kickoff",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Coordenação de Campo",
+          "href": "/app/projects/2/field-coordination",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Itens",
+          "href": "/app/projects/2/inventory-items",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Inventário",
+          "href": "/app/projects/2/inventory/sessions",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Imagens",
+          "href": "/app/projects/2/inventory-items?view=images",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Base contábil",
+          "href": "/app/projects/2/accounting-items",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Pendências",
+          "href": "/app/projects/2/pending-issues",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Inventariantes",
+          "href": "/app/projects/2/summary#inventariantes",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Financeiro",
+          "href": "/app/projects/2/finance",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "DRE Gerencial",
+          "href": "/app/finance/dre?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Recebíveis",
+          "href": "/app/finance/receivables?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Fluxo de caixa",
+          "href": "/app/finance/cash-flow?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Laudos",
+          "href": "/app/projects/2/technical-reports",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Prestações",
+          "href": "/app/projects/2/finance/accountabilities",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Importações",
+          "href": "/app/projects/2/import-sessions",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Exportações",
+          "href": "/app/projects/2/export-jobs",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Unidades",
+          "href": "/app/projects/2/summary#unidades",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Configurações",
+          "href": "/app/projects/2/summary#configuracoes",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Projetos",
+          "href": "/app/projects",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "SINTETICO Navegação contínua primário",
+          "href": "/app/projects/2/summary",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Limpar filtros",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Período",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Agrupamento",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Unidade",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "UF",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "Status",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "AC",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "AL",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "AM",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "AP",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "BA",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "CE",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "DF",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "ES",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "GO",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "MA",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "MG",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "MS",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "MT",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "PA",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "PB",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "PE",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "PI",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "PR",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RJ",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RN",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RO",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RR",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "RS",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "SC",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "SE",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "SP",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "TO",
+          "href": null,
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "url": "/app/finance/receivables?project_id=2",
+      "viewport": 768,
+      "document": 768,
+      "controls": [
+        {
+          "tag": "A",
+          "label": "Ir para o conteúdo",
+          "href": "#main-content",
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Abrir navegação",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Ativar tema claro",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Menu do usuário org.admin",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Retornar ao projeto",
+          "href": "/app/projects/2/summary",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Recebíveis",
+          "href": "/app/finance/receivables?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Fluxo de caixa",
+          "href": "/app/finance/cash-flow?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "DRE Gerencial",
+          "href": "/app/finance/dre?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "A",
+          "label": "Novo recebível",
+          "href": "/app/finance/receivables/new?project_id=2",
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Cliente (ID)",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Projeto (ID)",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Contrato (ID)",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "De",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "INPUT",
+          "label": "Até",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "SELECT",
+          "label": "TodosEm abertoParcialQuitadoCanceladoVencido",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Aplicar filtros",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Limpar",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Pagina anterior",
+          "href": null,
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Proxima pagina",
+          "href": null,
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Tipo de exportação",
+          "href": null,
+          "disabled": false
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Gerar XLSX",
+          "href": null,
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "responses": []
+}

@@ -389,40 +389,31 @@ components:
 
     UserStatus:
       type: string
-      enum: [ACTIVE, INACTIVE, LOCKED]
+      enum: [ACTIVE, INACTIVE, LOCKED, BLOCKED, PENDING_ACTIVATION]
 
     CreateUserRequest:
       type: object
-      required: [login, email, password]
+      required: [full_name, login, email, role_ids, activation_method]
       properties:
-        login:
-          type: string
-          minLength: 3
-          maxLength: 100
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-        organization_id:
-          type: integer
-          format: int64
-          description: Opcional; omitir para usuário de plataforma
-
+        full_name: { type: string, minLength: 3, maxLength: 160 }
+        login: { type: string, minLength: 3, maxLength: 100, pattern: '^[a-z0-9][a-z0-9._-]{2,99}$' }
+        email: { type: string, format: email, maxLength: 255 }
+        phone: { type: string, nullable: true, maxLength: 30 }
+        job_title: { type: string, nullable: true, maxLength: 120 }
+        organization_id: { type: integer, format: int64, nullable: true }
+        role_ids: { type: array, minItems: 1, uniqueItems: true, items: { type: integer, minimum: 1 } }
+        activation_method: { type: string, enum: [INVITATION, TEMPORARY_PASSWORD] }
+        password: { type: string, minLength: 15, maxLength: 128, description: Required only for TEMPORARY_PASSWORD }
     UpdateUserRequest:
       type: object
       properties:
-        email:
-          type: string
-          format: email
-        organization_id:
-          type: integer
-          format: int64
-        password:
-          type: string
-          minLength: 8
-
+        full_name: { type: string, minLength: 3, maxLength: 160 }
+        login: { type: string, minLength: 3, maxLength: 100, pattern: '^[a-z0-9][a-z0-9._-]{2,99}$' }
+        email: { type: string, format: email, maxLength: 255 }
+        phone: { type: string, nullable: true, maxLength: 30 }
+        job_title: { type: string, nullable: true, maxLength: 120 }
+        organization_id: { type: integer, format: int64, nullable: true }
+        role_ids: { type: array, minItems: 1, uniqueItems: true, items: { type: integer, minimum: 1 } }
     AssignUserRoleRequest:
       type: object
       required: [role_id]

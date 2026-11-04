@@ -1,0 +1,15 @@
+{
+  "name": "frontend",
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--config",
+    "vitest.config.ts",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\frontend-vitest.json"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend",
+  "exit_code": 0,
+  "seconds": 108.266
+}

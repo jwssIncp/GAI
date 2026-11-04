@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-29T11:59:53.966Z",
+  "target": "gai-wave2-20261029-mysql:33347",
+  "read_only": true,
+  "schemas": [
+    "gai_validation_disposable",
+    "gai_navigation_disposable"
+  ],
+  "result": "TABLE_SCHEMA\ttables_count\ngai_navigation_disposable\t103\ngai_validation_disposable\t103\nschema_name\tmigrations_count\ngai_validation_disposable\t33\nschema_name\tmigrations_count\ngai_navigation_disposable\t33"
+}

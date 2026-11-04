@@ -1,0 +1,10 @@
+{
+  "name": "inspect-final-documents",
+  "command": [
+    "C:\\Users\\Jonathan\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+    "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\inspect-documents.py",
+    "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\documents-final"
+  ],
+  "exit_code": 0,
+  "seconds": 65.336
+}

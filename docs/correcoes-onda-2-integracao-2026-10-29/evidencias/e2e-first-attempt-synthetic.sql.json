@@ -1,0 +1,7 @@
+{
+  "file": "e2e-first-attempt-synthetic.sql",
+  "target": "gai-wave2-20261029-mysql:33347/gai_validation_disposable",
+  "bytes": 666795,
+  "sha256": "9fd96fab8a4458e9db9f1b2b1e45d08e4a90cd006a8eb0ad7feb4ab585d961eb",
+  "created_at": "2026-10-29T10:35:10.577Z"
+}

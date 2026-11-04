@@ -1,0 +1,7 @@
+{
+  "file": "e2e-second-attempt-synthetic.sql",
+  "target": "gai-wave2-20261029-mysql:33347/gai_navigation_disposable",
+  "bytes": 779378,
+  "sha256": "c830c0d84af5289326c0eadbafd55bb7f359b0a7be6cc144525389c64d906498",
+  "created_at": "2026-10-29T10:54:36.568Z"
+}

@@ -1,0 +1,13 @@
+{
+  "project": 6,
+  "company": 4,
+  "receivable": 1,
+  "entryId": 1,
+  "account": 1,
+  "revision": 2,
+  "month": "2026-01",
+  "issued_on": "2026-10-01",
+  "amount": "80.01",
+  "errors": [],
+  "http": []
+}

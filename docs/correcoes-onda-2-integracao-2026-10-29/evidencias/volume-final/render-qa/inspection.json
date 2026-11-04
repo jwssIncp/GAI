@@ -1,0 +1,40 @@
+[
+  {
+    "file": "volume-2500.docx",
+    "sha256": "4835d3785e4e746e473deadb246899b9654ef37148d102480f0a28cd89fdd505",
+    "zip_crc": true,
+    "xml_and_relationships_valid": true,
+    "native_rows_in_order": 2500,
+    "page_fields": true,
+    "word_pagination_certified": false,
+    "approved_snapshot_cells_equal": true,
+    "approved_snapshot_hash": "bf7f2f6a68b60b14e580d6fe25981c8f8c670803e67ef24636b5d84f26a4bde7"
+  },
+  {
+    "file": "volume-2500.pdf",
+    "sha256": "0a3eae4891ded2cb9ed814ebc82e37e889a24bfa8d2f91a20c0527cc2f9299e3",
+    "pages": 135,
+    "all_pages_rendered": true,
+    "all_2500_row_markers_present": true,
+    "outside_margin_characters": 0,
+    "visual_review": {
+      "at": "2026-10-29T12:04:21.203Z",
+      "contact_sheets": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "all_135_pages_reviewed_in_contact_sheets": true,
+      "individual_pages": [
+        3,
+        68,
+        134,
+        135
+      ],
+      "result": "No clipping, overlapping rows, blank intermediate pages or header/footer collisions observed within this inspection scope. Repeated table headers and last row 02499 verified."
+    }
+  }
+]

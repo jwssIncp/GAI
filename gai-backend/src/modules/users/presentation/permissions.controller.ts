@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -19,6 +19,7 @@ import { SessionAuthGuard } from '../../auth/presentation/guards/session-auth.gu
 import { PermissionResponseDto } from '../application/dto/permission-response.dto';
 import { ListPermissionsUseCase } from '../application/use-cases/list-permissions.use-case';
 import { PermissionScope } from '../domain/enums/permission-scope.enum';
+import type { AuthenticatedUser } from '../../auth/presentation/guards/session-auth.guard';
 
 @ApiTags('Permissions')
 @ApiBearerAuth()
@@ -35,7 +36,14 @@ export class PermissionsController {
   @ApiOkResponse({ type: PermissionResponseDto, isArray: true })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
-  async list(@Query('scope') scope?: PermissionScope) {
-    return this.listPermissions.execute(scope);
+  async list(
+    @Req() req: { user: AuthenticatedUser },
+    @Query('scope') scope?: PermissionScope,
+  ) {
+    return this.listPermissions.execute(
+      req.user.systemRoles.includes(UserRole.PLATFORM_ADMIN)
+        ? scope
+        : PermissionScope.ORGANIZATION,
+    );
   }
 }

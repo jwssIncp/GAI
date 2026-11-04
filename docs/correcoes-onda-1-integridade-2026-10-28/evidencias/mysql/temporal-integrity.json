@@ -1,0 +1,303 @@
+[
+  {
+    "day": "1000-01-01",
+    "payment": 1,
+    "sql": {
+      "start_date": "1000-01-01",
+      "end_date": "1000-01-01"
+    }
+  },
+  {
+    "day": "2024-02-29",
+    "payment": 2,
+    "sql": {
+      "start_date": "2024-02-29",
+      "end_date": "2024-02-29"
+    }
+  },
+  {
+    "day": "9999-12-31",
+    "payment": 3,
+    "sql": {
+      "start_date": "9999-12-31",
+      "end_date": "9999-12-31"
+    }
+  },
+  {
+    "label": "HTTP UTC approval/settlement/audit",
+    "row": {
+      "id": 4,
+      "organization_id": 1,
+      "project_id": 1,
+      "field_agent_id": 1,
+      "state": null,
+      "start_date": "2024-02-29",
+      "end_date": "2024-02-29",
+      "payment_date": "2024-03-01",
+      "days": 1,
+      "daily_rate": "1.00",
+      "additional_amount": "0.00",
+      "daily_total": "1.00",
+      "discount_amount": "0.00",
+      "final_amount": "1.00",
+      "status": "paid",
+      "notes": null,
+      "approved_by_id": 2,
+      "approved_at": "2026-10-29T06:54:53.038Z",
+      "paid_by_id": 2,
+      "paid_at": "2026-10-29T06:54:53.110Z",
+      "created_by_id": 2,
+      "updated_by_id": 2,
+      "metadata": null,
+      "created_at": "2026-10-29T06:54:52.965Z",
+      "updated_at": "2026-10-29T06:54:53.000Z",
+      "deleted_at": null
+    },
+    "audits": [
+      {
+        "id": 4,
+        "organization_id": 1,
+        "project_id": 1,
+        "payment_id": 4,
+        "expense_id": null,
+        "expense_attachment_id": null,
+        "operation": "CREATE_PAYMENT",
+        "performed_by": 2,
+        "changes": {
+          "status": {
+            "after": "pending",
+            "before": null
+          },
+          "final_amount": {
+            "after": "1.00",
+            "before": null
+          }
+        },
+        "created_at": "2026-10-29T06:54:52.974Z"
+      },
+      {
+        "id": 5,
+        "organization_id": 1,
+        "project_id": 1,
+        "payment_id": 4,
+        "expense_id": null,
+        "expense_attachment_id": null,
+        "operation": "APPROVE_PAYMENT",
+        "performed_by": 2,
+        "changes": {
+          "status": {
+            "after": "approved",
+            "before": "pending"
+          },
+          "approved_at": {
+            "after": "2026-10-29T06:54:53.038Z",
+            "before": null
+          },
+          "final_amount": {
+            "after": "1.00",
+            "before": "1.00"
+          },
+          "approved_by_id": {
+            "after": 2,
+            "before": null
+          }
+        },
+        "created_at": "2026-10-29T06:54:53.052Z"
+      },
+      {
+        "id": 6,
+        "organization_id": 1,
+        "project_id": 1,
+        "payment_id": 4,
+        "expense_id": null,
+        "expense_attachment_id": null,
+        "operation": "MARK_PAYMENT_AS_PAID",
+        "performed_by": 2,
+        "changes": {
+          "status": {
+            "after": "paid",
+            "before": "approved"
+          },
+          "paid_at": {
+            "after": "2026-10-29T06:54:53.110Z",
+            "before": null
+          },
+          "paid_by_id": {
+            "after": 2,
+            "before": null
+          },
+          "final_amount": {
+            "after": "1.00",
+            "before": "1.00"
+          },
+          "payment_date": {
+            "after": "2024-03-01T00:00:00.000Z",
+            "before": null
+          }
+        },
+        "created_at": "2026-10-29T06:54:53.122Z"
+      }
+    ],
+    "response": {
+      "id": 4,
+      "organization_id": 1,
+      "project_id": 1,
+      "field_agent_id": 1,
+      "state": null,
+      "start_date": "2024-02-29",
+      "end_date": "2024-02-29",
+      "payment_date": "2024-03-01",
+      "days": 1,
+      "daily_rate": "1.00",
+      "additional_amount": "0.00",
+      "daily_total": "1.00",
+      "discount_amount": "0.00",
+      "final_amount": "1.00",
+      "status": "paid",
+      "notes": null,
+      "metadata": null,
+      "created_at": "2026-10-29T06:54:52.965Z",
+      "updated_at": "2026-10-29T06:54:53.000Z"
+    }
+  },
+  {
+    "timezone": "UTC",
+    "saved": {
+      "id": 1,
+      "zone": "UTC",
+      "civil": "2026-03-31",
+      "instant": "2026-03-31T23:59:59.999Z",
+      "created_at": "2026-10-29T06:54:55.879Z"
+    },
+    "sessions": [
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ]
+    ],
+    "raw": {
+      "instant_raw": "2026-03-31T23:59:59.999000Z"
+    }
+  },
+  {
+    "timezone": "America/Sao_Paulo",
+    "saved": {
+      "id": 2,
+      "zone": "America/Sao_Paulo",
+      "civil": "2026-03-31",
+      "instant": "2026-03-31T23:59:59.999Z",
+      "created_at": "2026-10-29T06:54:58.298Z"
+    },
+    "sessions": [
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ]
+    ],
+    "raw": {
+      "instant_raw": "2026-03-31T23:59:59.999000Z"
+    }
+  },
+  {
+    "timezone": "Pacific/Kiritimati",
+    "saved": {
+      "id": 3,
+      "zone": "Pacific/Kiritimati",
+      "civil": "2026-03-31",
+      "instant": "2026-03-31T23:59:59.999Z",
+      "created_at": "2026-10-29T06:55:00.842Z"
+    },
+    "sessions": [
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ]
+    ],
+    "raw": {
+      "instant_raw": "2026-03-31T23:59:59.999000Z"
+    }
+  },
+  {
+    "timezone": "America/Los_Angeles",
+    "saved": {
+      "id": 4,
+      "zone": "America/Los_Angeles",
+      "civil": "2026-03-31",
+      "instant": "2026-03-31T23:59:59.999Z",
+      "created_at": "2026-10-29T06:55:03.406Z"
+    },
+    "sessions": [
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ],
+      [
+        {
+          "zone": "+00:00"
+        }
+      ]
+    ],
+    "raw": {
+      "instant_raw": "2026-03-31T23:59:59.999000Z"
+    }
+  }
+]

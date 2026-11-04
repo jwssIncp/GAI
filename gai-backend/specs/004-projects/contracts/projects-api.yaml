@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: GAI Backend - Projects API
-  version: 2.0.0
+  version: 2.1.0
   description: |
     CRUD e controle de status de projects operacionais por organization.
 
@@ -10,19 +10,17 @@ info:
     ```json
     { "code": "<ErrorCode>", "message": "...", "details": { "current_status": "active" } }
     ```
-
 servers:
   - url: http://localhost:3000/api/v1
   - url: /api/v1
-
 tags:
   - name: Projects
     description: Projetos de inventario patrimonial
-
 paths:
   /projects:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Criar project
       operationId: createProject
       description: |
@@ -58,9 +56,9 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '409':
           $ref: '#/components/responses/InactiveOrganization'
-
     get:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Listar projects (paginado)
       operationId: listProjects
       description: |
@@ -97,6 +95,34 @@ paths:
           in: query
           schema:
             type: string
+        - name: project_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - inventory
+              - valuation
+              - inventory_valuation
+              - reconciliation
+              - regularization
+              - other
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - code
+              - start_date
+              - end_date
+              - created_at
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
       responses:
         '200':
           description: Lista paginada
@@ -110,12 +136,12 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-
   /projects/{id}:
     parameters:
       - $ref: '#/components/parameters/ProjectId'
     get:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Consultar project
       operationId: getProject
       security:
@@ -134,7 +160,8 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     patch:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Atualizar project
       operationId: updateProject
       description: |
@@ -167,61 +194,76 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/ProjectMutationBlocked'
-
   /projects/{id}/activate:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Ativar project em rascunho
       operationId: activateProject
-      description: Requer `projects:activate`. Transicao permitida: `draft -> active`.
+      description: 'Requer `projects:activate`. Transicao permitida: `draft -> active`.'
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/pause:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Pausar project ativo
       operationId: pauseProject
-      description: Requer `projects:pause`. Transicao permitida: `active -> paused`.
+      description: 'Requer `projects:pause`. Transicao permitida: `active -> paused`.'
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/resume:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Retomar project pausado
       operationId: resumeProject
-      description: Requer `projects:resume`. Transicao permitida: `paused -> active`.
+      description: 'Requer `projects:resume`. Transicao permitida: `paused -> active`.'
       parameters:
         - $ref: '#/components/parameters/ProjectId'
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/deactivate:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Desativar project (legado)
       deprecated: true
       description: Compatibilidade temporaria. Novos clientes devem usar activate, pause, resume, cancel, finish e archive. Todas as pendencias tecnicas e operacionais bloqueiam a desativacao.
@@ -231,15 +273,20 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/reactivate:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Reativar project inativo (legado)
       deprecated: true
       description: Compatibilidade temporaria para registros inactive.
@@ -249,15 +296,20 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/finish:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Finalizar project
       operationId: finishProject
       description: Requer `projects:finish`. Transicao permitida apenas de `active`; pendencias operacionais bloqueiam a finalizacao.
@@ -266,15 +318,20 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/cancel:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Cancelar project
       operationId: cancelProject
       description: Requer `projects:cancel`. Transicoes permitidas de `draft`, `active` ou `paused`; todas as pendencias tecnicas e operacionais bloqueiam.
@@ -283,15 +340,20 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
   /projects/{id}/archive:
     post:
-      tags: [Projects]
+      tags:
+        - Projects
       summary: Arquivar project
       operationId: archiveProject
       description: Requer `projects:archive`. Transicoes permitidas apenas de `finished` ou `cancelled`; todas as pendencias tecnicas e operacionais bloqueiam.
@@ -300,19 +362,230 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { $ref: '#/components/responses/ProjectOk' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/ProjectLifecycleConflict' }
-
+        '200':
+          $ref: '#/components/responses/ProjectOk'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ProjectLifecycleConflict'
+  /projects/creation-options:
+    get:
+      tags:
+        - Projects
+      summary: Minimal scoped labels for projects:create
+      description: Active resources from the authorized organization. Returns only id and name. No companies:read or users:read is granted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: resource
+          in: query
+          schema:
+            type: string
+            enum:
+              - companies
+              - users
+        - name: selected_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Scoped option page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectOptionPage'
+  /projects/edit-options:
+    get:
+      tags:
+        - Projects
+      summary: Minimal scoped labels for projects:update
+      description: Active resources from the authorized organization. Returns only id and name. No companies:read or users:read is granted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: resource
+          in: query
+          schema:
+            type: string
+            enum:
+              - companies
+              - users
+        - name: selected_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Scoped option page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectOptionPage'
+  /projects/company-options:
+    get:
+      tags:
+        - Projects
+      summary: Minimal scoped labels for projects:read
+      description: Active resources from the authorized organization. Returns only id and name. No companies:read or users:read is granted.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: organization_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: resource
+          in: query
+          schema:
+            type: string
+            enum:
+              - companies
+        - name: selected_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Scoped option page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectOptionPage'
+  /projects/{id}/history:
+    get:
+      tags:
+        - Projects
+      summary: Project audit for projects:read
+      description: Paginated and scoped to the project organization. Raw settings and metadata values are masked.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Paginated creation/update/lifecycle audit
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        project_id:
+                          type: integer
+                        operation:
+                          type: string
+                        performed_by:
+                          type: integer
+                          nullable: true
+                        created_at:
+                          type: string
+                          format: date-time
+                        changes:
+                          type: object
+                          additionalProperties: true
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+                  total_items:
+                    type: integer
+                  total_pages:
+                    type: integer
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: session-token
-
   parameters:
     ProjectId:
       name: id
@@ -337,7 +610,6 @@ components:
         minimum: 1
         maximum: 100
         default: 20
-
   schemas:
     ErrorCode:
       type: string
@@ -354,13 +626,19 @@ components:
         - INTERNAL_ERROR
     FieldError:
       type: object
-      required: [field, message]
+      required:
+        - field
+        - message
       properties:
-        field: { type: string }
-        message: { type: string }
+        field:
+          type: string
+        message:
+          type: string
     ErrorResponse:
       type: object
-      required: [code, message]
+      required:
+        - code
+        - message
       properties:
         code:
           $ref: '#/components/schemas/ErrorCode'
@@ -375,14 +653,24 @@ components:
               additionalProperties: true
     ProjectStatus:
       type: string
-      enum: [draft, active, paused, inactive, finished, cancelled, archived]
+      enum:
+        - draft
+        - active
+        - paused
+        - inactive
+        - finished
+        - cancelled
+        - archived
     CreateProjectRequest:
       type: object
-      required: [organization_id, company_id, name]
+      required:
+        - company_id
+        - name
       properties:
         organization_id:
           type: integer
           format: int64
+          description: Resolved from authenticated context for scoped users. PLATFORM_ADMIN must select a valid organization. Mismatches are rejected.
         company_id:
           type: integer
           format: int64
@@ -408,6 +696,37 @@ components:
         metadata:
           type: object
           nullable: true
+        code:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 40
+          pattern: ^[A-Z0-9][A-Z0-9._/-]+$
+        project_type:
+          type: string
+          nullable: true
+          enum:
+            - inventory
+            - valuation
+            - inventory_valuation
+            - reconciliation
+            - regularization
+            - other
+        responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+      additionalProperties: false
     UpdateProjectRequest:
       type: object
       properties:
@@ -427,37 +746,163 @@ components:
           type: string
           format: date
           nullable: true
+        code:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 40
+          pattern: ^[A-Z0-9][A-Z0-9._/-]+$
+        project_type:
+          type: string
+          nullable: true
+          enum:
+            - inventory
+            - valuation
+            - inventory_valuation
+            - reconciliation
+            - regularization
+            - other
+        responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        expected_updated_at:
+          type: string
+          format: date-time
+          description: Optional optimistic concurrency token
+      additionalProperties: false
     ProjectResponse:
       type: object
-      required: [id, organization_id, company_id, name, status, available_actions, created_at, updated_at]
+      required:
+        - id
+        - organization_id
+        - company_id
+        - name
+        - status
+        - available_actions
+        - created_at
+        - updated_at
       properties:
-        id: { type: integer, format: int64 }
-        organization_id: { type: integer, format: int64 }
-        company_id: { type: integer, format: int64, nullable: true }
-        name: { type: string }
-        description: { type: string, nullable: true }
+        id:
+          type: integer
+          format: int64
+        organization_id:
+          type: integer
+          format: int64
+        company_id:
+          type: integer
+          format: int64
+          nullable: true
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
         status:
           $ref: '#/components/schemas/ProjectStatus'
-        start_date: { type: string, format: date, nullable: true }
-        end_date: { type: string, format: date, nullable: true }
-        finished_at: { type: string, format: date-time, nullable: true }
-        settings: { type: object, nullable: true }
-        metadata: { type: object, nullable: true }
-        created_by_id: { type: integer, format: int64, nullable: true }
-        updated_by_id: { type: integer, format: int64, nullable: true }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-        deleted_at: { type: string, format: date-time, nullable: true }
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+        settings:
+          type: object
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        created_by_id:
+          type: integer
+          format: int64
+          nullable: true
+        updated_by_id:
+          type: integer
+          format: int64
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
         available_actions:
           type: array
           items:
             $ref: '#/components/schemas/ProjectAvailableAction'
+        code:
+          type: string
+          nullable: true
+          minLength: 2
+          maxLength: 40
+          pattern: ^[A-Z0-9][A-Z0-9._/-]+$
+        project_type:
+          type: string
+          nullable: true
+          enum:
+            - inventory
+            - valuation
+            - inventory_valuation
+            - reconciliation
+            - regularization
+            - other
+        responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_responsible_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          minimum: 1
+        planning_notes:
+          type: string
+          nullable: true
+          maxLength: 5000
+        company_name:
+          type: string
+          nullable: true
+        responsible_user_name:
+          type: string
+          nullable: true
+        planning_responsible_user_name:
+          type: string
+          nullable: true
     ProjectLifecycleAction:
       type: string
-      enum: [activate, pause, resume, finish, cancel, archive]
+      enum:
+        - activate
+        - pause
+        - resume
+        - finish
+        - cancel
+        - archive
     ProjectAvailableAction:
       type: object
-      required: [action, permission]
+      required:
+        - action
+        - permission
       properties:
         action:
           $ref: '#/components/schemas/ProjectLifecycleAction'
@@ -466,7 +911,9 @@ components:
           example: projects:activate
     ProjectOpenOperation:
       type: object
-      required: [type, count]
+      required:
+        - type
+        - count
       properties:
         type:
           type: string
@@ -476,17 +923,52 @@ components:
           minimum: 1
     ProjectListResponse:
       type: object
-      required: [items, page, page_size, total_items, total_pages]
+      required:
+        - items
+        - page
+        - page_size
+        - total_items
+        - total_pages
       properties:
         items:
           type: array
           items:
             $ref: '#/components/schemas/ProjectResponse'
-        page: { type: integer }
-        page_size: { type: integer }
-        total_items: { type: integer }
-        total_pages: { type: integer }
-
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+        status_counts:
+          type: object
+          additionalProperties:
+            type: integer
+    ProjectOptionPage:
+      type: object
+      properties:
+        organization_id:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
   responses:
     ProjectOk:
       description: Project retornado

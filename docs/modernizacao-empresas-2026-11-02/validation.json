@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-02",
+  "timezone": "America/Sao_Paulo",
+  "checks": [
+    {
+      "name": "backend unit",
+      "suites": 61,
+      "tests": 443,
+      "command": "node test/run-tests.cjs unit",
+      "log": "evidence/backend-unit.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "backend mysql companies",
+      "suites": 2,
+      "tests": 16,
+      "command": "node test/run-tests.cjs mysql --runTestsByPath test/integration/companies/companies.e2e-spec.ts test/integration/companies/company-registration.e2e-spec.ts",
+      "log": "evidence/mysql.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "backend sqlite companies",
+      "suites": 2,
+      "tests": 16,
+      "command": "node test/run-tests.cjs sqlite --runTestsByPath test/integration/companies/companies.e2e-spec.ts test/integration/companies/company-registration.e2e-spec.ts",
+      "log": "evidence/sqlite.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "frontend full regression before final form refinements",
+      "suites": 50,
+      "tests": 294,
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+      "log": "evidence/frontend-all.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "frontend final company module",
+      "suites": 2,
+      "tests": 25,
+      "command": "node node_modules/vitest/vitest.mjs run --config vitest.config.ts src/features/companies",
+      "log": "evidence/frontend-tests.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "browser final companies",
+      "tests": 7,
+      "command": "node node_modules/@playwright/test/cli.js test --config playwright.companies.config.ts",
+      "log": "evidence/browser.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "backend lint",
+      "command": "node node_modules/eslint/bin/eslint.js \"{src,apps,libs,test}/**/*.ts\"",
+      "log": "evidence/backend-lint.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "backend typecheck",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "log": "evidence/backend-typecheck.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "backend build",
+      "command": "node node_modules/@nestjs/cli/bin/nest.js build",
+      "log": "evidence/backend-build.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "frontend lint",
+      "command": "node node_modules/eslint/bin/eslint.js .",
+      "log": "evidence/frontend-lint.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "frontend typecheck",
+      "command": "node node_modules/typescript/bin/tsc -b",
+      "log": "evidence/frontend-typecheck.log",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "frontend build",
+      "command": "node node_modules/typescript/bin/tsc -b && node node_modules/vite/bin/vite.js build",
+      "log": "evidence/frontend-build.log",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "countsOverlap": true,
+  "localCompanies": {
+    "count": 26,
+    "sha256": "92dbbdda02d8b692c3577598f2a78dc0090638cfd45a207feffbaf88341e7904",
+    "identicalToBefore": true
+  },
+  "livePostalLookup": {
+    "status": 200,
+    "valid": true,
+    "city": "São Paulo",
+    "state": "SP"
+  },
+  "migrationsCreated": 0,
+  "newDependencies": 0,
+  "commit": false,
+  "push": false,
+  "deploy": false,
+  "productionChanged": false,
+  "testDatabases": [
+    "SQLite :memory:",
+    "MySQL fixed loopback port 33337, gai_validation_disposable"
+  ],
+  "screenshots": [
+    "desktop-detail-light.png",
+    "desktop-form-dark.png",
+    "desktop-form-light.png",
+    "mobile-form-dark.png",
+    "mobile-form-light.png",
+    "tablet-form-dark.png",
+    "tablet-form-light.png"
+  ],
+  "limitations": [
+    "Global frontend full regression precedes final form refinements; final company tests and browser tests cover refinements.",
+    "Frontend bundle size warning above 500 kB.",
+    "Browser coverage: Chromium.",
+    "Future company-registry provider deliberately not integrated.",
+    "Complete cross-module integration suite not executed."
+  ],
+  "testInfrastructureRestored": {
+    "disposableMysqlStopped": true
+  }
+}

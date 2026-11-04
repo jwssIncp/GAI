@@ -30,7 +30,7 @@ describe('Auth - Password Reset (e2e)', () => {
       .send({ email: 'admin@gai.local' })
       .expect(200);
 
-    expect(response.body.message).toContain('If the email is registered');
+    expect(response.body.message).toContain('Se o e-mail estiver cadastrado');
   });
 
   it('POST /auth/password-reset/confirm updates password and revokes sessions', async () => {
@@ -49,12 +49,18 @@ describe('Auth - Password Reset (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/api/v1/auth/password-reset/confirm')
-      .send({ token: rawToken, new_password: 'NewPass@123456' })
+      .send({
+        token: rawToken,
+        new_password: 'A new personal passphrase 2026!',
+      })
       .expect(200);
 
     await request(app.getHttpServer())
       .post('/api/v1/auth/login')
-      .send({ identifier: 'platform.admin', password: 'NewPass@123456' })
+      .send({
+        identifier: 'platform.admin',
+        password: 'A new personal passphrase 2026!',
+      })
       .expect(200);
   });
 });

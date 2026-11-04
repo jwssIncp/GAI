@@ -40,6 +40,13 @@ export class RoleAssignmentResponseDto {
 }
 
 export class UserResponseDto {
+  @ApiPropertyOptional({ nullable: true }) full_name!: string | null;
+  @ApiPropertyOptional({ nullable: true }) phone!: string | null;
+  @ApiPropertyOptional({ nullable: true }) job_title!: string | null;
+  @ApiPropertyOptional({ nullable: true }) organization_name!: string | null;
+  @ApiPropertyOptional({ nullable: true }) last_login_at!: string | null;
+  @ApiPropertyOptional({ nullable: true }) locked_until!: string | null;
+  @ApiProperty() must_change_password!: boolean;
   @ApiProperty({ type: 'integer', format: 'int64' })
   id!: number;
 
@@ -70,6 +77,13 @@ export class UserResponseDto {
   ): UserResponseDto {
     return {
       id: user.id,
+      full_name: user.fullName,
+      phone: user.phone,
+      job_title: user.jobTitle,
+      last_login_at: user.lastLoginAt?.toISOString() ?? null,
+      locked_until: user.lockedUntil?.toISOString() ?? null,
+      must_change_password: user.mustChangePassword,
+      organization_name: user.organizationName,
       login: user.login,
       email: user.email,
       status: user.status,

@@ -79,9 +79,9 @@ describe('DeactivateUserUseCase', () => {
     expect(result.status).toBe(UserStatus.INACTIVE);
     expect(sessions.revokeAllForUser).toHaveBeenCalledWith(5, expect.any(Date));
     expect(repository.saveWithAudit).toHaveBeenCalled();
-    expect(sessions.revokeAllForUser.mock.invocationCallOrder[0]).toBeLessThan(
-      repository.saveWithAudit.mock.invocationCallOrder[0],
-    );
+    expect(
+      sessions.revokeAllForUser.mock.invocationCallOrder[0],
+    ).toBeGreaterThan(repository.saveWithAudit.mock.invocationCallOrder[0]);
     expect(loggerMock.info).toHaveBeenCalledWith({
       operation: 'DEACTIVATE_USER',
       userId: 5,

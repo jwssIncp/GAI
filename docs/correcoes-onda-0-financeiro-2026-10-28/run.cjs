@@ -7,6 +7,7 @@ process.env.GAI_TEST_MYSQL_WAVE0 = '1';
 process.env.TS_NODE_PROJECT = path.join(backend, 'tsconfig.json');
 const mode = process.argv[2];
 if (mode === 'server') {
+  process.env.GAI_TEST_BROWSER_FIXTURES = '1';
   require(path.join(backend, 'node_modules/ts-node/register/transpile-only'));
   const { createTestApp, seedTestData } = require(path.join(backend, 'test/integration/test-app.helper.ts'));
   (async () => {

@@ -12,21 +12,29 @@ export interface ProjectActorContext extends PermissionActor {
 export class ProjectScopeService {
   resolveOrganizationForCreate(
     actor: ProjectActorContext,
-    requestedOrganizationId: number,
+    requestedOrganizationId?: number,
   ): number {
     if (actor.systemRoles.includes(UserRole.PLATFORM_ADMIN)) {
+      if (!requestedOrganizationId)
+        throw new ForbiddenException({
+          code: 'FORBIDDEN',
+          message: 'Select an authorized organization',
+        });
       return requestedOrganizationId;
     }
 
-    if (actor.organizationId === null) {
+    if (!actor.organizationId || !Number.isSafeInteger(actor.organizationId)) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
         message: 'Insufficient permissions',
       });
     }
 
-    if (actor.organizationId === requestedOrganizationId) {
-      return requestedOrganizationId;
+    if (
+      requestedOrganizationId === undefined ||
+      actor.organizationId === requestedOrganizationId
+    ) {
+      return actor.organizationId;
     }
 
     throw new ForbiddenException({
@@ -43,7 +51,7 @@ export class ProjectScopeService {
       return requestedOrganizationId;
     }
 
-    if (actor.organizationId === null) {
+    if (!actor.organizationId || !Number.isSafeInteger(actor.organizationId)) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
         message: 'Insufficient permissions',

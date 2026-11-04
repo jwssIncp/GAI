@@ -1,3 +1,4 @@
+import { fixturePasswords } from '../fixtures/passwords';
 import { AppController } from '../../src/app.controller';
 import { DOCUMENT_ENTITIES } from '../../src/modules/documents/document.entity';
 import { MYSQL_UTC_OPTIONS } from '../../src/common/persistence/mysql-utc-options';
@@ -292,7 +293,7 @@ export async function loginAsAdmin(app: INestApplication): Promise<string> {
     .post('/api/v1/auth/login')
     .send({
       identifier: 'platform.admin',
-      password: 'Admin@123456',
+      password: fixturePasswords.admin,
     })
     .expect(200);
 
@@ -304,7 +305,7 @@ export async function loginAsOrgAdmin(app: INestApplication): Promise<string> {
     .post('/api/v1/auth/login')
     .send({
       identifier: 'org.admin',
-      password: 'Admin@123456',
+      password: fixturePasswords.orgAdmin,
     })
     .expect(200);
 
@@ -316,7 +317,7 @@ export async function loginAsOrgUser(app: INestApplication): Promise<string> {
     .post('/api/v1/auth/login')
     .send({
       identifier: 'test.user',
-      password: 'Test@123456',
+      password: fixturePasswords.user,
     })
     .expect(200);
 
@@ -547,7 +548,7 @@ export async function seedTestData(app: INestApplication): Promise<void> {
       organizationId: null,
       login: 'platform.admin',
       email: 'admin@gai.local',
-      passwordHash: await hasher.hash('Admin@123456'),
+      passwordHash: await hasher.hash(fixturePasswords.admin),
       status: UserStatus.ACTIVE,
       failedLoginAttempts: 0,
       lockedUntil: null,
@@ -562,7 +563,7 @@ export async function seedTestData(app: INestApplication): Promise<void> {
       organizationId: organization.id,
       login: 'org.admin',
       email: 'orgadmin@gai.local',
-      passwordHash: await hasher.hash('Admin@123456'),
+      passwordHash: await hasher.hash(fixturePasswords.orgAdmin),
       status: UserStatus.ACTIVE,
       failedLoginAttempts: 0,
       lockedUntil: null,
@@ -577,7 +578,7 @@ export async function seedTestData(app: INestApplication): Promise<void> {
       organizationId: organization.id,
       login: 'test.user',
       email: 'test@gai.local',
-      passwordHash: await hasher.hash('Test@123456'),
+      passwordHash: await hasher.hash(fixturePasswords.user),
       status: UserStatus.ACTIVE,
       failedLoginAttempts: 0,
       lockedUntil: null,

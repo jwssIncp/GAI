@@ -30,7 +30,7 @@ describe('Generated assignment column metadata (disposable MySQL)', () => {
         ),
       ).toBe(true);
       const [count] = await ds.query('SELECT COUNT(*) n FROM migrations');
-      expect(Number(count.n)).toBe(33);
+      expect(Number(count.n)).toBe(ds.migrations.length);
       expect(await ds.showMigrations()).toBe(false);
     } finally {
       await qr.release();

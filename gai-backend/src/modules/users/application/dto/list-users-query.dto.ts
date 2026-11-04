@@ -4,6 +4,29 @@ import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { UserRole, UserStatus } from '../../../auth/domain/enums/user.enums';
 
 export class ListUsersQueryDto {
+  @IsOptional()
+  @IsEnum({
+    name: 'name',
+    login: 'login',
+    created_at: 'created_at',
+    last_login_at: 'last_login_at',
+  })
+  sort_by?: 'name' | 'login' | 'created_at' | 'last_login_at';
+  @IsOptional()
+  @IsEnum({ ASC: 'ASC', DESC: 'DESC' })
+  sort_order?: 'ASC' | 'DESC';
+  @ApiPropertyOptional({ minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  role_id?: number;
+
+  @ApiPropertyOptional({ enum: ['PLATFORM', 'ORGANIZATION'] })
+  @IsOptional()
+  @IsEnum({ PLATFORM: 'PLATFORM', ORGANIZATION: 'ORGANIZATION' })
+  scope?: 'PLATFORM' | 'ORGANIZATION';
+
   @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)

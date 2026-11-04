@@ -1,0 +1,587 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\playwright.config.cjs"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\playwright.config.cjs",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/auditoria-integrada-gai-2026-10-28/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/auditoria-integrada-gai-2026-10-28/evidencias/playwright",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-real",
+        "name": "chromium-real",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/auditoria-integrada-gai-2026-10-28/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "assisted-reconciliation.spec.ts",
+      "file": "assisted-reconciliation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN reviews and persists assisted reconciliation while retaining project navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20595,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:32:47.460Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjEsInNlc3Npb25JZCI6MSwiaXRlbUlkIjoxLCJ1cmwiOiJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xL2ludmVudG9yeS9zZXNzaW9ucy8xIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "48b0ce6cc64a013291df-978a9d02c10ecd5d70c5",
+          "file": "assisted-reconciliation.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "budgets.spec.ts",
+      "file": "budgets.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN publishes explicit prices, builds a standalone budget, compares scenarios and approves an immutable proposal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23409,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:33:08.273Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-budget",
+                      "contentType": "application/json",
+                      "body": "eyJidWRnZXRfaWQiOjEsImxpbmtlZF9idWRnZXRfaWQiOjIsImxpbmtlZF9wcm9qZWN0X2lkIjoyLCJjb21wYW55X2lkIjoyLCJ1bml0X2lkIjoxLCJudW1iZXIiOiJTSU5URVRJQ08tT1JDLTE3OTMyMjMxOTA2MjgiLCJwYXJhbWV0ZXJfbmFtZSI6IlNJTlRFVElDTyBQUkVDT1MgMTc5MzIyMzE5MDYyOCIsInZlcnNpb25zIjozLCJhcHByb3ZlZF9wcmljZSI6IjIzNzYuNzkiLCJodHRwX2Vycm9ycyI6W10sInBhZ2VfZXJyb3JzIjpbXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4a686e272c8e2ae4d13f-e3d6c639c806ceabbe8d",
+          "file": "budgets.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "contracts.spec.ts",
+      "file": "contracts.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN manages contracts/amendments, refreshes history and exports filtered commercial overview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22636,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:33:31.727Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0X2lkIjozLCJzZWNvbmRfcHJvamVjdF9pZCI6NCwiY29udHJhY3RfaWQiOjEsInNlZ21lbnQiOiJTSU5URVRJQ08tQ09NRVJDSUFMLTE3OTMyMjMyMTQwMzkiLCJudW1iZXIiOiJURVNURS0xNzkzMjIzMjE0MDM5IiwidmVyc2lvbnMiOjMsIm9yaWdpbmFsIjoiMTAwLjEwIiwiY3VycmVudCI6IjEwMC4zMCIsImh0dHBfZXJyb3JzIjpbXSwicGFnZV9lcnJvcnMiOltdfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "94d2a11b1fc1ed31b81d-037be88173c21aba9341",
+          "file": "contracts.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "documents.spec.ts",
+      "file": "documents.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN generates and downloads approved PDF/DOCX and commercial versions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 25235,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:33:54.406Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9111b41e0f82b685c9ea-bab60f0970b78c36968b",
+          "file": "documents.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "dre.spec.ts",
+      "file": "dre.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20650,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:34:19.691Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcm9qZWN0IjogNiwKICAiY29tcGFueSI6IDQsCiAgInJlY2VpdmFibGUiOiAxLAogICJlbnRyeUlkIjogMSwKICAiYWNjb3VudCI6IDEsCiAgInJldmlzaW9uIjogMiwKICAibW9udGgiOiAiMjAyNi0wMSIsCiAgImlzc3VlZF9vbiI6ICIyMDI2LTEwLTAxIiwKICAiYW1vdW50IjogIjgwLjAxIiwKICAiZXJyb3JzIjogW10sCiAgImh0dHAiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2a366cc99db1400a266f-59a56a38cd24f1a4eebd",
+          "file": "dre.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "field-coordination.spec.ts",
+      "file": "field-coordination.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN creates a versioned field model, assigns and approves a task, completes/reopens field and retains workspace navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24647,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:34:40.387Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "field-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjcsImNoZWNrbGlzdElkIjoxLCJ1cmwiOiJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy83L2ZpZWxkLWNvb3JkaW5hdGlvbiIsImVycm9ycyI6W10sImh0dHAiOltdfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ff305aa1469e03fe7f4-cb9282f09ebd6d767802",
+          "file": "field-coordination.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "receivables.spec.ts",
+      "file": "receivables.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26401,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:35:05.067Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0b69149b2337451298b1-b217fce505efc3a9ac56",
+          "file": "receivables.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "reports.spec.ts",
+      "file": "reports.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN creates model, drafts, validates, approves and preserves historical report",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29169,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:35:31.513Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-evidence",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0IjoxMCwiY29tcGFueSI6NiwiaXRlbSI6NjIsInRlbXBsYXRlIjoyLCJ0ZW1wbGF0ZV92ZXJzaW9uIjo0LCJyZXBvcnQiOjIsImFwcHJvdmVkX3ZlcnNpb24iOjcsImFwcHJvdmVkX2hhc2giOiJiYzc3NjU2MTg0YWE4MzY5YzQ1YmIyMDI3NGFjMmZlNDc4NDA3NzBjZjdkMGE5NGM2ZGUyMjgzNzJkMDVkMGZhIiwiZmluYWxfcmV2aXNpb24iOjcsImZpbmFsX3N0YXR1cyI6InJlb3BlbmVkIiwiZXJyb3JzIjpbXSwiaHR0cCI6W119"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d2ea609703bae19dcdce-886045439ab01b080d55",
+          "file": "reports.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "valuation-batches.spec.ts",
+      "file": "valuation-batches.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN selects between pages, previews and applies common/individual valuations with persisted results and protected XLSX",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24631,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:36:00.724Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjExLCJjb21tb25PcGVyYXRpb24iOjEsImluZGl2aWR1YWxPcGVyYXRpb24iOjIsImV4cG9ydEpvYiI6MywidXJsIjoiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTEvaW52ZW50b3J5LWl0ZW1zIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9ec1bdbb49bf641e4085-fb89ee72c0dafdf90b9b",
+          "file": "valuation-batches.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "zz-navigation.spec.ts",
+      "file": "zz-navigation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real project navigation and refresh 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30450,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:36:25.386Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "navigation-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDE0NDAsCiAgICAiaGVpZ2h0IjogMTAwMAogIH0sCiAgInN0ZXBzIjogWwogICAgewogICAgICAic3VmZml4IjogInN1bW1hcnkiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEyL3N1bW1hcnkiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiZGFzaGJvYXJkIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi9kYXNoYm9hcmQiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiY29udHJhY3RzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi9jb250cmFjdHMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAicHJlcGFyYXRpb24va2lja29mZiIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTIvcHJlcGFyYXRpb24va2lja29mZiIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAxNDQwLAogICAgICAgICJkb2N1bWVudCI6IDE0NDAKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgInN1ZmZpeCI6ICJwcmVwYXJhdGlvbi9jbGllbnQtY2hlY2tsaXN0IiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi9wcmVwYXJhdGlvbi9jbGllbnQtY2hlY2tsaXN0IiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImZpZWxkLWNvb3JkaW5hdGlvbiIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTIvZmllbGQtY29vcmRpbmF0aW9uIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImludmVudG9yeS1pdGVtcyIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTIvaW52ZW50b3J5LWl0ZW1zIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImludmVudG9yeS9zZXNzaW9ucyIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTIvaW52ZW50b3J5L3Nlc3Npb25zIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImFjY291bnRpbmctaXRlbXMiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEyL2FjY291bnRpbmctaXRlbXMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAicGVuZGluZy1pc3N1ZXMiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEyL3BlbmRpbmctaXNzdWVzIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImZpbmFuY2UiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEyL2ZpbmFuY2UiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiZmluYW5jZS9hY2NvdW50YWJpbGl0aWVzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi9maW5hbmNlL2FjY291bnRhYmlsaXRpZXMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiaW1wb3J0LXNlc3Npb25zIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi9pbXBvcnQtc2Vzc2lvbnMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMTQ0MCwKICAgICAgICAiZG9jdW1lbnQiOiAxNDQwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiZXhwb3J0LWpvYnMiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEyL2V4cG9ydC1qb2JzIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDE0NDAsCiAgICAgICAgImRvY3VtZW50IjogMTQ0MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogInRlY2huaWNhbC1yZXBvcnRzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMi90ZWNobmljYWwtcmVwb3J0cyIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAxNDQwLAogICAgICAgICJkb2N1bWVudCI6IDE0NDAKICAgICAgfQogICAgfQogIF0sCiAgImxvc3RDb250ZXh0IjogewogICAgInByb2plY3QiOiAxMiwKICAgICJhZnRlciI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9idWRnZXRzIiwKICAgICJjb25maXJtZWQiOiB0cnVlCiAgfSwKICAiZXJyb3JzIjogW10KfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bd0b3b6ddbdf77a97fe-bfbf41f5b90670b0ba6a",
+          "file": "zz-navigation.spec.ts",
+          "line": 3,
+          "column": 73
+        },
+        {
+          "title": "real project navigation and refresh 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 30198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-28T21:36:55.855Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "navigation-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJ2aWV3cG9ydCI6IHsKICAgICJ3aWR0aCI6IDM5MCwKICAgICJoZWlnaHQiOiA4NDQKICB9LAogICJzdGVwcyI6IFsKICAgIHsKICAgICAgInN1ZmZpeCI6ICJzdW1tYXJ5IiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy9zdW1tYXJ5IiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDM5MCwKICAgICAgICAiZG9jdW1lbnQiOiAzOTAKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgInN1ZmZpeCI6ICJkYXNoYm9hcmQiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEzL2Rhc2hib2FyZCIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAzOTAsCiAgICAgICAgImRvY3VtZW50IjogMzkwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiY29udHJhY3RzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy9jb250cmFjdHMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogInByZXBhcmF0aW9uL2tpY2tvZmYiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEzL3ByZXBhcmF0aW9uL2tpY2tvZmYiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogInByZXBhcmF0aW9uL2NsaWVudC1jaGVja2xpc3QiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEzL3ByZXBhcmF0aW9uL2NsaWVudC1jaGVja2xpc3QiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImZpZWxkLWNvb3JkaW5hdGlvbiIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTMvZmllbGQtY29vcmRpbmF0aW9uIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDM5MCwKICAgICAgICAiZG9jdW1lbnQiOiAzOTAKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgInN1ZmZpeCI6ICJpbnZlbnRvcnktaXRlbXMiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEzL2ludmVudG9yeS1pdGVtcyIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAzOTAsCiAgICAgICAgImRvY3VtZW50IjogMzkwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiaW52ZW50b3J5L3Nlc3Npb25zIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy9pbnZlbnRvcnkvc2Vzc2lvbnMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImFjY291bnRpbmctaXRlbXMiLAogICAgICAidXJsIjogImh0dHA6Ly8xMjcuMC4wLjE6MzMzMjAvYXBwL3Byb2plY3RzLzEzL2FjY291bnRpbmctaXRlbXMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogInBlbmRpbmctaXNzdWVzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy9wZW5kaW5nLWlzc3VlcyIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAzOTAsCiAgICAgICAgImRvY3VtZW50IjogMzkwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiZmluYW5jZSIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTMvZmluYW5jZSIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAzOTAsCiAgICAgICAgImRvY3VtZW50IjogMzkwCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICJzdWZmaXgiOiAiZmluYW5jZS9hY2NvdW50YWJpbGl0aWVzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy9maW5hbmNlL2FjY291bnRhYmlsaXRpZXMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogImltcG9ydC1zZXNzaW9ucyIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTMvaW1wb3J0LXNlc3Npb25zIiwKICAgICAgIndpZHRoIjogewogICAgICAgICJ2aWV3cG9ydCI6IDM5MCwKICAgICAgICAiZG9jdW1lbnQiOiAzOTAKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgInN1ZmZpeCI6ICJleHBvcnQtam9icyIsCiAgICAgICJ1cmwiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvcHJvamVjdHMvMTMvZXhwb3J0LWpvYnMiLAogICAgICAid2lkdGgiOiB7CiAgICAgICAgInZpZXdwb3J0IjogMzkwLAogICAgICAgICJkb2N1bWVudCI6IDM5MAogICAgICB9CiAgICB9LAogICAgewogICAgICAic3VmZml4IjogInRlY2huaWNhbC1yZXBvcnRzIiwKICAgICAgInVybCI6ICJodHRwOi8vMTI3LjAuMC4xOjMzMzIwL2FwcC9wcm9qZWN0cy8xMy90ZWNobmljYWwtcmVwb3J0cyIsCiAgICAgICJ3aWR0aCI6IHsKICAgICAgICAidmlld3BvcnQiOiAzOTAsCiAgICAgICAgImRvY3VtZW50IjogMzkwCiAgICAgIH0KICAgIH0KICBdLAogICJsb3N0Q29udGV4dCI6IHsKICAgICJwcm9qZWN0IjogMTMsCiAgICAiYWZ0ZXIiOiAiaHR0cDovLzEyNy4wLjAuMTozMzMyMC9hcHAvYnVkZ2V0cyIsCiAgICAiY29uZmlybWVkIjogdHJ1ZQogIH0sCiAgImVycm9ycyI6IFtdCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "1bd0b3b6ddbdf77a97fe-452160c1ab34bacff29a",
+          "file": "zz-navigation.spec.ts",
+          "line": 3,
+          "column": 73
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-28T21:32:46.153Z",
+    "duration": 280530.73799999995,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

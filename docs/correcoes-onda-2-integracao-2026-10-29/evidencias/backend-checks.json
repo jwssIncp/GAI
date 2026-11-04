@@ -1,0 +1,41 @@
+[
+  {
+    "name": "backend-typescript",
+    "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\workspace\\gai-backend",
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false"
+    ],
+    "exit_code": 0,
+    "seconds": 23.783
+  },
+  {
+    "name": "backend-build",
+    "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\workspace\\gai-backend",
+    "command": [
+      "node",
+      "node_modules/@nestjs/cli/bin/nest.js",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 33.264
+  },
+  {
+    "name": "backend-lint",
+    "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\workspace\\gai-backend",
+    "command": [
+      "node",
+      "node_modules/eslint/bin/eslint.js",
+      "{src,apps,libs,test}/**/*.ts",
+      "--format",
+      "json",
+      "--output-file",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\backend-eslint.json"
+    ],
+    "exit_code": 0,
+    "seconds": 135.136
+  }
+]

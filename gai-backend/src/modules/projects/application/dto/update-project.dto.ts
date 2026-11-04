@@ -1,7 +1,9 @@
+import { ProjectRegistrationFieldsDto } from './project-registration-fields.dto';
 import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
+  IsISO8601,
   IsString,
   Matches,
   MaxLength,
@@ -22,7 +24,16 @@ const trimOptionalString = (value: unknown): unknown => {
 const normalizeOptionalDate = (value: unknown): unknown =>
   value === '' ? undefined : value;
 
-export class UpdateProjectDto {
+export class UpdateProjectDto extends ProjectRegistrationFieldsDto {
+  @ApiPropertyOptional({
+    format: 'date-time',
+    description:
+      'Optional optimistic concurrency token from the previously read project',
+  })
+  @IsOptional()
+  @IsISO8601({ strict: true })
+  expected_updated_at?: string;
+
   @ApiPropertyOptional({ minLength: 2, maxLength: 255 })
   @Transform((params: TransformFnParams) => trimString(params.value as unknown))
   @IsOptional()

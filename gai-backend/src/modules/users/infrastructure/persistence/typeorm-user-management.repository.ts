@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
+import { In, Repository } from 'typeorm';
 import { UserRole, UserStatus } from '../../../auth/domain/enums/user.enums';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
 import { RoleType } from '../../domain/enums/role-type.enum';
@@ -13,6 +14,12 @@ import {
 import { RoleEntity } from './role.entity';
 import { UserAuditLogEntity } from './user-audit-log.entity';
 import { UserRoleAssignmentEntity } from './user-role-assignment.entity';
+import {
+  assertAdministratorSurvives,
+  lockAccessAdministration,
+} from './access-administration-lock';
+import { isRoleCompatibleWithUserOrganization } from '../../domain/services/role-assignment-scope';
+import { IsNull } from 'typeorm';
 
 @Injectable()
 export class TypeOrmUserManagementRepository implements UserManagementRepository {
@@ -25,7 +32,18 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
 
   async findById(id: number): Promise<ManagedUser | null> {
     const entity = await this.userRepo.findOne({ where: { id } });
-    return entity ? this.toDomain(entity) : null;
+    if (!entity) return null;
+    const organization =
+      entity.organizationId === null
+        ? null
+        : await this.userRepo.manager
+            .getRepository(OrganizationEntity)
+            .findOneBy({ id: entity.organizationId });
+    return new ManagedUser({
+      ...this.toDomain(entity).toProps(),
+      organizationName:
+        organization?.tradeName || organization?.legalName || null,
+    });
   }
 
   async findByLogin(login: string): Promise<ManagedUser | null> {
@@ -54,34 +72,89 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
       qb.andWhere('user.status = :status', { status: params.status });
     }
 
-    if (params.role) {
+    if (params.scope)
+      qb.andWhere(
+        params.scope === 'PLATFORM'
+          ? 'user.organization_id IS NULL'
+          : 'user.organization_id IS NOT NULL',
+      );
+
+    if (params.role || params.roleId) {
       qb.innerJoin(
         UserRoleAssignmentEntity,
         'assignment',
-        'assignment.user_id = user.id AND assignment.is_active = 1',
+        'assignment.user_id = user.id AND assignment.is_active = 1 AND assignment.revoked_at IS NULL',
       ).innerJoin(
         RoleEntity,
         'role',
-        'role.id = assignment.role_id AND role.type = :systemType AND role.key = :roleKey',
+        'role.id = assignment.role_id AND role.is_active = 1',
         { systemType: RoleType.SYSTEM, roleKey: params.role },
+      );
+      if (params.role)
+        qb.andWhere('role.type = :systemType AND role.key = :roleKey', {
+          systemType: RoleType.SYSTEM,
+          roleKey: params.role,
+        });
+      if (params.roleId)
+        qb.andWhere('role.id = :roleId', { roleId: params.roleId });
+      qb.andWhere(
+        `((role.type = :organizationType AND role.organization_id = user.organization_id)
+        OR (role.type = :systemType AND role.organization_id IS NULL AND
+          ((role.key = :platformKey AND user.organization_id IS NULL)
+            OR (role.key IN (:...organizationKeys) AND user.organization_id IS NOT NULL))))`,
+        {
+          organizationType: RoleType.ORGANIZATION,
+          systemType: RoleType.SYSTEM,
+          platformKey: UserRole.PLATFORM_ADMIN,
+          organizationKeys: [UserRole.ORG_ADMIN, UserRole.ORG_USER],
+        },
       );
     }
 
     if (params.search) {
       const term = `%${params.search.toLowerCase()}%`;
       qb.andWhere(
-        '(LOWER(user.login) LIKE :term OR LOWER(user.email) LIKE :term)',
+        '(LOWER(user.full_name) LIKE :term OR LOWER(user.login) LIKE :term OR LOWER(user.email) LIKE :term)',
         { term },
       );
     }
 
-    qb.orderBy('user.createdAt', 'DESC');
+    const sortColumns = {
+      name: 'user.fullName',
+      login: 'user.login',
+      created_at: 'user.createdAt',
+      last_login_at: 'user.lastLoginAt',
+    };
+    qb.orderBy(
+      sortColumns[params.sortBy ?? 'created_at'],
+      params.sortOrder ?? 'DESC',
+    ).addOrderBy('user.id', 'DESC');
     qb.skip((params.page - 1) * params.pageSize);
     qb.take(params.pageSize);
 
     const [entities, total] = await qb.getManyAndCount();
+    const ids = [
+      ...new Set(
+        entities
+          .map((e) => e.organizationId)
+          .filter((id): id is number => id !== null),
+      ),
+    ];
+    const organizations = ids.length
+      ? await this.userRepo.manager
+          .getRepository(OrganizationEntity)
+          .findBy({ id: In(ids) })
+      : [];
     return {
-      items: entities.map((entity) => this.toDomain(entity)),
+      items: entities.map((entity) => {
+        const org = organizations.find(
+          (o) => Number(o.id) === Number(entity.organizationId),
+        );
+        return new ManagedUser({
+          ...this.toDomain(entity).toProps(),
+          organizationName: org?.tradeName || org?.legalName || null,
+        });
+      }),
       total,
     };
   }
@@ -114,6 +187,7 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
     audit: UserAuditEntry,
   ): Promise<ManagedUser> {
     return this.userRepo.manager.transaction(async (manager) => {
+      await lockAccessAdministration(manager);
       const userRepository = manager.getRepository(UserEntity);
       const auditRepository = manager.getRepository(UserAuditLogEntity);
 
@@ -126,6 +200,39 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
         });
         if (!existing) {
           throw new Error(`User ${props.id} not found`);
+        }
+        if (
+          existing.status === UserStatus.ACTIVE &&
+          (props.status !== UserStatus.ACTIVE ||
+            existing.organizationId !== props.organizationId)
+        ) {
+          await assertAdministratorSurvives(manager, existing, []);
+        }
+        if (existing.organizationId !== props.organizationId) {
+          const links = await manager
+            .getRepository(UserRoleAssignmentEntity)
+            .findBy({
+              userId: existing.id,
+              isActive: true,
+              revokedAt: IsNull(),
+            });
+          for (const link of links) {
+            const linkedRole = await manager
+              .getRepository(RoleEntity)
+              .findOneByOrFail({ id: link.roleId });
+            if (
+              !isRoleCompatibleWithUserOrganization(
+                linkedRole,
+                props.organizationId,
+              )
+            ) {
+              throw new ConflictException({
+                code: 'CONFLICT',
+                message:
+                  'Revoke incompatible assignments before changing organization',
+              });
+            }
+          }
         }
         entity = userRepository.merge(existing, {
           organizationId: props.organizationId,
@@ -173,6 +280,12 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
       status: entity.status,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      fullName: entity.fullName,
+      phone: entity.phone,
+      jobTitle: entity.jobTitle,
+      lastLoginAt: entity.lastLoginAt,
+      mustChangePassword: entity.mustChangePassword,
+      lockedUntil: entity.lockedUntil,
     });
   }
 }

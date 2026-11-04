@@ -1,0 +1,85 @@
+[
+  {
+    "count": 0,
+    "extracted": 0,
+    "hash": "e3577f3755d02e01173a3e17095043bba0c46d1e5127e73de449946ddfc796a0",
+    "snapshot_bytes": 1215,
+    "milliseconds": 307.75620000000345,
+    "rss_before": 311644160,
+    "rss_after": 311902208,
+    "heap_before": 172394168,
+    "heap_after": 173453152
+  },
+  {
+    "count": 1,
+    "extracted": 1,
+    "hash": "0350d967c871fc1f972e9a88852a5d7776088ca7a58290258940123cb8afe194",
+    "snapshot_bytes": 1390,
+    "milliseconds": 823.0691999999981,
+    "rss_before": 311992320,
+    "rss_after": 312033280,
+    "heap_before": 173215528,
+    "heap_after": 174197768
+  },
+  {
+    "count": 999,
+    "extracted": 999,
+    "hash": "e414ede1225fc266a2bac42d737daa56d8d4cdd8713c3d3a6204fc6f17f65a91",
+    "snapshot_bytes": 183718,
+    "milliseconds": 2291.051900000006,
+    "rss_before": 312254464,
+    "rss_after": 322924544,
+    "heap_before": 168110848,
+    "heap_after": 174562160
+  },
+  {
+    "count": 1000,
+    "extracted": 1000,
+    "hash": "93bae4c573895afbcd96023e5a0c5a269a7ca763d16aa3a41cb9f4736f403022",
+    "snapshot_bytes": 186115,
+    "milliseconds": 1563.7932,
+    "rss_before": 328663040,
+    "rss_after": 342163456,
+    "heap_before": 179995952,
+    "heap_after": 186515344
+  },
+  {
+    "count": 1001,
+    "extracted": 1001,
+    "hash": "cad7c32ebe194937982d05fdae147dc1052cbae2dad25e6b1d0c73b5e46dd605",
+    "snapshot_bytes": 186301,
+    "milliseconds": 1499.8315000000002,
+    "rss_before": 336384000,
+    "rss_after": 340410368,
+    "heap_before": 174305528,
+    "heap_after": 182442208
+  },
+  {
+    "count": 2500,
+    "extracted": 2500,
+    "hash": "68f4c689ef121aae15147a3d577f3a7cb11f7305ee7c60cab81ae57c0afcd36c",
+    "snapshot_bytes": 465115,
+    "milliseconds": 5242.1535,
+    "rss_before": 338698240,
+    "rss_after": 380723200,
+    "heap_before": 173456816,
+    "heap_after": 202453712
+  },
+  {
+    "count": 5000,
+    "extracted": 5000,
+    "hash": "b711c9da82805630929368414c0f16d390537069c3e018cda48fb96bf0b71a77",
+    "snapshot_bytes": 931119,
+    "milliseconds": 9726.988400000002,
+    "rss_before": 379420672,
+    "rss_after": 456310784,
+    "heap_before": 206724008,
+    "heap_after": 244812280
+  },
+  {
+    "oversized": true,
+    "status": 413,
+    "code": "TECHNICAL_REPORT_SOURCE_LIMIT",
+    "atomic": true
+  }
+]

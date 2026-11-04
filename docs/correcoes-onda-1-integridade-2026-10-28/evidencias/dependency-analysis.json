@@ -1,0 +1,783 @@
+[
+  {
+    "project": "gai-backend",
+    "name": "@nestjs/platform-express",
+    "direct": true,
+    "severity": "high",
+    "historical": "11.1.27",
+    "baseline": "11.1.27",
+    "final": "11.2.8",
+    "still_reported": false,
+    "reachability": "Efeito de Multer no adaptador HTTP; multipart pode causar consumo de recursos.",
+    "action": "Nest 11.2.8 e override específico Multer 2.5.0; mesma série principal.",
+    "impact": "Regressão HTTP, autorização, uploads e S3.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "@nestjs/swagger",
+    "direct": true,
+    "severity": "moderate",
+    "historical": "11.4.4",
+    "baseline": "11.4.4",
+    "final": "11.4.7",
+    "still_reported": false,
+    "reachability": "Efeito de JS-YAML; geração/configuração OpenAPI. Não foi identificado upload de YAML para esse parser.",
+    "action": "Swagger 11.4.7 e JS-YAML 4.3.2; override específico mantido.",
+    "impact": "Build/TypeScript e documentos; não migra para Nest/Swagger 12.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "@tootallnate/once",
+    "direct": false,
+    "severity": "low",
+    "historical": "1.1.2",
+    "baseline": "1.1.2",
+    "final": "1.1.2",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": [
+      {
+        "severity": "low",
+        "title": "@tootallnate/once vulnerable to Incorrect Control Flow Scoping",
+        "url": "https://github.com/advisories/GHSA-vpq2-c234-7xj6",
+        "range": "<2.0.1"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "body-parser",
+    "direct": false,
+    "severity": "high",
+    "historical": "2.3.0",
+    "baseline": "2.3.0",
+    "final": "2.4.0",
+    "still_reported": false,
+    "reachability": "Descompressão de corpo HTTP; risco de indisponibilidade por entrada comprimida malformada.",
+    "action": "2.4.0 dentro da faixa transitiva.",
+    "impact": "HTTP completo e API real.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+        "url": "https://github.com/advisories/GHSA-27r3-jxmh-p828",
+        "range": ">=2.0.0 <2.4.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "brace-expansion",
+    "direct": false,
+    "severity": "high",
+    "historical": "1.1.15,2.1.1",
+    "baseline": "2.1.1, 5.0.6, 1.1.15",
+    "final": "2.1.7, 5.0.12, 1.1.21",
+    "still_reported": false,
+    "reachability": "Expansão de padrões glob; entradas controladas por ferramentas/migrations. Não foi demonstrado padrão arbitrário de usuário chegando à função.",
+    "action": "Resoluções compatíveis 1.x/2.x corrigidas no lockfile.",
+    "impact": "Lint, testes, build e CLI/schema.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+        "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+        "range": ">=2.0.0 <2.1.2"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups",
+        "url": "https://github.com/advisories/GHSA-3jxr-9vmj-r5cp",
+        "range": "<1.1.16"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+        "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+        "range": "<1.1.17"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash",
+        "url": "https://github.com/advisories/GHSA-mh99-v99m-4gvg",
+        "range": ">=2.0.0 <2.1.3"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+        "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+        "range": ">=2.0.0 <2.1.4"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+        "url": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+        "range": "<1.1.18"
+      },
+      {
+        "severity": "moderate",
+        "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+        "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+        "range": "<1.1.21"
+      },
+      {
+        "severity": "moderate",
+        "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+        "url": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+        "range": ">=2.0.0 <2.1.7"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+        "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+        "range": "<1.1.20"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+        "url": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+        "range": ">=2.0.0 <2.1.6"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+        "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+        "range": "<1.1.19"
+      },
+      {
+        "severity": "high",
+        "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+        "url": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+        "range": ">=2.0.0 <2.1.5"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "cacache",
+    "direct": false,
+    "severity": "high",
+    "historical": "15.3.0",
+    "baseline": "15.3.0",
+    "final": "15.3.0",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "http-cache-semantics",
+    "direct": false,
+    "severity": "high",
+    "historical": "4.2.0",
+    "baseline": "4.2.0",
+    "final": "4.2.0",
+    "still_reported": false,
+    "reachability": "Alerta histórico sobre max-stale/cache compartilhado.",
+    "action": "Advisory retirado em 28/10/2026 por não constituir vulnerabilidade válida; pacote 4.2.0 preservado.",
+    "impact": "Redução de 20 para 19 alertas no baseline vem da base de advisories, não de uma correção desta onda.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "http-cache-semantics max-stale handling can disclose cross-user cached responses",
+        "url": "https://github.com/advisories/GHSA-ch52-4w7c-c8xp",
+        "range": "<=4.2.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "http-proxy-agent",
+    "direct": false,
+    "severity": "low",
+    "historical": "4.0.1",
+    "baseline": "4.0.1",
+    "final": "4.0.1",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "ip-address",
+    "direct": false,
+    "severity": "high",
+    "historical": "10.2.0",
+    "baseline": "10.2.0",
+    "final": "10.7.5",
+    "still_reported": false,
+    "reachability": "Classificação de IP/SSRF e custo de parsing, via cadeia SOCKS; configuração de conexão vem do ambiente, sem exposição arbitrária comprovada pelo HTTP.",
+    "action": "Atualização dentro da série 10.",
+    "impact": "MySQL real e build.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "ip-address: Address4 decodes leading-zero octets as decimal while resolvers decode them as octal, allowing SSRF and trust-boundary bypass",
+        "url": "https://github.com/advisories/GHSA-mwp4-54f8-5fhr",
+        "range": "<=10.3.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: a CIDR suffix on the parsed address suppresses special-use classification and can bypass SSRF and trust-boundary checks",
+        "url": "https://github.com/advisories/GHSA-4xrf-jv44-h6hh",
+        "range": ">=10.1.1 <=10.2.1"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: misclassification of IPv4-mapped/NAT64 IPv6 addresses can bypass SSRF and trust-boundary checks",
+        "url": "https://github.com/advisories/GHSA-22jq-vg5j-6vgg",
+        "range": ">=10.1.1 <=10.2.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: Address6.isLinkLocal() recognizes fe80::/64 rather than fe80::/10, allowing SSRF and trust-boundary bypass to on-link hosts",
+        "url": "https://github.com/advisories/GHSA-rpw4-54j3-4h4q",
+        "range": "<=10.5.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: no classifier recognizes the NAT64 local-use range 64:ff9b:1::/48, allowing SSRF and trust-boundary bypass",
+        "url": "https://github.com/advisories/GHSA-2vr4-cq9g-pvrc",
+        "range": ">=10.2.0 <=10.5.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: isInSubnet() and isHostInSubnet() compare addresses of different families as if they shared an address space, allowing an allowlist check to admit an address outside its range",
+        "url": "https://github.com/advisories/GHSA-j6r3-76f7-8jcv",
+        "range": "<=10.7.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: Address6 builds a parse diagnostic proportional to the input with no length bound, allowing a single long string to stall or crash the process",
+        "url": "https://github.com/advisories/GHSA-h3mg-xc3c-68pw",
+        "range": "<=10.7.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "ip-address: Address6 matches a zone identifier in quadratic time ahead of its length limit, allowing a single long string to stall the process",
+        "url": "https://github.com/advisories/GHSA-rxp7-6hxx-x8q5",
+        "range": "<=10.7.3"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "js-yaml",
+    "direct": false,
+    "severity": "high",
+    "historical": "4.1.1",
+    "baseline": "3.14.2, 4.1.1, 4.2.0",
+    "final": "3.15.2, 4.3.2",
+    "still_reported": false,
+    "reachability": "Consumo quadrático de CPU em aliases/merge/omap; aplicação não oferece parser YAML público identificado.",
+    "action": "Swagger 11.4.7 remove a fixação antiga; 4.3.2 atende às faixas corrigidas consultadas.",
+    "impact": "Geração OpenAPI/build e suíte documental; não usa major 5.",
+    "advisories": [
+      {
+        "severity": "moderate",
+        "title": "JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases",
+        "url": "https://github.com/advisories/GHSA-h67p-54hq-rp68",
+        "range": ">=4.0.0 <=4.1.1"
+      },
+      {
+        "severity": "high",
+        "title": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+        "url": "https://github.com/advisories/GHSA-52cp-r559-cp3m",
+        "range": ">=4.0.0 <4.3.0"
+      },
+      {
+        "severity": "high",
+        "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+        "url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+        "range": ">=4.0.0 <4.3.1"
+      },
+      {
+        "severity": "high",
+        "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+        "url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+        "range": ">=4.0.0 <4.3.2"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "make-fetch-happen",
+    "direct": false,
+    "severity": "high",
+    "historical": "9.1.0",
+    "baseline": "9.1.0",
+    "final": "9.1.0",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "multer",
+    "direct": false,
+    "severity": "high",
+    "historical": "2.1.1",
+    "baseline": "2.1.1",
+    "final": "2.5.0",
+    "still_reported": false,
+    "reachability": "Multipart malformado e callbacks de fileFilter; potencial indisponibilidade. O storage da aplicação usa fluxo presigned, mas o pacote está presente no adaptador.",
+    "action": "Override pontual 2.5.0, mesma major.",
+    "impact": "HTTP/S3; manter testes de upload e limites.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "Multer vulnerable to Denial of Service via deeply nested field names",
+        "url": "https://github.com/advisories/GHSA-72gw-mp4g-v24j",
+        "range": ">=1.0.0 <2.2.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "Multer vulnerable to Denial of Service via incomplete cleanup of aborted uploads",
+        "url": "https://github.com/advisories/GHSA-3p4h-7m6x-2hcm",
+        "range": ">=2.0.0-alpha.1 <2.2.0"
+      },
+      {
+        "severity": "high",
+        "title": "multer vulnerable to Denial of Service via crafted multipart field names",
+        "url": "https://github.com/advisories/GHSA-wc9g-mqfw-jrwm",
+        "range": "<2.3.0"
+      },
+      {
+        "severity": "low",
+        "title": "multer vulnerable to file size limit bypass via async fileFilter race condition",
+        "url": "https://github.com/advisories/GHSA-qvfw-j98x-7q72",
+        "range": "<2.3.0"
+      },
+      {
+        "severity": "high",
+        "title": "multer vulnerable to Denial of Service via oversized array index in field names",
+        "url": "https://github.com/advisories/GHSA-535w-7cp7-47q4",
+        "range": "<2.3.0"
+      },
+      {
+        "severity": "high",
+        "title": "multer vulnerable to Denial of Service via a pending asynchronous fileFilter after request teardown",
+        "url": "https://github.com/advisories/GHSA-q7qp-rjg7-q26m",
+        "range": ">=2.0.0 <2.5.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "mysql2",
+    "direct": true,
+    "severity": "moderate",
+    "historical": "3.22.5",
+    "baseline": "3.22.5",
+    "final": "3.24.6",
+    "still_reported": false,
+    "reachability": "Expansão zlib sem limite no protocolo comprimido; exige servidor/intermediário que envie esse protocolo. Compressão não é habilitada nas configurações conferidas.",
+    "action": "3.24.6; mesma major.",
+    "impact": "MySQL, UTC em pools e concorrência.",
+    "advisories": [
+      {
+        "severity": "moderate",
+        "title": "MySQL2: Unbounded zlib inflate in compressed MySQL protocol handler allows decompression-bomb DoS",
+        "url": "https://github.com/advisories/GHSA-rgwj-5xj2-c3m3",
+        "range": "<=3.23.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "node-gyp",
+    "direct": false,
+    "severity": "high",
+    "historical": "8.4.1",
+    "baseline": "8.4.1",
+    "final": "8.4.1",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "proxy-addr",
+    "direct": false,
+    "severity": "critical",
+    "historical": "2.0.7",
+    "baseline": "2.0.7",
+    "final": "2.0.8",
+    "still_reported": false,
+    "reachability": "Falsificação de IP com certas configurações de trust proxy IPv4-mapped/IPv6. main.ts não configura trust proxy explicitamente; inferência de menor exposição, não prova universal.",
+    "action": "2.0.8 transitivo.",
+    "impact": "HTTP/autorização; revisar proxy de produção separadamente.",
+    "advisories": [
+      {
+        "severity": "critical",
+        "title": "proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet",
+        "url": "https://github.com/advisories/GHSA-jqcg-44mw-7w3h",
+        "range": ">=1.1.0 <2.0.8"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "qs",
+    "direct": false,
+    "severity": "moderate",
+    "historical": "6.15.2",
+    "baseline": "6.15.2",
+    "final": "6.17.1",
+    "still_reported": false,
+    "reachability": "Consumo de recursos/exceções no parsing/stringify de estruturas de consulta. Parsing HTTP é alcançável; as formas específicas vulneráveis não foram exploradas.",
+    "action": "6.17.1 transitivo.",
+    "impact": "Filtros HTTP, rotas financeiras e exports.",
+    "advisories": [
+      {
+        "severity": "moderate",
+        "title": "qs array-limit bypass via bracket-key comma parsing",
+        "url": "https://github.com/advisories/GHSA-x5fp-wj9c-mxmx",
+        "range": ">=6.14.2 <=6.15.3"
+      },
+      {
+        "severity": "moderate",
+        "title": "qs: Denial of Service via Attacker Controlled isBuffer",
+        "url": "https://github.com/advisories/GHSA-4mjr-xmp4-gh2g",
+        "range": ">=2.2.5 <6.16.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS)",
+        "url": "https://github.com/advisories/GHSA-6pq8-jhm2-2vcw",
+        "range": ">=6.7.0 <=6.16.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "sqlite3",
+    "direct": true,
+    "severity": "high",
+    "historical": "5.1.7",
+    "baseline": "5.1.7",
+    "final": "5.1.7",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": []
+  },
+  {
+    "project": "gai-backend",
+    "name": "tar",
+    "direct": false,
+    "severity": "critical",
+    "historical": "6.2.1",
+    "baseline": "6.2.1",
+    "final": "6.2.1",
+    "still_reported": true,
+    "reachability": "Cadeia de instalação nativa SQLite (node-gyp/download/cache/tar). O backend opera com MySQL; não há endpoint que extraia tar por essa cadeia. Ainda aparece em --omit=dev por resolução de peer opcional: não presumir ausência na imagem. Usar fontes/cache confiáveis, build isolado e avaliar sqlite3 6 em tarefa própria com testes nativos Windows/Linux.",
+    "action": "Residual: npm propõe sqlite3 6.0.1 (major). Não foi aplicada substituição forçada de tar/node-gyp incompatível.",
+    "impact": "SQLite nativo carrega e os testes são executados; isso não elimina vulnerabilidades da cadeia de instalação.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "node-tar Vulnerable to Arbitrary File Creation/Overwrite via Hardlink Path Traversal",
+        "url": "https://github.com/advisories/GHSA-34x7-hfp2-rc4v",
+        "range": "<7.5.7"
+      },
+      {
+        "severity": "high",
+        "title": "node-tar is Vulnerable to Arbitrary File Overwrite and Symlink Poisoning via Insufficient Path Sanitization",
+        "url": "https://github.com/advisories/GHSA-8qq5-rm4j-mr97",
+        "range": "<=7.5.2"
+      },
+      {
+        "severity": "high",
+        "title": "Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction",
+        "url": "https://github.com/advisories/GHSA-83g3-92jg-28cx",
+        "range": "<7.5.8"
+      },
+      {
+        "severity": "high",
+        "title": "tar has Hardlink Path Traversal via Drive-Relative Linkpath",
+        "url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96",
+        "range": "<=7.5.9"
+      },
+      {
+        "severity": "high",
+        "title": "node-tar Symlink Path Traversal via Drive-Relative Linkpath",
+        "url": "https://github.com/advisories/GHSA-9ppj-qmqm-q256",
+        "range": "<=7.5.10"
+      },
+      {
+        "severity": "high",
+        "title": "Race Condition in node-tar Path Reservations via Unicode Ligature Collisions on macOS APFS",
+        "url": "https://github.com/advisories/GHSA-r6q2-hw4h-h46w",
+        "range": "<=7.5.3"
+      },
+      {
+        "severity": "moderate",
+        "title": "node-tar applies PAX size override to intermediary GNU long-name/long-link headers, causing tar parser interpretation differential (file smuggling)",
+        "url": "https://github.com/advisories/GHSA-vmf3-w455-68vh",
+        "range": "<=7.5.15"
+      },
+      {
+        "severity": "moderate",
+        "title": "node-tar: Process crash via PAX numeric path type confusion",
+        "url": "https://github.com/advisories/GHSA-w8wr-v893-vjvp",
+        "range": "<=7.5.17"
+      },
+      {
+        "severity": "critical",
+        "title": "node-tar: Decompression/parse DoS via unlimited input",
+        "url": "https://github.com/advisories/GHSA-23hp-3jrh-7fpw",
+        "range": "<=7.5.18"
+      },
+      {
+        "severity": "high",
+        "title": "node-tar: Negative tar entry size causes infinite loop in archive replace",
+        "url": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w",
+        "range": "<=7.5.17"
+      },
+      {
+        "severity": "moderate",
+        "title": "node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records",
+        "url": "https://github.com/advisories/GHSA-gvwx-54wh-qm9j",
+        "range": "<=7.5.16"
+      },
+      {
+        "severity": "high",
+        "title": "node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection",
+        "url": "https://github.com/advisories/GHSA-r292-9mhp-454m",
+        "range": "<=7.5.20"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "typeorm",
+    "direct": true,
+    "severity": "high",
+    "historical": "0.3.30",
+    "baseline": "0.3.30",
+    "final": "0.3.31",
+    "still_reported": false,
+    "reachability": "Injeção no código gerado por migration:generate requer nomes de schema maliciosos e execução da ferramenta; não é SQL injection genérica dos endpoints. Efeito SQLite é avaliado separadamente.",
+    "action": "0.3.31 corrige o advisory próprio; residual herdado de SQLite não é escondido.",
+    "impact": "33 migrations, comparação de schema, CRUD/transações e concorrência.",
+    "advisories": [
+      {
+        "severity": "moderate",
+        "title": " TypeORM: migration:generate template-literal code injection",
+        "url": "https://github.com/advisories/GHSA-2rp8-mm9q-fp49",
+        "range": "<0.3.31"
+      }
+    ]
+  },
+  {
+    "project": "gai-backend",
+    "name": "xlsx",
+    "direct": true,
+    "severity": "high",
+    "historical": "0.18.5",
+    "baseline": "0.18.5",
+    "final": "0.20.3",
+    "still_reported": false,
+    "reachability": "Prototype pollution e ReDoS nos parsers de planilhas. Alcance real nos imports contábeis/físicos autenticados, logo prioridade alta.",
+    "action": "Tarball oficial CE 0.20.3, vendorizado e verificado por SHA-256/SRI; supera 0.19.3 e 0.20.2.",
+    "impact": "Importação, parsing, workbook e exportações reais; Dockerfile copia vendor antes de npm ci.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "Prototype Pollution in sheetJS",
+        "url": "https://github.com/advisories/GHSA-4r6h-8v6p-xvw6",
+        "range": "<0.19.3"
+      },
+      {
+        "severity": "high",
+        "title": "SheetJS Regular Expression Denial of Service (ReDoS)",
+        "url": "https://github.com/advisories/GHSA-5pgg-2g8v-p4x9",
+        "range": "<0.20.2"
+      }
+    ]
+  },
+  {
+    "project": "gai-frontend",
+    "name": "axios",
+    "direct": true,
+    "severity": "high",
+    "historical": "1.18.1",
+    "baseline": "1.18.1",
+    "final": "1.21.0",
+    "still_reported": false,
+    "reachability": "Diversos gadgets de prototype pollution e falhas de adapters Node/HTTP2, proxy e redirects. SPA usa adapter de navegador; alertas Node não demonstram SSRF no browser.",
+    "action": "1.21.0; mesma major.",
+    "impact": "Frontend completo, build e Playwright HTTP real.",
+    "advisories": [
+      {
+        "severity": "moderate",
+        "title": "Axios: Prototype pollution gadget in fetch adapter can alter outbound requests",
+        "url": "https://github.com/advisories/GHSA-vh66-26gq-q6x8",
+        "range": ">=1.7.0 <1.20.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "Axios: Prototype-Pollution Gadget in the Default Instance Allows Inherited Object.prototype.method to Override HTTP Method",
+        "url": "https://github.com/advisories/GHSA-9fr6-4gfg-395g",
+        "range": ">=1.0.0 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: ReDoS in fromDataURI data: URL parser freezes the Node event loop (DoS)",
+        "url": "https://github.com/advisories/GHSA-c29m-xwm3-cm6r",
+        "range": ">=1.16.1 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: ReDoS (O(N²)) in shouldBypassProxy host normalization, reachable via untrusted redirect Location",
+        "url": "https://github.com/advisories/GHSA-mghh-pgcx-3jjj",
+        "range": ">=1.15.0 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: Prototype Pollution Gadget in axios toFormData Options",
+        "url": "https://github.com/advisories/GHSA-x97p-jq2g-jp4f",
+        "range": ">=1.15.1 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: HTTP/2 adapter bypasses configured DNS lookup and proxy controls",
+        "url": "https://github.com/advisories/GHSA-3pq3-5fj3-cg6v",
+        "range": ">=1.13.0 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: Denial of Service via Unhandled 'error' Event in HTTP/2 ClientHttp2Session Initialization",
+        "url": "https://github.com/advisories/GHSA-542g-h47m-68v8",
+        "range": ">=1.13.0 <1.20.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "Axios: Header Injection via Inherited headers After Minimal Interceptor",
+        "url": "https://github.com/advisories/GHSA-j8rh-479h-cp32",
+        "range": ">=1.0.0 <1.20.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "Axios: Fetch Adapter Header Injection via Inherited FormData getHeaders",
+        "url": "https://github.com/advisories/GHSA-4hqw-qxg8-jxx2",
+        "range": ">=1.12.0 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: Node HTTP adapter prototype-pollution gadget allows request socket hijack via inherited createConnection",
+        "url": "https://github.com/advisories/GHSA-m8m8-qj5v-23w3",
+        "range": ">=1.15.2 <1.20.0"
+      },
+      {
+        "severity": "moderate",
+        "title": "Axios: CIDR-form NO_PROXY entries are ignored, causing proxy exclusion bypass for internal IP ranges",
+        "url": "https://github.com/advisories/GHSA-44g4-m2mj-wpvx",
+        "range": ">=1.15.0 <1.20.0"
+      },
+      {
+        "severity": "high",
+        "title": "Axios: maxRedirects: 0 is not enforced by the fetch adapter, allowing redirect-based SSRF",
+        "url": "https://github.com/advisories/GHSA-r4gj-5m52-g5wh",
+        "range": ">=1.17.0 <1.20.0"
+      }
+    ]
+  },
+  {
+    "project": "gai-frontend",
+    "name": "follow-redirects",
+    "direct": false,
+    "severity": "high",
+    "historical": "1.16.0",
+    "baseline": "1.16.0",
+    "final": "1.16.2",
+    "still_reported": false,
+    "reachability": "Credenciais/headers em redirects do adapter Node, não um redirecionamento automático do browser.",
+    "action": "Atualização transitiva compatível via Axios/lockfile.",
+    "impact": "Frontend e API real; não se alega teste de todos os adapters Node.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "follow-redirects array-form headers bypass cross-origin credential stripping",
+        "url": "https://github.com/advisories/GHSA-q3jh-wrc6-jgq8",
+        "range": ">=1.16.0 <1.16.1"
+      },
+      {
+        "severity": "high",
+        "title": "follow-redirects sensitiveHeaders regex escaping can expose credential headers",
+        "url": "https://github.com/advisories/GHSA-8r9p-f939-6h3c",
+        "range": ">=1.16.0 <1.16.1"
+      }
+    ]
+  },
+  {
+    "project": "gai-frontend",
+    "name": "react-router",
+    "direct": false,
+    "severity": "high",
+    "historical": "7.18.1",
+    "baseline": "7.18.1",
+    "final": "7.18.5",
+    "still_reported": false,
+    "reachability": "CSRF em modo RSC; este frontend é SPA, sem servidor RSC identificado.",
+    "action": "7.18.5; mesma major.",
+    "impact": "Navegação, permissões e Playwright.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response",
+        "url": "https://github.com/advisories/GHSA-qwww-vcr4-c8h2",
+        "range": ">=7.12.0 <7.18.2"
+      }
+    ]
+  },
+  {
+    "project": "gai-frontend",
+    "name": "react-router-dom",
+    "direct": true,
+    "severity": "high",
+    "historical": "7.18.1",
+    "baseline": "7.18.1",
+    "final": "7.18.5",
+    "still_reported": false,
+    "reachability": "Efeito herdado de React Router RSC; SPA não fornece RSC.",
+    "action": "7.18.5; mesma major.",
+    "impact": "Mock de URL corrigido preservando construtor; todos os testes permanecem.",
+    "advisories": []
+  },
+  {
+    "project": "gai-frontend",
+    "name": "zod",
+    "direct": true,
+    "severity": "high",
+    "historical": "3.25.76",
+    "baseline": "3.25.76",
+    "final": "3.25.76",
+    "still_reported": true,
+    "reachability": "Consumo de memória em coleções excessivas. Utilizado no navegador com react-hook-form; não foi encontrado z.array no código frontend atual. Ausência de exploração demonstrada não revoga o advisory.",
+    "action": "Residual: 3.25.76; correção informada >=4.6.6 exige major e atualização compatível do resolver. Não migrar para v4 usando /v3 e alegar correção.",
+    "impact": "Confinar validação a campos/entradas limitados, evitar coleções não confiáveis e planejar migração de schemas/resolver com regressões de formulários.",
+    "advisories": [
+      {
+        "severity": "high",
+        "title": "Zod can exhaust memory while validating oversized constrained collections",
+        "url": "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+        "range": "<4.6.6"
+      }
+    ]
+  }
+]

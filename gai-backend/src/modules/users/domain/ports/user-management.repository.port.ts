@@ -3,12 +3,16 @@ import { ManagedUser } from '../entities/managed-user';
 import { UserAuditOperation } from '../enums/user-audit-operation.enum';
 
 export interface ListUsersParams {
+  sortBy?: 'name' | 'login' | 'created_at' | 'last_login_at';
+  sortOrder?: 'ASC' | 'DESC';
   page: number;
   pageSize: number;
   organizationId?: number;
   status?: UserStatus;
   role?: UserRole;
   search?: string;
+  roleId?: number;
+  scope?: 'PLATFORM' | 'ORGANIZATION';
 }
 
 export interface UserAuditEntry {

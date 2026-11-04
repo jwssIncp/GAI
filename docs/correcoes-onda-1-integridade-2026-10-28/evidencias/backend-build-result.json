@@ -1,0 +1,11 @@
+{
+  "name": "backend-build",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-backend",
+  "command": [
+    "node",
+    "node_modules/@nestjs/cli/bin/nest.js",
+    "build"
+  ],
+  "exit_code": 0,
+  "seconds": 48.971
+}

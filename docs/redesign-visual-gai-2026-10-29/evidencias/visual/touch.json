@@ -1,0 +1,1146 @@
+[
+  {
+    "theme": "light",
+    "coarse": true,
+    "width": 360,
+    "document": 360,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AL",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AM",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AP",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "BA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "CE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "DF",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "ES",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "GO",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MG",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MS",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MT",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PB",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PI",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PR",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RJ",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RN",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RO",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RR",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RS",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SC",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SP",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "TO",
+        "width": 52.390625,
+        "height": 52.390625
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "coarse": true,
+    "width": 360,
+    "document": 360,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AL",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AM",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "AP",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "BA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "CE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "DF",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "ES",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "GO",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MG",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MS",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "MT",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PA",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PB",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PI",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "PR",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RJ",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RN",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RO",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RR",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "RS",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SC",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SE",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "SP",
+        "width": 52.390625,
+        "height": 52.390625
+      },
+      {
+        "state": "TO",
+        "width": 52.390625,
+        "height": 52.390625
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "coarse": true,
+    "width": 390,
+    "document": 390,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AL",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AM",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AP",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "BA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "CE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "DF",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "ES",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "GO",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MG",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MS",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MT",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PB",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PI",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PR",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RJ",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RN",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RO",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RR",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RS",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SC",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SP",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "TO",
+        "width": 58.390625,
+        "height": 58.390625
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "coarse": true,
+    "width": 390,
+    "document": 390,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AL",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AM",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "AP",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "BA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "CE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "DF",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "ES",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "GO",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MG",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MS",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "MT",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PA",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PB",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PI",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "PR",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RJ",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RN",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RO",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RR",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "RS",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SC",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SE",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "SP",
+        "width": 58.390625,
+        "height": 58.390625
+      },
+      {
+        "state": "TO",
+        "width": 58.390625,
+        "height": 58.390625
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "coarse": true,
+    "width": 768,
+    "document": 768,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AL",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AM",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AP",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "BA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "CE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "DF",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "ES",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "GO",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MG",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MS",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MT",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PB",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PI",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PR",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RJ",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RN",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RO",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RR",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RS",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SC",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SP",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "TO",
+        "width": 78.5,
+        "height": 78.5
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "coarse": true,
+    "width": 768,
+    "document": 768,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AL",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AM",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "AP",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "BA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "CE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "DF",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "ES",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "GO",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MG",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MS",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "MT",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PA",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PB",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PI",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "PR",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RJ",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RN",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RO",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RR",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "RS",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SC",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SE",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "SP",
+        "width": 78.5,
+        "height": 78.5
+      },
+      {
+        "state": "TO",
+        "width": 78.5,
+        "height": 78.5
+      }
+    ]
+  },
+  {
+    "theme": "light",
+    "coarse": true,
+    "width": 1024,
+    "document": 1024,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AL",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AM",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AP",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "BA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "CE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "DF",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "ES",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "GO",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MG",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MS",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MT",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PB",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PI",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PR",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RJ",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RN",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RO",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RR",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RS",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SC",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SP",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "TO",
+        "width": 63.421875,
+        "height": 63.421875
+      }
+    ]
+  },
+  {
+    "theme": "dark",
+    "coarse": true,
+    "width": 1024,
+    "document": 1024,
+    "targets": [
+      {
+        "state": "AC",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AL",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AM",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "AP",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "BA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "CE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "DF",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "ES",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "GO",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MG",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MS",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "MT",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PA",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PB",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PI",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "PR",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RJ",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RN",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RO",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RR",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "RS",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SC",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SE",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "SP",
+        "width": 63.421875,
+        "height": 63.421875
+      },
+      {
+        "state": "TO",
+        "width": 63.421875,
+        "height": 63.421875
+      }
+    ]
+  }
+]

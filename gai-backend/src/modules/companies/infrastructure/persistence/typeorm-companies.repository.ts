@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, QueryFailedError, Repository } from 'typeorm';
 import { ProjectStatus } from '../../../projects/domain/enums/project-status.enum';
 import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
 import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
+import { normalizeCnpj } from '../../domain/cnpj';
 import { JsonRecord } from '../../domain/entities/company';
 import { CompanyAuditOperation } from '../../domain/enums/company-audit-operation.enum';
 import { CompanyStatus } from '../../domain/enums/company-status.enum';
@@ -120,7 +121,7 @@ export class TypeOrmCompaniesRepository {
     }
     if (params.document) {
       qb.andWhere('company.document = :document', {
-        document: this.normalizeDigits(params.document),
+        document: normalizeCnpj(params.document),
       });
     }
     if (params.city) {
@@ -135,11 +136,14 @@ export class TypeOrmCompaniesRepository {
     }
     if (params.search) {
       qb.andWhere(
-        '(LOWER(company.name) LIKE :term OR LOWER(company.corporateName) LIKE :term OR LOWER(company.city) LIKE :term)',
-        { term: `%${params.search.toLowerCase()}%` },
+        '(LOWER(company.name) LIKE :term OR LOWER(company.corporateName) LIKE :term OR LOWER(company.city) LIKE :term OR LOWER(company.document) LIKE :documentTerm)',
+        {
+          term: `%${params.search.toLowerCase()}%`,
+          documentTerm: `%${normalizeCnpj(params.search).toLowerCase()}%`,
+        },
       );
     }
-    qb.orderBy('company.createdAt', 'DESC');
+    qb.orderBy('company.createdAt', 'DESC').addOrderBy('company.id', 'DESC');
     qb.skip((params.page - 1) * params.pageSize);
     qb.take(params.pageSize);
     const [items, total] = await qb.getManyAndCount();
@@ -154,17 +158,32 @@ export class TypeOrmCompaniesRepository {
       changes: JsonRecord;
     },
   ): Promise<CompanyEntity> {
-    return this.companies.manager.transaction(async (manager) => {
-      const saved = await manager.getRepository(CompanyEntity).save(company);
-      await manager.getRepository(CompanyAuditLogEntity).save({
-        companyId: saved.id,
-        organizationId: saved.organizationId,
-        operation: audit.operation,
-        performedBy: audit.performedBy,
-        changes: audit.changes,
+    try {
+      return await this.companies.manager.transaction(async (manager) => {
+        const saved = await manager.getRepository(CompanyEntity).save(company);
+        await manager.getRepository(CompanyAuditLogEntity).save({
+          companyId: saved.id,
+          organizationId: saved.organizationId,
+          operation: audit.operation,
+          performedBy: audit.performedBy,
+          changes: audit.changes,
+        });
+        return saved;
       });
-      return saved;
-    });
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        /idx_companies_organization_document|companies.organization_id, companies.document/.test(
+          error.message,
+        )
+      ) {
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message: 'CNPJ ja cadastrado nesta organizacao.',
+        });
+      }
+      throw error;
+    }
   }
 
   findUnitById(id: number): Promise<CompanyUnitEntity | null> {
@@ -532,9 +551,5 @@ export class TypeOrmCompaniesRepository {
       message.includes('project_units.project_id') &&
       message.includes('project_units.company_unit_id')
     );
-  }
-
-  private normalizeDigits(value: string): string {
-    return value.replace(/\D/g, '');
   }
 }

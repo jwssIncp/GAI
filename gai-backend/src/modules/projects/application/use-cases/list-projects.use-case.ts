@@ -32,16 +32,20 @@ export class ListProjectsUseCase {
       query.organization_id,
     );
 
-    const { items, total } = await this.repository.list({
+    const { items, total, counts } = await this.repository.list({
       page,
       pageSize,
       organizationId,
       companyId: query.company_id,
       status: query.status,
       search: query.search,
+      projectType: query.project_type,
+      sortBy: query.sort_by,
+      sortOrder: query.sort_order,
     });
 
     return {
+      status_counts: counts ?? {},
       items: items.map((project) => ProjectResponseDto.fromDomain(project)),
       page,
       page_size: pageSize,

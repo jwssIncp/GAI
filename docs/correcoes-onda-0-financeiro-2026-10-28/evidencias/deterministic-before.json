@@ -1,0 +1,2371 @@
+{
+  "mode": "before",
+  "races": [
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 16,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:19.915Z",
+            "updated_at": "2026-10-29T02:15:19.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 16,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:19.915Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 16,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.025Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:19.978Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:19.915Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 46,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 16,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:19.923Z"
+        },
+        {
+          "id": 47,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 16,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:19.978Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:19.978Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.047Z"
+        },
+        {
+          "id": 48,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 16,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.025Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.054Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 17,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.098Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 17,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.098Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 17,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.209Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:20.165Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:20.098Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 49,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 17,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.107Z"
+        },
+        {
+          "id": 50,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 17,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:20.165Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:20.165Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.230Z"
+        },
+        {
+          "id": 51,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 17,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.209Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.237Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 18,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.314Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 18,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.314Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 18,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.414Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:20.370Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:20.314Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 52,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 18,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.322Z"
+        },
+        {
+          "id": 53,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 18,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:20.370Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:20.370Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.430Z"
+        },
+        {
+          "id": 54,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 18,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.414Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.438Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 19,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.487Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 19,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.487Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 19,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.581Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:20.540Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:20.487Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 55,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 19,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.495Z"
+        },
+        {
+          "id": 56,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 19,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:20.540Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:20.540Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.598Z"
+        },
+        {
+          "id": 57,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 19,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.581Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.608Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 20,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.657Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 20,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.657Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 20,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.754Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:20.709Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:20.657Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 58,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 20,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.662Z"
+        },
+        {
+          "id": 59,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 20,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:20.709Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:20.709Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.770Z"
+        },
+        {
+          "id": 60,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 20,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.754Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.777Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 21,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.821Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 21,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:20.821Z",
+            "updated_at": "2026-10-29T02:15:20.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 21,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:20.930Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:20.871Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:20.821Z",
+        "updated_at": "2026-10-29T02:15:20.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 61,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 21,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.825Z"
+        },
+        {
+          "id": 62,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 21,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:20.871Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:20.871Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.985Z"
+        },
+        {
+          "id": 63,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 21,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:20.930Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:20.994Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 22,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.044Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 22,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.044Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 22,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.137Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.092Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.044Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 64,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 22,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.048Z"
+        },
+        {
+          "id": 65,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 22,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.092Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.092Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.159Z"
+        },
+        {
+          "id": 66,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 22,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.137Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.166Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 23,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.210Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 23,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.210Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 23,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.293Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.255Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.210Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 67,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 23,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.214Z"
+        },
+        {
+          "id": 68,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 23,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.255Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.255Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.313Z"
+        },
+        {
+          "id": 69,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 23,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.293Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.320Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 24,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.360Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 24,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.360Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 24,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.449Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.409Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.360Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 70,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 24,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.364Z"
+        },
+        {
+          "id": 71,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 24,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.409Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.409Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.467Z"
+        },
+        {
+          "id": 72,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 24,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.449Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.475Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 25,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.517Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 25,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.517Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 25,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.616Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.566Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.517Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 73,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 25,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.523Z"
+        },
+        {
+          "id": 74,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 25,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.566Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.566Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.636Z"
+        },
+        {
+          "id": 75,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 25,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.616Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.643Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 26,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.682Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 26,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.682Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 26,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.772Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.728Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.682Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 76,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 26,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.686Z"
+        },
+        {
+          "id": 77,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 26,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.728Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.728Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.790Z"
+        },
+        {
+          "id": 78,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 26,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.772Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.796Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 27,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.838Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 27,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.838Z",
+            "updated_at": "2026-10-29T02:15:21.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 27,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:21.924Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:21.883Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.838Z",
+        "updated_at": "2026-10-29T02:15:21.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 79,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 27,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.842Z"
+        },
+        {
+          "id": 80,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 27,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:21.883Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:21.883Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.944Z"
+        },
+        {
+          "id": 81,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 27,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:21.924Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.950Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 28,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.991Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 28,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:21.991Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 28,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:22.076Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:22.037Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:21.991Z",
+        "updated_at": "2026-10-29T02:15:22.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 82,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 28,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:21.996Z"
+        },
+        {
+          "id": 83,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 28,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:22.037Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:22.037Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.096Z"
+        },
+        {
+          "id": 84,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 28,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:22.076Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.103Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 29,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:22.154Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 29,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:22.154Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 29,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:22.245Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:22.210Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:22.154Z",
+        "updated_at": "2026-10-29T02:15:22.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 85,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 29,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.159Z"
+        },
+        {
+          "id": 86,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 29,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:22.210Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:22.210Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.266Z"
+        },
+        {
+          "id": 87,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 29,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:22.245Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.273Z"
+        }
+      ]
+    },
+    {
+      "waits": [
+        1,
+        2
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 30,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:22.312Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 30,
+            "organization_id": 1,
+            "project_id": 2,
+            "field_agent_id": 2,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": null,
+            "metadata": null,
+            "created_at": "2026-10-28T23:15:22.312Z",
+            "updated_at": "2026-10-29T02:15:22.000Z"
+          }
+        }
+      ],
+      "row": {
+        "id": 30,
+        "organization_id": 1,
+        "project_id": 2,
+        "field_agent_id": 2,
+        "state": null,
+        "start_date": "2026-10-28T03:00:00.000Z",
+        "end_date": "2026-10-28T03:00:00.000Z",
+        "payment_date": "2026-10-28T03:00:00.000Z",
+        "days": 1,
+        "daily_rate": "1.00",
+        "additional_amount": "0.00",
+        "daily_total": "1.00",
+        "discount_amount": "0.00",
+        "final_amount": "1.00",
+        "status": "approved",
+        "notes": null,
+        "approved_by_id": 2,
+        "approved_at": "2026-10-28T23:15:22.397Z",
+        "paid_by_id": 2,
+        "paid_at": "2026-10-28T23:15:22.359Z",
+        "created_by_id": 2,
+        "updated_by_id": 2,
+        "metadata": null,
+        "created_at": "2026-10-28T23:15:22.312Z",
+        "updated_at": "2026-10-29T02:15:22.000Z",
+        "deleted_at": null
+      },
+      "audits": [
+        {
+          "id": 88,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 30,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "CREATE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "pending",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.316Z"
+        },
+        {
+          "id": 89,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 30,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "MARK_PAYMENT_AS_PAID",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "paid",
+              "before": "pending"
+            },
+            "paid_at": {
+              "after": "2026-10-28T23:15:22.359Z",
+              "before": null
+            },
+            "paid_by_id": {
+              "after": 2,
+              "before": null
+            },
+            "payment_date": {
+              "after": "2026-10-28T23:15:22.359Z",
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.420Z"
+        },
+        {
+          "id": 90,
+          "organization_id": 1,
+          "project_id": 2,
+          "payment_id": 30,
+          "expense_id": null,
+          "expense_attachment_id": null,
+          "operation": "APPROVE_PAYMENT",
+          "performed_by": 2,
+          "changes": {
+            "status": {
+              "after": "approved",
+              "before": "pending"
+            },
+            "approved_at": {
+              "after": "2026-10-28T23:15:22.397Z",
+              "before": null
+            },
+            "approved_by_id": {
+              "after": 2,
+              "before": null
+            }
+          },
+          "created_at": "2026-10-29T02:15:22.427Z"
+        }
+      ]
+    }
+  ],
+  "incoherent": 15,
+  "summary101": {
+    "status": 200,
+    "body": {
+      "total_pending": "100.00",
+      "total_approved": "0.00",
+      "total_paid": "0.00",
+      "total_cancelled": "0.00",
+      "total_count": 101
+    }
+  }
+}

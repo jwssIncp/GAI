@@ -1,0 +1,21 @@
+{
+  "target": "localhost:3306/gai",
+  "migration": "EnsureOrgUserRole1794100000001",
+  "pendingBefore": [],
+  "role": {
+    "id": 4,
+    "key": "ORG_USER",
+    "type": "SYSTEM",
+    "organization_id": null,
+    "is_active": 1
+  },
+  "permissionCount": 0,
+  "preserved": {
+    "roles": 3,
+    "permissions": 161,
+    "role_permissions": 1,
+    "user_role_assignments": 3,
+    "users": 3,
+    "organizations": 2
+  }
+}

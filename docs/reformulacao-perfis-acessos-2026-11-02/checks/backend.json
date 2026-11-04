@@ -1,0 +1,26 @@
+[
+  {
+    "name": "lint",
+    "status": 0,
+    "seconds": 22,
+    "log": "backend-lint.log"
+  },
+  {
+    "name": "build",
+    "status": 0,
+    "seconds": 39,
+    "log": "backend-build.log"
+  },
+  {
+    "name": "unit",
+    "status": 0,
+    "seconds": 38,
+    "log": "backend-unit.log"
+  },
+  {
+    "name": "integration",
+    "status": 0,
+    "seconds": 156,
+    "log": "backend-integration.log"
+  }
+]

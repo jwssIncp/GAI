@@ -1,3 +1,4 @@
+import { UserLifecycleService } from './application/services/user-lifecycle.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
@@ -35,6 +36,8 @@ import { OrgRolesController } from './presentation/org-roles.controller';
 import { PermissionsController } from './presentation/permissions.controller';
 import { UserRoleAssignmentsController } from './presentation/user-role-assignments.controller';
 import { UsersController } from './presentation/users.controller';
+import { AccessProfilesController } from './presentation/access-profiles.controller';
+import { AccessProfilesService } from './application/services/access-profiles.service';
 
 @Module({
   imports: [
@@ -55,9 +58,12 @@ import { UsersController } from './presentation/users.controller';
     UserRoleAssignmentsController,
     OrgRolesController,
     PermissionsController,
+    AccessProfilesController,
   ],
   providers: [
+    UserLifecycleService,
     UserScopeService,
+    AccessProfilesService,
     CreateUserUseCase,
     GetUserUseCase,
     ListUsersUseCase,

@@ -1,0 +1,13 @@
+{
+  "name": "gai-backend-typescript",
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-backend",
+  "exit_code": 0,
+  "seconds": 31.925
+}

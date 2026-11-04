@@ -9,6 +9,15 @@ import {
 @Injectable()
 export class MockEmailSender implements EmailSender {
   private readonly logger = new Logger(MockEmailSender.name);
+  // Development-only in-memory mailbox; never logged or exposed by HTTP.
+  readonly invitations: Array<{ to: string; activationUrl: string }> = [];
+  sendInvitationEmail(payload: {
+    to: string;
+    activationUrl: string;
+  }): Promise<void> {
+    this.invitations.push(payload);
+    return Promise.resolve();
+  }
 
   sendPasswordResetEmail(payload: PasswordResetEmailPayload): Promise<void> {
     this.logger.log({
@@ -35,6 +44,27 @@ export class SesEmailSender implements EmailSender {
     );
   }
 
+  async sendInvitationEmail(payload: {
+    to: string;
+    activationUrl: string;
+  }): Promise<void> {
+    await this.client.send(
+      new SendEmailCommand({
+        Source: this.fromEmail,
+        Destination: { ToAddresses: [payload.to] },
+        Message: {
+          Subject: { Data: 'GAI — Ative sua conta' },
+          Body: {
+            Text: {
+              Data:
+                'Defina sua senha para ativar sua conta: ' +
+                payload.activationUrl,
+            },
+          },
+        },
+      }),
+    );
+  }
   async sendPasswordResetEmail(
     payload: PasswordResetEmailPayload,
   ): Promise<void> {

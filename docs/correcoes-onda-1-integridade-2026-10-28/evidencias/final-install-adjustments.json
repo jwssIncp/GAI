@@ -1,0 +1,31 @@
+{
+  "scope": "Only isolated validation node_modules; original root installs preserved",
+  "backend": {
+    "command": "npm.cmd install --ignore-scripts --prefer-offline",
+    "final_update": {
+      "removed": 1,
+      "changed": 2,
+      "reported_seconds": 12,
+      "exit_code": 0
+    },
+    "swagger": "11.4.7",
+    "js_yaml": "4.3.2",
+    "npm_ls_all_exit_code": 0
+  },
+  "frontend": {
+    "command": "npm.cmd install --ignore-scripts --prefer-offline",
+    "final_update": {
+      "changed": 14,
+      "reported_seconds": 15,
+      "exit_code": 0
+    },
+    "npm_ls_all_exit_code": 0
+  },
+  "native_rebuild_evidence": "sqlite-native-rebuild.json",
+  "loaded_version_and_lock_evidence": "runtime-final.json",
+  "clean_install_evidence": [
+    "backend-clean-install.json",
+    "frontend-clean-install.json"
+  ],
+  "note": "Clean installs preceded the final compatible lock updates; final installs, loaded versions, lock hashes and npm ls verify the resulting trees."
+}

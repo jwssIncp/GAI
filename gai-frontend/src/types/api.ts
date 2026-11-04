@@ -45,7 +45,7 @@ export type NormalizedPage<T> = {
 
 export type RoleType = 'SYSTEM' | 'ORGANIZATION';
 export type SystemRoleKey = 'PLATFORM_ADMIN' | 'ORG_ADMIN' | 'ORG_USER';
-export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'LOCKED';
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'LOCKED' | 'BLOCKED' | 'PENDING_ACTIVATION';
 
 export type RoleAssignment = {
   assignment_id: number;
@@ -63,6 +63,8 @@ export type EffectivePermission = {
 };
 
 export type CurrentUser = {
+  full_name?: string | null;
+  must_change_password?: boolean;
   id: number;
   login: string;
   email: string;
@@ -108,13 +110,19 @@ export type OrganizationListParams = PageParams & {
   status?: OrganizationStatus;
 };
 
-export type User = CurrentUser & { created_at: string; updated_at: string };
+export type User = CurrentUser & { created_at: string; updated_at: string; phone?: string | null; job_title?: string | null; organization_name?: string | null; last_login_at?: string | null; locked_until?: string | null; invitation_delivery?: 'SENT' | 'FAILED' | 'DEVELOPMENT' };
 export type CreateUserRequest = {
+  full_name: string;
   login: string;
   email: string;
-  password: string;
-  organization_id?: number;
+  password?: string;
+  phone?: string | null;
+  job_title?: string | null;
+  organization_id?: number | null;
+  role_ids: number[];
+  activation_method: 'INVITATION' | 'TEMPORARY_PASSWORD';
 };
+export type UpdateUserRequest = Partial<Omit<CreateUserRequest, 'password' | 'activation_method'>>;
 
 export type Permission = {
   id: number;
@@ -136,6 +144,20 @@ export type OrgRole = {
   updated_at: string;
 };
 
+export type AccessProfile = {
+  id: number;
+  key: SystemRoleKey | null;
+  type: RoleType;
+  organization_id: number | null;
+  name: string;
+  description: string | null;
+  user_count: number;
+  permission_count: number;
+  access_areas: string[];
+  administrative: boolean;
+  editable: boolean;
+};
+
 export type CompanyStatus = 'active' | 'inactive' | 'blocked';
 export type Company = {
   id: number;
@@ -143,23 +165,102 @@ export type Company = {
   name: string;
   corporate_name?: string | null;
   document?: string | null;
+  state_registration?: string | null;
+  municipal_registration?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  zipcode?: string | null;
+  address?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  district?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
   status: CompanyStatus;
   metadata?: Record<string, unknown> | null;
+  created_by_id?: number | null;
+  updated_by_id?: number | null;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
 };
 export type CreateCompanyRequest = {
-  organization_id: number;
+  status?: CompanyStatus;
+  organization_id?: number;
   name: string;
   corporate_name?: string | null;
   document?: string | null;
+  state_registration?: string | null;
+  municipal_registration?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  zipcode?: string | null;
+  address?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  district?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
   metadata?: Record<string, unknown> | null;
 };
 
-export type ProjectStatus = 'draft' | 'active' | 'paused' | 'inactive' | 'finished' | 'cancelled' | 'archived';
-export type ProjectLifecycleAction = 'activate' | 'pause' | 'resume' | 'finish' | 'cancel' | 'archive';
-export type ProjectAvailableAction = { action: ProjectLifecycleAction; permission: string };
-export type Project = {
+export type UpdateCompanyRequest = Partial<Omit<CreateCompanyRequest, 'organization_id'>>;
+
+export type ProjectStatus =
+  | "draft"
+  | "active"
+  | "paused"
+  | "inactive"
+  | "finished"
+  | "cancelled"
+  | "archived";
+export type ProjectLifecycleAction =
+  | "activate"
+  | "pause"
+  | "resume"
+  | "finish"
+  | "cancel"
+  | "archive";
+export type ProjectAvailableAction = {
+  action: ProjectLifecycleAction;
+  permission: string;
+};
+export type ProjectType =
+  | "inventory"
+  | "valuation"
+  | "inventory_valuation"
+  | "reconciliation"
+  | "regularization"
+  | "other";
+export type ProjectRegistrationFields = {
+  code?: string | null;
+  project_type?: ProjectType | null;
+  responsible_user_id?: number | null;
+  planning_responsible_user_id?: number | null;
+  planning_notes?: string | null;
+};
+export type ProjectOptionPage = {
+  organization_id: number;
+  items: Array<{ id: number; name: string }>;
+  page: number;
+  page_size: number;
+  total_items: number;
+  total_pages: number;
+};
+export type ProjectHistoryEntry = {
+  id: number;
+  project_id: number;
+  operation: string;
+  performed_by: number | null;
+  created_at: string;
+  changes: Record<string, { before: unknown; after: unknown }>;
+};
+export type Project = ProjectRegistrationFields & {
+  company_name?: string | null;
+  responsible_user_name?: string | null;
+  planning_responsible_user_name?: string | null;
   id: number;
   organization_id: number;
   company_id?: number | null;
@@ -178,8 +279,8 @@ export type Project = {
   deleted_at?: string | null;
   available_actions?: ProjectAvailableAction[];
 };
-export type CreateProjectRequest = {
-  organization_id: number;
+export type CreateProjectRequest = ProjectRegistrationFields & {
+  organization_id?: number;
   company_id: number;
   name: string;
   description?: string | null;
@@ -189,7 +290,8 @@ export type CreateProjectRequest = {
   metadata?: Record<string, unknown> | null;
 };
 
-export type UpdateProjectRequest = {
+export type UpdateProjectRequest = ProjectRegistrationFields & {
+  expected_updated_at?: string;
   name?: string;
   description?: string | null;
   start_date?: string | null;

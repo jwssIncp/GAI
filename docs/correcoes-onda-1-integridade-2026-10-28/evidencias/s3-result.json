@@ -1,0 +1,13 @@
+{
+  "name": "s3",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-backend",
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "s3",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\s3-jest.json"
+  ],
+  "exit_code": 0,
+  "seconds": 30.291
+}

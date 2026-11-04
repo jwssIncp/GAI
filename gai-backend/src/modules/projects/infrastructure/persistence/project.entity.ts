@@ -1,3 +1,4 @@
+import { ProjectType } from '../../domain/enums/project-type.enum';
 import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
@@ -16,6 +17,12 @@ import { JsonRecord } from '../../domain/entities/project';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
 
 @Entity('projects')
+@Index('uq_projects_organization_code', ['organizationId', 'code'], {
+  unique: true,
+})
+@Index('idx_projects_organization_type', ['organizationId', 'projectType'])
+@Index('idx_projects_responsible', ['responsibleUserId'])
+@Index('idx_projects_planning_responsible', ['planningResponsibleUserId'])
 @Index('idx_projects_organization_status', ['organizationId', 'status'])
 @Index('idx_projects_name', ['name'])
 export class ProjectEntity {
@@ -30,6 +37,29 @@ export class ProjectEntity {
 
   @Column({ type: 'varchar', length: 255 })
   name!: string;
+
+  @Column({ type: 'varchar', length: 40, nullable: true })
+  code!: string | null;
+  @Column({ name: 'project_type', type: 'varchar', length: 30, nullable: true })
+  projectType!: ProjectType | null;
+  @Column({
+    name: 'responsible_user_id',
+    ...FOREIGN_KEY_COLUMN,
+    nullable: true,
+  })
+  responsibleUserId!: number | null;
+  @Column({
+    name: 'planning_responsible_user_id',
+    ...FOREIGN_KEY_COLUMN,
+    nullable: true,
+  })
+  planningResponsibleUserId!: number | null;
+  @Column({ name: 'planning_notes', type: 'text', nullable: true })
+  planningNotes!: string | null;
+  // Labels are hydrated with scoped joins and are not stored twice.
+  companyName?: string | null;
+  responsibleUserName?: string | null;
+  planningResponsibleUserName?: string | null;
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;

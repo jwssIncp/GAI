@@ -1,0 +1,16 @@
+{
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "sqlite",
+    "--runTestsByPath",
+    "test/integration/projects/project-registration.e2e-spec.ts",
+    "test/integration/projects/projects.e2e-spec.ts",
+    "test/contract/projects-api.spec.ts"
+  ],
+  "cwd": "gai-backend",
+  "started_at": "2026-11-03T10:22:22.644Z",
+  "duration_seconds": 24.598,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\sqlite-projects-final.log"
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "file": "gai-backend/src/migrations/1739500000001-create-organizations.ts",
+    "bytes": 1903,
+    "sha256": "f8e1085021329be47c3075ffe8889c96950562481020f4def48c151ce6b64b7c"
+  },
+  {
+    "file": "gai-backend/src/migrations/1739500000002-create-auth-tables.ts",
+    "bytes": 3975,
+    "sha256": "9857bafcf3c08db8f8fcb995064058a56f33ea83d44bd56ff8d13e9a76b547fc"
+  },
+  {
+    "file": "gai-backend/src/migrations/1739600000001-migrate-to-numeric-ids-and-rbac.ts",
+    "bytes": 10431,
+    "sha256": "b9580eeaba3817c27b838b3444fb19e819a9326d8dc458e29bb9d122111871bb"
+  },
+  {
+    "file": "gai-backend/src/migrations/1739700000001-decouple-user-authorization.ts",
+    "bytes": 5942,
+    "sha256": "cb31e737fe7e2cf758e16456afd9426189d96de8d1113099b6a10cff23606a73"
+  },
+  {
+    "file": "gai-backend/src/migrations/1739800000001-create-projects.ts",
+    "bytes": 2785,
+    "sha256": "a07abf172882bd9dd61959f8f27966f8ff062a8bd616fa0a7fedb0f4486157fc"
+  },
+  {
+    "file": "gai-backend/src/migrations/1739900000001-create-field-agents.ts",
+    "bytes": 4502,
+    "sha256": "39c9c15d86a9af9f8332ee57e4ab5b5c839d0d1f0094455ef878cd2d9ac9ce4a"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740000000001-create-inventory-items.ts",
+    "bytes": 3930,
+    "sha256": "aa75453c57fb9854e641271d18f6fbc4da5f4e4f2e18e6026bf6599f2d0a2228"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740100000001-create-inventory-item-images.ts",
+    "bytes": 3392,
+    "sha256": "183750dfeced5aedd0921f442b6d41d06d68aae660c0c181979fbfe8cd6f333f"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740200000001-create-catalog-assets.ts",
+    "bytes": 2981,
+    "sha256": "ff06ef981bc3e33a724b9e11bcb5b2b610f162b8cbd65ba2aa37bb95d10965c7"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740300000001-create-inventory-accounting-items.ts",
+    "bytes": 5806,
+    "sha256": "8cc518c8e441ee569482db44d9a9892431fa1ebb0edc4cb48054e70ac4719ad6"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740400000001-create-inventory-pending-issues.ts",
+    "bytes": 4454,
+    "sha256": "f36ca83b57669231a46f50972b54dc7c5b5ca99d0e46a3cff1faaf9814f80f72"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740500000001-create-payments-expenses.ts",
+    "bytes": 5250,
+    "sha256": "35e9b6d50f83a875e96d28e25ee9aa97a9f8f644ecdefeca87ca44dbf6da2046"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740600000001-create-import-sessions.ts",
+    "bytes": 6817,
+    "sha256": "44116e9b475538cd5a793bbb37772c25594488b3f08466f125e0018fb306c545"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740700000001-create-companies-company-units.ts",
+    "bytes": 9327,
+    "sha256": "8d41d30464d1711c4adcd29071d3d7d8a49fc596abcd08d975774c858b161246"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740800000001-protect-active-field-agent-assignments.ts",
+    "bytes": 1582,
+    "sha256": "fff89f9a6b2bf2bd234035148673bbaf59f6ee07dde310c5cd7e0cbe55e6da55"
+  },
+  {
+    "file": "gai-backend/src/migrations/1740900000001-add-project-unit-soft-delete.ts",
+    "bytes": 692,
+    "sha256": "c8085132c32e74f188500373db230c270feb6e8446de372d4e4774a4e2f21742"
+  },
+  {
+    "file": "gai-backend/src/migrations/1741000000001-create-export-jobs.ts",
+    "bytes": 3511,
+    "sha256": "fc6d27c07e997fbd7d4f47df26065fe313e602ae9599bf1f72574deb88b0c04d"
+  },
+  {
+    "file": "gai-backend/src/migrations/1741100000001-add-project-dashboard-indexes.ts",
+    "bytes": 859,
+    "sha256": "40da5db84d10708016706f4639fa64b1d6acef0874e1a992f8dfbc9dae1ebefc"
+  },
+  {
+    "file": "gai-backend/src/migrations/1741200000001-create-inventory-operations.ts",
+    "bytes": 11930,
+    "sha256": "4d9c9996b3f5b5ca313d33d6fc5c7b432eb9ea66adb32298de006cdb3a342e01"
+  },
+  {
+    "file": "gai-backend/src/migrations/1741300000001-create-expense-accountabilities.ts",
+    "bytes": 4996,
+    "sha256": "26cf6896e27ad10420d2fb72a3641479de7e8fcfbb93daad23542bb62e8497b3"
+  },
+  {
+    "file": "gai-backend/src/migrations/1741400000001-close-inventory-operation-gaps.ts",
+    "bytes": 3443,
+    "sha256": "ae38056d2e6ff8b7ac7c598a921d2ae3244351058ea9c70ca6a1eb570e8d03e7"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793000000001-fix-evidence-storage-key-index.ts",
+    "bytes": 2181,
+    "sha256": "84a28ebf764915f67c097099e7af4ab3023525ebc62f9bc74f74e2d07e60638c"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793100000001-create-project-preparation.ts",
+    "bytes": 6849,
+    "sha256": "2a916231416aacc07328db30dc965b2aed4174f9e94c785a00d73c0f01cbeb47"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793200000001-create-field-coordination.ts",
+    "bytes": 5666,
+    "sha256": "23d9f0bb60379fb751c1fefd30e08eae1aee00e95e5e38d292a3cb3ee0bddd87"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793300000001-create-assisted-reconciliation.ts",
+    "bytes": 4636,
+    "sha256": "ffbde2120bd5813b0c9d5801a2e1ebad37f9d2633604cc163d07b7059559457c"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793400000001-create-valuation-batches.ts",
+    "bytes": 3065,
+    "sha256": "cc22712304d6c0f4cc761f34d22741d7e3b882e6e20ff8a43c5b1a09787d6441"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793500000001-create-project-contracts.ts",
+    "bytes": 3618,
+    "sha256": "32bfee93ecabc62915191438ba827e9b36538d5c9e21ad3d44a695903ddfc253"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793600000001-create-budgets.ts",
+    "bytes": 4291,
+    "sha256": "fc06ecc927a584580c958fa17cbb396ab2ad464f4e072c48e1afb39473b466fa"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793700000001-create-receivables.ts",
+    "bytes": 3861,
+    "sha256": "e6c4f41ba6e83018816d03068502ab297437629aa335a4a514da8d068821e43a"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793800000001-create-managerial-dre.ts",
+    "bytes": 4017,
+    "sha256": "30e98fd3d5041fdbfe527c21c2f7cba9e131add87885d147b7914fdd3bbb7400"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793900000001-create-technical-reports.ts",
+    "bytes": 4419,
+    "sha256": "7bdaec53010a116b9417b892646ac44905b17f3a2779abd6051d275deef3575c"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793900000002-create-professional-documents.ts",
+    "bytes": 2091,
+    "sha256": "95ac3dc4235987f2ff93146a4d12640140f9dcc974489e6f7a23f5bdc797a5de"
+  }
+]

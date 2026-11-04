@@ -123,7 +123,7 @@ npm.cmd run dev -- --host 127.0.0.1
 # Outro terminal, em gai-frontend:
 $env:GAI_DOCUMENTS_REAL='1'
 $env:GAI_E2E_LOGIN='org.admin'
-$env:GAI_E2E_PASSWORD='Admin@123456' # somente fixture descartável
+$env:GAI_E2E_PASSWORD=$env:SEED_ADMIN_PASSWORD # somente fixture descartável
 node node_modules/@playwright/test/cli.js test e2e/documents-real.spec.ts --reporter=line
 # Na raiz, depois dos downloads:
 node scripts/documents-inspect.cjs

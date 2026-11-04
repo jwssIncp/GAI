@@ -1,0 +1,13 @@
+{
+  "name": "baseline-backend-lint",
+  "exit_code": 1,
+  "seconds": 79.669,
+  "command": [
+    "node_modules/eslint/bin/eslint.js",
+    "{src,apps,libs,test}/**/*.ts",
+    "--format",
+    "json",
+    "--output-file",
+    "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\baseline-backend-eslint.json"
+  ]
+}

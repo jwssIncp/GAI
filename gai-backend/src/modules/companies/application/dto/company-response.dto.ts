@@ -22,6 +22,42 @@ export class CompanyResponseDto {
   @ApiPropertyOptional({ nullable: true })
   document!: string | null;
 
+  @ApiPropertyOptional({ nullable: true })
+  state_registration!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  municipal_registration!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  email!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  phone!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  zipcode!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  address!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  number!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  complement!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  district!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  city!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  state!: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  country!: string | null;
+
   @ApiProperty({ enum: CompanyStatus })
   status!: CompanyStatus;
 
@@ -50,6 +86,18 @@ export class CompanyResponseDto {
       name: entity.name,
       corporate_name: entity.corporateName,
       document: entity.document,
+      state_registration: entity.stateRegistration,
+      municipal_registration: entity.municipalRegistration,
+      email: entity.email,
+      phone: entity.phone,
+      zipcode: entity.zipcode,
+      address: entity.address,
+      number: entity.number,
+      complement: entity.complement,
+      district: entity.district,
+      city: entity.city,
+      state: entity.state,
+      country: entity.country,
       status: entity.status,
       metadata: entity.metadata,
       created_by_id:

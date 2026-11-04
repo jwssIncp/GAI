@@ -9,11 +9,39 @@ export interface ManagedUserProps {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
+  fullName?: string | null;
+  phone?: string | null;
+  jobTitle?: string | null;
+  lastLoginAt?: Date | null;
+  mustChangePassword?: boolean;
+  organizationName?: string | null;
+  lockedUntil?: Date | null;
 }
 
 export class ManagedUser {
   constructor(private props: ManagedUserProps) {}
 
+  get fullName() {
+    return this.props.fullName ?? null;
+  }
+  get phone() {
+    return this.props.phone ?? null;
+  }
+  get jobTitle() {
+    return this.props.jobTitle ?? null;
+  }
+  get lastLoginAt() {
+    return this.props.lastLoginAt ?? null;
+  }
+  get lockedUntil() {
+    return this.props.lockedUntil ?? null;
+  }
+  get mustChangePassword() {
+    return this.props.mustChangePassword ?? false;
+  }
+  get organizationName() {
+    return this.props.organizationName ?? null;
+  }
   get id(): number {
     return this.props.id;
   }

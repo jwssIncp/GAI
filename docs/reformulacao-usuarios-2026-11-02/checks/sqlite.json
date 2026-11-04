@@ -1,0 +1,16 @@
+{
+  "executedAt": "2026-11-03T01:44:56.607Z",
+  "results": [
+    {
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "sqlite",
+        "--testPathPatterns=auth|users|organizations|contract"
+      ],
+      "cwd": "gai-backend",
+      "exitCode": 0,
+      "durationMs": 569933
+    }
+  ]
+}

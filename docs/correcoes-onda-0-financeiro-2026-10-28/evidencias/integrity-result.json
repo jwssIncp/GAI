@@ -1,0 +1,15 @@
+{
+  "mode": "integrity",
+  "exit_code": 0,
+  "seconds": 55.983,
+  "command": [
+    "node_modules/jest/bin/jest.js",
+    "--runInBand",
+    "--testTimeout=300000",
+    "--runTestsByPath",
+    "test/integration/payments-expenses/payment-integrity.mysql.e2e-spec.ts",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\integrity-jest.json"
+  ],
+  "target": "127.0.0.1:33327/gai_validation_disposable"
+}

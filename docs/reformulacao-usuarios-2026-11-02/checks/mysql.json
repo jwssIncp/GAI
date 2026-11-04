@@ -1,0 +1,19 @@
+{
+  "executedAt": "2026-11-03T01:43:05.039Z",
+  "results": [
+    {
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/users/user-lifecycle.e2e-spec.ts",
+        "test/integration/users/access-profiles.e2e-spec.ts",
+        "test/integration/auth/session-invalidation.e2e-spec.ts"
+      ],
+      "cwd": "gai-backend",
+      "exitCode": 0,
+      "durationMs": 522371
+    }
+  ]
+}

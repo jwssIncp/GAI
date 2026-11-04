@@ -1,0 +1,17 @@
+[
+  {
+    "format": "docx",
+    "bytes": 20594,
+    "sha256": "8b07b551d08513dec26407aa79b6c83c63c168e46ce48584690e67ec65d3f715",
+    "milliseconds": 1982,
+    "compiled_worker": true
+  },
+  {
+    "format": "pdf",
+    "bytes": 115845,
+    "sha256": "44f1fb07bf009a169cef76b44188ff5e42a80e0f1dcb87d9ded100482fca9706",
+    "milliseconds": 2570,
+    "compiled_worker": true,
+    "pages": 34
+  }
+]

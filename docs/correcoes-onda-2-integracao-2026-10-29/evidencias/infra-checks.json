@@ -1,0 +1,33 @@
+[
+  {
+    "name": "terraform-fmt",
+    "args": [
+      "fmt",
+      "-check",
+      "ecs.tf",
+      "rds.tf"
+    ],
+    "exit_code": 3,
+    "seconds": 1.538
+  },
+  {
+    "name": "terraform-init",
+    "args": [
+      "init",
+      "-backend=false",
+      "-input=false",
+      "-no-color"
+    ],
+    "exit_code": 0,
+    "seconds": 63.062
+  },
+  {
+    "name": "terraform-validate",
+    "args": [
+      "validate",
+      "-json"
+    ],
+    "exit_code": 0,
+    "seconds": 12.307
+  }
+]

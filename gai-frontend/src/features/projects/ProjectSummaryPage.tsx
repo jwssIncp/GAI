@@ -21,9 +21,11 @@ import { PermissionGate } from '@/features/auth/PermissionGate';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { ProjectFieldAgentsPanel } from '@/features/field-agents/ProjectFieldAgentsPanel';
 import { cn } from '@/utils/cn';
-import { formatDate, formatDateTime, formatMoney } from '@/utils/format';
+import { formatDateTime, formatMoney } from '@/utils/format';
 import type { Project, ProjectStatus, ProjectSummary } from '@/types/api';
 import { ProjectLifecycleActions } from './ProjectLifecycleActions';
+import { formatProjectDate } from './projectFields';
+import { ProjectRegistrationDetails } from './ProjectRegistrationDetails';
 import { ProjectUnitsPanel } from './ProjectUnitsPanel';
 import { canMutateProjectOperations } from './projectLifecycle';
 import { useProject, useProjectDashboard } from './projectQueries';
@@ -81,6 +83,7 @@ export function ProjectSummaryPage() {
       {!project.isLoading && !dashboard.isLoading && !project.isError && !dashboard.isError && !projectData && !data ? (
         <EmptyState title="Projeto nao encontrado" description="O projeto solicitado nao existe ou nao esta disponivel para este usuario." />
       ) : null}
+      {projectData ? <ProjectRegistrationDetails project={projectData} /> : null}
       {projectData && data ? <ProjectWorkspace project={projectData} summary={data} /> : null}
     </PageContainer>
   );
@@ -122,8 +125,8 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
         </p>
         <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
           <ProjectContextInfo project={project} />
-          <Info label="Inicio" value={formatDate(project.start_date)} />
-          <Info label="Termino" value={formatDate(project.end_date)} />
+          <Info label="Inicio" value={formatProjectDate(project.start_date)} />
+          <Info label="Termino" value={formatProjectDate(project.end_date)} />
           <Info label="Criado em" value={formatDateTime(project.created_at)} />
           <Info label="Atualizado em" value={formatDateTime(project.updated_at)} />
           <Info label="Avaliados" value={`${summary.inventory.evaluated_items}/${summary.inventory.total_items}`} />
@@ -145,11 +148,12 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
 }
 
 function ProjectActions({ project }: { project: Project }) {
+  const location = useLocation();
   return (
     <div className="flex flex-wrap gap-2">
       {canMutateProjectOperations(project.status) ? (
         <PermissionGate permissions={['projects:update']}>
-          <LinkButton to={`/app/projects?edit=${project.id}`} label="Editar projeto" />
+          <LinkButton to={`/app/projects?edit=${project.id}&return_to=${encodeURIComponent(location.pathname + location.search + location.hash)}`} label="Editar projeto" />
         </PermissionGate>
       ) : null}
       <ProjectLifecycleActions project={project} />

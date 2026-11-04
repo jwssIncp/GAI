@@ -1,0 +1,30 @@
+{
+  "captured_at": "2026-10-29T07:00:34.908Z",
+  "civil_columns": 24,
+  "accounting_acquisition": {
+    "dto": "UpdateInventoryAccountingItemDto.acquisition_date",
+    "calendar": "IsCivilDate",
+    "file_dates": "shared predicate and supported MySQL year bounds",
+    "invalid_update": "400; prior date preserved",
+    "invalid_file_rows": "row errors; no new items"
+  },
+  "physical_capture": {
+    "dto": "ImportPayloadItemDto.captured_at and CreateInventoryObservationDto.captured_at",
+    "predicate": "isExplicitInstant",
+    "csv": "raw text retained until strict validation",
+    "service": "checks before materialization",
+    "valid_offset": "2026-03-31T23:59:59-03:00 -> 2026-04-01T02:59:59.000Z"
+  },
+  "validated_copy_matches_source": [
+    "src/common/validation/civil-date.ts",
+    "src/common/validation/instant-date.ts",
+    "src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-inputs.ts",
+    "src/modules/inventory-accounting-items/application/services/inventory-accounting-item-scope.service.ts",
+    "src/modules/inventory-accounting-items/application/services/accounting-import-parser.service.ts",
+    "src/modules/import-sessions/application/dto/import-sessions-inputs.ts",
+    "src/modules/import-sessions/application/services/physical-observation-import-parser.service.ts",
+    "src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "test/integration/inventory-operations/inventory-operations.e2e-spec.ts",
+    "test/integration/inventory-accounting-items/inventory-accounting-items.e2e-spec.ts"
+  ]
+}

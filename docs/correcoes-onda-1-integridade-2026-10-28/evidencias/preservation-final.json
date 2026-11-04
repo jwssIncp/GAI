@@ -1,0 +1,40 @@
+{
+  "captured_at": "2026-10-29T07:04:53.870Z",
+  "wave0_files_hashed_unchanged": 50,
+  "old_migrations_hashed_unchanged": 32,
+  "staged_paths_unchanged": [
+    {
+      "index": "M",
+      "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts"
+    },
+    {
+      "index": "M",
+      "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts"
+    },
+    {
+      "index": "M",
+      "path": "gai-backend/test/unit/migrations/new-operations-migrations.spec.ts"
+    }
+  ],
+  "git_before": {
+    "entries": 19246,
+    "staged": 3,
+    "unstaged": 15494,
+    "untracked": 3751
+  },
+  "git_after": {
+    "entries": 20613,
+    "staged": 3,
+    "unstaged": 15522,
+    "untracked": 5090
+  },
+  "no_git_write_command": true,
+  "audit_original_text_preserved": [
+    "README.md",
+    "problemas-priorizados.md",
+    "plano-correcoes.md",
+    "testes.md",
+    "banco-migrations.md",
+    "dependencias-seguranca.md"
+  ]
+}

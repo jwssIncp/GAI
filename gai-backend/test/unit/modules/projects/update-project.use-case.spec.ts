@@ -45,6 +45,7 @@ describe('UpdateProjectUseCase', () => {
     const useCase = new UpdateProjectUseCase(
       repository as never,
       scope,
+      { validateUsers: jest.fn().mockResolvedValue(undefined) } as never,
       logger,
     );
 
@@ -84,6 +85,7 @@ describe('UpdateProjectUseCase', () => {
     const useCase = new UpdateProjectUseCase(
       repository as never,
       scope,
+      { validateUsers: jest.fn().mockResolvedValue(undefined) } as never,
       logger,
     );
 

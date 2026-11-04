@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-11-03T17:17:48.439Z",
+  "tables": {
+    "projects": {
+      "rows": 44,
+      "original_columns": 16,
+      "all_original_values_unchanged": true
+    },
+    "project_audit_logs": {
+      "rows": 44,
+      "original_columns": 7,
+      "all_original_values_unchanged": true
+    },
+    "project_units": {
+      "rows": 4,
+      "original_columns": 7,
+      "all_original_values_unchanged": true
+    },
+    "project_field_agents": {
+      "rows": 10,
+      "original_columns": 12,
+      "all_original_values_unchanged": true
+    },
+    "companies": {
+      "rows": 26,
+      "original_columns": 24,
+      "all_original_values_unchanged": true
+    },
+    "company_units": {
+      "rows": 8,
+      "original_columns": 20,
+      "all_original_values_unchanged": true
+    },
+    "organizations": {
+      "rows": 2,
+      "original_columns": 9,
+      "all_original_values_unchanged": true
+    },
+    "users": {
+      "rows": 3,
+      "original_columns": 18,
+      "all_original_values_unchanged": true
+    }
+  },
+  "all_preserved": true
+}

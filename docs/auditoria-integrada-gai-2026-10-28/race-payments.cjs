@@ -1,6 +1,7 @@
+const { requireCredential, adminPassword } = require('../../scripts/runtime-credentials.cjs');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 (async()=>{const base='http://127.0.0.1:33319/api/v1';
- const login=await fetch(base+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:'org.admin',password:'Admin@123456'})});assert.equal(login.status,200);const token=(await login.json()).access_token;
+ const login=await fetch(base+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:'org.admin',password:adminPassword()})});assert.equal(login.status,200);const token=(await login.json()).access_token;
  async function api(method,url,data){const r=await fetch(base+url,{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(data?{body:JSON.stringify(data)}:{})});return {status:r.status,body:await r.json()};}
  const p=await api('POST','/projects',{organization_id:1,company_id:1,name:'SINTETICO concorrência pagamentos '+Date.now()});assert.equal(p.status,201);
  const a=await api('POST','/field-agents',{name:'SINTETICO concorrência '+Date.now()});assert.equal(a.status,201);assert.equal((await api('POST',`/projects/${p.body.id}/field-agents`,{field_agent_id:a.body.id})).status,201);

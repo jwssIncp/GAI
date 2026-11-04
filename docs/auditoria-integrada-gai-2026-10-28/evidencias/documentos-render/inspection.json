@@ -1,0 +1,62 @@
+[
+  {
+    "file": "sintetico-1.pdf",
+    "rows": 1,
+    "size": 22074,
+    "sha256": "2429c1a5f4cb5971c1703a534b942c99d6a5474c9e67f24b4263d16e61768901",
+    "pages": 2,
+    "last_row_present": true,
+    "outside_20pt_margin": []
+  },
+  {
+    "file": "sintetico-1.docx",
+    "rows": 1,
+    "size": 12020,
+    "sha256": "44b1d60c9d4b4d13f850a4a4c4b49036dc1f0dca3719cb48cafb27572604119a",
+    "xml_parts_valid": 21,
+    "relationships_valid": 13,
+    "native_tables": true,
+    "last_row_present": true,
+    "pagination_verified_in_word": false
+  },
+  {
+    "file": "sintetico-60.pdf",
+    "rows": 60,
+    "size": 34049,
+    "sha256": "e3f78b598d09de3481167776115bd0340d02dc07b6be313eef864dff1b53ec4e",
+    "pages": 5,
+    "last_row_present": true,
+    "outside_20pt_margin": []
+  },
+  {
+    "file": "sintetico-60.docx",
+    "rows": 60,
+    "size": 13069,
+    "sha256": "7c793e082f96526700996662c1f1f2510084c76d4c87849583ee5c6502b5b883",
+    "xml_parts_valid": 21,
+    "relationships_valid": 13,
+    "native_tables": true,
+    "last_row_present": true,
+    "pagination_verified_in_word": false
+  },
+  {
+    "file": "sintetico-180.pdf",
+    "rows": 180,
+    "size": 59002,
+    "sha256": "09687255cd4a21fbaf9cf206310ace583b10dcdd17b7922ce2cdebc223163d6e",
+    "pages": 12,
+    "last_row_present": true,
+    "outside_20pt_margin": []
+  },
+  {
+    "file": "sintetico-180.docx",
+    "rows": 180,
+    "size": 14869,
+    "sha256": "5f18c775e7c99998f2e5a0c9c563f28900818b678c5369b39461ffa19cf7c367",
+    "xml_parts_valid": 21,
+    "relationships_valid": 13,
+    "native_tables": true,
+    "last_row_present": true,
+    "pagination_verified_in_word": false
+  }
+]

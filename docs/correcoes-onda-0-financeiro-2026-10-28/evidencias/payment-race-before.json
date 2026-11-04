@@ -1,0 +1,1162 @@
+{
+  "target": "Nest HTTP real + MySQL descartÃ¡vel 33327",
+  "project": 1,
+  "cases": [
+    {
+      "payment": 1,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 0",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.543Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 1,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 0",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.543Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 1,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 0",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:42.543Z",
+          "updated_at": "2026-10-29T02:14:42.000Z"
+        }
+      }
+    },
+    {
+      "payment": 2,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 2,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 1",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.723Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 2,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 1",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.723Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 2,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 1",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:42.723Z",
+          "updated_at": "2026-10-29T02:14:42.000Z"
+        }
+      }
+    },
+    {
+      "payment": 3,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 3,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 2",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.902Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 3,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 2",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:42.902Z",
+            "updated_at": "2026-10-29T02:14:42.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 3,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 2",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:42.902Z",
+          "updated_at": "2026-10-29T02:14:42.000Z"
+        }
+      }
+    },
+    {
+      "payment": 4,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 4,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 3",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.041Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 4,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 3",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.041Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 4,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 3",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.041Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 5,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 5,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 4",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.176Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 5,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 4",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.176Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 5,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 4",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.176Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 6,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 6,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 5",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.314Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 6,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 5",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.314Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 6,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 5",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.314Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 7,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 7,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 6",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.459Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 7,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 6",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.459Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 7,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 6",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.459Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 8,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 8,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 7",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.597Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 8,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 7",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.597Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 8,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 7",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.597Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 9,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 9,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 8",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.734Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 9,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 8",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.734Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 9,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 8",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.734Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 10,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 10,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 9",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.860Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 10,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 9",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:43.860Z",
+            "updated_at": "2026-10-29T02:14:43.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 10,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 9",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:43.860Z",
+          "updated_at": "2026-10-29T02:14:43.000Z"
+        }
+      }
+    },
+    {
+      "payment": 11,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 11,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 10",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.013Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 11,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 10",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.013Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 11,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 10",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:44.013Z",
+          "updated_at": "2026-10-29T02:14:44.000Z"
+        }
+      }
+    },
+    {
+      "payment": 12,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 12,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 11",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.149Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 12,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 11",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.149Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 12,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 11",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:44.149Z",
+          "updated_at": "2026-10-29T02:14:44.000Z"
+        }
+      }
+    },
+    {
+      "payment": 13,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 13,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 12",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.290Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 13,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 12",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.290Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 13,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 12",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:44.290Z",
+          "updated_at": "2026-10-29T02:14:44.000Z"
+        }
+      }
+    },
+    {
+      "payment": 14,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 14,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 13",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.427Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 14,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 13",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.427Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 14,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 13",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:44.427Z",
+          "updated_at": "2026-10-29T02:14:44.000Z"
+        }
+      }
+    },
+    {
+      "payment": 15,
+      "responses": [
+        {
+          "status": 200,
+          "body": {
+            "id": 15,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": null,
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "approved",
+            "notes": "SINTETICO corrida 14",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.570Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "id": 15,
+            "organization_id": 1,
+            "project_id": 1,
+            "field_agent_id": 1,
+            "state": null,
+            "start_date": "2026-10-28",
+            "end_date": "2026-10-28",
+            "payment_date": "2026-10-28",
+            "days": 1,
+            "daily_rate": "1.00",
+            "additional_amount": "0.00",
+            "daily_total": "1.00",
+            "discount_amount": "0.00",
+            "final_amount": "1.00",
+            "status": "paid",
+            "notes": "SINTETICO corrida 14",
+            "metadata": null,
+            "created_at": "2026-10-28T23:14:44.570Z",
+            "updated_at": "2026-10-29T02:14:44.000Z"
+          }
+        }
+      ],
+      "after": {
+        "status": 200,
+        "body": {
+          "id": 15,
+          "organization_id": 1,
+          "project_id": 1,
+          "field_agent_id": 1,
+          "state": null,
+          "start_date": "2026-10-28",
+          "end_date": "2026-10-28",
+          "payment_date": "2026-10-28",
+          "days": 1,
+          "daily_rate": "1.00",
+          "additional_amount": "0.00",
+          "daily_total": "1.00",
+          "discount_amount": "0.00",
+          "final_amount": "1.00",
+          "status": "paid",
+          "notes": "SINTETICO corrida 14",
+          "metadata": null,
+          "created_at": "2026-10-28T23:14:44.570Z",
+          "updated_at": "2026-10-29T02:14:44.000Z"
+        }
+      }
+    }
+  ],
+  "approved_after_successful_paid": 0
+}

@@ -1,5 +1,6 @@
 const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '../..');
+process.env.GAI_TEST_BROWSER_FIXTURES = '1';
 process.env.NODE_ENV = 'test'; process.env.GAI_TEST_MYSQL_DISPOSABLE = '1'; process.env.GAI_TEST_MYSQL_WAVE1 = '1'; process.env.DB_TYPE = 'mysql';
 process.env.TS_NODE_PROJECT = path.join(__dirname, 'evidencias/workspace/gai-backend/tsconfig.json');
 require(path.join(__dirname, 'evidencias/workspace/gai-backend/node_modules/ts-node/register/transpile-only'));

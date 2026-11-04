@@ -283,6 +283,7 @@ export class CompaniesController {
       id: req.user!.id,
       systemRoles: req.user!.systemRoles,
       organizationId: req.user!.organizationId,
+      permissions: req.user!.permissions.map((permission) => permission.key),
     };
   }
 }

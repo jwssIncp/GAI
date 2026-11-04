@@ -1,3 +1,7 @@
+import { Throttle } from '@nestjs/throttler';
+import { UserLifecycleService } from '../application/services/user-lifecycle.service';
+import { AdministrativePasswordDto } from '../../auth/application/dto/credential-actions.dto';
+import { UserStatus } from '../../auth/domain/enums/user.enums';
 import {
   Body,
   Controller,
@@ -41,9 +45,7 @@ import {
   UserListResponseDto,
   UserResponseDto,
 } from '../application/dto/user-response.dto';
-import { ActivateUserUseCase } from '../application/use-cases/activate-user.use-case';
 import { CreateUserUseCase } from '../application/use-cases/create-user.use-case';
-import { DeactivateUserUseCase } from '../application/use-cases/deactivate-user.use-case';
 import { GetUserUseCase } from '../application/use-cases/get-user.use-case';
 import { ListUsersUseCase } from '../application/use-cases/list-users.use-case';
 import { UpdateUserUseCase } from '../application/use-cases/update-user.use-case';
@@ -60,12 +62,11 @@ interface AuthenticatedRequest extends Request {
 @Roles(UserRole.PLATFORM_ADMIN, UserRole.ORG_ADMIN)
 export class UsersController {
   constructor(
+    private readonly lifecycle: UserLifecycleService,
     private readonly createUser: CreateUserUseCase,
     private readonly listUsers: ListUsersUseCase,
     private readonly getUser: GetUserUseCase,
     private readonly updateUser: UpdateUserUseCase,
-    private readonly deactivateUser: DeactivateUserUseCase,
-    private readonly activateUser: ActivateUserUseCase,
   ) {}
 
   @Post()
@@ -95,6 +96,55 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.listUsers.execute(query, this.toActor(req));
+  }
+
+  @Get('form-options')
+  @RequirePermissions('users:write')
+  options() {
+    return this.lifecycle.options();
+  }
+
+  @Post(':id/password-reset')
+  @HttpCode(200)
+  @RequirePermissions('users:write')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  resetPassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: AdministrativePasswordDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.lifecycle.resetPassword(id, dto.password, this.toActor(req));
+  }
+
+  @Post(':id/invitation/resend')
+  @HttpCode(200)
+  @RequirePermissions('users:write')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  resendInvitation(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.lifecycle.resend(id, this.toActor(req));
+  }
+
+  @Post(':id/block')
+  @HttpCode(200)
+  @RequirePermissions('users:write')
+  block(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.lifecycle.setStatus(id, UserStatus.BLOCKED, this.toActor(req));
+  }
+
+  @Post(':id/unblock')
+  @HttpCode(200)
+  @RequirePermissions('users:write')
+  unblock(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.lifecycle.setStatus(id, UserStatus.ACTIVE, this.toActor(req));
   }
 
   @Get(':id')
@@ -150,7 +200,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.deactivateUser.execute(id, this.toActor(req));
+    return this.lifecycle.setStatus(id, UserStatus.INACTIVE, this.toActor(req));
   }
 
   @Post(':id/activate')
@@ -166,7 +216,7 @@ export class UsersController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.activateUser.execute(id, this.toActor(req));
+    return this.lifecycle.setStatus(id, UserStatus.ACTIVE, this.toActor(req));
   }
 
   private toActor(req: AuthenticatedRequest): ActorContext {

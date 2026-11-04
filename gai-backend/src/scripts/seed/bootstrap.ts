@@ -12,6 +12,10 @@ import { RolePermissionEntity } from '../../modules/users/infrastructure/persist
 import { PermissionEntity } from '../../modules/users/infrastructure/persistence/permission.entity';
 import { UserRoleAssignmentEntity } from '../../modules/users/infrastructure/persistence/user-role-assignment.entity';
 import { seedPermissions } from './permissions.seed';
+import {
+  assertDevelopmentSeedEnvironment,
+  developmentSeedPassword,
+} from './development-seed-policy';
 
 config();
 
@@ -65,6 +69,7 @@ async function ensureAssignment(
 }
 
 async function bootstrapSeed(): Promise<void> {
+  assertDevelopmentSeedEnvironment(process.env);
   await dataSource.initialize();
   const hasher = new Argon2PasswordHasher();
 
@@ -87,6 +92,8 @@ async function bootstrapSeed(): Promise<void> {
     'ORG_ADMIN',
     'Organization Administrator',
   );
+  // ORG_USER has no implicit grants. Preserve the least-privilege definition.
+  await ensureSystemRole(roleRepo, 'ORG_USER', 'Usuário da organização');
 
   const cnpj = process.env.SEED_ORG_CNPJ ?? '11222333000181';
   let organization = await orgRepo.findOne({ where: { cnpj } });
@@ -143,7 +150,10 @@ async function bootstrapSeed(): Promise<void> {
   let admin = await userRepo.findOne({ where: { login: adminLogin } });
   if (!admin) {
     const now = new Date();
-    const password = process.env.SEED_ADMIN_PASSWORD ?? 'Admin@123456';
+    const password = developmentSeedPassword(
+      process.env,
+      'SEED_ADMIN_PASSWORD',
+    );
     admin = userRepo.create({
       organizationId: null,
       login: adminLogin,
@@ -157,15 +167,18 @@ async function bootstrapSeed(): Promise<void> {
       updatedAt: now,
     });
     admin = await userRepo.save(admin);
+    await ensureAssignment(assignmentRepo, admin.id, platformAdminRole.id);
     console.log(`Created platform admin ${admin.login}`);
   }
-  await ensureAssignment(assignmentRepo, admin.id, platformAdminRole.id);
 
   const orgAdminLogin = process.env.SEED_ORG_ADMIN_LOGIN ?? 'org.admin';
   let orgAdmin = await userRepo.findOne({ where: { login: orgAdminLogin } });
   if (!orgAdmin) {
     const now = new Date();
-    const password = process.env.SEED_ORG_ADMIN_PASSWORD ?? 'Admin@123456';
+    const password = developmentSeedPassword(
+      process.env,
+      'SEED_ORG_ADMIN_PASSWORD',
+    );
     orgAdmin = userRepo.create({
       organizationId: organization.id,
       login: orgAdminLogin,
@@ -179,15 +192,18 @@ async function bootstrapSeed(): Promise<void> {
       updatedAt: now,
     });
     orgAdmin = await userRepo.save(orgAdmin);
+    await ensureAssignment(assignmentRepo, orgAdmin.id, orgAdminRole.id);
     console.log(`Created org admin ${orgAdmin.login}`);
   }
-  await ensureAssignment(assignmentRepo, orgAdmin.id, orgAdminRole.id);
 
   const testLogin = process.env.SEED_TEST_USER_LOGIN ?? 'test.user';
   let testUser = await userRepo.findOne({ where: { login: testLogin } });
   if (!testUser) {
     const now = new Date();
-    const password = process.env.SEED_TEST_USER_PASSWORD ?? 'Test@123456';
+    const password = developmentSeedPassword(
+      process.env,
+      'SEED_TEST_USER_PASSWORD',
+    );
     testUser = userRepo.create({
       organizationId: organization.id,
       login: testLogin,
@@ -201,9 +217,9 @@ async function bootstrapSeed(): Promise<void> {
       updatedAt: now,
     });
     testUser = await userRepo.save(testUser);
+    await ensureAssignment(assignmentRepo, testUser.id, operatorRole.id);
     console.log(`Created test user ${testUser.login}`);
   }
-  await ensureAssignment(assignmentRepo, testUser.id, operatorRole.id);
 
   await dataSource.destroy();
   console.log('Bootstrap seed completed');

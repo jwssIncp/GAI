@@ -52,8 +52,12 @@ function SidebarContent({ collapsed = false, onToggle }: { collapsed?: boolean; 
   const context = navigationContext(new URLSearchParams(location.search));
   const project = location.pathname.match(/^\/app\/projects\/([1-9]\d*)(?:\/|$)/)?.[1];
   if (project) context.set('project_id', project);
-  const { canAccess } = usePermissions();
-  const visible = navigation.filter(item => canAccess(item.permissions));
+  const { canAccess, hasPermission } = usePermissions();
+  const visible = navigation.flatMap(item => {
+    if (canAccess(item.permissions)) return [item];
+    if (item.to === '/app/projects' && hasPermission('projects:create')) return [{ ...item, label: 'Novo projeto', to: '/app/projects/new', permissions: ['projects:create'] }];
+    return [];
+  });
   return <div className="flex h-full flex-col">
     <div className={cn('flex h-[76px] shrink-0 items-center border-b border-sidebar-border', collapsed ? 'justify-center' : 'px-5')}>
       <GaiLogo variant={collapsed ? 'symbol' : 'horizontal'} appearance="dark" />

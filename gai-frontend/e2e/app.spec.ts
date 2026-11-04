@@ -683,7 +683,7 @@ test('login', async ({ page }) => {
   });
   await page.goto('/login');
   await page.getByLabel('Login ou email').fill('platform.admin');
-  await page.getByLabel('Senha').fill('Admin@123456');
+  await page.getByLabel('Senha').fill("Isolated mock authentication fixture 2026!");
   await page.getByRole('button', { name: /entrar/i }).click();
   await page.waitForURL('**/app/dashboard');
   expect(loginCalled).toBeTruthy();

@@ -1,8 +1,10 @@
+import { configureBrowserCredentials } from './e2e/runtime-credentials';
 import { defineConfig, devices } from '@playwright/test';
 import path from 'node:path';
 
 const output = process.env.GAI_TEST_EVIDENCE_DIR ?? path.resolve('test-results/redesign');
 Object.assign(process.env, { GAI_TEST_MYSQL_WAVE2: '1' });
+configureBrowserCredentials();
 export default defineConfig({
   testDir: './e2e', testMatch: 'redesign-real.spec.ts', workers: 1, fullyParallel: false,
   timeout: 120000, outputDir: path.join(output, 'artifacts'),

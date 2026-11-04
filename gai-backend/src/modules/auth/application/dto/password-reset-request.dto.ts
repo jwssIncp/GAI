@@ -1,9 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail } from 'class-validator';
+import { IsEmail, MaxLength } from 'class-validator';
+import { NormalizedIdentifier } from '../../../../common/validation/user-input';
 
 export class PasswordResetRequestDto {
   @ApiProperty({ format: 'email', example: 'user@gai.local' })
   @IsEmail()
+  @NormalizedIdentifier()
+  @MaxLength(255)
   email!: string;
 }
 

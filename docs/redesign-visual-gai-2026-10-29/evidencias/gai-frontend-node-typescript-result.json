@@ -1,0 +1,15 @@
+{
+  "name": "gai-frontend-node-typescript",
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "-p",
+    "tsconfig.node.json",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend",
+  "exit_code": 0,
+  "seconds": 3.103
+}

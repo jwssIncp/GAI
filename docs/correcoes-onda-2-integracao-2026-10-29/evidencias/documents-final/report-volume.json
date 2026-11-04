@@ -1,0 +1,155 @@
+[
+  {
+    "count": 0,
+    "extracted": 0,
+    "hash": "09317afcfd47e2fa58cd4a121c09f6cd4fd2502792ac2f4081d412db177cc9b2",
+    "snapshot_bytes": 1215,
+    "milliseconds": 178.3173999999999,
+    "rss_before": 386752512,
+    "rss_after": 387215360,
+    "heap_before": 190457744,
+    "heap_after": 198171160
+  },
+  {
+    "count": 1,
+    "extracted": 1,
+    "hash": "411249de39c9a9e344100f524a8e40a90a244ec3f2fc5082c150a4fe5272f25f",
+    "snapshot_bytes": 1390,
+    "milliseconds": 254.0604999999996,
+    "rss_before": 387768320,
+    "rss_after": 388485120,
+    "heap_before": 201231872,
+    "heap_after": 208478296
+  },
+  {
+    "count": 999,
+    "extracted": 999,
+    "hash": "fd2925f8f4ca9fa286653b6e3629fe54cb01e1a64a57efe1c6d1b3cddebdc444",
+    "snapshot_bytes": 183718,
+    "milliseconds": 930.002999999997,
+    "rss_before": 397078528,
+    "rss_after": 407269376,
+    "heap_before": 185911304,
+    "heap_after": 227955752
+  },
+  {
+    "count": 1000,
+    "extracted": 1000,
+    "hash": "bf2815102aa07989ab675a45755489aa9cd99363b5a598827ae52aade8aab7d0",
+    "snapshot_bytes": 186115,
+    "milliseconds": 889.2752999999975,
+    "rss_before": 399499264,
+    "rss_after": 408985600,
+    "heap_before": 192841280,
+    "heap_after": 222052344
+  },
+  {
+    "count": 1001,
+    "extracted": 1001,
+    "hash": "01ebcc4d429fed2535d7696a311f2391a9b1ac906fb44464216e1c9f4d8a0910",
+    "snapshot_bytes": 186301,
+    "milliseconds": 908.615600000001,
+    "rss_before": 404029440,
+    "rss_after": 409571328,
+    "heap_before": 190630960,
+    "heap_after": 214228376
+  },
+  {
+    "count": 2500,
+    "extracted": 2500,
+    "hash": "1c1e4a1bf7f8def84a2634ea5cc6b9ed5731eee2a4597ca4903a6f184f50eb3f",
+    "snapshot_bytes": 465115,
+    "milliseconds": 1952.1749999999993,
+    "rss_before": 405630976,
+    "rss_after": 432775168,
+    "heap_before": 216821208,
+    "heap_after": 232554928
+  },
+  {
+    "count": 5000,
+    "extracted": 5000,
+    "hash": "ce04d375b6c0d1cfefa096aaacf31e131c526a1d2a3d2811cc88c1d53dbe5e8d",
+    "snapshot_bytes": 931119,
+    "milliseconds": 4240.213800000001,
+    "rss_before": 425897984,
+    "rss_after": 458768384,
+    "heap_before": 234422944,
+    "heap_after": 248436112
+  },
+  {
+    "oversized": true,
+    "status": 413,
+    "code": "TECHNICAL_REPORT_SOURCE_LIMIT",
+    "atomic": true
+  },
+  {
+    "family": "valuation",
+    "historical_rows": 2500,
+    "selected_rows": 1,
+    "last_id": 2500,
+    "references": 2500,
+    "hash": "2905895416458d2b339e12f18bbc0aac5e5d4951bef4a55f8a11ab4439e90949"
+  },
+  {
+    "family": "units",
+    "count": 1001,
+    "references": 1001,
+    "hash": "a873caab1b3276d10ba2ab2b84da4d25f15ad8da7aa2c4ab88d8f22602b44ec7",
+    "milliseconds": 321.6284000000014,
+    "rss_after": 474652672,
+    "heap_after": 268772600
+  },
+  {
+    "family": "accounting",
+    "count": 1001,
+    "references": 1001,
+    "hash": "d8524054cd2707c1e7c08d9a4f6aba0ea4b06e017e090c4f47e85901d0215914",
+    "milliseconds": 343.74259999999776,
+    "rss_after": 474554368,
+    "heap_after": 237570712
+  },
+  {
+    "family": "issues",
+    "count": 1001,
+    "references": 1001,
+    "hash": "1a3dd7936f92cd1dffbd6eaecb7035ebb6d8718d4fd02606cf1e41467adf3f18",
+    "milliseconds": 352.95840000000317,
+    "rss_after": 479027200,
+    "heap_after": 270590064
+  },
+  {
+    "family": "observations",
+    "count": 1001,
+    "references": 1002,
+    "hash": "1ee804436e522e67530664959ca8ff5da3228b907e3917bb794cb56998cbce9e",
+    "milliseconds": 344.30719999999565,
+    "rss_after": 477110272,
+    "heap_after": 239823280
+  },
+  {
+    "family": "reconciliation",
+    "count": 1001,
+    "references": 2003,
+    "hash": "7d1b16adcb902fc31d92ceaddcf29e81de366f66df7bca9b8fb30cfb5fba5cf8",
+    "milliseconds": 571.1227999999974,
+    "rss_after": 484012032,
+    "heap_after": 285375360
+  },
+  {
+    "count": 2500,
+    "format": "docx",
+    "status": 201,
+    "bytes": 58347,
+    "milliseconds": 3613.4235999999946,
+    "snapshot_hash": "4d820f9a43c370ea1e46aaac818de734baa5416be9450c49f9d19989d63dc58b"
+  },
+  {
+    "count": 2500,
+    "format": "pdf",
+    "status": 201,
+    "bytes": 545483,
+    "pages": 135,
+    "milliseconds": 17869.3528,
+    "snapshot_hash": "4d820f9a43c370ea1e46aaac818de734baa5416be9450c49f9d19989d63dc58b"
+  }
+]

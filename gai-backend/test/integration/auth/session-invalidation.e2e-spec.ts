@@ -1,3 +1,4 @@
+import { fixturePasswords } from '../../fixtures/passwords';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
@@ -131,7 +132,7 @@ describe('Auth - Session invalidation on status changes (e2e)', () => {
   });
 
   it('revokes only sessions from the deactivated organization', async () => {
-    const primaryToken = await login('org.admin', 'Admin@123456');
+    const primaryToken = await login('org.admin', fixturePasswords.admin);
     const secondaryToken = await login(
       'secondary.session.user',
       'Secondary@123456',
@@ -186,7 +187,7 @@ describe('Auth - Session invalidation on status changes (e2e)', () => {
       .set('Authorization', `Bearer ${primaryToken}`)
       .expect(401);
 
-    const newPrimaryToken = await login('org.admin', 'Admin@123456');
+    const newPrimaryToken = await login('org.admin', fixturePasswords.admin);
     await request(app.getHttpServer())
       .get('/api/v1/auth/me')
       .set('Authorization', `Bearer ${newPrimaryToken}`)

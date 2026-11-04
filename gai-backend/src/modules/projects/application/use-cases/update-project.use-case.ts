@@ -1,3 +1,4 @@
+import { ProjectRegistrationService } from '../services/project-registration.service';
 import {
   BadRequestException,
   ConflictException,
@@ -25,6 +26,7 @@ export class UpdateProjectUseCase {
     @Inject(PROJECT_REPOSITORY)
     private readonly repository: ProjectRepository,
     private readonly scope: ProjectScopeService,
+    private readonly registration: ProjectRegistrationService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(UpdateProjectUseCase.name);
@@ -43,6 +45,25 @@ export class UpdateProjectUseCase {
       });
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
+    if (
+      dto.expected_updated_at &&
+      new Date(dto.expected_updated_at).getTime() !==
+        project.updatedAt.getTime()
+    ) {
+      throw new ConflictException({
+        code: 'PROJECT_CONCURRENT_MODIFICATION',
+        message:
+          'O projeto foi alterado por outra operação. Recarregue os dados antes de salvar.',
+      });
+    }
+    await this.registration.validateUsers(project.organizationId, [
+      dto.responsible_user_id !== project.responsibleUserId
+        ? dto.responsible_user_id
+        : undefined,
+      dto.planning_responsible_user_id !== project.planningResponsibleUserId
+        ? dto.planning_responsible_user_id
+        : undefined,
+    ]);
     const expectedStatus = project.status;
     const expectedUpdatedAt = project.updatedAt;
 
@@ -50,6 +71,11 @@ export class UpdateProjectUseCase {
     try {
       changes = project.updateFields({
         name: dto.name?.trim(),
+        code: dto.code,
+        projectType: dto.project_type,
+        responsibleUserId: dto.responsible_user_id,
+        planningResponsibleUserId: dto.planning_responsible_user_id,
+        planningNotes: dto.planning_notes,
         description:
           dto.description !== undefined
             ? (dto.description?.trim() ?? null)
@@ -72,7 +98,7 @@ export class UpdateProjectUseCase {
       expectedUpdatedAt,
       fields: this.toEditableFields(project, changes),
       actorId: actor.id,
-      now: new Date(),
+      now: new Date(Math.max(Date.now(), expectedUpdatedAt.getTime() + 1)),
       audit: {
         projectId: project.id,
         organizationId: project.organizationId,
@@ -115,6 +141,13 @@ export class UpdateProjectUseCase {
   private toEditableFields(
     project: {
       name: string;
+      code: string | null;
+      projectType:
+        | import('../../domain/enums/project-type.enum').ProjectType
+        | null;
+      responsibleUserId: number | null;
+      planningResponsibleUserId: number | null;
+      planningNotes: string | null;
       description: string | null;
       startDate: Date | null;
       endDate: Date | null;
@@ -122,6 +155,17 @@ export class UpdateProjectUseCase {
     changes: Record<string, { before: unknown; after: unknown }>,
   ): ProjectEditableFields {
     return {
+      ...(changes.code ? { code: project.code } : {}),
+      ...(changes.project_type ? { projectType: project.projectType } : {}),
+      ...(changes.responsible_user_id
+        ? { responsibleUserId: project.responsibleUserId }
+        : {}),
+      ...(changes.planning_responsible_user_id
+        ? { planningResponsibleUserId: project.planningResponsibleUserId }
+        : {}),
+      ...(changes.planning_notes
+        ? { planningNotes: project.planningNotes }
+        : {}),
       ...(changes.name ? { name: project.name } : {}),
       ...(changes.description ? { description: project.description } : {}),
       ...(changes.start_date ? { startDate: project.startDate } : {}),
