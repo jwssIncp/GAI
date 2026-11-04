@@ -6,6 +6,8 @@ import {
   PutBucketVersioningCommand,
   HeadObjectCommand,
   PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
   BucketAlreadyOwnedByYou,
 } from '@aws-sdk/client-s3';
 import request from 'supertest';
@@ -123,6 +125,66 @@ isolated('S3-compatible isolated integration: real PUT / HEAD / GET', () => {
     await expect(
       signer.verifyUpload({ ...input(), createdAt: new Date() }),
     ).rejects.toMatchObject({ status: 404 });
+  });
+  it('lists and deletes versioned objects and their delete markers', async () => {
+    const metadata = input();
+    const upload = await signer.createUploadUrl(metadata);
+    expect((await put(upload.url)).status).toBe(200);
+    const target = { Bucket: bucket, Key: metadata.path };
+    const head = await client.send(new HeadObjectCommand(target));
+    expect(head.VersionId).toBeTruthy();
+    const list = () =>
+      client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: metadata.path }),
+      );
+    expect((await list()).Contents?.map((object) => object.Key)).toEqual([
+      metadata.path,
+    ]);
+    const marker = await client.send(new DeleteObjectCommand(target));
+    expect(marker.DeleteMarker).toBe(true);
+    expect(marker.VersionId).toBeTruthy();
+    expect((await list()).Contents ?? []).toEqual([]);
+    await expect(
+      client.send(new HeadObjectCommand(target)),
+    ).rejects.toMatchObject({ $metadata: { httpStatusCode: 404 } });
+    expect(
+      (
+        await client.send(
+          new HeadObjectCommand({ ...target, VersionId: head.VersionId }),
+        )
+      ).ContentLength,
+    ).toBe(png.length);
+    await client.send(
+      new DeleteObjectCommand({ ...target, VersionId: head.VersionId }),
+    );
+    await expect(
+      client.send(
+        new HeadObjectCommand({ ...target, VersionId: head.VersionId }),
+      ),
+    ).rejects.toMatchObject({ $metadata: { httpStatusCode: 404 } });
+    await client.send(
+      new DeleteObjectCommand({ ...target, VersionId: marker.VersionId }),
+    );
+    expect((await list()).Contents ?? []).toEqual([]);
+  });
+  it('rejects listing with an invalid synthetic secret', async () => {
+    const unauthorized = new S3Client({
+      region: 'us-east-1',
+      endpoint: 'http://127.0.0.1:33318',
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: 'gai-validation',
+        secretAccessKey: 'invalid-isolated-credential',
+      },
+      maxAttempts: 1,
+    });
+    try {
+      await expect(
+        unauthorized.send(new ListObjectsV2Command({ Bucket: bucket })),
+      ).rejects.toMatchObject({ $metadata: { httpStatusCode: 403 } });
+    } finally {
+      unauthorized.destroy();
+    }
   });
   it('rejects a mismatched MIME in a signed PUT', async () => {
     const upload = await signer.createUploadUrl(input());
