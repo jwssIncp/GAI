@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Password } from '../../../auth/domain/value-objects/password';
 import {
   ArrayMinSize,
   ArrayUnique,
@@ -68,9 +69,13 @@ export class CreateUserDto {
   @ApiProperty({ enum: ['INVITATION', 'TEMPORARY_PASSWORD'] })
   @IsIn(['INVITATION', 'TEMPORARY_PASSWORD'])
   activation_method!: 'INVITATION' | 'TEMPORARY_PASSWORD';
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    minLength: Password.MIN_LENGTH,
+    maxLength: Password.MAX_LENGTH,
+  })
   @IfProvided()
   @IsString()
-  @MaxLength(256)
+  @MinLength(Password.MIN_LENGTH)
+  @MaxLength(Password.MAX_LENGTH)
   password?: string;
 }

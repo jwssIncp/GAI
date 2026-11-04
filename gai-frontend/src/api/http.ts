@@ -37,7 +37,11 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorResponse>) => {
     const status = error.response?.status ?? 0;
-    if (status === 401) {
+    const authorization = error.config?.headers?.Authorization;
+    const requestToken = typeof authorization === 'string' && authorization.startsWith('Bearer ')
+      ? authorization.slice(7) : null;
+    const currentToken = readStoredSession()?.accessToken;
+    if (status === 401 && (!requestToken || requestToken === currentToken)) {
       clearStoredSession();
       window.dispatchEvent(new CustomEvent('gai:session-expired'));
     }

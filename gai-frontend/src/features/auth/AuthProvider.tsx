@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { authApi } from '@/api/endpoints';
 import { clearStoredSession, readStoredSession, writeStoredSession } from '@/api/session-storage';
@@ -13,15 +13,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [bootstrapping, setBootstrapping] = useState(true);
 
+  const sessionGeneration = useRef(0);
+
   const clear = useCallback(() => {
+    sessionGeneration.current++;
     clearStoredSession();
     setUser(null);
     setAccessToken(null);
     setExpiresAt(null);
+    setBootstrapping(false);
     queryClient.clear();
   }, [queryClient]);
 
   const restore = useCallback(async () => {
+    const generation = sessionGeneration.current;
     const stored = readStoredSession();
     if (!stored) {
       setBootstrapping(false);
@@ -36,12 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setExpiresAt(stored.expiresAt);
     try {
       const currentUser = await authApi.me();
+      if (generation !== sessionGeneration.current || readStoredSession()?.accessToken !== stored.accessToken) return;
       setUser(currentUser);
       writeStoredSession({ ...stored, user: currentUser });
     } catch {
-      clear();
+      if (generation === sessionGeneration.current && readStoredSession()?.accessToken === stored.accessToken) clear();
     } finally {
-      setBootstrapping(false);
+      if (generation === sessionGeneration.current) setBootstrapping(false);
     }
   }, [clear]);
 
@@ -81,23 +87,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { disposed = true; window.clearInterval(timer); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
   }, [accessToken]);
 
-  const login = useCallback(async (payload: LoginRequest) => {
-    const response = await authApi.login(payload);
-    writeStoredSession({ accessToken: response.access_token, expiresAt: response.expires_at, user: response.user });
-    flushSync(() => {
-      setAccessToken(response.access_token);
-      setExpiresAt(response.expires_at);
-      setUser(response.user);
-    });
-  }, []);
+  const login = useCallback(
+    async (payload: LoginRequest) => {
+      const generation = ++sessionGeneration.current;
+      const response = await authApi.login(payload);
+      if (generation !== sessionGeneration.current)
+        throw new Error("A sessão mudou durante o login. Entre novamente.");
+      queryClient.clear();
+      writeStoredSession({
+        accessToken: response.access_token,
+        expiresAt: response.expires_at,
+        user: response.user,
+      });
+      flushSync(() => {
+        setAccessToken(response.access_token);
+        setExpiresAt(response.expires_at);
+        setUser(response.user);
+        setBootstrapping(false);
+      });
+      return response.user;
+    },
+    [queryClient],
+  );
 
-  const logout = useCallback(async () => {
-    try {
-      if (accessToken) await authApi.logout();
-    } finally {
-      clear();
-    }
-  }, [accessToken, clear]);
+  const logout = useCallback(
+    async (options?: { sessionRevoked?: boolean }) => {
+      const generation = sessionGeneration.current;
+      try {
+        if (accessToken && !options?.sessionRevoked) await authApi.logout();
+      } finally {
+        if (generation === sessionGeneration.current) clear();
+      }
+    },
+    [accessToken, clear],
+  );
 
   const value = useMemo(() => ({ user, accessToken, expiresAt, bootstrapping, login, logout, restore }), [user, accessToken, expiresAt, bootstrapping, login, logout, restore]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

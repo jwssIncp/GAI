@@ -11,7 +11,7 @@ O cadastro anterior criava somente uma conta de autenticação, sem nome e sem c
 | Sessões e tokens anteriores à troca de senha | Rotação transacional, atualização da data, incremento da versão e revogação |
 | Colisão de login com e-mail | Login sem `@`, e-mail separado, normalização, UNIQUE e CHECKs no MySQL |
 | Login vazio ou inválido | Validação do valor normalizado com limites e sintaxe explícitos |
-| Políticas divergentes de senha | Política central de 15–128 caracteres nos fluxos de novas credenciais |
+| Políticas divergentes de senha | Política central de 8–128 caracteres nos fluxos de novas credenciais (atualizada em 04/11/2026) |
 | `null` indevido causando erro interno | DTOs distinguem ausência, limpeza permitida e valor inválido |
 | Organização inativa | Cadastro e concessões recusados; autenticação e ativação reavaliam elegibilidade |
 | Bloqueio temporário permanente | Prazo e contador tratados sob trava; bloqueio administrativo separado |

@@ -10,6 +10,7 @@ import { IconInput } from '@/components/ui/icon-input';
 import { ApiError } from '@/api/http';
 import { useAuth } from './AuthContext';
 import { GaiLogo } from '@/components/base/GaiLogo';
+import { loginDestination } from './loginDestination';
 
 const schema = z.object({ identifier: z.string().min(1, 'Informe login ou email'), password: z.string().min(8, 'Senha minima de 8 caracteres') });
 
@@ -24,8 +25,9 @@ export function LoginPage() {
   async function onSubmit(values: z.infer<typeof schema>) {
     setError('');
     try {
-      await login(values);
-      window.location.assign((location.state as any)?.from?.pathname ?? '/app/dashboard');
+      const currentUser = await login(values);
+      const previousPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      window.location.assign(loginDestination(currentUser, previousPath));
     } catch (err) {
       const apiError = err as ApiError;
       if (apiError.code === 'ACCOUNT_LOCKED' || apiError.status === 423) navigate('/account-locked');
@@ -42,6 +44,15 @@ export function LoginPage() {
       <h1 className="mt-3 text-3xl font-bold tracking-[-0.045em]">Entrar no GAI</h1>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">Acesse seu workspace de gestão patrimonial.</p>
       <form className="mt-8 grid gap-5" onSubmit={handleSubmit(onSubmit)}>
+        {(location.state as { passwordChanged?: boolean } | null)
+          ?.passwordChanged && (
+          <p
+            role="status"
+            className="rounded-xl bg-success-subtle p-4 text-sm text-success"
+          >
+            Senha alterada. Entre novamente para continuar.
+          </p>
+        )}
         {error ? <div role="alert" className="flex gap-2.5 rounded-xl border border-destructive/20 bg-destructive/[0.07] p-3.5 text-sm font-medium text-destructive"><AlertCircle className="mt-0.5 shrink-0" size={16} /> {error}</div> : null}
         <FormField label="Login ou email" error={formState.errors.identifier?.message}>
           <IconInput icon={<Mail size={17} />} autoFocus autoComplete="username" placeholder="nome@empresa.com" {...register('identifier')} />

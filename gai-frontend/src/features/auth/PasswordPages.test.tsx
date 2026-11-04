@@ -3,7 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
 import { ForgotPasswordPage, ResetPasswordPage } from "./PasswordPages";
-const mocks = vi.hoisted(() => ({ request: vi.fn(), confirm: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  request: vi.fn(),
+  confirm: vi.fn(),
+  logout: vi.fn(),
+}));
+vi.mock("./AuthContext", () => ({ useAuth: () => ({ logout: mocks.logout }) }));
 vi.mock("@/api/endpoints", () => ({
   authApi: {
     requestPasswordReset: mocks.request,
@@ -61,4 +66,50 @@ it("shows an invalid-token response and prevents duplicate pending submissions",
     "Token inválido ou expirado",
   );
   expect(submit).toBeEnabled();
+});
+it.each([7, 8, 15])(
+  "applies the eight-character policy to recovery (%i characters)",
+  async (length) => {
+    mocks.confirm.mockResolvedValue({ message: "Senha redefinida" });
+    render(
+      <MemoryRouter initialEntries={["/reset-password?token=isolated-token"]}>
+        <ResetPasswordPage />
+      </MemoryRouter>,
+    );
+    await userEvent.type(
+      screen.getByLabelText("Nova senha"),
+      "x".repeat(length),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Redefinir senha" }),
+    );
+    if (length === 7) {
+      expect(
+        await screen.findByText("Informe uma senha com 8 a 128 caracteres."),
+      ).toBeVisible();
+      expect(mocks.confirm).not.toHaveBeenCalled();
+    } else {
+      expect(await screen.findByText("Senha redefinida")).toBeVisible();
+      expect(mocks.confirm).toHaveBeenCalledWith(
+        "isolated-token",
+        "x".repeat(length),
+      );
+      expect(mocks.logout).toHaveBeenCalledWith();
+    }
+  },
+);
+it("keeps reset success when the previously revoked session rejects logout", async () => {
+  mocks.confirm.mockResolvedValue({ message: "Senha redefinida" });
+  mocks.logout.mockRejectedValue(new Error("Unauthorized"));
+  render(
+    <MemoryRouter initialEntries={["/reset-password?token=isolated-token"]}>
+      <ResetPasswordPage />
+    </MemoryRouter>,
+  );
+  await userEvent.type(screen.getByLabelText("Nova senha"), "nnnnnnnn");
+  await userEvent.click(
+    screen.getByRole("button", { name: "Redefinir senha" }),
+  );
+  expect(await screen.findByText("Senha redefinida")).toBeVisible();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });

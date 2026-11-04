@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { authApi } from "@/api/endpoints";
-import { clearStoredSession } from "@/api/session-storage";
+import { useAuth } from "./AuthContext";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
 import { FormField } from "@/components/base/FormField";
@@ -18,6 +18,8 @@ function CredentialForm({
   token?: string;
 }) {
   const [done, setDone] = useState("");
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const form = useForm<{
     current: string;
@@ -56,7 +58,17 @@ function CredentialForm({
           const result = activation
             ? await authApi.activate(token!, values.password)
             : await authApi.changePassword(values.current, values.password);
-          if (!activation) clearStoredSession();
+          if (!activation) {
+            // Leave the protected route before clearing its identity, so its guard
+            // cannot replace the success navigation with an obsolete return path.
+            navigate("/login", {
+              replace: true,
+              state: { passwordChanged: true },
+              flushSync: true,
+            });
+            await logout({ sessionRevoked: true });
+            return;
+          }
           form.reset();
           setDone(result.message);
         } catch (failure) {
@@ -129,7 +141,11 @@ export function ActivateAccountPage() {
     () => new URLSearchParams(location.hash.slice(1)).get("token") || "",
   );
   useEffect(() => {
-    window.history.replaceState(window.history.state, "", window.location.pathname);
+    window.history.replaceState(
+      window.history.state,
+      "",
+      window.location.pathname,
+    );
   }, []);
   return (
     <section className="glass-surface mx-auto w-full max-w-lg rounded-2xl border border-border bg-card p-6 sm:p-9">

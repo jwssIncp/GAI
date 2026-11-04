@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/base/States";
 import { FormField } from "@/components/base/FormField";
 import { Button } from "@/components/ui/button";
 import { IconInput } from "@/components/ui/icon-input";
+import { useAuth } from "./AuthContext";
 
 export function ForgotPasswordPage() {
   const [done, setDone] = useState("");
@@ -76,6 +77,7 @@ export function ForgotPasswordPage() {
 }
 
 export function ResetPasswordPage() {
+  const { logout } = useAuth();
   const [params] = useSearchParams();
   const [done, setDone] = useState("");
   const [error, setError] = useState("");
@@ -88,7 +90,7 @@ export function ResetPasswordPage() {
           .string()
           .refine(
             (value) => validatePassword(value) === true,
-            "Informe uma senha com 15 a 128 caracteres.",
+            "Informe uma senha com 8 a 128 caracteres.",
           ),
       }),
     ),
@@ -104,9 +106,18 @@ export function ResetPasswordPage() {
           setError("");
           setDone("");
           try {
-            setDone(
-              (await authApi.confirmPasswordReset(token, new_password)).message,
+            const result = await authApi.confirmPasswordReset(
+              token,
+              new_password,
             );
+            // A recovery link may belong to a different account than the open session.
+            // Revoke that session too; logout always clears local state, including on 401.
+            try {
+              await logout();
+            } catch {
+              /* The password reset already succeeded. */
+            }
+            setDone(result.message);
           } catch (e) {
             setError(
               e instanceof Error
