@@ -98,6 +98,7 @@ resource "aws_ssm_parameter" "deploy" {
     ecs-security-groups        = aws_security_group.ecs.id
     ecr-repository             = aws_ecr_repository.backend.name
     frontend-bucket            = aws_s3_bucket.frontend.bucket
+    assets-bucket              = aws_s3_bucket.assets.bucket
     cloudfront-distribution-id = aws_cloudfront_distribution.main.id
   }
 

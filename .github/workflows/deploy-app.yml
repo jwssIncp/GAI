@@ -83,15 +83,9 @@ jobs:
         run: bash .github/scripts/ecs-run-migrations.sh
 
       - name: Update ECS service
-        run: |
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" \
-            --service "$ECS_SERVICE" \
-            --task-definition "${{ steps.register.outputs.task_definition_arn }}" \
-            --force-new-deployment
-          aws ecs wait services-stable \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE"
+        env:
+          EXPECTED_TASK_DEFINITION: ${{ steps.register.outputs.task_definition_arn }}
+        run: bash .github/scripts/ecs-update-service.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
