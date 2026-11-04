@@ -108,7 +108,7 @@ beforeEach(() => {
   mocks.actor = admin;
   mocks.options.mockResolvedValue({
     invitation_available: false,
-    password_min_length: 15,
+    password_min_length: 8,
     password_max_length: 128,
   });
   mocks.profiles.mockResolvedValue([

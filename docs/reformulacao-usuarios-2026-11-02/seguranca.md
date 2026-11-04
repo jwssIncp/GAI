@@ -12,7 +12,7 @@ A senha temporária dá acesso somente a consulta da própria sessão, logout e 
 
 ## Política única
 
-Novas senhas têm de 15 a 128 caracteres, contados por pontos de código, com espaços e frases permitidos. Não há exigência de classes de caracteres nem bloqueio de colagem. A validação definitiva está em `Password.create()`, utilizada em criação, redefinição administrativa, troca voluntária, recuperação, ativação e novo provisionamento de desenvolvimento. O algoritmo permanece Argon2id.
+Novas senhas têm de 8 a 128 caracteres (política atualizada em 04/11/2026), contados por pontos de código, com espaços e frases permitidos. Não há exigência de classes de caracteres nem bloqueio de colagem. A validação definitiva está em `Password.create()`, utilizada em criação, redefinição administrativa, troca voluntária, recuperação, ativação e novo provisionamento de desenvolvimento. O algoritmo permanece Argon2id.
 
 A escolha de comprimento e ausência de composição obrigatória segue as orientações de [NIST SP 800-63B, seção de senhas](https://pages.nist.gov/800-63-4/sp800-63b.html). Isso não é uma certificação de conformidade integral. Não foi adicionada consulta externa a senhas comprometidas, pois não existe infraestrutura configurada para esse serviço; tampouco foi introduzido envio de senhas para terceiros.
 

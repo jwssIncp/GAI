@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MinLength, MaxLength } from 'class-validator';
+import { Password } from '../../domain/value-objects/password';
 
 export class PasswordResetConfirmDto {
   @ApiProperty({ description: 'Token recebido por e-mail' })
@@ -10,15 +11,15 @@ export class PasswordResetConfirmDto {
 
   @ApiProperty({
     format: 'password',
-    minLength: 15,
-    maxLength: 128,
+    minLength: Password.MIN_LENGTH,
+    maxLength: Password.MAX_LENGTH,
     description:
-      'De 15 a 128 caracteres, permitindo frases e gerenciadores de senha',
+      'De 8 a 128 caracteres, permitindo frases e gerenciadores de senha',
     example: 'Uma frase pessoal muito longa',
   })
   @IsString()
-  @MinLength(15)
-  @MaxLength(256)
+  @MinLength(Password.MIN_LENGTH)
+  @MaxLength(Password.MAX_LENGTH)
   new_password!: string;
 }
 
