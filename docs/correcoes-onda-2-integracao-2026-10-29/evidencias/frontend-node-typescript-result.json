@@ -1,0 +1,15 @@
+{
+  "name": "frontend-node-typescript",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\workspace\\gai-frontend",
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "-p",
+    "tsconfig.node.json",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "exit_code": 0,
+  "seconds": 8.412
+}

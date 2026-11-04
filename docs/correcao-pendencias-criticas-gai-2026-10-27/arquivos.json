@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-27",
+  "sourceFilesCount": 48,
+  "baselineStatus": ".local/critical-fixes-20261027/baseline-status.txt",
+  "baselineStatusSha256": "7a69ee6aed62e6bd7b939f2d7ff2c08273ab5ae202e7d7330aeccd48bbc6c8c2",
+  "notes": "Explicit list for this correction stage, not all dirty files in the shared workspace. Generated dist/node_modules/cache outputs are excluded. Earlier user and validation changes are preserved.",
+  "files": [
+    {
+      "path": "gai-backend/.env.example",
+      "bytes": 1723,
+      "sha256": "cff109205dd913aebbbb73f72a144878a13bcc9abba06b76463777ab596c79d7"
+    },
+    {
+      "path": "gai-backend/package.json",
+      "bytes": 4187,
+      "sha256": "a98552f7cd2459252684ef105bba08862942c4e85998d56e3f8dbc6e181b8c66"
+    },
+    {
+      "path": "gai-backend/package-lock.json",
+      "bytes": 465377,
+      "sha256": "35355371ab752af6d43e2557616d70810f0f392610b2c14a241e73bb59132d26"
+    },
+    {
+      "path": "gai-backend/src/common/storage/configured-storage-signer.service.ts",
+      "bytes": 174,
+      "sha256": "5ef77b7f1ff7a0561e1ac780e5100e19ebd5bf9cdd6ed2c82f859a891d358474"
+    },
+    {
+      "path": "gai-backend/src/common/storage/s3-storage-adapter.service.ts",
+      "bytes": 12704,
+      "sha256": "2917474d5290f5e36eb311c984fe253b05270f1398b8135359eff70df827720b"
+    },
+    {
+      "path": "gai-backend/src/common/storage/storage-object.policy.ts",
+      "bytes": 1456,
+      "sha256": "77bf124ddc9f63bee85207668a02944c259163eb002c7fd92b6c3b72e846666e"
+    },
+    {
+      "path": "gai-backend/src/common/storage/storage-signer.port.ts",
+      "bytes": 851,
+      "sha256": "dc818498fcc1a38b516f453efe47bcb154a197cac295eaf68411d7b85cc74c86"
+    },
+    {
+      "path": "gai-backend/src/common/swagger/error-code.enum.ts",
+      "bytes": 2138,
+      "sha256": "9aaa8bfe2993233a3dee59b7d9de909d9a50eead43d81f615911e985c845f8c5"
+    },
+    {
+      "path": "gai-backend/src/modules/auth/application/services/permission-access.ts",
+      "bytes": 1228,
+      "sha256": "5e42bb8f6fe76a09f76ad31aac58484dcd67ddb930aa937b6a6423c225780c2b"
+    },
+    {
+      "path": "gai-backend/src/modules/auth/presentation/guards/permissions.guard.ts",
+      "bytes": 1650,
+      "sha256": "86f3c37a94d9d9f675f940b48f58702dda8ccd9a9dc085788835d81313f3fd29"
+    },
+    {
+      "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts",
+      "bytes": 16513,
+      "sha256": "4714c6e7a2f2864abdc38556e8807d7ceaba8b6f287fc92f7f5582dfa41c4524"
+    },
+    {
+      "path": "gai-backend/src/modules/expense-accountabilities/expense-accountability.entity.ts",
+      "bytes": 4515,
+      "sha256": "c7d7c0617e455f3b6db8a741e61cd1b7b0abf820747a66cad8fa1881da3484eb"
+    },
+    {
+      "path": "gai-backend/src/modules/expense-accountabilities/monthly-due-date.policy.ts",
+      "bytes": 576,
+      "sha256": "3565b7252ad6b27b751fcc1c76007248b6caad5f0c2429798f347ba0425b1f4d"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/application/services/export-jobs.service.ts",
+      "bytes": 18788,
+      "sha256": "be087c3c3f4e5c0c02fd40ce6d5eceb9a8459f2ae015e1e519ebd4aa02e9da4c"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts",
+      "bytes": 697,
+      "sha256": "841d8317f67df48bb6ec13b82785805ee7a180355090993b8b72b8a6a7d61789"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "bytes": 6837,
+      "sha256": "3202f7d3dff26e8e9497a4763c9699b864b67bc83bae91c374ada1e882d9e675"
+    },
+    {
+      "path": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+      "bytes": 41870,
+      "sha256": "5ef05caa2e33490c40862f47a3aa2a06c5464c304cd465eeecad2789e712a970"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/confirm-inventory-item-image-upload.use-case.ts",
+      "bytes": 4099,
+      "sha256": "f06a5b8d447ca5f1f7ddbbc7b03ac5cb356f43ec0355644cd0a0e53ee36ef674"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-download-url.use-case.ts",
+      "bytes": 3040,
+      "sha256": "2713aafdf77bbc85560d4f2412a9326d26178750e16acb1b6b727d532a7d02cf"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-upload-url.use-case.ts",
+      "bytes": 5227,
+      "sha256": "a2edeaee70a53f0db0fd92d454edab66c454da2ce3f80d3f845a49d77d43e5aa"
+    },
+    {
+      "path": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+      "bytes": 50042,
+      "sha256": "a47998d869885663800e4135d3e3d729360927b0ab2e912a74b4bbf4009f1b00"
+    },
+    {
+      "path": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+      "bytes": 24028,
+      "sha256": "d910654e512bd7b2bde4be0dae930dc50a4c16617fb04ba80106a391bf84a336"
+    },
+    {
+      "path": "gai-backend/src/modules/project-dashboard/application/dto/project-summary-query.dto.ts",
+      "bytes": 1098,
+      "sha256": "3a64d4aca65611b3d8d586650dd4ff9ddf834861cfbd5408c3a4b94181f3045f"
+    },
+    {
+      "path": "gai-backend/src/modules/project-dashboard/application/services/project-summary.service.ts",
+      "bytes": 4628,
+      "sha256": "bfe545695a6b9308772ca11d9fa7878aa759dd6ee19cc395a9072320b299350c"
+    },
+    {
+      "path": "gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts",
+      "bytes": 4062,
+      "sha256": "21b8fb93855f934f9237d9cb0ed0b5aa35a9cc6adb65d475a9ddb404c66fb8dd"
+    },
+    {
+      "path": "gai-backend/src/modules/projects/application/services/project-scope.service.ts",
+      "bytes": 2067,
+      "sha256": "3dbe2291d2ed0386308daa33be2fa7d14255ea09cfaddf8c0cf5f8a7f0f8b5dd"
+    },
+    {
+      "path": "gai-backend/test/integration/import-sessions/import-sessions.e2e-spec.ts",
+      "bytes": 5483,
+      "sha256": "4a4253ae4c44938bbe93322234e4d0084970268711268d3bb9ac4c892212c4b1"
+    },
+    {
+      "path": "gai-backend/test/integration/inventory-item-images/inventory-item-images.e2e-spec.ts",
+      "bytes": 7616,
+      "sha256": "53892f3b3b0b4301b9cc1d4190baa73345d2d5cd9f2e4625da2a2aa715d59341"
+    },
+    {
+      "path": "gai-backend/test/integration/inventory-operations/inventory-operation-gaps.e2e-spec.ts",
+      "bytes": 15808,
+      "sha256": "865669f1cff05815e07a6ad32aab895e4f95734c2506dd52bd52c1a324dad748"
+    },
+    {
+      "path": "gai-backend/test/integration/payments-expenses/payments-expenses.e2e-spec.ts",
+      "bytes": 6376,
+      "sha256": "22aae7cf792bf81b9bfb977f0e466c612f7224b3ca98f247d64710fe4e1fdf81"
+    },
+    {
+      "path": "gai-backend/test/integration/storage.fake.ts",
+      "bytes": 3129,
+      "sha256": "325e8845b244b678732043f39c005ed4c8da3810d45accaac332c70868d2c216"
+    },
+    {
+      "path": "gai-backend/test/integration/storage/s3-isolated.e2e-spec.ts",
+      "bytes": 7625,
+      "sha256": "73a573aea884889c9e12556955e726e3cdcd43b60c5dfb3827ff0d6b1bd1341c"
+    },
+    {
+      "path": "gai-backend/test/integration/technical-validation/security-storage.e2e-spec.ts",
+      "bytes": 20678,
+      "sha256": "ce6c512685e1d56126f904f4212d4b8373488992215a8605e4061c5137be6fe0"
+    },
+    {
+      "path": "gai-backend/test/integration/test-app.helper.ts",
+      "bytes": 21869,
+      "sha256": "f315bb6b2fe4aaf5da1470d050a87f44a0161ddb4198d04f1598ff04c17c4f71"
+    },
+    {
+      "path": "gai-backend/test/storage-test.config.ts",
+      "bytes": 643,
+      "sha256": "4e9dfeda55db4f36fef6bf602a3fabbe2045a743e6529afc3cf161418f69f0a2"
+    },
+    {
+      "path": "gai-backend/test/unit/common/storage-signer-validation.spec.ts",
+      "bytes": 6686,
+      "sha256": "b4c9cd9653af4e5d1462edcecd9c7f6b135db326afa25445b2a7586c63e3922a"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/auth/permissions-negative.spec.ts",
+      "bytes": 5876,
+      "sha256": "f2867658c93543e287b34f0f87871cacb2fad99b2f52f57309d4af14e915e517"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/branch-coverage.spec.ts",
+      "bytes": 17283,
+      "sha256": "6139e17e9d7096561b6f0f70949d101a05c43e42c8852f56aab88eef7271645c"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/domain-entities.spec.ts",
+      "bytes": 4076,
+      "sha256": "4c082608a509f9302e6b2083b177fdf88b7c54a25043c5592c9ca9e0ac1b0963"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/expense-accountabilities/monthly-due-date.policy.spec.ts",
+      "bytes": 1570,
+      "sha256": "fb46ff5faafae620fc9cf4db665c702a403aa4407644ad6aaa2c58f7a7de560b"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/field-agents/brazilian-contact.spec.ts",
+      "bytes": 1762,
+      "sha256": "9051e5f5843e0afccb88b25b70563744eee7ef2f893e3da185f37081413c7576"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/project-dashboard/project-summary.service.spec.ts",
+      "bytes": 5720,
+      "sha256": "03f65c6a7f5276e6e07e7d6e9fbc54b04952a01619924a63dafc06107ea966d1"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/projects/update-project.use-case.spec.ts",
+      "bytes": 3650,
+      "sha256": "d390c842d3380bc340f9239db7aedf0509f6a9bfe7a0eadc9b9bc1c91f92a55c"
+    },
+    {
+      "path": "gai-frontend/src/features/export-jobs/exportContentPermissions.ts",
+      "bytes": 676,
+      "sha256": "ffdada68c7cefad95c5efc0d04262e3d66f14749f3e5e0861a4db2be40008c20"
+    },
+    {
+      "path": "gai-frontend/src/features/export-jobs/ProjectExportJobsPage.test.tsx",
+      "bytes": 7510,
+      "sha256": "d28ef237b6016af7377689d840d94af63dcbe3c47752e895672b5aa97c0e511a"
+    },
+    {
+      "path": "gai-frontend/src/features/export-jobs/ProjectExportJobsPage.tsx",
+      "bytes": 13426,
+      "sha256": "f8cc385871d46b1b839bfbc4adb449d8e7c5b373857cfcc4b6747a71d34de39d"
+    },
+    {
+      "path": "infra/terraform/ecs.tf",
+      "bytes": 5329,
+      "sha256": "860d893dce1337e1d9aaa273d2643be0b7d33426fbd1805d330c149454518bbd"
+    },
+    {
+      "path": "infra/terraform/iam_ecs.tf",
+      "bytes": 2470,
+      "sha256": "f03bf58c53f2986b5c48ab2fe05c50396395b82f88a743c413bb5efbcb9f0ed2"
+    }
+  ],
+  "documentsAdded": [
+    "docs/correcao-pendencias-criticas-gai-2026-10-27/README.md",
+    "docs/correcao-pendencias-criticas-gai-2026-10-27/arquivos.json",
+    "docs/correcao-pendencias-criticas-gai-2026-10-27/testes.json",
+    "docs/correcao-pendencias-criticas-gai-2026-10-27/referencias.json"
+  ]
+}

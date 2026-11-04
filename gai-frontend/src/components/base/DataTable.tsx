@@ -8,18 +8,20 @@ export type Column<T> = {
   className?: string;
 };
 
-export function DataTable<T>({ columns, items, getKey }: { columns: Column<T>[]; items: T[]; getKey: (item: T) => string | number }) {
+export function DataTable<T>({ columns, items, getKey, caption = 'Registros' }: { columns: Column<T>[]; items: T[]; getKey: (item: T) => string | number; caption?: string }) {
   if (!items.length) return <EmptyState />;
   return (
     <div className="premium-panel">
-      <div className="overflow-x-auto">
+      <p className="border-b border-border px-4 py-2 text-xs text-muted-foreground md:hidden">Deslize a tabela para ver todas as colunas e ações.</p>
+      <div className="overflow-x-auto focus-visible:ring-inset" role="region" aria-label={caption} tabIndex={0}>
         <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left text-sm">
-          <thead className="bg-brand-navy text-[0.6875rem] uppercase tracking-[0.12em] text-white/75">
-            <tr>{columns.map((column) => <th key={column.header} className={cn('border-b border-sidebar-border px-5 py-4 font-bold first:pl-6 last:pr-6', column.className)}>{column.header}</th>)}</tr>
+          <caption className="sr-only">{caption}</caption>
+          <thead className="bg-muted text-xs text-muted-foreground">
+            <tr>{columns.map((column) => <th scope="col" key={column.header} className={cn('border-b border-border px-5 py-4 font-semibold first:pl-6 last:pr-6', column.className)}>{column.header}</th>)}</tr>
           </thead>
           <tbody className="[&>tr:last-child>td]:border-b-0">
             {items.map((item) => (
-              <tr key={getKey(item)} className="group transition-colors duration-150 hover:bg-primary/[0.07]">
+              <tr key={getKey(item)} className="group transition-colors duration-150 hover:bg-primary/[0.07] focus-within:bg-primary/[0.07]">
                 {columns.map((column) => <td key={column.header} className={cn('border-b border-border/55 px-5 py-4 align-middle text-foreground/90 first:pl-6 last:pr-6', column.className)}>{column.cell(item)}</td>)}
               </tr>
             ))}

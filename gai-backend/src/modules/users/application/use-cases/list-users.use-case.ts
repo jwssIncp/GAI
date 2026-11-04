@@ -35,10 +35,14 @@ export class ListUsersUseCase {
     const { items, total } = await this.repository.list({
       page,
       pageSize,
+      sortBy: query.sort_by,
+      sortOrder: query.sort_order,
       organizationId,
       status: query.status,
       role: query.role,
       search: query.search,
+      roleId: query.role_id,
+      scope: query.scope,
     });
 
     const assignmentMap = await this.assignments.findActiveByUserIds(

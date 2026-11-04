@@ -48,7 +48,7 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
             example:
               identifier: platform.admin
-              password: Admin@123456
+              password: <runtime-credential-required>
       responses:
         '200':
           description: Login bem-sucedido
@@ -303,7 +303,7 @@ components:
           type: string
           format: password
           minLength: 8
-          example: Admin@123456
+          example: <runtime-credential-required>
 
     CurrentUserResponse:
       type: object

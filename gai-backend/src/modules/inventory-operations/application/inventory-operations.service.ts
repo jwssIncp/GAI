@@ -1,5 +1,9 @@
 import { randomUUID } from 'crypto';
 import {
+  InventoryReconciliationResponseDto,
+  InventoryReconciliationRunResponseDto,
+} from './inventory-reconciliation-response.dto';
+import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -8,7 +12,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
+import { AssistedClaim } from '../../assisted-reconciliation/assisted.entity';
 import {
   STORAGE_SIGNER,
   type StorageSigner,
@@ -55,6 +60,7 @@ import {
   ReconciliationListQueryDto,
 } from './inventory-operation.dto';
 import { InventoryOperationPolicy } from './inventory-operation.policy';
+import { valuationValues } from './valuation.policy';
 
 export interface InventoryOperationActor {
   id: number;
@@ -648,6 +654,15 @@ export class InventoryOperationsService {
       observationId,
       originalName,
     );
+    const signed = await this.storageSigner.createUploadUrl({
+      bucket: this.imageScope.storageBucket(),
+      path: storageKey,
+      mimeType: dto.mime_type.toLowerCase(),
+      expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
+      sizeBytes: dto.size_bytes,
+      checksum: dto.checksum,
+    });
+
     const evidence = await this.dataSource.transaction(async (manager) => {
       const saved = await manager
         .getRepository(InventoryObservationEvidenceEntity)
@@ -685,12 +700,6 @@ export class InventoryOperationsService {
         },
       );
       return saved;
-    });
-    const signed = await this.storageSigner.createUploadUrl({
-      bucket: evidence.bucket,
-      path: evidence.storageKey,
-      mimeType: evidence.mimeType,
-      expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
     });
     return {
       evidence: this.evidenceResponse(evidence),
@@ -731,15 +740,24 @@ export class InventoryOperationsService {
       if (!evidence) this.notFound('Observation evidence');
       if (evidence.status === InventoryObservationEvidenceStatus.UPLOADED)
         return this.evidenceResponse(evidence);
+      const verified = await this.storageSigner.verifyUpload({
+        bucket: evidence.bucket,
+        path: evidence.storageKey,
+        mimeType: evidence.mimeType,
+        sizeBytes: Number(evidence.sizeBytes),
+        checksum: evidence.checksum,
+        createdAt: evidence.createdAt,
+        expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
+        assertion: { sizeBytes: dto.size_bytes, checksum: dto.checksum },
+      });
       const before = {
         status: evidence.status,
         checksum: evidence.checksum,
         size_bytes: evidence.sizeBytes,
       };
       evidence.status = InventoryObservationEvidenceStatus.UPLOADED;
-      evidence.checksum =
-        this.imageScope.cleanText(dto.checksum) ?? evidence.checksum;
-      evidence.sizeBytes = dto.size_bytes ?? evidence.sizeBytes;
+      evidence.checksum = verified.checksum;
+      evidence.sizeBytes = verified.sizeBytes;
       evidence.confirmedAt = new Date();
       await repo.save(evidence);
       await this.audit(
@@ -823,6 +841,8 @@ export class InventoryOperationsService {
       path: evidence.storageKey,
       mimeType: evidence.mimeType,
       expiresInSeconds: this.imageScope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(evidence.sizeBytes),
+      checksum: evidence.checksum,
     });
     return {
       evidence: this.evidenceResponse(evidence),
@@ -873,7 +893,7 @@ export class InventoryOperationsService {
     projectId: number,
     sessionId: number,
     actor: InventoryOperationActor,
-  ) {
+  ): Promise<InventoryReconciliationRunResponseDto> {
     const project = await this.getProject(projectId, actor, true);
     await this.requireSession(projectId, sessionId);
     const observations = await this.observations.find({
@@ -1052,40 +1072,19 @@ export class InventoryOperationsService {
       });
     try {
       return await this.dataSource.transaction(async (manager) => {
-        if (
-          await manager
-            .getRepository(InventoryConsolidationEntity)
-            .findOne({ where: { reconciliationId } })
-        )
-          throw new ConflictException({
-            code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
-            message: 'Reconciliation already consolidated',
-          });
-        const entity = await manager
-          .getRepository(InventoryConsolidationEntity)
-          .save({
-            organizationId: project.organizationId,
-            projectId,
-            sessionId,
-            reconciliationId,
-            inventoryItemId: reconciliation.inventoryItemId,
-            decision: dto.decision,
-            notes: this.clean(dto.notes),
-            evidenceSnapshot: this.reconciliationResponse(reconciliation),
-            decidedById: actor.id,
-            decidedAt: new Date(),
-          });
-        await this.audit(
+        await manager.getRepository(ProjectEntity).findOne({
+          where: { id: projectId },
+          ...(manager.connection.options.type === 'mysql'
+            ? { lock: { mode: 'pessimistic_write' as const } }
+            : {}),
+        });
+        return this.recordConsolidation(
           manager,
-          project.organizationId,
-          projectId,
-          'inventory_consolidation',
-          entity.id,
-          'CREATE',
-          actor.id,
-          { reconciliation_id: reconciliationId, decision: dto.decision },
+          project,
+          reconciliation,
+          dto,
+          actor,
         );
-        return this.consolidationResponse(entity);
       });
     } catch (error) {
       if (!this.isUniqueViolation(error)) throw error;
@@ -1096,48 +1095,158 @@ export class InventoryOperationsService {
     }
   }
 
+  /** Shared atomic consolidation path preserves duplicate and snapshot locks. */
+  async recordConsolidation(
+    manager: EntityManager,
+    project: ProjectEntity,
+    reconciliation: InventoryReconciliationEntity,
+    dto: ConsolidateReconciliationDto,
+    actor: InventoryOperationActor,
+  ) {
+    const { projectId, sessionId, id: reconciliationId } = reconciliation;
+    if (reconciliation.status === ReconciliationStatus.DUPLICATE)
+      throw new ConflictException({
+        code: 'DUPLICATE_BLOCKS_CONSOLIDATION',
+        message: 'Duplicate evidence must be resolved before consolidation',
+      });
+    const claim = await manager.getRepository(AssistedClaim).findOne({
+      where: [
+        ...(reconciliation.inventoryItemId
+          ? [{ projectId, inventoryItemId: reconciliation.inventoryItemId }]
+          : []),
+        ...(reconciliation.accountingItemId
+          ? [{ projectId, accountingItemId: reconciliation.accountingItemId }]
+          : []),
+      ],
+    });
+    if (
+      claim &&
+      reconciliation.evidence.assisted_candidate_id !== claim.candidateId
+    )
+      throw new ConflictException({
+        code: 'ASSISTED_CLAIM_CONFLICT',
+        message: 'Source already reserved by an approved assisted decision',
+      });
+    if (
+      await manager
+        .getRepository(InventoryConsolidationEntity)
+        .findOne({ where: { reconciliationId } })
+    )
+      throw new ConflictException({
+        code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
+        message: 'Reconciliation already consolidated',
+      });
+    const entity = await manager
+      .getRepository(InventoryConsolidationEntity)
+      .save({
+        organizationId: project.organizationId,
+        projectId,
+        sessionId,
+        reconciliationId,
+        inventoryItemId: reconciliation.inventoryItemId,
+        decision: dto.decision,
+        notes: this.clean(dto.notes),
+        evidenceSnapshot: {
+          ...this.reconciliationResponse(reconciliation),
+        },
+        decidedById: actor.id,
+        decidedAt: new Date(),
+      });
+    await this.audit(
+      manager,
+      project.organizationId,
+      projectId,
+      'inventory_consolidation',
+      entity.id,
+      'CREATE',
+      actor.id,
+      { reconciliation_id: reconciliationId, decision: dto.decision },
+    );
+    return this.consolidationResponse(entity);
+  }
+
   async createValuation(
     projectId: number,
     itemId: number,
     dto: CreateAssetValuationDto,
     actor: InventoryOperationActor,
   ) {
-    const project = await this.getProject(projectId, actor, true);
-    await this.requireItem(projectId, itemId);
-    if (dto.new_value == null && dto.used_value == null)
-      throw new ConflictException({
-        code: 'VALUATION_REQUIRES_VALUE',
-        message: 'At least one value is required',
-      });
+    await this.getProject(projectId, actor, true);
     return this.dataSource.transaction(async (manager) => {
-      const entity = await manager.getRepository(AssetValuationEntity).save({
-        organizationId: project.organizationId,
-        projectId,
-        inventoryItemId: itemId,
-        source: dto.source.trim(),
-        newValue: dto.new_value ?? null,
-        usedValue: dto.used_value ?? null,
-        valuationDate: new Date(`${dto.valuation_date}T00:00:00.000Z`),
-        notes: this.clean(dto.notes),
-        responsibleById: actor.id,
+      const project = await manager.getRepository(ProjectEntity).findOne({
+        where: { id: projectId },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
       });
-      await this.audit(
-        manager,
-        project.organizationId,
-        projectId,
-        'asset_valuation',
-        entity.id,
-        'CREATE',
-        actor.id,
-        {
-          item_id: itemId,
-          source: entity.source,
-          new_value: entity.newValue,
-          used_value: entity.usedValue,
+      if (!project) this.notFound('Project');
+      const item = await manager.getRepository(InventoryItemEntity).findOne({
+        where: {
+          id: itemId,
+          projectId,
+          organizationId: project.organizationId,
         },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
+      });
+      if (!item) this.notFound('Inventory item');
+      return this.valuationResponse(
+        await this.recordValuation(manager, project, item, dto, actor),
       );
-      return this.valuationResponse(entity);
     });
+  }
+  async recordValuation(
+    manager: EntityManager,
+    project: ProjectEntity,
+    item: InventoryItemEntity,
+    dto: CreateAssetValuationDto,
+    actor: InventoryOperationActor,
+    batchId: number | null = null,
+  ) {
+    if (
+      ['inactive', 'finished', 'cancelled', 'archived'].includes(project.status)
+    )
+      throw new ConflictException({
+        code: 'PROJECT_STATUS_BLOCKS_OPERATION',
+        message: 'Project status blocks this operation',
+      });
+    if (
+      item.projectId !== project.id ||
+      item.organizationId !== project.organizationId ||
+      item.deletedAt ||
+      ['inactive', 'removed'].includes(item.status)
+    )
+      throw new ConflictException({
+        code: 'VALUATION_ITEM_INVALID',
+        message: 'Item inactive, removed or outside project',
+      });
+    const entity = await manager.getRepository(AssetValuationEntity).save({
+      organizationId: project.organizationId,
+      projectId: project.id,
+      inventoryItemId: item.id,
+      ...valuationValues(dto),
+      responsibleById: actor.id,
+      batchOperationId: batchId,
+      createdAt: new Date(),
+    });
+    await this.audit(
+      manager,
+      project.organizationId,
+      project.id,
+      'asset_valuation',
+      entity.id,
+      'CREATE',
+      actor.id,
+      {
+        item_id: item.id,
+        source: entity.source,
+        new_value: entity.newValue,
+        used_value: entity.usedValue,
+        batch_operation_id: batchId,
+      },
+    );
+    return entity;
   }
 
   async listValuations(
@@ -1357,18 +1466,27 @@ export class InventoryOperationsService {
       changes,
     });
   }
+  private numericId(value: number): number;
+  private numericId(value: number | null): number | null;
+  private numericId(value: number | null): number | null {
+    if (value == null) return null;
+    const id = Number(value);
+    if (!Number.isSafeInteger(id) || id < 1)
+      throw new Error('Inventory operation ID outside the safe integer range');
+    return id;
+  }
   private sessionResponse(row: InventorySessionEntity) {
     return {
-      id: row.id,
-      organization_id: row.organizationId,
-      project_id: row.projectId,
+      id: this.numericId(row.id),
+      organization_id: this.numericId(row.organizationId),
+      project_id: this.numericId(row.projectId),
       name: row.name,
       status: row.status,
       started_at: row.startedAt,
       finished_at: row.finishedAt,
       cancelled_at: row.cancelledAt,
       cancellation_reason: row.cancellationReason,
-      created_by_id: row.createdById,
+      created_by_id: this.numericId(row.createdById),
       metadata: row.metadata,
       created_at: row.createdAt,
       updated_at: row.updatedAt,
@@ -1376,29 +1494,29 @@ export class InventoryOperationsService {
   }
   private roundResponse(row: InventoryRoundEntity) {
     return {
-      id: row.id,
-      session_id: row.sessionId,
+      id: this.numericId(row.id),
+      session_id: this.numericId(row.sessionId),
       round_number: row.roundNumber,
       kind: row.kind,
       type: row.kind,
-      inventory_item_id: row.inventoryItemId,
+      inventory_item_id: this.numericId(row.inventoryItemId),
       reason: row.reason,
       status: row.status,
-      requested_by_id: row.requestedById,
+      requested_by_id: this.numericId(row.requestedById),
       started_at: row.startedAt,
       finished_at: row.finishedAt,
-      created_by_id: row.requestedById,
+      created_by_id: this.numericId(row.requestedById),
       created_at: row.createdAt,
     };
   }
   private observationResponse(row: InventoryObservationEntity) {
     return {
-      id: row.id,
-      session_id: row.sessionId,
-      round_id: row.roundId,
-      inventory_item_id: row.inventoryItemId,
-      field_agent_id: row.fieldAgentId,
-      prior_observation_id: row.priorObservationId,
+      id: this.numericId(row.id),
+      session_id: this.numericId(row.sessionId),
+      round_id: this.numericId(row.roundId),
+      inventory_item_id: this.numericId(row.inventoryItemId),
+      field_agent_id: this.numericId(row.fieldAgentId),
+      prior_observation_id: this.numericId(row.priorObservationId),
       idempotency_key: row.idempotencyKey,
       result: row.result,
       observed_plate: row.observedPlate,
@@ -1413,12 +1531,12 @@ export class InventoryOperationsService {
   }
   private evidenceResponse(row: InventoryObservationEvidenceEntity) {
     return {
-      id: row.id,
-      organization_id: row.organizationId,
-      project_id: row.projectId,
-      session_id: row.sessionId,
-      round_id: row.roundId,
-      observation_id: row.observationId,
+      id: this.numericId(row.id),
+      organization_id: this.numericId(row.organizationId),
+      project_id: this.numericId(row.projectId),
+      session_id: this.numericId(row.sessionId),
+      round_id: this.numericId(row.roundId),
+      observation_id: this.numericId(row.observationId),
       storage_provider: row.storageProvider,
       bucket: row.bucket,
       storage_key: row.storageKey,
@@ -1427,7 +1545,7 @@ export class InventoryOperationsService {
       size_bytes: row.sizeBytes,
       checksum: row.checksum,
       status: row.status,
-      created_by_id: row.createdById,
+      created_by_id: this.numericId(row.createdById),
       confirmed_at: row.confirmedAt,
       created_at: row.createdAt,
       updated_at: row.updatedAt,
@@ -1435,45 +1553,46 @@ export class InventoryOperationsService {
   }
   private reconciliationResponse(
     row: InventoryReconciliationEntity,
-  ): Record<string, unknown> {
+  ): InventoryReconciliationResponseDto {
     return {
-      id: row.id,
-      session_id: row.sessionId,
+      id: this.numericId(row.id),
+      session_id: this.numericId(row.sessionId),
       run_number: row.runNumber,
-      inventory_item_id: row.inventoryItemId,
-      observation_id: row.observationId,
-      accounting_item_id: row.accountingItemId,
+      inventory_item_id: this.numericId(row.inventoryItemId),
+      observation_id: this.numericId(row.observationId),
+      accounting_item_id: this.numericId(row.accountingItemId),
       status: row.status,
       physical_plate: row.physicalPlate,
       accounting_plate: row.accountingPlate,
       evidence: row.evidence,
-      created_by_id: row.createdById,
+      created_by_id: this.numericId(row.createdById),
       created_at: row.createdAt,
     };
   }
   private consolidationResponse(row: InventoryConsolidationEntity) {
     return {
-      id: row.id,
-      session_id: row.sessionId,
-      reconciliation_id: row.reconciliationId,
-      inventory_item_id: row.inventoryItemId,
+      id: this.numericId(row.id),
+      session_id: this.numericId(row.sessionId),
+      reconciliation_id: this.numericId(row.reconciliationId),
+      inventory_item_id: this.numericId(row.inventoryItemId),
       decision: row.decision,
       notes: row.notes,
       evidence_snapshot: row.evidenceSnapshot,
-      decided_by_id: row.decidedById,
+      decided_by_id: this.numericId(row.decidedById),
       decided_at: row.decidedAt,
     };
   }
   private valuationResponse(row: AssetValuationEntity) {
     return {
-      id: row.id,
-      inventory_item_id: row.inventoryItemId,
+      id: this.numericId(row.id),
+      inventory_item_id: this.numericId(row.inventoryItemId),
+      batch_operation_id: this.numericId(row.batchOperationId),
       source: row.source,
       new_value: row.newValue,
       used_value: row.usedValue,
       valuation_date: row.valuationDate,
       notes: row.notes,
-      responsible_by_id: row.responsibleById,
+      responsible_by_id: this.numericId(row.responsibleById),
       created_at: row.createdAt,
     };
   }

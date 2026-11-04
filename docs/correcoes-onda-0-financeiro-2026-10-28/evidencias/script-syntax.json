@@ -1,0 +1,26 @@
+[
+  {
+    "file": "checks.cjs",
+    "exit_code": 0
+  },
+  {
+    "file": "finish.cjs",
+    "exit_code": 0
+  },
+  {
+    "file": "probe.cjs",
+    "exit_code": 0
+  },
+  {
+    "file": "race-original.cjs",
+    "exit_code": 0
+  },
+  {
+    "file": "run.cjs",
+    "exit_code": 0
+  },
+  {
+    "file": "save-database.cjs",
+    "exit_code": 0
+  }
+]

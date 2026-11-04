@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   GoneException,
   Inject,
   Injectable,
@@ -27,6 +28,13 @@ import { ExportJobStatus } from '../../domain/enums/export-job-status.enum';
 import { ExportJobAuditLogEntity } from '../../infrastructure/persistence/export-job-audit-log.entity';
 import { ExportJobEntity } from '../../infrastructure/persistence/export-job.entity';
 import { ExportJobProcessorService } from './export-job-processor.service';
+import { hasAllPermissions } from '../../../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../../auth/domain/ports/permission-resolver.port';
+import { EXPORT_CONTENT_PERMISSIONS } from '../../domain/export-content-permissions';
+import { ExportJobType } from '../../domain/enums/export-job-type.enum';
 
 export type ExportJobActorContext = ProjectActorContext;
 
@@ -50,6 +58,8 @@ export class ExportJobsService {
     private readonly projectScope: ProjectScopeService,
     private readonly dataSource: DataSource,
     private readonly processor: ExportJobProcessorService,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
   ) {}
 
   async create(
@@ -57,7 +67,12 @@ export class ExportJobsService {
     dto: CreateExportJobDto,
     actor: ExportJobActorContext,
   ): Promise<ExportJobResponseDto> {
+    if ([ExportJobType.FINANCE_XLSX, ExportJobType.DRE_XLSX].includes(dto.type))
+      throw new ConflictException(
+        'Use a exportação financeira com filtros explícitos.',
+      );
     const project = await this.getAuthorizedProject(projectId, actor);
+    await this.assertContentAccess(dto.type, actor);
     const now = new Date();
     const saved = await this.dataSource.transaction(async (manager) => {
       const job = manager.getRepository(ExportJobEntity).create({
@@ -246,6 +261,7 @@ export class ExportJobsService {
     const original = await this.expireIfNeeded(
       await this.getJobEntity(project.organizationId, projectId, jobId),
     );
+    await this.assertContentAccess(original.type, actor);
     if (
       original.status !== ExportJobStatus.FAILED &&
       original.status !== ExportJobStatus.CANCELLED &&
@@ -344,9 +360,13 @@ export class ExportJobsService {
     actor: ExportJobActorContext,
   ): Promise<ExportJobDownloadUrlResponseDto> {
     const project = await this.getAuthorizedProject(projectId, actor);
-    const job = await this.assertDownloadable(
-      await this.getJobEntity(project.organizationId, projectId, jobId),
+    const job = await this.getJobEntity(
+      project.organizationId,
+      projectId,
+      jobId,
     );
+    await this.assertContentAccess(job.type, actor);
+    await this.assertDownloadable(job);
     await this.audits.save({
       exportJobId: job.id,
       organizationId: job.organizationId,
@@ -373,9 +393,13 @@ export class ExportJobsService {
     actor: ExportJobActorContext,
   ): Promise<ExportJobDownloadFile> {
     const project = await this.getAuthorizedProject(projectId, actor);
-    const summary = await this.assertDownloadable(
-      await this.getJobEntity(project.organizationId, projectId, jobId),
+    const entity = await this.getJobEntity(
+      project.organizationId,
+      projectId,
+      jobId,
     );
+    await this.assertContentAccess(entity.type, actor);
+    const summary = await this.assertDownloadable(entity);
     const job = await this.jobs
       .createQueryBuilder('job')
       .addSelect('job.fileContent')
@@ -410,6 +434,22 @@ export class ExportJobsService {
         ? job.fileContent
         : Buffer.from(job.fileContent),
     };
+  }
+
+  private async assertContentAccess(
+    type: ExportJobType,
+    actor: ExportJobActorContext,
+  ): Promise<void> {
+    const required = EXPORT_CONTENT_PERMISSIONS[type];
+    if (
+      !required ||
+      !(await hasAllPermissions(actor, required, this.permissions))
+    ) {
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: 'Insufficient permissions for export content',
+      });
+    }
   }
 
   private async getAuthorizedProject(
@@ -494,7 +534,7 @@ export class ExportJobsService {
       job.expiresAt.getTime() <= Date.now()
     ) {
       await this.expireJob(job);
-      return this.getJobEntity(job.organizationId, job.projectId, job.id);
+      return this.getJobEntity(job.organizationId, job.projectId!, job.id);
     }
     return job;
   }

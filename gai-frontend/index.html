@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0b18" />
     <meta name="description" content="GAI — gestão inteligente de ativos e operações patrimoniais." />
+    <meta name="application-name" content="GAI" />
+    <link rel="icon" type="image/svg+xml" href="/brand/gai-symbol.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/brand/gai-icon-180.png" />
     <title>GAI — Gestão de Ativos</title>
     <script>
-      try {
-        const storedTheme = localStorage.getItem('gai.theme');
+      (() => {
+        let storedTheme;
+        try { storedTheme = localStorage.getItem('gai.theme'); } catch (_) {}
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', storedTheme === 'dark' || (!storedTheme && prefersDark));
-      } catch (_) {}
+        const dark = storedTheme === 'dark' || (storedTheme !== 'light' && prefersDark);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#000d20' : '#f9fafb';
+      })();
     </script>
   </head>
   <body>

@@ -1,0 +1,43 @@
+{
+  "executed_at": "2026-11-03T10:07:22.344Z",
+  "migration": "ExtendProjectRegistration1794200000001",
+  "pending_before": [
+    "ExtendProjectRegistration1794200000001"
+  ],
+  "preservation": {
+    "projects": {
+      "rows": 44,
+      "all_original_values_unchanged": true
+    },
+    "project_audit_logs": {
+      "rows": 44,
+      "all_original_values_unchanged": true
+    },
+    "project_units": {
+      "rows": 4,
+      "all_original_values_unchanged": true
+    },
+    "project_field_agents": {
+      "rows": 10,
+      "all_original_values_unchanged": true
+    },
+    "companies": {
+      "rows": 26,
+      "all_original_values_unchanged": true
+    },
+    "company_units": {
+      "rows": 8,
+      "all_original_values_unchanged": true
+    },
+    "organizations": {
+      "rows": 2,
+      "all_original_values_unchanged": true
+    },
+    "users": {
+      "rows": 3,
+      "all_original_values_unchanged": true
+    }
+  },
+  "new_columns_nullable": true,
+  "data_backfill": false
+}

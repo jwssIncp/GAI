@@ -69,7 +69,11 @@ describe('RevokeUserRoleAssignmentUseCase', () => {
 
     await useCase.execute(5, 7, platformActor);
 
-    expect(assignments.revoke).toHaveBeenCalledWith(7, expect.any(Date));
+    expect(assignments.revoke).toHaveBeenCalledWith(
+      7,
+      expect.any(Date),
+      platformActor,
+    );
   });
 
   it('throws Conflict when revoking last PLATFORM_ADMIN assignment', async () => {

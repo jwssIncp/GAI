@@ -1,0 +1,45 @@
+{
+  "captured_at": "2026-10-29T05:26:25.560Z",
+  "node": "v24.18.0",
+  "platform": "win32",
+  "arch": "x64",
+  "host_timezone": "America/Sao_Paulo",
+  "isolated_installs": true,
+  "projects": {
+    "gai-backend": {
+      "lock_sha256": "6306b98ff778fa3519c39b247153c03bce2e0961a87ba3f222bf71bba47c9491",
+      "versions": {
+        "@nestjs/common": "11.2.8",
+        "@nestjs/core": "11.2.8",
+        "@nestjs/platform-express": "11.2.8",
+        "express": "5.2.1",
+        "body-parser": "2.4.0",
+        "multer": "2.5.0",
+        "proxy-addr": "2.0.8",
+        "qs": "6.17.1",
+        "mysql2": "3.24.6",
+        "typeorm": "0.3.31",
+        "xlsx": "0.20.3",
+        "sqlite3": "5.1.7",
+        "argon2": "0.44.0"
+      },
+      "lock_package_count": 1003
+    },
+    "gai-frontend": {
+      "lock_sha256": "7738d114f193cc3ea5eeebc29effdc634ebfa17407d1bbef2142c1f2cf489206",
+      "versions": {
+        "axios": "1.21.0",
+        "react-router": "7.18.5",
+        "react-router-dom": "7.18.5",
+        "zod": "3.25.76",
+        "vite": "6.4.5",
+        "vitest": "2.1.9"
+      },
+      "lock_package_count": 558
+    }
+  },
+  "sheetjs": {
+    "bytes": 2409319,
+    "sha256": "8dc73fc3b00203e72d176e85b50938627c7b086e607c682e8d3c22c02bb99fe8"
+  }
+}

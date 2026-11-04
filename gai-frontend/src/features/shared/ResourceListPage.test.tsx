@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import { ResourceListPage } from './ResourceListPage';
 import type { CurrentUser } from '@/types/api';
@@ -25,7 +26,7 @@ function renderPage(user: CurrentUser) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = { user, accessToken: 'token', expiresAt: '2099-01-01T00:00:00.000Z', bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
   return render(
-    <QueryClientProvider client={client}>
+    <MemoryRouter><QueryClientProvider client={client}>
       <AuthContext.Provider value={auth}>
         <ResourceListPage<Row, { name: string }>
           title="Recursos"
@@ -38,7 +39,7 @@ function renderPage(user: CurrentUser) {
           form={() => <button type="submit">Salvar</button>}
         />
       </AuthContext.Provider>
-    </QueryClientProvider>,
+    </QueryClientProvider></MemoryRouter>,
   );
 }
 

@@ -1,0 +1,15 @@
+{
+  "start": "2026-10-28T21:15:24.715Z",
+  "seconds": 635.482,
+  "exit_code": 1,
+  "command": [
+    "node",
+    "node_modules/jest/bin/jest.js",
+    "--runInBand",
+    "--testTimeout=300000",
+    "--testPathPatterns=test/integration",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\mysql-jest.json"
+  ],
+  "target": "127.0.0.1:33317/gai_validation_disposable"
+}

@@ -2,6 +2,7 @@ FROM node:24-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json ./
+COPY vendor ./vendor
 RUN npm ci
 
 FROM deps AS build

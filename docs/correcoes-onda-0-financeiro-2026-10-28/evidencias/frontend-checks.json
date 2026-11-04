@@ -1,0 +1,13 @@
+[
+  {
+    "name": "frontend-tests",
+    "exit_code": 0,
+    "seconds": 141.53,
+    "command": [
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\frontend-vitest.json"
+    ]
+  }
+]

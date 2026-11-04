@@ -1,0 +1,33 @@
+[
+  {
+    "name": "typescript",
+    "exit_code": 0,
+    "seconds": 22.844,
+    "command": [
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false"
+    ]
+  },
+  {
+    "name": "lint-changed",
+    "exit_code": 0,
+    "seconds": 18.968,
+    "command": [
+      "node_modules/eslint/bin/eslint.js",
+      "src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+      "src/modules/payments-expenses/domain/entities/field-agent-payment.ts",
+      "src/modules/payments-expenses/domain/entities/payment-state-conflict.ts",
+      "src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts",
+      "src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts",
+      "test/integration/test-app.helper.ts",
+      "test/integration/payments-expenses/payment-integrity.mysql.e2e-spec.ts",
+      "test/unit/modules/payments-expenses/payments-expenses.spec.ts",
+      "--format",
+      "json",
+      "--output-file",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\eslint-changed.json"
+    ]
+  }
+]

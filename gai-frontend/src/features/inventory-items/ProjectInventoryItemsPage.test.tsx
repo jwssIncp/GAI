@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import { ProjectInventoryItemsPage } from './ProjectInventoryItemsPage';
 import type { CurrentUser, InventoryItem, PaginatedItems } from '@/types/api';
+vi.mock('./valuationBatchApi',()=>({valuationBatchApi:{list:vi.fn().mockResolvedValue({items:[],total:0,limit:100})}}));
 
 const mocks = vi.hoisted(() => ({
   listByProject: vi.fn(),

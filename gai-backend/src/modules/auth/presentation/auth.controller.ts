@@ -1,3 +1,5 @@
+import { CredentialTransactionsService } from '../application/services/credential-transactions.service';
+import { ChangePasswordDto } from '../application/dto/credential-actions.dto';
 import {
   Body,
   Controller,
@@ -49,12 +51,41 @@ interface AuthenticatedRequest extends Request {
 @Controller('auth')
 export class AuthController {
   constructor(
+    private readonly credentials: CredentialTransactionsService,
     private readonly loginUseCase: LoginUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
     private readonly requestPasswordResetUseCase: RequestPasswordResetUseCase,
     private readonly confirmPasswordResetUseCase: ConfirmPasswordResetUseCase,
   ) {}
+
+  @Post('activation/confirm')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  activate(@Body() dto: PasswordResetConfirmDto, @Req() req: Request) {
+    return this.credentials.consumeToken(
+      dto.token,
+      dto.new_password,
+      'INVITATION',
+      this.extractIp(req),
+    );
+  }
+
+  @Post('password/change')
+  @HttpCode(200)
+  @UseGuards(SessionAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  changePassword(
+    @Body() dto: ChangePasswordDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.credentials.changeOwnPassword(
+      req.user!.id,
+      req.user!.sessionId,
+      dto.current_password,
+      dto.new_password,
+    );
+  }
 
   @Post('login')
   @HttpCode(200)

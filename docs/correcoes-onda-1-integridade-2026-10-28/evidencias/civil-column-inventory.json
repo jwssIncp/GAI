@@ -1,0 +1,50 @@
+[
+  {
+    "file": "gai-backend/src/modules/budgets/budget.entity.ts",
+    "columns": 2
+  },
+  {
+    "file": "gai-backend/src/modules/contracts/contract.entity.ts",
+    "columns": 2
+  },
+  {
+    "file": "gai-backend/src/modules/expense-accountabilities/expense-accountability.entity.ts",
+    "columns": 3
+  },
+  {
+    "file": "gai-backend/src/modules/field-agents/infrastructure/persistence/project-field-agent.entity.ts",
+    "columns": 2
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.entity.ts",
+    "columns": 2
+  },
+  {
+    "file": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity.ts",
+    "columns": 1
+  },
+  {
+    "file": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts",
+    "columns": 1
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/expense.entity.ts",
+    "columns": 1
+  },
+  {
+    "file": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity.ts",
+    "columns": 3
+  },
+  {
+    "file": "gai-backend/src/modules/project-preparation/preparation.entity.ts",
+    "columns": 3
+  },
+  {
+    "file": "gai-backend/src/modules/projects/infrastructure/persistence/project.entity.ts",
+    "columns": 2
+  },
+  {
+    "file": "gai-backend/src/modules/receivables/receivable.entity.ts",
+    "columns": 2
+  }
+]

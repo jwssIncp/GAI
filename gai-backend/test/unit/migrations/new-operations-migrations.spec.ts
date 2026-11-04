@@ -1,16 +1,20 @@
+import { FixEvidenceStorageKeyIndex1793000000001 } from '../../../src/migrations/1793000000001-fix-evidence-storage-key-index';
 import { CreateInventoryOperations1741200000001 } from '../../../src/migrations/1741200000001-create-inventory-operations';
 import { CreateExpenseAccountabilities1741300000001 } from '../../../src/migrations/1741300000001-create-expense-accountabilities';
 import { CloseInventoryOperationGaps1741400000001 } from '../../../src/migrations/1741400000001-close-inventory-operation-gaps';
 
 describe('new operations migrations', () => {
-  const runner = () => {
+  const runner = (existingColumns: string[] = []) => {
     const queries: string[] = [];
     return {
       queries,
       queryRunner: {
         query: jest.fn((sql: string) => {
           queries.push(sql);
-          if (/information_schema/i.test(sql)) return Promise.resolve([]);
+          if (/information_schema/i.test(sql))
+            return Promise.resolve(
+              existingColumns.map((COLUMN_NAME) => ({ COLUMN_NAME })),
+            );
           return Promise.resolve();
         }),
       },
@@ -88,4 +92,45 @@ describe('new operations migrations', () => {
     expect(down.queries[0]).toBe('DROP TABLE inventory_observation_evidence');
     expect(down.queries[1]).toContain('DROP COLUMN cancelled_at');
   });
+  it('resumes after session columns were committed by MySQL', async () => {
+    const partial = runner(['cancelled_at', 'cancellation_reason']);
+    await new CloseInventoryOperationGaps1741400000001().up(
+      partial.queryRunner as never,
+    );
+    expect(
+      partial.queries.filter((sql) => /ADD COLUMN/.test(sql)),
+    ).toHaveLength(0);
+    expect(
+      partial.queries.some((sql) =>
+        /CREATE TABLE inventory_observation_evidence/.test(sql),
+      ),
+    ).toBe(true);
+  });
+
+  it('uses full binary ASCII uniqueness in a forward migration', async () => {
+    const query = jest.fn().mockResolvedValue([]);
+    await new FixEvidenceStorageKeyIndex1793000000001().up({ query } as never);
+    expect(query.mock.calls[1][0]).toContain(
+      'CHARACTER SET ascii COLLATE ascii_bin',
+    );
+    expect(query.mock.calls[1][0]).toContain('(storage_key)');
+    expect(query.mock.calls[1][0]).not.toMatch(/DROP TABLE|DROP COLUMN/);
+    await new FixEvidenceStorageKeyIndex1793000000001().down({
+      query,
+    } as never);
+    expect(query.mock.calls[3][0]).toContain('(storage_key(768))');
+  });
+
+  it.each(['up', 'down'] as const)(
+    'refuses unsafe %s before DDL',
+    async (direction) => {
+      const query = jest.fn().mockResolvedValue([{ id: 1 }]);
+      await expect(
+        new FixEvidenceStorageKeyIndex1793000000001()[direction]({
+          query,
+        } as never),
+      ).rejects.toThrow();
+      expect(query).toHaveBeenCalledTimes(1);
+    },
+  );
 });

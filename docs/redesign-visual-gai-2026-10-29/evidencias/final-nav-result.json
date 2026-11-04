@@ -1,0 +1,14 @@
+{
+  "name": "final-nav",
+  "command": [
+    "node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config=playwright.redesign.config.ts",
+    "--grep",
+    "theme persistence|preparation context|semantic contrast|touch phones"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend",
+  "exit_code": 0,
+  "seconds": 98.096
+}

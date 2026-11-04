@@ -1,4 +1,3 @@
-import { ConflictException } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { UpdateProjectUseCase } from '../../../../src/modules/projects/application/use-cases/update-project.use-case';
 import { ProjectScopeService } from '../../../../src/modules/projects/application/services/project-scope.service';
@@ -46,12 +45,13 @@ describe('UpdateProjectUseCase', () => {
     const useCase = new UpdateProjectUseCase(
       repository as never,
       scope,
+      { validateUsers: jest.fn().mockResolvedValue(undefined) } as never,
       logger,
     );
 
     await expect(
       useCase.execute(1, { name: 'Projeto alterado' }, actor),
-    ).rejects.toMatchObject<Partial<ConflictException>>({
+    ).rejects.toMatchObject({
       response: {
         code: 'PROJECT_CONCURRENT_MODIFICATION',
         message:
@@ -85,6 +85,7 @@ describe('UpdateProjectUseCase', () => {
     const useCase = new UpdateProjectUseCase(
       repository as never,
       scope,
+      { validateUsers: jest.fn().mockResolvedValue(undefined) } as never,
       logger,
     );
 

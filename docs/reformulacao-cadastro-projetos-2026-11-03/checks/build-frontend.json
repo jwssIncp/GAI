@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "-b"
+  ],
+  "cwd": "gai-frontend",
+  "started_at": "2026-11-03T10:11:36.305Z",
+  "duration_seconds": 44.416,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\build-frontend.log"
+}

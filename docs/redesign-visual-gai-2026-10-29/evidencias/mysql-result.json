@@ -1,0 +1,13 @@
+{
+  "name": "mysql",
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "mysql",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\mysql-jest.json"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-backend",
+  "exit_code": 0,
+  "seconds": 1395.428
+}

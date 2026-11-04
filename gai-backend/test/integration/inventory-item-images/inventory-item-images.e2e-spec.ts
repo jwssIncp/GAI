@@ -1,3 +1,5 @@
+import { STORAGE_SIGNER } from '../../../src/common/storage/storage-signer.port';
+import { FakeStorage, TEST_OBJECT_CHECKSUM } from '../storage.fake';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import {
@@ -100,12 +102,13 @@ describe('Inventory Item Images (e2e)', () => {
         original_name: 'Foto 01.JPG',
         mime_type: 'image/jpeg',
         size_bytes: 1024,
-        checksum: 'abc123',
+        checksum: TEST_OBJECT_CHECKSUM,
       })
       .expect(201);
 
     const upload = uploadResponse.body as UploadUrlResponseBody;
-    expect(upload.upload_url).toContain('X-GAI-Signature');
+    app.get<FakeStorage>(STORAGE_SIGNER).put(upload.upload_url);
+    expect(upload.upload_url).toContain('X-Amz-Signature');
     expect(upload.expires_in_seconds).toBe(300);
     expect(upload.image.status).toBe('pending_upload');
     expect(upload.image.organization_id).toBe(1);
@@ -118,12 +121,12 @@ describe('Inventory Item Images (e2e)', () => {
         `/api/v1/projects/${project.id}/inventory-items/${item.id}/images/${upload.image.id}/confirm-upload`,
       )
       .set('Authorization', `Bearer ${orgAdminToken}`)
-      .send({ checksum: 'confirmed' })
+      .send({ checksum: TEST_OBJECT_CHECKSUM })
       .expect(200)
       .expect((response) => {
         const body = response.body as ImageResponseBody;
         expect(body.status).toBe('uploaded');
-        expect(body.checksum).toBe('confirmed');
+        expect(body.checksum).toBe(TEST_OBJECT_CHECKSUM);
       });
 
     await request(app.getHttpServer())
@@ -147,7 +150,7 @@ describe('Inventory Item Images (e2e)', () => {
       .expect(200)
       .expect((response) => {
         const body = response.body as DownloadUrlResponseBody;
-        expect(body.download_url).toContain('X-GAI-Method=GET');
+        expect(body.download_url).toContain('operation=GET');
         expect(body.image.id).toBe(upload.image.id);
       });
 

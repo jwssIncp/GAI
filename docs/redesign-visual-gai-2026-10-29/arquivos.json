@@ -1,0 +1,414 @@
+[
+  {
+    "path": "gai-frontend/e2e/redesign-real.spec.ts",
+    "before_sha256": null,
+    "sha256": "e46d35d248fde56a8dc8a48012df85195b0910e51b82ff884614979825434a0e"
+  },
+  {
+    "path": "gai-frontend/index.html",
+    "before_sha256": "e0d1b54a27fcbcf3b02e9e2d4a26d22b3f8059ee4159e532e0523afe2bb87b07",
+    "sha256": "6cdcf1bbde3c3853a06a7ba98320a2594ab10523b5471e7d41c7bc7cc87d916d"
+  },
+  {
+    "path": "gai-frontend/playwright.redesign.config.ts",
+    "before_sha256": null,
+    "sha256": "aceb2a85e1f3bf4a005e0655861a9a6f9e3dfda318d36e450fe1faad6fbf962a"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-compact-dark.svg",
+    "before_sha256": null,
+    "sha256": "f4b9dfac7ebce565ce8681746a11723d78880940ad0ec55f056752a78ba93cd9"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-compact-light.svg",
+    "before_sha256": null,
+    "sha256": "0c8a3b8f7c17bfb842355e4288d53e407b437f2b8c397725e965649fb9649f6e"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-horizontal-dark.svg",
+    "before_sha256": null,
+    "sha256": "712962924ec71b41436d919600aecaafb16c1e21d5ba34aa133bb1122d3f27c4"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-horizontal-light.svg",
+    "before_sha256": null,
+    "sha256": "23b4b0491f49124391bc6d47845e6109fa6c653fc6e3c331c6b9da67ddfb854d"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-icon-180.png",
+    "before_sha256": null,
+    "sha256": "21cfdaffaaef43e2f60c9b57269e9bb1ed264d7844e86a9626ad920a5121a613"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-icon-192.png",
+    "before_sha256": null,
+    "sha256": "f410522f09b47decb31ae9b719ffd146877373a9255593b740f2bb8eb2439fe9"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-icon-32.png",
+    "before_sha256": null,
+    "sha256": "5c8d362c94ad435a670444ae9636a9213dc273baec3de6d2ed6eb22f91de040a"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-icon-512.png",
+    "before_sha256": null,
+    "sha256": "8cea5e1fcaa5849dc6deea9386de2748cee2e20a02c26104e8d115bd15781479"
+  },
+  {
+    "path": "gai-frontend/public/brand/gai-symbol.svg",
+    "before_sha256": null,
+    "sha256": "c0e362b26f2f088807b98d14c5aa9b2241e40f6a4d27d4635d27934a3c3e2d80"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Cards.tsx",
+    "before_sha256": "5cd7f3cd3a3d489f192f9762ab66b05bfb816429c4f4067c6763369fc072c78f",
+    "sha256": "276b9932b1790acc5926fe5d03d92289e06f067d2353055165a275e138588f25"
+  },
+  {
+    "path": "gai-frontend/src/components/base/DataTable.tsx",
+    "before_sha256": "0a4f870eec723f6a26dfbf7d529ee76d5f345298d7092480187e68cd659bfe92",
+    "sha256": "9c64dc0d92c01463e16586cc7652bfd47bc7d86f884bd8ef0b4da1e6f7510116"
+  },
+  {
+    "path": "gai-frontend/src/components/base/FilterPanel.tsx",
+    "before_sha256": "a2eb64475ed62104f2b41d9eaaceaa83e67fd2c70099fb4efcca968618bf9092",
+    "sha256": "43ad37ee078d9e38001821044efabfa520c61f4170ea96509e41a69139c8e00d"
+  },
+  {
+    "path": "gai-frontend/src/components/base/FormField.tsx",
+    "before_sha256": "fde97a8af855c53c0e24b9dd13bf9419fd6e8882ceaf6aea1ef6fae8e4a54204",
+    "sha256": "71190cbaafb4cd3cb1a912a2345ce1a5731038a3aed778849a41ac651ed78dbd"
+  },
+  {
+    "path": "gai-frontend/src/components/base/GaiLogo.tsx",
+    "before_sha256": null,
+    "sha256": "329f7b8a78745d47509fd0f46e122af9b6976c621ecf23bf294fb084d28a3d18"
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageContainer.tsx",
+    "before_sha256": "3cac4534ae03f241a42a22642df05a3d108200fce10cbd527828fbc8bbea91ad",
+    "sha256": "6a36ee435d0f4707636acb8a2ad0b7f40693ce1f659f08c4dd20b1a7269624f9"
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageHeader.tsx",
+    "before_sha256": "6be4c19901206c59fc666875963ecfdb6d214a1af91de0b13e38e5420f1f810c",
+    "sha256": "8acc557ffbbd0875f5f63ec633742d589f0a7be1065ef68891c3347fe7be4dd1"
+  },
+  {
+    "path": "gai-frontend/src/components/base/SearchInput.tsx",
+    "before_sha256": "570c49f5780fc795237a867c7905c4897ac4ec814e9d194dc9e31ca1d35679eb",
+    "sha256": "6bcade7c5d3b3df93623ef89532b807df99232616ab818ea54ac3a8b7ab1012c"
+  },
+  {
+    "path": "gai-frontend/src/components/base/States.tsx",
+    "before_sha256": "f2692cd7a9bcd5adbb218696a0aafa20a2ad0188e4fd1a1db7a82be12ff574cc",
+    "sha256": "8218abcf0e8017db120f4d910e9cea2bce962fcafd1a02710d2b098b7dd65a61"
+  },
+  {
+    "path": "gai-frontend/src/components/base/StatusBadge.tsx",
+    "before_sha256": "a6fd467a04616a5c6f975a6e2e376453d6ff38ddfe935a58385004f24b41646b",
+    "sha256": "4276ecef01680f57d658f7552d072e0335cf0c27e83bb76ab06e9a0ad69b9523"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Tabs.test.tsx",
+    "before_sha256": null,
+    "sha256": "861395175d5012b4c71ae079ed849ce7cad85ec6330f676ef6b924284b01a73b"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Tabs.tsx",
+    "before_sha256": "28de0cd82797a15df46d4a4af497d0ab5be6f08e6d844c53e151419a670f9deb",
+    "sha256": "e59ed79bb5efd19e221e7cbd43eeb4190cfa254905d5a3b6e33239b31694a4aa"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/button.tsx",
+    "before_sha256": "c0990e31bc500ea9fa727f69608cb8be55c8f686e784b836215ec0351e332ad1",
+    "sha256": "fbbc0dc9a9e666ef1df9ee78b90870ad3c2e9756eff2b28c03661417cc835fad"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/dialog.tsx",
+    "before_sha256": "5f88ed969d3339a58aff5155c45e36918dde16a6dbe047eaa4983eb16d497b5c",
+    "sha256": "a757903efb8775041e5ac1f8de545c949c6a68dcf8c37f8c9ba8f632e4dc0770"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/input.tsx",
+    "before_sha256": "59271a6815b744f5c15e666258e3a84e8c07408b92fdfadb99f3e94d60d8db7d",
+    "sha256": "d61f25dd2261c4aa522690c3ef52c7a99f60535951b04cffd84896aa16125d0b"
+  },
+  {
+    "path": "gai-frontend/src/constants/navigation.ts",
+    "before_sha256": "bb603248449a140eb7a19cc684afc00b6b43c4c3e16eef38ef891273c4533cd8",
+    "sha256": "40d598e4a9044ac972a4f50d44d26628356a96b94fc6acda5fd87a9194f07678"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/LoginPage.tsx",
+    "before_sha256": "0b6b91c4dec37a1930b85993ef3eb44ba4711e74666489859a50a2a82bad54ab",
+    "sha256": "2d08e8f85a45690ce6ef9ddf1bdd3231ba00dc49716530796f0524666bded9b5"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PasswordPages.test.tsx",
+    "before_sha256": null,
+    "sha256": "a2f65c5c2f5d1a88448547df7562c3e34fd5aee631ed9c5fcefbec7bdc154a8e"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PasswordPages.tsx",
+    "before_sha256": "9fb93f8a1ce9eaff5ef801acf7910d982c84ad13c633a5493a26a78d3ceb1997",
+    "sha256": "859f99f39f70d43173ebd2372dbc91fc36bedce7d3309d95f98c67eca10e00f8"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/ProfilePage.tsx",
+    "before_sha256": null,
+    "sha256": "84108ae4d1db584430e885497f95f48ce33052611bde1a6ecff67f69283f5c11"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetLayout.tsx",
+    "before_sha256": "5e4ecc8de09906c628c0da1bdb308b7c7fa5b927f6ab14aeb16a3d5f2e2d8840",
+    "sha256": "011a37ed7b77dc4950068c44c641ae8d642c2e808f2af80c9d826f374df1afc0"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/CommercialOverview.tsx",
+    "before_sha256": "77097dec70d59739da8710c7df035ec7e511eb615c5ecdf5c57aa29bc4ab3ac1",
+    "sha256": "be80ec9612db63813284eebd659920b0910ebb8409080e46513d0098ffd6f49f"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/DashboardPage.tsx",
+    "before_sha256": "1996a7f2dd115ba8b4aa004bd5fdf4ff13c21f4606064b54ae493b17f5544419",
+    "sha256": "7b5250849531594d5021f9c59ab0ff669c86fe9eda53aac542d08e5a44eedd85"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx",
+    "before_sha256": "a86fc1cf77ffc85c6936e12f1d6020f522293a33a6d1cd3276e3f3033698ed36",
+    "sha256": "b5fa63b78bce093a28bd7f3db040d211fc7e2435709cc0be4d86a6fdb32ed896"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreLayout.tsx",
+    "before_sha256": "fde11b00e4062ceb1dcb5f33378b5064fcd7d3532ea8765f2409f585f6d849b5",
+    "sha256": "0d84e7f3860d46a25bc05335782a168360aa835c86501bca236d3e38c3d4587a"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreReportPage.tsx",
+    "before_sha256": "ceb155cdd59e2147f9e57c570f030219dab0ffb047ca7b548550ea6214bea352",
+    "sha256": "3ab92c7d367da0b60fa52f3751608eea6c62f72eec8ff21995c5bf185eb6111a"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ProjectFinancePage.tsx",
+    "before_sha256": "f685bcb47cbc5d682b59a575a6f1264a7b0a490b4070a55e1530040dc1b306d9",
+    "sha256": "a49aab62a321cd198362bb1a187f48b8033f11a698f3a6ca9899f1ce0d962b44"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/BrazilProjectMap.tsx",
+    "before_sha256": "8e8d48f2939891140352cb3a51adf121692030359fb9d622c9d0d745abb306db",
+    "sha256": "ebbe3aa3d8f9a7dba665a87afac59f5ee80c228bc226eb48bfaec4c830bc0cb9"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/dashboardVisuals.tsx",
+    "before_sha256": "bdabb111ed850e104c4eaa9a70bdbd98df69fb7e8c589edf07da0bfd6595ce5b",
+    "sha256": "0b6b405520cd81863e976281cfda6f5928e6a6a7ac38bdc7d1648f371e1bf41f"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/ProjectDashboardPage.tsx",
+    "before_sha256": "219a518f7dc174be7ea96e47d9f44c24acd86126aa87e2a6bb22094806a489cb",
+    "sha256": "85b65ff5c4aea917c3e5bfca76c09f7d9f424ff5e4ca88b2dac0926f4e4aaad1"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.tsx",
+    "before_sha256": "370cf9d64878bf3bc85fc4d63fdd833b430f291b26edd0b92998a956f487f161",
+    "sha256": "ae36b452e2f506b77346d61230f5e8667762bdeb4e9a7edff3e760b0acf1c9b0"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "before_sha256": "e46a741cf13a0efd439a7ce21e561918e7680c60e5b144c2ea7891b279176126",
+    "sha256": "c409626cc59c24d4f838c2c470dd07492a7e65175a7ca74afa7cf3d168c21a41"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectsPage.tsx",
+    "before_sha256": "38420062fe0bff4ce063a41bb1c7f483c067e251b590312a0500d3c23e78a9cf",
+    "sha256": "10fd9fedae58129c5e0294795122dc241869db438e6c89b39f66deb69b1f7594"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSummaryPage.tsx",
+    "before_sha256": "bdfb5295a2f25b3543e2053f496d6d15d3f338ad61c36557df38e36afff7e1d6",
+    "sha256": "2af608041fa95e759ff740bbc15ac8f959bd26f8c0ae9798c6cc53e27abbe42c"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceLayout.tsx",
+    "before_sha256": "555b1f0b09220b77469b46a14f377bd439ebd3f9a6fc1397de55c3f787584387",
+    "sha256": "7f6d1ef0a7d487661548b088da2c74e75a823d61c53ba22a1352293e39b58678"
+  },
+  {
+    "path": "gai-frontend/src/features/shared/ResourceListPage.test.tsx",
+    "before_sha256": "aa1082704df33187950741805fce95b784693d62e9a95023a92acc3ec00a0772",
+    "sha256": "a1b609a7e9e3ff882466669076c16b791b88f1235fb8d0eaf0808156b0b7b19a"
+  },
+  {
+    "path": "gai-frontend/src/features/shared/ResourceListPage.tsx",
+    "before_sha256": "fcba802b33312f90d3e8a8e4621d052fd69db72aa9971f8b3e707212b8bc91cd",
+    "sha256": "f204d769da7377bba258fbb60c9eadf2e5e9313ea89c9817769aa89f72292f8a"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportPreview.tsx",
+    "before_sha256": "548931a161001cc01edf49b4dec1d79f5ea21c7577dd254f35b00dfea272619a",
+    "sha256": "d54d250f8ec3a30f1d43c10b7b8888f4cddd7e9e48aef9f1efb9a678456a5762"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsLayout.tsx",
+    "before_sha256": "cfd057a9b548e878335fd44055efed2b779393ae1f5426615c265dc1754856aa",
+    "sha256": "6b3e5b84dedd75636acd086d941ef75bee0c90e6d1ffa62e5e2c2d67ab6afcd5"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useListState.test.tsx",
+    "before_sha256": null,
+    "sha256": "427ce5ada86841ce5116c157925533d4f2893a6d822e1527b57599af1a5a845c"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useListState.ts",
+    "before_sha256": "9a9cd7a61d0d32345497541258980b5f3909f90e29e05ca2c0bc538626cc23b2",
+    "sha256": "f65d657dd9a3b4da758d232419718e331d75f0d2504652b65ca6761d60b0f7f8"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useTheme.test.tsx",
+    "before_sha256": null,
+    "sha256": "d7c79872d6775b3d9ff852e1b7d01e13554afc548931fb009281e55313a99346"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useTheme.ts",
+    "before_sha256": "f6e0d31298f8a74209d7bcd23d8c764cf7d862b1565c93ed9ffe594db8ba8e14",
+    "sha256": "9dfa324af5a298802d62a4aa9b77099cd3576d549810c26df05260b1806b278c"
+  },
+  {
+    "path": "gai-frontend/src/layouts/AppLayout.tsx",
+    "before_sha256": "92cb49e3b54c0120773681469099de3a7113c5e17b26b84cc16cde356b9801c5",
+    "sha256": "39473e517ae6cebf87ea961ed21d526d5987394732718f8b0cb7e9e55b304749"
+  },
+  {
+    "path": "gai-frontend/src/layouts/AuthLayout.tsx",
+    "before_sha256": "5f0e922e73980c550d6ab4f51dc54953b0ba1499d50712402bed173906bdf3a7",
+    "sha256": "1f21a6ff8bfb75eec393e910eee81ebb62c404a617bf30aea109546ef4d55a24"
+  },
+  {
+    "path": "gai-frontend/src/layouts/Sidebar.tsx",
+    "before_sha256": "9b55bf6ce2a29062375b857b82885d6c3f7239dd057ba8c67f76bc3262f5e826",
+    "sha256": "4dc045dbed513650819bc4a56fe83c89cf31db1969a7efdd80b337d35d864abd"
+  },
+  {
+    "path": "gai-frontend/src/layouts/Topbar.tsx",
+    "before_sha256": "8ab5facdc23d0292a02b8fa747b853ee62a0001c0483ebc9a9eea6a09313c64e",
+    "sha256": "80913703d7af544daaf15344a9a1609ec8964db45345d18a1a7f21973a7ce649"
+  },
+  {
+    "path": "gai-frontend/src/router/router.tsx",
+    "before_sha256": "482cb94741b0b357e2fb641ad228aff39357c1a70cbeda9924d57084473c384e",
+    "sha256": "e8967e5081681c417b6ab321d1c6e21d638a6cc1dea31a6acdd3e25e39a48cb4"
+  },
+  {
+    "path": "gai-frontend/src/styles/globals.css",
+    "before_sha256": "949f22a4df0ba5a7df713ac23f91e3cf450f844d0bbd0b4f0e510b2e2fc241dc",
+    "sha256": "caf545e3430a6da427f20b3abec9ddf290dc6a99102d73f3139be793be1a984c"
+  },
+  {
+    "path": "gai-frontend/tailwind.config.ts",
+    "before_sha256": "17c6ebf685fe53bf3a208186ab30657afa95d70e5968ec363fd73afdf608ab7c",
+    "sha256": "2c4fbe32ced69c9277bf2576857726bff7d468a27ee9ae52dacc16e20ce588c1"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/.gitignore",
+    "before_sha256": null,
+    "sha256": "ccecfc4e82af065bb358a3b0683b9d9e7fe3146a89a4cfaf7c9628b76edcffa6",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/acessibilidade.md",
+    "before_sha256": null,
+    "sha256": "ecdbcc97179e5eb5dd141f4c4c40aab34332d98ac82e77bfd4fb9a5fc0b42445",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/antes-depois.md",
+    "before_sha256": null,
+    "sha256": "4c745284e3cce1d7ca4d25582cece769f03895a9b45dbeb15ba9250f0fdb9afc",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/audit.cjs",
+    "before_sha256": null,
+    "sha256": "35b7015c7027b8986854a878a72a7f4d484b7eb0f6ef82e3b05b06d46448c895",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/auditoria-visual.md",
+    "before_sha256": null,
+    "sha256": "c42b1166fb7a3700f7bc343d2e23dda5454f88d389f3ced02691decf25fb99dd",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/brand-assets.cjs",
+    "before_sha256": null,
+    "sha256": "ff8c17f7457de1c124a90735c021d5554d504f74d7bb49697ec23d0f95bf2d6e",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/design-system.md",
+    "before_sha256": null,
+    "sha256": "abb770ddd6f726d1c12c69a8a079ba88e0095b639f4a7f7e90d07654dec9e842",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/final-check.cjs",
+    "before_sha256": null,
+    "sha256": "c2d8480e2335d7e9264ddd5707f3e673e86b398d9b3a301d165042aef4d48f96",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/identidade-gai.md",
+    "before_sha256": null,
+    "sha256": "2ef5ddcf415099a168ff40e1932b3a7df7cf1d23ffb652ae9b30316653228dd8",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/interatividade.md",
+    "before_sha256": null,
+    "sha256": "19de2cb802556efc64ba3bc837b35c49b86a211c1d613397f3d3018515614e90",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/navegacao-ux.md",
+    "before_sha256": null,
+    "sha256": "343871de03b127e737366d5de0786203944cd9bd2f1eab41deb6f32fef3846a1",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/README.md",
+    "before_sha256": null,
+    "sha256": "b56bd0ffa72d8f0cb0ebd9bddac9c589d1fdba0099a3dff791e84e7a74d330a8",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/report.cjs",
+    "before_sha256": null,
+    "sha256": "9ee02ac488fea1c24af18208da238d873514f13018a48be3aded76050a96d400",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/responsividade.md",
+    "before_sha256": null,
+    "sha256": "21049eed292d1eb39ccca52b5aca62fb437e4a5555e7f4d71afd18273406b94c",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/temas.md",
+    "before_sha256": null,
+    "sha256": "c0c2cee1d8c18ffeb2238617757ebc00b0ab6734a32dc14b3fbadbbb865bb943",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/testes.md",
+    "before_sha256": null,
+    "sha256": "036a5fdbb01ffbf6c24fdae320135a1a1f49112e08597fc310656d355786f582",
+    "kind": "documentation-or-validation"
+  },
+  {
+    "path": "docs/redesign-visual-gai-2026-10-29/validate.cjs",
+    "before_sha256": null,
+    "sha256": "4eead978c8b9a41fb805499d25d82632add5b0558b2d515a9fce0e05920f70e6",
+    "kind": "documentation-or-validation"
+  }
+]

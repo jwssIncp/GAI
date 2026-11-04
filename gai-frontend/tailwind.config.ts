@@ -33,6 +33,8 @@ export default {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
           subtle: 'hsl(var(--primary-subtle))',
+          hover: 'hsl(var(--primary-hover))',
+          text: 'hsl(var(--primary-text))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -61,6 +63,7 @@ export default {
         },
         warning: {
           DEFAULT: 'hsl(var(--warning))',
+          text: 'hsl(var(--warning-text))',
           foreground: 'hsl(var(--warning-foreground))',
           subtle: 'hsl(var(--warning-subtle))',
         },

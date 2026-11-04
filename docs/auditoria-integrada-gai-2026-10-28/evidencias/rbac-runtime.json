@@ -1,0 +1,5903 @@
+{
+  "catalog": [
+    {
+      "key": "organizations:read",
+      "resource": "organizations",
+      "action": "read",
+      "scope": "PLATFORM",
+      "description": "Listar e consultar organizations"
+    },
+    {
+      "key": "organizations:write",
+      "resource": "organizations",
+      "action": "write",
+      "scope": "PLATFORM",
+      "description": "Criar e atualizar organizations"
+    },
+    {
+      "key": "users:read",
+      "resource": "users",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar usuários da organization"
+    },
+    {
+      "key": "users:write",
+      "resource": "users",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Criar e atualizar usuários da organization"
+    },
+    {
+      "key": "org_roles:read",
+      "resource": "org_roles",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar papéis customizados da organization"
+    },
+    {
+      "key": "org_roles:write",
+      "resource": "org_roles",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Gerenciar papéis customizados da organization"
+    },
+    {
+      "key": "assets:read",
+      "resource": "assets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Reservado — leitura de ativos (módulo futuro)"
+    },
+    {
+      "key": "assets:write",
+      "resource": "assets",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Reservado — escrita de ativos (módulo futuro)"
+    },
+    {
+      "key": "projects:create",
+      "resource": "projects",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar projects da organization"
+    },
+    {
+      "key": "projects:read",
+      "resource": "projects",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar projects da organization"
+    },
+    {
+      "key": "projects:update",
+      "resource": "projects",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar projects da organization"
+    },
+    {
+      "key": "projects:activate",
+      "resource": "projects",
+      "action": "activate",
+      "scope": "ORGANIZATION",
+      "description": "Ativar projects da organization"
+    },
+    {
+      "key": "projects:pause",
+      "resource": "projects",
+      "action": "pause",
+      "scope": "ORGANIZATION",
+      "description": "Pausar projects da organization"
+    },
+    {
+      "key": "projects:resume",
+      "resource": "projects",
+      "action": "resume",
+      "scope": "ORGANIZATION",
+      "description": "Retomar projects da organization"
+    },
+    {
+      "key": "projects:deactivate",
+      "resource": "projects",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar projects da organization"
+    },
+    {
+      "key": "projects:reactivate",
+      "resource": "projects",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar projects da organization"
+    },
+    {
+      "key": "projects:finish",
+      "resource": "projects",
+      "action": "finish",
+      "scope": "ORGANIZATION",
+      "description": "Finalizar projects da organization"
+    },
+    {
+      "key": "projects:cancel",
+      "resource": "projects",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar projects da organization"
+    },
+    {
+      "key": "projects:archive",
+      "resource": "projects",
+      "action": "archive",
+      "scope": "ORGANIZATION",
+      "description": "Arquivar projects da organization"
+    },
+    {
+      "key": "field-agents:create",
+      "resource": "field-agents",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar inventariantes da organization"
+    },
+    {
+      "key": "field-agents:read",
+      "resource": "field-agents",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar inventariantes da organization"
+    },
+    {
+      "key": "field-agents:update",
+      "resource": "field-agents",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar inventariantes da organization"
+    },
+    {
+      "key": "field-agents:deactivate",
+      "resource": "field-agents",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar inventariantes da organization"
+    },
+    {
+      "key": "field-agents:reactivate",
+      "resource": "field-agents",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar inventariantes da organization"
+    },
+    {
+      "key": "field-agents:block",
+      "resource": "field-agents",
+      "action": "block",
+      "scope": "ORGANIZATION",
+      "description": "Bloquear inventariantes da organization"
+    },
+    {
+      "key": "field-agents:unblock",
+      "resource": "field-agents",
+      "action": "unblock",
+      "scope": "ORGANIZATION",
+      "description": "Desbloquear inventariantes da organization"
+    },
+    {
+      "key": "field-agents:delete",
+      "resource": "field-agents",
+      "action": "delete",
+      "scope": "ORGANIZATION",
+      "description": "Excluir inventariantes logicamente"
+    },
+    {
+      "key": "project-field-agents:assign",
+      "resource": "project-field-agents",
+      "action": "assign",
+      "scope": "ORGANIZATION",
+      "description": "Vincular inventariantes a projects"
+    },
+    {
+      "key": "project-field-agents:read",
+      "resource": "project-field-agents",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar inventariantes de projects"
+    },
+    {
+      "key": "project-field-agents:update",
+      "resource": "project-field-agents",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar vinculos de inventariantes em projects"
+    },
+    {
+      "key": "project-field-agents:remove",
+      "resource": "project-field-agents",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover logicamente inventariantes de projects"
+    },
+    {
+      "key": "inventory-items:create",
+      "resource": "inventory-items",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar itens inventariados da organization"
+    },
+    {
+      "key": "inventory-items:read",
+      "resource": "inventory-items",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar itens inventariados da organization"
+    },
+    {
+      "key": "inventory-items:update",
+      "resource": "inventory-items",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar itens inventariados da organization"
+    },
+    {
+      "key": "inventory-items:deactivate",
+      "resource": "inventory-items",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar itens inventariados da organization"
+    },
+    {
+      "key": "inventory-items:reactivate",
+      "resource": "inventory-items",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar itens inventariados da organization"
+    },
+    {
+      "key": "inventory-item-images:create",
+      "resource": "inventory-item-images",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar URLs de upload de imagens dos itens inventariados"
+    },
+    {
+      "key": "inventory-item-images:read",
+      "resource": "inventory-item-images",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar imagens dos itens inventariados"
+    },
+    {
+      "key": "inventory-item-images:update",
+      "resource": "inventory-item-images",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Confirmar upload de imagens dos itens inventariados"
+    },
+    {
+      "key": "inventory-item-images:remove",
+      "resource": "inventory-item-images",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover logicamente imagens dos itens inventariados"
+    },
+    {
+      "key": "inventory-item-images:download",
+      "resource": "inventory-item-images",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Gerar URLs de download de imagens dos itens inventariados"
+    },
+    {
+      "key": "inventory-accounting-items:create",
+      "resource": "inventory-accounting-items",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar itens da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:read",
+      "resource": "inventory-accounting-items",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar itens da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:update",
+      "resource": "inventory-accounting-items",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar itens da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:deactivate",
+      "resource": "inventory-accounting-items",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar itens da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:reactivate",
+      "resource": "inventory-accounting-items",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar itens da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:import",
+      "resource": "inventory-accounting-items",
+      "action": "import",
+      "scope": "ORGANIZATION",
+      "description": "Importar planilhas da base contabil da organization"
+    },
+    {
+      "key": "inventory-accounting-items:export-errors",
+      "resource": "inventory-accounting-items",
+      "action": "export-errors",
+      "scope": "ORGANIZATION",
+      "description": "Consultar relatorios de erro da importacao contabil"
+    },
+    {
+      "key": "inventory-pending-issues:create",
+      "resource": "inventory-pending-issues",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:read",
+      "resource": "inventory-pending-issues",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:update",
+      "resource": "inventory-pending-issues",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:resolve",
+      "resource": "inventory-pending-issues",
+      "action": "resolve",
+      "scope": "ORGANIZATION",
+      "description": "Resolver pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:ignore",
+      "resource": "inventory-pending-issues",
+      "action": "ignore",
+      "scope": "ORGANIZATION",
+      "description": "Ignorar pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:cancel",
+      "resource": "inventory-pending-issues",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar pendencias patrimoniais da organization"
+    },
+    {
+      "key": "inventory-pending-issues:generate",
+      "resource": "inventory-pending-issues",
+      "action": "generate",
+      "scope": "ORGANIZATION",
+      "description": "Gerar pendencias patrimoniais automaticamente"
+    },
+    {
+      "key": "expense-accountabilities:create",
+      "resource": "expense-accountabilities",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Abrir prestacoes de contas"
+    },
+    {
+      "key": "expense-accountabilities:read",
+      "resource": "expense-accountabilities",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar prestacoes de contas"
+    },
+    {
+      "key": "expense-accountabilities:update",
+      "resource": "expense-accountabilities",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Vincular despesas a prestacoes"
+    },
+    {
+      "key": "expense-accountabilities:close",
+      "resource": "expense-accountabilities",
+      "action": "close",
+      "scope": "ORGANIZATION",
+      "description": "Fechar prestacoes de contas"
+    },
+    {
+      "key": "expense-installments:create",
+      "resource": "expense-installments",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Gerar parcelas de despesas"
+    },
+    {
+      "key": "expense-installments:read",
+      "resource": "expense-installments",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar parcelas de despesas"
+    },
+    {
+      "key": "inventory-sessions:create",
+      "resource": "inventory-sessions",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar sessoes de inventario"
+    },
+    {
+      "key": "inventory-sessions:read",
+      "resource": "inventory-sessions",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar sessoes e historico de inventario"
+    },
+    {
+      "key": "inventory-sessions:update",
+      "resource": "inventory-sessions",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Iniciar e finalizar sessoes e rodadas"
+    },
+    {
+      "key": "inventory-rounds:reinventory",
+      "resource": "inventory-rounds",
+      "action": "reinventory",
+      "scope": "ORGANIZATION",
+      "description": "Solicitar reinventario preservando historico"
+    },
+    {
+      "key": "inventory-observations:create",
+      "resource": "inventory-observations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar observacoes de campo"
+    },
+    {
+      "key": "reconciliations:create",
+      "resource": "reconciliations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Executar conciliacao fisico-contabil"
+    },
+    {
+      "key": "reconciliations:read",
+      "resource": "reconciliations",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar conciliacoes"
+    },
+    {
+      "key": "consolidations:create",
+      "resource": "consolidations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Consolidar evidencias de conciliacao"
+    },
+    {
+      "key": "asset-valuations:create",
+      "resource": "asset-valuations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar avaliacao manual"
+    },
+    {
+      "key": "asset-valuations:read",
+      "resource": "asset-valuations",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar historico de avaliacoes"
+    },
+    {
+      "key": "plate-history:read",
+      "resource": "plate-history",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar historico e fontes de placas"
+    },
+    {
+      "key": "payments:create",
+      "resource": "payments",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar pagamentos de inventariantes"
+    },
+    {
+      "key": "payments:read",
+      "resource": "payments",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar pagamentos"
+    },
+    {
+      "key": "payments:update",
+      "resource": "payments",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar pagamentos"
+    },
+    {
+      "key": "payments:approve",
+      "resource": "payments",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Aprovar pagamentos"
+    },
+    {
+      "key": "payments:mark-as-paid",
+      "resource": "payments",
+      "action": "mark-as-paid",
+      "scope": "ORGANIZATION",
+      "description": "Marcar pagamentos como pagos"
+    },
+    {
+      "key": "payments:cancel",
+      "resource": "payments",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar pagamentos"
+    },
+    {
+      "key": "payments:export",
+      "resource": "payments",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Exportar pagamentos"
+    },
+    {
+      "key": "expenses:create",
+      "resource": "expenses",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar despesas"
+    },
+    {
+      "key": "expenses:read",
+      "resource": "expenses",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar despesas"
+    },
+    {
+      "key": "expenses:update",
+      "resource": "expenses",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar despesas"
+    },
+    {
+      "key": "expenses:approve",
+      "resource": "expenses",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Aprovar despesas"
+    },
+    {
+      "key": "expenses:reject",
+      "resource": "expenses",
+      "action": "reject",
+      "scope": "ORGANIZATION",
+      "description": "Rejeitar despesas"
+    },
+    {
+      "key": "expenses:mark-as-paid",
+      "resource": "expenses",
+      "action": "mark-as-paid",
+      "scope": "ORGANIZATION",
+      "description": "Marcar despesas como pagas"
+    },
+    {
+      "key": "expenses:cancel",
+      "resource": "expenses",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar despesas"
+    },
+    {
+      "key": "expenses:upload-attachment",
+      "resource": "expenses",
+      "action": "upload-attachment",
+      "scope": "ORGANIZATION",
+      "description": "Criar e confirmar comprovantes de despesas"
+    },
+    {
+      "key": "expenses:download-attachment",
+      "resource": "expenses",
+      "action": "download-attachment",
+      "scope": "ORGANIZATION",
+      "description": "Baixar comprovantes de despesas"
+    },
+    {
+      "key": "import-sessions:create",
+      "resource": "import-sessions",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar sessoes de importacao"
+    },
+    {
+      "key": "import-sessions:read",
+      "resource": "import-sessions",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar sessoes de importacao"
+    },
+    {
+      "key": "import-sessions:finish",
+      "resource": "import-sessions",
+      "action": "finish",
+      "scope": "ORGANIZATION",
+      "description": "Finalizar sessoes de importacao"
+    },
+    {
+      "key": "import-sessions:cancel",
+      "resource": "import-sessions",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar sessoes de importacao"
+    },
+    {
+      "key": "import-sessions:retry",
+      "resource": "import-sessions",
+      "action": "retry",
+      "scope": "ORGANIZATION",
+      "description": "Reprocessar sessoes com falha"
+    },
+    {
+      "key": "import-payloads:create",
+      "resource": "import-payloads",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Receber payloads de importacao"
+    },
+    {
+      "key": "import-payloads:read",
+      "resource": "import-payloads",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar payloads de importacao"
+    },
+    {
+      "key": "import-payloads:reprocess",
+      "resource": "import-payloads",
+      "action": "reprocess",
+      "scope": "ORGANIZATION",
+      "description": "Reprocessar payloads com falha"
+    },
+    {
+      "key": "import-errors:read",
+      "resource": "import-errors",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar erros de importacao"
+    },
+    {
+      "key": "import-files:create",
+      "resource": "import-files",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar e confirmar arquivos de importacao"
+    },
+    {
+      "key": "import-files:read",
+      "resource": "import-files",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar arquivos de importacao"
+    },
+    {
+      "key": "import-files:download",
+      "resource": "import-files",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Baixar arquivos de importacao"
+    },
+    {
+      "key": "catalog-assets:create",
+      "resource": "catalog-assets",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar ativos do catalogo da organization"
+    },
+    {
+      "key": "catalog-assets:read",
+      "resource": "catalog-assets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar ativos do catalogo da organization"
+    },
+    {
+      "key": "catalog-assets:update",
+      "resource": "catalog-assets",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar ativos do catalogo da organization"
+    },
+    {
+      "key": "catalog-assets:deactivate",
+      "resource": "catalog-assets",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar ativos do catalogo da organization"
+    },
+    {
+      "key": "catalog-assets:reactivate",
+      "resource": "catalog-assets",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar ativos do catalogo da organization"
+    },
+    {
+      "key": "export-jobs:create",
+      "resource": "export-jobs",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Solicitar exportacoes de projects"
+    },
+    {
+      "key": "export-jobs:read",
+      "resource": "export-jobs",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar exportacoes de projects"
+    },
+    {
+      "key": "export-jobs:download",
+      "resource": "export-jobs",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Baixar exportacoes de projects"
+    },
+    {
+      "key": "export-jobs:cancel",
+      "resource": "export-jobs",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar exportacoes de projects"
+    },
+    {
+      "key": "export-jobs:retry",
+      "resource": "export-jobs",
+      "action": "retry",
+      "scope": "ORGANIZATION",
+      "description": "Repetir exportacoes de projects"
+    },
+    {
+      "key": "companies:create",
+      "resource": "companies",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar companies da organization"
+    },
+    {
+      "key": "companies:read",
+      "resource": "companies",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar companies"
+    },
+    {
+      "key": "companies:update",
+      "resource": "companies",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar companies"
+    },
+    {
+      "key": "companies:deactivate",
+      "resource": "companies",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar companies"
+    },
+    {
+      "key": "companies:reactivate",
+      "resource": "companies",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar companies"
+    },
+    {
+      "key": "company-units:create",
+      "resource": "company-units",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar unidades de companies"
+    },
+    {
+      "key": "company-units:read",
+      "resource": "company-units",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar unidades de companies"
+    },
+    {
+      "key": "company-units:update",
+      "resource": "company-units",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar unidades de companies"
+    },
+    {
+      "key": "company-units:deactivate",
+      "resource": "company-units",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar unidades de companies"
+    },
+    {
+      "key": "company-units:reactivate",
+      "resource": "company-units",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar unidades de companies"
+    },
+    {
+      "key": "project-units:assign",
+      "resource": "project-units",
+      "action": "assign",
+      "scope": "ORGANIZATION",
+      "description": "Vincular unidades a projects"
+    },
+    {
+      "key": "project-units:read",
+      "resource": "project-units",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar unidades de projects"
+    },
+    {
+      "key": "project-units:remove",
+      "resource": "project-units",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover unidades de projects"
+    },
+    {
+      "key": "project-preparation:read",
+      "action": "read",
+      "description": "Consultar preparação, modelos, histórico e prévias de comunicação",
+      "resource": "project-preparation",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "project-preparation:edit",
+      "action": "edit",
+      "description": "Gerenciar modelos e preencher preparação dos projetos",
+      "resource": "project-preparation",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "project-preparation:approve",
+      "action": "approve",
+      "description": "Aprovar e reabrir preparação dos projetos",
+      "resource": "project-preparation",
+      "scope": "ORGANIZATION"
+    },
+    {
+      "key": "field-coordination:read",
+      "resource": "field-coordination",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: read"
+    },
+    {
+      "key": "field-coordination:edit",
+      "resource": "field-coordination",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: edit"
+    },
+    {
+      "key": "field-coordination:coordinate",
+      "resource": "field-coordination",
+      "action": "coordinate",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: coordinate"
+    },
+    {
+      "key": "assisted-reconciliation:read",
+      "resource": "assisted-reconciliation",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: read"
+    },
+    {
+      "key": "assisted-reconciliation:generate",
+      "resource": "assisted-reconciliation",
+      "action": "generate",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: generate"
+    },
+    {
+      "key": "assisted-reconciliation:review",
+      "resource": "assisted-reconciliation",
+      "action": "review",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: review"
+    },
+    {
+      "key": "asset-valuations:batch-create",
+      "resource": "asset-valuations",
+      "action": "batch-create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar avaliações patrimoniais em lote"
+    },
+    {
+      "key": "contracts:read",
+      "resource": "contracts",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: read"
+    },
+    {
+      "key": "contracts:edit",
+      "resource": "contracts",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: edit"
+    },
+    {
+      "key": "contracts:amend",
+      "resource": "contracts",
+      "action": "amend",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: amend"
+    },
+    {
+      "key": "contracts:archive",
+      "resource": "contracts",
+      "action": "archive",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: archive"
+    },
+    {
+      "key": "commercial-indicators:read",
+      "resource": "commercial-indicators",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: read"
+    },
+    {
+      "key": "budgets:read",
+      "resource": "budgets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: read"
+    },
+    {
+      "key": "budgets:edit",
+      "resource": "budgets",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: edit"
+    },
+    {
+      "key": "budgets:configure-prices",
+      "resource": "budgets",
+      "action": "configure-prices",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: configure-prices"
+    },
+    {
+      "key": "budgets:approve",
+      "resource": "budgets",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: approve"
+    },
+    {
+      "key": "receivables:read",
+      "resource": "receivables",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: read"
+    },
+    {
+      "key": "receivables:edit",
+      "resource": "receivables",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: edit"
+    },
+    {
+      "key": "receivables:receive",
+      "resource": "receivables",
+      "action": "receive",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: receive"
+    },
+    {
+      "key": "receivables:reverse",
+      "resource": "receivables",
+      "action": "reverse",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: reverse"
+    },
+    {
+      "key": "cash-flow:read",
+      "resource": "cash-flow",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: read"
+    },
+    {
+      "key": "finance:export",
+      "resource": "finance",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: export"
+    },
+    {
+      "key": "dre:read",
+      "resource": "dre",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: read"
+    },
+    {
+      "key": "dre:configure",
+      "resource": "dre",
+      "action": "configure",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: configure"
+    },
+    {
+      "key": "dre:classify",
+      "resource": "dre",
+      "action": "classify",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: classify"
+    },
+    {
+      "key": "dre:adjust",
+      "resource": "dre",
+      "action": "adjust",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: adjust"
+    },
+    {
+      "key": "dre:periods",
+      "resource": "dre",
+      "action": "periods",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: periods"
+    },
+    {
+      "key": "dre:export",
+      "resource": "dre",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: export"
+    },
+    {
+      "key": "budgets:export",
+      "resource": "budgets",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Documentos profissionais: budgets:export"
+    },
+    {
+      "key": "documents:templates",
+      "resource": "documents",
+      "action": "templates",
+      "scope": "ORGANIZATION",
+      "description": "Documentos profissionais: documents:templates"
+    },
+    {
+      "key": "technical-reports:read",
+      "resource": "technical-reports",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Laudos tecnicos: read"
+    },
+    {
+      "key": "technical-reports:edit",
+      "resource": "technical-reports",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Laudos tecnicos: edit"
+    },
+    {
+      "key": "technical-reports:templates",
+      "resource": "technical-reports",
+      "action": "templates",
+      "scope": "ORGANIZATION",
+      "description": "Laudos tecnicos: templates"
+    },
+    {
+      "key": "technical-reports:approve",
+      "resource": "technical-reports",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Laudos tecnicos: approve"
+    },
+    {
+      "key": "technical-reports:export",
+      "resource": "technical-reports",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Laudos tecnicos: export"
+    }
+  ],
+  "routes": [
+    {
+      "file": "gai-backend/src/app.controller.ts",
+      "controller": "AppController",
+      "method": "health",
+      "verb": "GET",
+      "path": "/api/v1/health",
+      "permissions": [],
+      "guards": [],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "controller": "AssistedController",
+      "method": "generate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/assisted-reconciliation/runs",
+      "permissions": [
+        "assisted-reconciliation:read",
+        "assisted-reconciliation:generate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "controller": "AssistedController",
+      "method": "runs",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/assisted-reconciliation/runs",
+      "permissions": [
+        "assisted-reconciliation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "controller": "AssistedController",
+      "method": "candidates",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/assisted-reconciliation/runs/:runId/candidates",
+      "permissions": [
+        "assisted-reconciliation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "controller": "AssistedController",
+      "method": "history",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/assisted-reconciliation/candidates/:id/history",
+      "permissions": [
+        "assisted-reconciliation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+      "controller": "AssistedController",
+      "method": "decide",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/assisted-reconciliation/candidates/:id/decisions",
+      "permissions": [
+        "assisted-reconciliation:read",
+        "assisted-reconciliation:review",
+        "consolidations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+      "controller": "AuthController",
+      "method": "login",
+      "verb": "POST",
+      "path": "/api/v1/auth/login",
+      "permissions": [],
+      "guards": [],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+      "controller": "AuthController",
+      "method": "logout",
+      "verb": "POST",
+      "path": "/api/v1/auth/logout",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+      "controller": "AuthController",
+      "method": "me",
+      "verb": "GET",
+      "path": "/api/v1/auth/me",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+      "controller": "AuthController",
+      "method": "requestPasswordReset",
+      "verb": "POST",
+      "path": "/api/v1/auth/password-reset/request",
+      "permissions": [],
+      "guards": [],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+      "controller": "AuthController",
+      "method": "confirmPasswordReset",
+      "verb": "POST",
+      "path": "/api/v1/auth/password-reset/confirm",
+      "permissions": [],
+      "guards": [],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "pricing",
+      "verb": "GET",
+      "path": "/api/v1/budgets/pricing",
+      "permissions": [
+        "budgets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "publish",
+      "verb": "POST",
+      "path": "/api/v1/budgets/pricing",
+      "permissions": [
+        "budgets:read",
+        "budgets:configure-prices"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "simulate",
+      "verb": "POST",
+      "path": "/api/v1/budgets/simulate",
+      "permissions": [
+        "budgets:read",
+        "budgets:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/budgets",
+      "permissions": [
+        "budgets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/budgets",
+      "permissions": [
+        "budgets:read",
+        "budgets:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "detail",
+      "verb": "GET",
+      "path": "/api/v1/budgets/:id",
+      "permissions": [
+        "budgets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "edit",
+      "verb": "PUT",
+      "path": "/api/v1/budgets/:id/versions",
+      "permissions": [
+        "budgets:read",
+        "budgets:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "scenario",
+      "verb": "POST",
+      "path": "/api/v1/budgets/:id/scenarios",
+      "permissions": [
+        "budgets:read",
+        "budgets:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "transition",
+      "verb": "POST",
+      "path": "/api/v1/budgets/:id/transitions",
+      "permissions": [
+        "budgets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "proposal",
+      "verb": "GET",
+      "path": "/api/v1/budgets/:id/proposal",
+      "permissions": [
+        "budgets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/budgets/budget.controller.ts",
+      "controller": "BudgetController",
+      "method": "conversion",
+      "verb": "GET",
+      "path": "/api/v1/budgets/:id/contract-preview",
+      "permissions": [
+        "budgets:read",
+        "budgets:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/catalog-assets",
+      "permissions": [
+        "catalog-assets:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/catalog-assets",
+      "permissions": [
+        "catalog-assets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/catalog-assets/:id",
+      "permissions": [
+        "catalog-assets:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/catalog-assets/:id",
+      "permissions": [
+        "catalog-assets:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/catalog-assets/:id/deactivate",
+      "permissions": [
+        "catalog-assets:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+      "controller": "CatalogAssetsController",
+      "method": "reactivate",
+      "verb": "POST",
+      "path": "/api/v1/catalog-assets/:id/reactivate",
+      "permissions": [
+        "catalog-assets:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "createCompany",
+      "verb": "POST",
+      "path": "/api/v1/companies",
+      "permissions": [
+        "companies:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "listCompanies",
+      "verb": "GET",
+      "path": "/api/v1/companies",
+      "permissions": [
+        "companies:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "getCompany",
+      "verb": "GET",
+      "path": "/api/v1/companies/:id",
+      "permissions": [
+        "companies:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "updateCompany",
+      "verb": "PATCH",
+      "path": "/api/v1/companies/:id",
+      "permissions": [
+        "companies:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "deactivateCompany",
+      "verb": "POST",
+      "path": "/api/v1/companies/:id/deactivate",
+      "permissions": [
+        "companies:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "reactivateCompany",
+      "verb": "POST",
+      "path": "/api/v1/companies/:id/reactivate",
+      "permissions": [
+        "companies:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "createUnit",
+      "verb": "POST",
+      "path": "/api/v1/companies/:companyId/units",
+      "permissions": [
+        "company-units:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "listUnits",
+      "verb": "GET",
+      "path": "/api/v1/companies/:companyId/units",
+      "permissions": [
+        "company-units:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "getUnit",
+      "verb": "GET",
+      "path": "/api/v1/companies/:companyId/units/:unitId",
+      "permissions": [
+        "company-units:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "updateUnit",
+      "verb": "PATCH",
+      "path": "/api/v1/companies/:companyId/units/:unitId",
+      "permissions": [
+        "company-units:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "deactivateUnit",
+      "verb": "POST",
+      "path": "/api/v1/companies/:companyId/units/:unitId/deactivate",
+      "permissions": [
+        "company-units:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "reactivateUnit",
+      "verb": "POST",
+      "path": "/api/v1/companies/:companyId/units/:unitId/reactivate",
+      "permissions": [
+        "company-units:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "assignProjectUnit",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/units",
+      "permissions": [
+        "project-units:assign"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "listProjectUnits",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/units",
+      "permissions": [
+        "project-units:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+      "controller": "CompaniesController",
+      "method": "removeProjectUnit",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/units/:unitId/remove",
+      "permissions": [
+        "project-units:remove"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.controller.ts",
+      "controller": "CommercialController",
+      "method": "overview",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/commercial",
+      "permissions": [
+        "projects:read",
+        "commercial-indicators:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.controller.ts",
+      "controller": "CommercialController",
+      "method": "save",
+      "verb": "POST",
+      "path": "/api/v1/organization-overview/commercial/reports",
+      "permissions": [
+        "projects:read",
+        "commercial-indicators:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.controller.ts",
+      "controller": "CommercialController",
+      "method": "report",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/commercial/reports/:id",
+      "permissions": [
+        "projects:read",
+        "commercial-indicators:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/commercial.controller.ts",
+      "controller": "CommercialController",
+      "method": "export",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/commercial/reports/:id/export.:format",
+      "permissions": [
+        "projects:read",
+        "commercial-indicators:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/contracts",
+      "permissions": [
+        "projects:read",
+        "contracts:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "detail",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/contracts/:id",
+      "permissions": [
+        "projects:read",
+        "contracts:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/contracts",
+      "permissions": [
+        "projects:read",
+        "contracts:read",
+        "contracts:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "edit",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/contracts/:id",
+      "permissions": [
+        "projects:read",
+        "contracts:read",
+        "contracts:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "amend",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/contracts/:id/amendments",
+      "permissions": [
+        "projects:read",
+        "contracts:read",
+        "contracts:amend"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/contracts/contract.controller.ts",
+      "controller": "ContractController",
+      "method": "archive",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/contracts/:id/archive",
+      "permissions": [
+        "projects:read",
+        "contracts:read",
+        "contracts:archive"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "ReportDocumentsController",
+      "method": "generate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/versions/:versionId/documents",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "ReportDocumentsController",
+      "method": "download",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/versions/:versionId/documents/:artifactId",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "BudgetDocumentsController",
+      "method": "generate",
+      "verb": "POST",
+      "path": "/api/v1/budgets/:id/versions/:versionId/documents",
+      "permissions": [
+        "budgets:read",
+        "budgets:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "BudgetDocumentsController",
+      "method": "proposal",
+      "verb": "POST",
+      "path": "/api/v1/budgets/:id/versions/:versionId/proposal-documents",
+      "permissions": [
+        "budgets:read",
+        "budgets:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "BudgetDocumentsController",
+      "method": "download",
+      "verb": "GET",
+      "path": "/api/v1/budgets/:id/versions/:versionId/documents/:artifactId",
+      "permissions": [
+        "budgets:read",
+        "budgets:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "BudgetDocumentsController",
+      "method": "proposalDownload",
+      "verb": "GET",
+      "path": "/api/v1/budgets/:id/versions/:versionId/proposal-documents/:artifactId",
+      "permissions": [
+        "budgets:read",
+        "budgets:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "DocumentTemplatesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/document-templates",
+      "permissions": [
+        "documents:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/documents/documents.controller.ts",
+      "controller": "DocumentTemplatesController",
+      "method": "publish",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/document-templates",
+      "permissions": [
+        "documents:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expense-accountabilities",
+      "permissions": [
+        "expense-accountabilities:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expense-accountabilities",
+      "permissions": [
+        "expense-accountabilities:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expense-accountabilities/:id",
+      "permissions": [
+        "expense-accountabilities:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "addExpense",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expense-accountabilities/:id/expenses",
+      "permissions": [
+        "expense-accountabilities:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "close",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expense-accountabilities/:id/close",
+      "permissions": [
+        "expense-accountabilities:close"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "generateInstallments",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/installments/generate",
+      "permissions": [
+        "expense-installments:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+      "controller": "ExpenseAccountabilitiesController",
+      "method": "listInstallments",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/installments",
+      "permissions": [
+        "expense-installments:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/export-jobs",
+      "permissions": [
+        "export-jobs:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/export-jobs",
+      "permissions": [
+        "export-jobs:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "download",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/export-jobs/:jobId/download",
+      "permissions": [
+        "export-jobs:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/export-jobs/:jobId",
+      "permissions": [
+        "export-jobs:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "createDownloadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/export-jobs/:jobId/download-url",
+      "permissions": [
+        "export-jobs:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "cancel",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/export-jobs/:jobId/cancel",
+      "permissions": [
+        "export-jobs:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+      "controller": "ExportJobsController",
+      "method": "retry",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/export-jobs/:jobId/retry",
+      "permissions": [
+        "export-jobs:retry"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/field-agents",
+      "permissions": [
+        "field-agents:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/field-agents",
+      "permissions": [
+        "field-agents:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/field-agents/:id",
+      "permissions": [
+        "field-agents:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/field-agents/:id",
+      "permissions": [
+        "field-agents:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/field-agents/:id/deactivate",
+      "permissions": [
+        "field-agents:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "reactivate",
+      "verb": "POST",
+      "path": "/api/v1/field-agents/:id/reactivate",
+      "permissions": [
+        "field-agents:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "block",
+      "verb": "POST",
+      "path": "/api/v1/field-agents/:id/block",
+      "permissions": [
+        "field-agents:block"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "unblock",
+      "verb": "POST",
+      "path": "/api/v1/field-agents/:id/unblock",
+      "permissions": [
+        "field-agents:unblock"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+      "controller": "FieldAgentsController",
+      "method": "delete",
+      "verb": "DELETE",
+      "path": "/api/v1/field-agents/:id",
+      "permissions": [
+        "field-agents:delete"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/project-field-agents.controller.ts",
+      "controller": "ProjectFieldAgentsController",
+      "method": "assign",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-agents",
+      "permissions": [
+        "project-field-agents:assign"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/project-field-agents.controller.ts",
+      "controller": "ProjectFieldAgentsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-agents",
+      "permissions": [
+        "project-field-agents:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/project-field-agents.controller.ts",
+      "controller": "ProjectFieldAgentsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/field-agents/:assignmentId",
+      "permissions": [
+        "project-field-agents:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/presentation/project-field-agents.controller.ts",
+      "controller": "ProjectFieldAgentsController",
+      "method": "remove",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-agents/:assignmentId/remove",
+      "permissions": [
+        "project-field-agents:remove"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/field-templates",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/field-templates/:id",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "version",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/field-templates/:id/versions/:version",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/field-templates",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/organizations/:organizationId/field-templates/:id",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldTemplatesController",
+      "method": "archive",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/field-templates/:id/archive",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "context",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/context",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-coordination",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "tasks",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/tasks",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "add",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/tasks",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/tasks/:taskId",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "approve",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/tasks/:taskId/approve",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:coordinate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "dashboard",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/dashboard",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "readiness",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/readiness",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "transition",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/transition",
+      "permissions": [
+        "field-coordination:read",
+        "field-coordination:coordinate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "history",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/history",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+      "controller": "FieldController",
+      "method": "message",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/field-coordination/:id/message",
+      "permissions": [
+        "field-coordination:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "createSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions",
+      "permissions": [
+        "import-sessions:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "listSessions",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions",
+      "permissions": [
+        "import-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "getSessionByUuid",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/by-uuid/:sessionUuid",
+      "permissions": [
+        "import-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "getSession",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId",
+      "permissions": [
+        "import-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "finishSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/finish",
+      "permissions": [
+        "import-sessions:finish"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "cancelSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/cancel",
+      "permissions": [
+        "import-sessions:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "retrySession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/retry",
+      "permissions": [
+        "import-sessions:retry"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "receivePayload",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/payloads",
+      "permissions": [
+        "import-payloads:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "importPhysicalFile",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/physical-observations/import",
+      "permissions": [
+        "import-payloads:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "listPayloads",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/payloads",
+      "permissions": [
+        "import-payloads:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "getPayload",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/payloads/:payloadId",
+      "permissions": [
+        "import-payloads:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "reprocessPayload",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/payloads/:payloadId/reprocess",
+      "permissions": [
+        "import-payloads:reprocess"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "listSessionErrors",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/errors",
+      "permissions": [
+        "import-errors:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "listPayloadErrors",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/payloads/:payloadId/errors",
+      "permissions": [
+        "import-errors:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "createFileUploadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/files/upload-url",
+      "permissions": [
+        "import-files:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "confirmFileUpload",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/files/:fileId/confirm-upload",
+      "permissions": [
+        "import-files:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "listFiles",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/files",
+      "permissions": [
+        "import-files:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+      "controller": "ImportSessionsController",
+      "method": "createFileDownloadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/import-sessions/:sessionId/files/:fileId/download-url",
+      "permissions": [
+        "import-files:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "importAccountingItems",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/accounting-imports",
+      "permissions": [
+        "inventory-accounting-items:import"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "listBatches",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/accounting-imports",
+      "permissions": [
+        "inventory-accounting-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "getBatch",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/accounting-imports/:batchId",
+      "permissions": [
+        "inventory-accounting-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "getBatchErrors",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/accounting-imports/:batchId/errors",
+      "permissions": [
+        "inventory-accounting-items:export-errors"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "listItems",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-accounting-items",
+      "permissions": [
+        "inventory-accounting-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "getItem",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-accounting-items/:id",
+      "permissions": [
+        "inventory-accounting-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "updateItem",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/inventory-accounting-items/:id",
+      "permissions": [
+        "inventory-accounting-items:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-accounting-items/:id/deactivate",
+      "permissions": [
+        "inventory-accounting-items:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+      "controller": "InventoryAccountingItemsController",
+      "method": "reactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-accounting-items/:id/reactivate",
+      "permissions": [
+        "inventory-accounting-items:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "requestUploadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images/upload-url",
+      "permissions": [
+        "inventory-item-images:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "confirmUploadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images/:imageId/confirm-upload",
+      "permissions": [
+        "inventory-item-images:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images",
+      "permissions": [
+        "inventory-item-images:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "getByProject",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images/:imageId",
+      "permissions": [
+        "inventory-item-images:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "requestDownloadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images/:imageId/download-url",
+      "permissions": [
+        "inventory-item-images:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "remove",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/images/:imageId/remove",
+      "permissions": [
+        "inventory-item-images:remove"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/inventory-item-images/:id",
+      "permissions": [
+        "inventory-item-images:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+      "controller": "InventoryItemImagesController",
+      "method": "requestDownloadUrlById",
+      "verb": "POST",
+      "path": "/api/v1/inventory-item-images/:id/download-url",
+      "permissions": [
+        "inventory-item-images:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items",
+      "permissions": [
+        "inventory-items:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "listByProject",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items",
+      "permissions": [
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "getByProject",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items/:id",
+      "permissions": [
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/inventory-items/:id",
+      "permissions": [
+        "inventory-items:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:id/deactivate",
+      "permissions": [
+        "inventory-items:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "reactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:id/reactivate",
+      "permissions": [
+        "inventory-items:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/inventory-items",
+      "permissions": [
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+      "controller": "InventoryItemsController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/inventory-items/:id",
+      "permissions": [
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "createSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions",
+      "permissions": [
+        "inventory-sessions:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listSessions",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "getSession",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listRounds",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "startSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/start",
+      "permissions": [
+        "inventory-sessions:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "finishSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/finish",
+      "permissions": [
+        "inventory-sessions:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "cancelSession",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/cancel",
+      "permissions": [
+        "inventory-sessions:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "requestReinventory",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/reinventory",
+      "permissions": [
+        "inventory-rounds:reinventory"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "createObservation",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/observations",
+      "permissions": [
+        "inventory-observations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "createEvidenceUploadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/upload-url",
+      "permissions": [
+        "inventory-observations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "confirmEvidenceUpload",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/:evidenceId/confirm-upload",
+      "permissions": [
+        "inventory-observations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listObservationEvidence",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "createEvidenceDownloadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/observations/:observationId/evidence/:evidenceId/download-url",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listObservations",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/observations",
+      "permissions": [
+        "inventory-sessions:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "finishRound",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/rounds/:roundId/finish",
+      "permissions": [
+        "inventory-sessions:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "reconcile",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/reconciliations",
+      "permissions": [
+        "reconciliations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listReconciliations",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/reconciliations",
+      "permissions": [
+        "reconciliations:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "consolidate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-sessions/:sessionId/reconciliations/:id/consolidate",
+      "permissions": [
+        "consolidations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "createValuation",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/valuations",
+      "permissions": [
+        "asset-valuations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listValuations",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/valuations",
+      "permissions": [
+        "asset-valuations:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+      "controller": "InventoryOperationsController",
+      "method": "listPlateHistory",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/inventory-items/:itemId/plate-history",
+      "permissions": [
+        "plate-history:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "controller": "ValuationBatchController",
+      "method": "selection",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/valuation-batches/selection",
+      "permissions": [
+        "asset-valuations:read",
+        "inventory-items:read",
+        "asset-valuations:batch-create",
+        "asset-valuations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "controller": "ValuationBatchController",
+      "method": "preview",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/valuation-batches/preview",
+      "permissions": [
+        "asset-valuations:read",
+        "inventory-items:read",
+        "asset-valuations:batch-create",
+        "asset-valuations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "controller": "ValuationBatchController",
+      "method": "confirm",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/valuation-batches/:id/confirm",
+      "permissions": [
+        "asset-valuations:read",
+        "inventory-items:read",
+        "asset-valuations:batch-create",
+        "asset-valuations:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "controller": "ValuationBatchController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/valuation-batches",
+      "permissions": [
+        "asset-valuations:read",
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+      "controller": "ValuationBatchController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/valuation-batches/:id",
+      "permissions": [
+        "asset-valuations:read",
+        "inventory-items:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/pending-issues",
+      "permissions": [
+        "inventory-pending-issues:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/pending-issues",
+      "permissions": [
+        "inventory-pending-issues:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "generate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/pending-issues/generate",
+      "permissions": [
+        "inventory-pending-issues:generate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/pending-issues/:id",
+      "permissions": [
+        "inventory-pending-issues:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/pending-issues/:id",
+      "permissions": [
+        "inventory-pending-issues:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "resolve",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/pending-issues/:id/resolve",
+      "permissions": [
+        "inventory-pending-issues:resolve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "ignore",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/pending-issues/:id/ignore",
+      "permissions": [
+        "inventory-pending-issues:ignore"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+      "controller": "InventoryPendingIssuesController",
+      "method": "cancel",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/pending-issues/:id/cancel",
+      "permissions": [
+        "inventory-pending-issues:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "accounts",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/accounts",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "account",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/accounts/:id",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "createAccount",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/accounts",
+      "permissions": [
+        "dre:read",
+        "dre:configure"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "bootstrap",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/accounts/bootstrap",
+      "permissions": [
+        "dre:read",
+        "dre:configure"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "editAccount",
+      "verb": "PUT",
+      "path": "/api/v1/finance/dre/accounts/:id",
+      "permissions": [
+        "dre:read",
+        "dre:configure"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "sources",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/sources",
+      "permissions": [
+        "dre:read",
+        "dre:classify"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "entries",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/entries",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "entry",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/entries/:id",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/entries",
+      "permissions": [
+        "dre:read",
+        "dre:classify"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "edit",
+      "verb": "PUT",
+      "path": "/api/v1/finance/dre/entries/:id",
+      "permissions": [
+        "dre:read",
+        "dre:classify",
+        "dre:adjust"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "report",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/report",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "periods",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/periods",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "period",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/periods/:month",
+      "permissions": [
+        "dre:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "close",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/periods/:month/close",
+      "permissions": [
+        "dre:read",
+        "dre:periods"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "reopen",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/periods/:month/reopen",
+      "permissions": [
+        "dre:read",
+        "dre:periods"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "export",
+      "verb": "POST",
+      "path": "/api/v1/finance/dre/exports",
+      "permissions": [
+        "dre:read",
+        "dre:export",
+        "export-jobs:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "status",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/exports/:id",
+      "permissions": [
+        "dre:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "controller": "DreController",
+      "method": "download",
+      "verb": "GET",
+      "path": "/api/v1/finance/dre/exports/:id/download",
+      "permissions": [
+        "dre:export",
+        "export-jobs:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/organizations",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/organizations",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:id",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/organizations/:id",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:id/deactivate",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+      "controller": "OrganizationsController",
+      "method": "activate",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:id/activate",
+      "permissions": [],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "createPayment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/payments",
+      "permissions": [
+        "payments:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "listPayments",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/payments",
+      "permissions": [
+        "payments:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "paymentSummary",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/payments/summary",
+      "permissions": [
+        "payments:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "getPayment",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/payments/:id",
+      "permissions": [
+        "payments:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "updatePayment",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/payments/:id",
+      "permissions": [
+        "payments:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "approvePayment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/payments/:id/approve",
+      "permissions": [
+        "payments:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "markPaymentPaid",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/payments/:id/mark-as-paid",
+      "permissions": [
+        "payments:mark-as-paid"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "cancelPayment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/payments/:id/cancel",
+      "permissions": [
+        "payments:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "createExpense",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses",
+      "permissions": [
+        "expenses:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "listExpenses",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expenses",
+      "permissions": [
+        "expenses:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "getExpense",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expenses/:id",
+      "permissions": [
+        "expenses:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "updateExpense",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/expenses/:id",
+      "permissions": [
+        "expenses:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "approveExpense",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:id/approve",
+      "permissions": [
+        "expenses:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "rejectExpense",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:id/reject",
+      "permissions": [
+        "expenses:reject"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "markExpensePaid",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:id/mark-as-paid",
+      "permissions": [
+        "expenses:mark-as-paid"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "cancelExpense",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:id/cancel",
+      "permissions": [
+        "expenses:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "createAttachmentUploadUrl",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/attachments/upload-url",
+      "permissions": [
+        "expenses:upload-attachment"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "confirmAttachment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/attachments/:attachmentId/confirm-upload",
+      "permissions": [
+        "expenses:upload-attachment"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "listAttachments",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/attachments",
+      "permissions": [
+        "expenses:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "downloadAttachment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/attachments/:attachmentId/download-url",
+      "permissions": [
+        "expenses:download-attachment"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+      "controller": "PaymentsExpensesController",
+      "method": "removeAttachment",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/expenses/:expenseId/attachments/:attachmentId/remove",
+      "permissions": [
+        "expenses:upload-attachment"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+      "controller": "OrganizationOverviewController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+      "controller": "OrganizationOverviewController",
+      "method": "csv",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/export.csv",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+      "controller": "OrganizationOverviewController",
+      "method": "projects",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/projects",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+      "controller": "OrganizationOverviewController",
+      "method": "companies",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/companies",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+      "controller": "OrganizationOverviewController",
+      "method": "excel",
+      "verb": "GET",
+      "path": "/api/v1/organization-overview/export.xlsx",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts",
+      "controller": "ProjectDashboardController",
+      "method": "summary",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/summary",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts",
+      "controller": "ProjectDashboardController",
+      "method": "dashboard",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/dashboard",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts",
+      "controller": "ProjectDashboardController",
+      "method": "dashboardAnalytics",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/dashboard/analytics",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates/:id",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "version",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates/:id/versions/:version",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates/:id",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "archive",
+      "verb": "DELETE",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates/:id",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "PreparationTemplatesController",
+      "method": "clone",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/preparation-templates/:id/clone",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "context",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/preparations/context",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/preparations",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/preparations",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "get",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/preparations/:id",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/preparations/:id",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "answers",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:projectId/preparations/:id/answers",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "approve",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/preparations/:id/approve",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "reopen",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/preparations/:id/reopen",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "archive",
+      "verb": "DELETE",
+      "path": "/api/v1/projects/:projectId/preparations/:id",
+      "permissions": [
+        "project-preparation:read",
+        "project-preparation:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "history",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/preparations/:id/history",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "controller": "ProjectPreparationController",
+      "method": "communication",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/preparations/:id/communication",
+      "permissions": [
+        "project-preparation:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects",
+      "permissions": [
+        "projects:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/projects/:id",
+      "permissions": [
+        "projects:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/projects/:id",
+      "permissions": [
+        "projects:update"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "activate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/activate",
+      "permissions": [
+        "projects:activate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "pause",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/pause",
+      "permissions": [
+        "projects:pause"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "resume",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/resume",
+      "permissions": [
+        "projects:resume"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/deactivate",
+      "permissions": [
+        "projects:deactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "reactivate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/reactivate",
+      "permissions": [
+        "projects:reactivate"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "finish",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/finish",
+      "permissions": [
+        "projects:finish"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "cancel",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/cancel",
+      "permissions": [
+        "projects:cancel"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+      "controller": "ProjectsController",
+      "method": "archive",
+      "verb": "POST",
+      "path": "/api/v1/projects/:id/archive",
+      "permissions": [
+        "projects:archive"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "source",
+      "verb": "GET",
+      "path": "/api/v1/finance/sources/:kind/:id",
+      "permissions": [
+        "receivables:read",
+        "receivables:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/finance/receivables",
+      "permissions": [
+        "receivables:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "preview",
+      "verb": "POST",
+      "path": "/api/v1/finance/receivables/preview",
+      "permissions": [
+        "receivables:read",
+        "receivables:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/finance/receivables",
+      "permissions": [
+        "receivables:read",
+        "receivables:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "detail",
+      "verb": "GET",
+      "path": "/api/v1/finance/receivables/:id",
+      "permissions": [
+        "receivables:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "edit",
+      "verb": "PUT",
+      "path": "/api/v1/finance/receivables/:id",
+      "permissions": [
+        "receivables:read",
+        "receivables:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "receive",
+      "verb": "POST",
+      "path": "/api/v1/finance/receivables/:id/receipts",
+      "permissions": [
+        "receivables:read",
+        "receivables:receive"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "reverse",
+      "verb": "POST",
+      "path": "/api/v1/finance/receivables/:id/receipts/:eventId/reverse",
+      "permissions": [
+        "receivables:read",
+        "receivables:reverse"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "cancel",
+      "verb": "POST",
+      "path": "/api/v1/finance/receivables/:id/cancel",
+      "permissions": [
+        "receivables:read",
+        "receivables:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "flow",
+      "verb": "GET",
+      "path": "/api/v1/finance/cash-flow",
+      "permissions": [
+        "cash-flow:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "export",
+      "verb": "POST",
+      "path": "/api/v1/finance/exports",
+      "permissions": [
+        "finance:export",
+        "export-jobs:create"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "status",
+      "verb": "GET",
+      "path": "/api/v1/finance/exports/:id",
+      "permissions": [
+        "finance:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "controller": "ReceivableController",
+      "method": "download",
+      "verb": "GET",
+      "path": "/api/v1/finance/exports/:id/download",
+      "permissions": [
+        "finance:export",
+        "export-jobs:download"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "templates",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "template",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates/:id",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "createTemplate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "editTemplate",
+      "verb": "PUT",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates/:id",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "publish",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates/:id/publish",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "archiveTemplate",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/templates/:id/archive",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "responsibles",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/responsibles",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "responsible",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/responsibles",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:templates"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "detail",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "edit",
+      "verb": "PUT",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "refresh",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/refresh-sources",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:edit"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "validate",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/validation",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "transition",
+      "verb": "POST",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/transitions",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:approve"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "version",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/versions/:versionId",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/technical-reports/report.controller.ts",
+      "controller": "TechnicalReportsController",
+      "method": "export",
+      "verb": "GET",
+      "path": "/api/v1/projects/:projectId/technical-reports/:id/versions/:versionId/export",
+      "permissions": [
+        "projects:read",
+        "technical-reports:read",
+        "technical-reports:export"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+      "controller": "OrgRolesController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/roles",
+      "permissions": [
+        "org_roles:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard",
+        "OrganizationScopeGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+      "controller": "OrgRolesController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/organizations/:organizationId/roles",
+      "permissions": [
+        "org_roles:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard",
+        "OrganizationScopeGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+      "controller": "OrgRolesController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/organizations/:organizationId/roles/:roleId",
+      "permissions": [
+        "org_roles:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard",
+        "OrganizationScopeGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+      "controller": "OrgRolesController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/organizations/:organizationId/roles/:roleId",
+      "permissions": [
+        "org_roles:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard",
+        "OrganizationScopeGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+      "controller": "OrgRolesController",
+      "method": "deactivate",
+      "verb": "DELETE",
+      "path": "/api/v1/organizations/:organizationId/roles/:roleId",
+      "permissions": [
+        "org_roles:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard",
+        "OrganizationScopeGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/permissions.controller.ts",
+      "controller": "PermissionsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/permissions",
+      "permissions": [
+        "org_roles:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/user-role-assignments.controller.ts",
+      "controller": "UserRoleAssignmentsController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/users/:userId/role-assignments",
+      "permissions": [
+        "users:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/user-role-assignments.controller.ts",
+      "controller": "UserRoleAssignmentsController",
+      "method": "assign",
+      "verb": "POST",
+      "path": "/api/v1/users/:userId/role-assignments",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/user-role-assignments.controller.ts",
+      "controller": "UserRoleAssignmentsController",
+      "method": "revoke",
+      "verb": "DELETE",
+      "path": "/api/v1/users/:userId/role-assignments/:assignmentId",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "create",
+      "verb": "POST",
+      "path": "/api/v1/users",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "list",
+      "verb": "GET",
+      "path": "/api/v1/users",
+      "permissions": [
+        "users:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "getById",
+      "verb": "GET",
+      "path": "/api/v1/users/:id",
+      "permissions": [
+        "users:read"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "update",
+      "verb": "PATCH",
+      "path": "/api/v1/users/:id",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "deactivate",
+      "verb": "POST",
+      "path": "/api/v1/users/:id/deactivate",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    },
+    {
+      "file": "gai-backend/src/modules/users/presentation/users.controller.ts",
+      "controller": "UsersController",
+      "method": "activate",
+      "verb": "POST",
+      "path": "/api/v1/users/:id/activate",
+      "permissions": [
+        "users:write"
+      ],
+      "guards": [
+        "SessionAuthGuard",
+        "RolesGuard",
+        "PermissionsGuard"
+      ],
+      "unknown": []
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+[
+  {
+    "count": 0,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 0,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 999,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 999,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1000,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1000,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1001,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 1001,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 5000,
+    "format": "docx",
+    "explicit_failure_without_artifact": true
+  },
+  {
+    "count": 5000,
+    "format": "pdf",
+    "explicit_failure_without_artifact": true
+  },
+  {
+    "count": 2500,
+    "format": "docx",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  },
+  {
+    "count": 2500,
+    "format": "pdf",
+    "checksum_valid": true,
+    "all_rows_in_order_no_duplicates": true,
+    "snapshot_hash_present": true
+  }
+]

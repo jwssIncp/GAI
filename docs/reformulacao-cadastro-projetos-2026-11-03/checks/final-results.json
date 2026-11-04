@@ -1,0 +1,311 @@
+{
+  "generated_at": "2026-11-03T17:18:02.317Z",
+  "checks": [
+    {
+      "name": "unit-full",
+      "scope": "complete",
+      "suites": 63,
+      "tests": 463,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "unit"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T10:05:15.496Z",
+      "duration_seconds": 193.431,
+      "exit_code": 0,
+      "log": "docs/reformulacao-cadastro-projetos-2026-11-03/checks/unit-full.log"
+    },
+    {
+      "name": "unit",
+      "scope": "targeted",
+      "suites": 5,
+      "tests": 32,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "unit",
+        "test/unit/modules/projects"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T10:12:31.508Z",
+      "duration_seconds": 19.834,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\unit.log"
+    },
+    {
+      "name": "frontend-full-final",
+      "scope": "complete",
+      "suites": 54,
+      "tests": 332,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.ts"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T17:14:35.669Z",
+      "duration_seconds": 157.851,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\frontend-full-final.log"
+    },
+    {
+      "name": "frontend-projects-final",
+      "scope": "targeted",
+      "suites": 7,
+      "tests": 51,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "src/features/projects"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T17:10:00.651Z",
+      "duration_seconds": 23.08,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\frontend-projects-final.log"
+    },
+    {
+      "name": "sqlite-projects-final",
+      "scope": "targeted",
+      "suites": 3,
+      "tests": 39,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "sqlite",
+        "--runTestsByPath",
+        "test/integration/projects/project-registration.e2e-spec.ts",
+        "test/integration/projects/projects.e2e-spec.ts",
+        "test/contract/projects-api.spec.ts"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T10:22:22.644Z",
+      "duration_seconds": 24.598,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\sqlite-projects-final.log"
+    },
+    {
+      "name": "mysql-final",
+      "scope": "targeted",
+      "suites": 4,
+      "tests": 40,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/projects/projects.e2e-spec.ts",
+        "test/integration/projects/project-registration.e2e-spec.ts",
+        "test/integration/users/role-assignments.e2e-spec.ts",
+        "test/integration/technical-validation/generated-metadata.mysql.e2e-spec.ts"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T17:12:27.716Z",
+      "duration_seconds": 76.613,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\mysql-final.log"
+    },
+    {
+      "name": "browser",
+      "scope": "browser",
+      "suites": null,
+      "tests": 6,
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.projects.config.ts"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T10:19:49.941Z",
+      "duration_seconds": 129.572,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\browser.log"
+    },
+    {
+      "name": "build-backend",
+      "scope": "build_or_lint",
+      "command": [
+        "node",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T10:08:47.701Z",
+      "duration_seconds": 104.625,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\build-backend.log"
+    },
+    {
+      "name": "build-frontend-final",
+      "scope": "build_or_lint",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-b"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T17:11:49.603Z",
+      "duration_seconds": 45.604,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\build-frontend-final.log"
+    },
+    {
+      "name": "bundle-frontend-final",
+      "scope": "build_or_lint",
+      "command": [
+        "node",
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T17:12:35.585Z",
+      "duration_seconds": 30.27,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\bundle-frontend-final.log"
+    },
+    {
+      "name": "lint-backend",
+      "scope": "build_or_lint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src\\modules\\projects\\application\\dto\\create-project.dto.ts",
+        "src\\modules\\projects\\application\\dto\\list-projects-query.dto.ts",
+        "src\\modules\\projects\\application\\dto\\project-response.dto.ts",
+        "src\\modules\\projects\\application\\dto\\update-project.dto.ts",
+        "src\\modules\\projects\\application\\services\\project-scope.service.ts",
+        "src\\modules\\projects\\application\\use-cases\\create-project.use-case.ts",
+        "src\\modules\\projects\\application\\use-cases\\list-projects.use-case.ts",
+        "src\\modules\\projects\\application\\use-cases\\update-project.use-case.ts",
+        "src\\modules\\projects\\domain\\entities\\project.ts",
+        "src\\modules\\projects\\domain\\ports\\project.repository.port.ts",
+        "src\\modules\\projects\\infrastructure\\persistence\\project.entity.ts",
+        "src\\modules\\projects\\infrastructure\\persistence\\typeorm-project.repository.ts",
+        "src\\modules\\projects\\presentation\\projects.controller.ts",
+        "src\\modules\\projects\\projects.module.ts",
+        "test\\unit\\modules\\projects\\update-project.use-case.spec.ts",
+        "test\\integration\\users\\role-assignments.e2e-spec.ts",
+        "test\\integration\\technical-validation\\generated-metadata.mysql.e2e-spec.ts",
+        "src\\migrations\\1794200000001-extend-project-registration.ts",
+        "src\\modules\\projects\\domain\\enums\\project-type.enum.ts",
+        "src\\modules\\projects\\application\\dto\\project-registration-fields.dto.ts",
+        "src\\modules\\projects\\application\\dto\\project-json.validator.ts",
+        "src\\modules\\projects\\application\\dto\\project-options-query.dto.ts",
+        "src\\modules\\projects\\application\\services\\project-registration.service.ts",
+        "test\\unit\\modules\\projects\\project-registration.spec.ts",
+        "test\\integration\\projects\\project-registration.e2e-spec.ts"
+      ],
+      "cwd": "gai-backend",
+      "started_at": "2026-11-03T17:13:24.973Z",
+      "duration_seconds": 23.243,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\lint-backend.log"
+    },
+    {
+      "name": "lint-frontend",
+      "scope": "build_or_lint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src\\features\\projects\\ProjectForm.tsx",
+        "src\\features\\projects\\projectQueries.ts",
+        "src\\features\\projects\\projectSchemas.ts",
+        "src\\features\\projects\\ProjectsPage.test.tsx",
+        "src\\features\\projects\\ProjectsPage.tsx",
+        "src\\features\\projects\\ProjectSummaryPage.test.tsx",
+        "src\\features\\projects\\ProjectSummaryPage.tsx",
+        "src\\types\\api.ts",
+        "src\\api\\endpoints.ts",
+        "src\\router\\router.tsx",
+        "src\\layouts\\Sidebar.tsx",
+        "src\\features\\projects\\projectFields.ts",
+        "src\\features\\projects\\projectFields.test.ts",
+        "src\\features\\projects\\SidebarProjects.test.tsx",
+        "src\\features\\projects\\ProjectRegistrationSelect.tsx",
+        "src\\features\\projects\\ProjectCreatePage.tsx",
+        "src\\features\\projects\\ProjectRegistrationDetails.tsx",
+        "e2e\\project-registration-real.spec.ts",
+        "playwright.projects.config.ts"
+      ],
+      "cwd": "gai-frontend",
+      "started_at": "2026-11-03T17:13:06.150Z",
+      "duration_seconds": 10.259,
+      "exit_code": 0,
+      "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\lint-frontend.log"
+    }
+  ],
+  "initial_broad_integrations": [
+    {
+      "name": "sqlite",
+      "passed_suites": 56,
+      "failed_suites": 1,
+      "passed_tests": 334,
+      "failed_tests": 1,
+      "skipped_tests": 4,
+      "final_rerun": "sqlite-projects-final",
+      "fully_repeated_after_fix": false
+    },
+    {
+      "name": "mysql",
+      "passed_suites": 48,
+      "failed_suites": 2,
+      "passed_tests": 408,
+      "failed_tests": 3,
+      "final_rerun": "mysql-final",
+      "fully_repeated_after_fix": false
+    }
+  ],
+  "original_data_preserved": true,
+  "runtime": {
+    "checked_at": "2026-11-03T17:16:15.688Z",
+    "health": {
+      "status": 200
+    },
+    "frontend": {
+      "status": 200
+    },
+    "protected_options": {
+      "status": 401
+    },
+    "openapi": {
+      "status": 200,
+      "project_paths": [
+        "/api/v1/projects/creation-options",
+        "/api/v1/projects/edit-options",
+        "/api/v1/projects/company-options",
+        "/api/v1/projects/{id}/history",
+        "/api/v1/projects/{projectId}/inventory-items/{itemId}/plate-history",
+        "/api/v1/projects/{projectId}/preparations/{id}/history",
+        "/api/v1/projects/{projectId}/field-coordination/{id}/history",
+        "/api/v1/projects/{projectId}/inventory-sessions/{sessionId}/assisted-reconciliation/candidates/{id}/history"
+      ],
+      "create_fields": [
+        "code",
+        "project_type",
+        "responsible_user_id",
+        "planning_responsible_user_id",
+        "planning_notes",
+        "organization_id",
+        "company_id",
+        "name",
+        "description",
+        "start_date",
+        "end_date",
+        "settings",
+        "metadata"
+      ]
+    }
+  },
+  "commit": false,
+  "push": false,
+  "production_deploy": false
+}

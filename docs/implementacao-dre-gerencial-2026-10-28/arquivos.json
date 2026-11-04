@@ -1,0 +1,217 @@
+[
+  {
+    "file": ".local/dre-evidence.cjs",
+    "bytes": 5501,
+    "sha256": "06aaafe06dc9d13489ea8747d866a31a9281cafbccff95c0d07c95ca75369a95"
+  },
+  {
+    "file": ".local/dre-manifest.cjs",
+    "bytes": 3835,
+    "sha256": "e3620c4d3dad3a5b89d4f5d259eb0e2323eeee121b6e0dbc2cfbe0f6818bf6e3"
+  },
+  {
+    "file": ".local/run-dre-checks.cjs",
+    "bytes": 2858,
+    "sha256": "19d641277bc7bdc95754da0a5f30066254955857479dc1666b2d5f9997747e3d"
+  },
+  {
+    "file": ".local/run-dre-playwright.cjs",
+    "bytes": 494,
+    "sha256": "80278769e54e44e2d03da2dc57eab12134369a939e46c132e94941abc56a76e7"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/README.md",
+    "bytes": 18095,
+    "sha256": "d733687521845c8b5bda4e7c24abe0850b9e67defc632b8433d4b5e4cf38dc71"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/evidencias/demonstrativo.png",
+    "bytes": 349558,
+    "sha256": "55c1f960b6da6053b089f1b7f998d6041f1245e2e71672410837c2a3a2385da5"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/evidencias/dre-synthetic.xlsx",
+    "bytes": 15964,
+    "sha256": "d37a370f2c32ffff8aff9f4c588959bb4c11779d0a8fb15d0e58df1c2a825083"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/evidencias/mobile.png",
+    "bytes": 94664,
+    "sha256": "d7eec9f96039440ce4f2d3c087c7a524fdef8484f47d58792f9ed5cd1a6aea82"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/runtime-local.json",
+    "bytes": 9199,
+    "sha256": "c2178cdb90ae3f9ac516352e03c7536e6e01d1c6495f4396dab645e3ccfdab65"
+  },
+  {
+    "file": "docs/implementacao-dre-gerencial-2026-10-28/testes.json",
+    "bytes": 3069,
+    "sha256": "b65d2a3e2e7f7f8352e99e865abde5b42d7d9f0f9c826c35b93146b23d5e1ab2"
+  },
+  {
+    "file": "gai-backend/src/app.module.ts",
+    "bytes": 12665,
+    "sha256": "8c2c08b9838788a0feadbbc085cab24a6e714599dfcbb86d9d1cbf5b8195f634"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793800000001-create-managerial-dre.ts",
+    "bytes": 4017,
+    "sha256": "30e98fd3d5041fdbfe527c21c2f7cba9e131add87885d147b7914fdd3bbb7400"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/application/services/export-jobs.service.ts",
+    "bytes": 18980,
+    "sha256": "92c1e9090e58a48c9ffc517e28e124f4921ebcd9cca014540f044528493136bb"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/application/services/export-workbook-builder.service.ts",
+    "bytes": 21331,
+    "sha256": "e379a722d50453e1192cb6d20e34382f6831a1b6bb13f8461156f3ac98ddd337"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/domain/enums/export-job-type.enum.ts",
+    "bytes": 425,
+    "sha256": "918bff1e3eb09a71dd9af6894487432204b7fb545b1840480f2244097f4686ba"
+  },
+  {
+    "file": "gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts",
+    "bytes": 1041,
+    "sha256": "dcada062f861cadf5a58226556c2748b158c4b3a31c7dd10c9d8808456736ff9"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre-export.service.ts",
+    "bytes": 7599,
+    "sha256": "b60b2f945a59e67ec3ac5c8826439374f21e7e4c32b43cd5c479a437e63acb71"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+    "bytes": 5326,
+    "sha256": "6c43af96041194cbc8beab96ef4aca5ada327f3f766ad6cb98ce80cee619085d"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.dto.ts",
+    "bytes": 3543,
+    "sha256": "3bb87017547832ef2c1b4d45a7954474e2a7c50f6e0e8eb451b0e41d5ddf9070"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.entity.ts",
+    "bytes": 5991,
+    "sha256": "c7a56d513d4ff5d52039c688c39bb82839ab1686beccfb0ad3929ae4515ecd29"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.policy.ts",
+    "bytes": 5393,
+    "sha256": "f43ca5bd76e28c668e30831a5c93c495d641e0356c71b8dd058a291aa9583735"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.report.ts",
+    "bytes": 1153,
+    "sha256": "565aa60a01c5bcf5b134c6a35cf1dc3f3f9b6b375923c6f4f65693793c5a7933"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/dre.service.ts",
+    "bytes": 37512,
+    "sha256": "beb8df955bc72b5210f2a5a41b4dd5f0be2bc9f69bed42f779a303f52ca1ab4e"
+  },
+  {
+    "file": "gai-backend/src/modules/managerial-dre/managerial-dre.module.ts",
+    "bytes": 649,
+    "sha256": "d46ccec8dee992694b14b80c1e746420688457605c6db0d16f90f69148155bfb"
+  },
+  {
+    "file": "gai-backend/src/modules/receivables/finance-export.service.ts",
+    "bytes": 11589,
+    "sha256": "f8736f040df8f01f60e3773831d31c5d727699b4a08c8f909045868e8dee4875"
+  },
+  {
+    "file": "gai-backend/src/modules/receivables/receivables.module.ts",
+    "bytes": 718,
+    "sha256": "1c043873cb69df0a2a5a0d622222c3170de4830d6e02d0486496dec4e727dd51"
+  },
+  {
+    "file": "gai-backend/src/scripts/seed/permissions.seed.ts",
+    "bytes": 23412,
+    "sha256": "0a12b503ce1b3010a35da91c2d979933da586e0a5fa4c0136a307e54fc0a042f"
+  },
+  {
+    "file": "gai-backend/test/integration/managerial-dre/dre.e2e-spec.ts",
+    "bytes": 22259,
+    "sha256": "3ddd88c811447cf6036e3d5d112754b1e2f9d644b8ed5baa375b930463848ab9"
+  },
+  {
+    "file": "gai-backend/test/integration/test-app.helper.ts",
+    "bytes": 23548,
+    "sha256": "a68c98cb9a2d858e3a58d235806ec7541007a157034010f2c1adb6896f266508"
+  },
+  {
+    "file": "gai-backend/test/unit/modules/managerial-dre/dre.policy.spec.ts",
+    "bytes": 3178,
+    "sha256": "ff013720042756c70777b9bbd559fb194ce06c430fdf06e0461cd00e6d1c58d9"
+  },
+  {
+    "file": "gai-frontend/e2e/dre-real.spec.ts",
+    "bytes": 10243,
+    "sha256": "83bdd6dc9a0c9e8a2a2f0448b52c18b4e71fb33eb5a8a7c169875772f22b8801"
+  },
+  {
+    "file": "gai-frontend/src/constants/navigation.ts",
+    "bytes": 1476,
+    "sha256": "bb603248449a140eb7a19cc684afc00b6b43c4c3e16eef38ef891273c4533cd8"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DreAccountsPage.tsx",
+    "bytes": 9548,
+    "sha256": "b13703f6e2e83d7a69627222f793a3a5132da54e089f199d1cd75a9bbb5cfddf"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DreEntriesPage.tsx",
+    "bytes": 21145,
+    "sha256": "f5552dc76c0af898912c8dbcae44d9f9218b84f64a968d0013f33a7fb1c1dafe"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DreLayout.tsx",
+    "bytes": 1731,
+    "sha256": "13591bddce855b03d805d6bbc714dad563d2cd7954e5f13e0864739044552928"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DreNavigation.test.tsx",
+    "bytes": 5983,
+    "sha256": "8f70ad5972e9662a56e564590b20056f4edfd359cd185c9dec89e44f700c4881"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DrePeriodsPage.tsx",
+    "bytes": 9215,
+    "sha256": "e487bd15bc938886f01bff797db05404a89d40e7685260de493dd3c2d9b937ca"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/DreReportPage.tsx",
+    "bytes": 20502,
+    "sha256": "baa2a87c7a36ad5af41a0239f3e84d0c11934fd5f9641a3ad61c5d2655d1630f"
+  },
+  {
+    "file": "gai-frontend/src/features/dre/dreApi.ts",
+    "bytes": 6690,
+    "sha256": "ea2d26c894ee8eff50084fa3bd64066bb6dd303944f736061afab39ed21cd481"
+  },
+  {
+    "file": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "bytes": 5958,
+    "sha256": "2881023467ca9fafea9d8beeb4ba062ca850b1a45ca196a5fb950b9705c2321b"
+  },
+  {
+    "file": "gai-frontend/src/features/receivables/FinanceLayout.tsx",
+    "bytes": 1457,
+    "sha256": "159b7b6763c7f610ac9120dbe932803bd52e11ee766dc9541d7dbbbf051a395b"
+  },
+  {
+    "file": "gai-frontend/src/layouts/Topbar.tsx",
+    "bytes": 6237,
+    "sha256": "813fd76400262361c7f59228d7a5f939e9b689d4818155ea3f6afe7b8d3138ae"
+  },
+  {
+    "file": "gai-frontend/src/router/router.tsx",
+    "bytes": 5941,
+    "sha256": "482cb94741b0b357e2fb641ad228aff39357c1a70cbeda9924d57084473c384e"
+  }
+]

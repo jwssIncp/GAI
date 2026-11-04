@@ -12,6 +12,10 @@ export interface UserProps {
   passwordChangedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  authVersion?: number;
+  mustChangePassword?: boolean;
+  fullName?: string | null;
+  temporaryPasswordExpiresAt?: Date | null;
 }
 
 export class User {
@@ -21,6 +25,18 @@ export class User {
     return this.props.id;
   }
 
+  get authVersion(): number {
+    return this.props.authVersion ?? 0;
+  }
+  get mustChangePassword(): boolean {
+    return this.props.mustChangePassword ?? false;
+  }
+  get temporaryPasswordExpiresAt(): Date | null {
+    return this.props.temporaryPasswordExpiresAt ?? null;
+  }
+  get fullName(): string | null {
+    return this.props.fullName ?? null;
+  }
   get organizationId(): number | null {
     return this.props.organizationId;
   }
@@ -62,14 +78,19 @@ export class User {
   }
 
   isLocked(now = new Date()): boolean {
-    if (this.props.status === UserStatus.LOCKED) {
+    if (this.props.status === UserStatus.BLOCKED) return true;
+    if (this.props.lockedUntil !== null && this.props.lockedUntil > now)
       return true;
-    }
-    return this.props.lockedUntil !== null && this.props.lockedUntil > now;
+    return (
+      this.props.status === UserStatus.LOCKED && this.props.lockedUntil === null
+    );
   }
 
   canLogin(now = new Date()): boolean {
-    return this.props.status === UserStatus.ACTIVE && !this.isLocked(now);
+    return (
+      [UserStatus.ACTIVE, UserStatus.LOCKED].includes(this.props.status) &&
+      !this.isLocked(now)
+    );
   }
 
   recordFailedLogin(

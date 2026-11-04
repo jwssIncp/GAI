@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -24,6 +25,13 @@ import { InventoryAccountingItemStatus } from '../../domain/enums/inventory-acco
 @Index('idx_inventory_accounting_items_base_code', ['baseCode'])
 @Index('idx_inventory_accounting_items_investor_code', ['investorCode'])
 export class InventoryAccountingItemEntity {
+  @Column({
+    name: 'serial_number',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+  })
+  serialNumber!: string | null;
   @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN)
   id!: number;
 
@@ -49,7 +57,12 @@ export class InventoryAccountingItemEntity {
   @Column({ type: 'text', nullable: true })
   location!: string | null;
 
-  @Column({ name: 'acquisition_date', type: 'date', nullable: true })
+  @Column({
+    name: 'acquisition_date',
+    type: 'date',
+    nullable: true,
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
   acquisitionDate!: Date | null;
 
   @Column({

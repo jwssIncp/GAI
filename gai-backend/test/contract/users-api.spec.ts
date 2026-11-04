@@ -31,12 +31,14 @@ describe('users-api contract', () => {
     expect(content).toContain('ErrorResponse');
   });
 
-  it('uses profile-only create request without embedded role', () => {
+  it('requires identification and initial grants in the integrated create request', () => {
     const createBlock = content.slice(
       content.indexOf('CreateUserRequest:'),
       content.indexOf('UpdateUserRequest:'),
     );
-    expect(createBlock).toContain('required: [login, email, password]');
+    expect(createBlock).toContain(
+      'required: [full_name, login, email, role_ids, activation_method]',
+    );
     expect(createBlock).not.toContain('org_role_id');
     expect(createBlock).not.toMatch(/\brole:\s/);
   });

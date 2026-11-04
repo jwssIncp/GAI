@@ -21,6 +21,6 @@ import { ExportJobsController } from './presentation/export-jobs.controller';
     ExportJobProcessorService,
     ExportJobsService,
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, ExportJobProcessorService],
 })
 export class ExportJobsModule {}

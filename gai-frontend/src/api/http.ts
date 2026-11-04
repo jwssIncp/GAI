@@ -9,7 +9,7 @@ export class ApiError extends Error {
   rawDetails?: unknown;
 
   constructor(status: number, body?: Partial<ApiErrorResponse>) {
-    super(body?.message ?? 'Erro inesperado');
+    super(Array.isArray(body?.message) ? body.message.join('; ') : body?.message ?? 'Erro inesperado');
     this.name = 'ApiError';
     this.status = status;
     this.code = body?.code;

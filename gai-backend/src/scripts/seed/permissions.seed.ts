@@ -1,4 +1,9 @@
+import { DRE_PERMISSIONS } from '../../modules/managerial-dre/dre.policy';
+import { FINANCE_PERMISSIONS } from '../../modules/receivables/receivable.policy';
+import { ASSISTED_PERMISSIONS } from '../../modules/assisted-reconciliation/matching.policy';
+import { FIELD_PERMISSIONS } from '../../modules/field-coordination/field.policy';
 import { DataSource } from 'typeorm';
+import { PREPARATION_PERMISSIONS } from '../../modules/project-preparation/domain/preparation.types';
 import { PermissionScope } from '../../modules/users/domain/enums/permission-scope.enum';
 import { PermissionEntity } from '../../modules/users/infrastructure/persistence/permission.entity';
 
@@ -755,8 +760,89 @@ export const PERMISSION_SEEDS: Array<{
     scope: PermissionScope.ORGANIZATION,
     description,
   })),
+  ...PREPARATION_PERMISSIONS.map((permission) => ({
+    ...permission,
+    resource: 'project-preparation',
+    scope: PermissionScope.ORGANIZATION,
+  })),
 ];
 
+for (const key of FIELD_PERMISSIONS)
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'field-coordination',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Coordenação de campo: ' + key.split(':')[1],
+  });
+
+for (const key of ASSISTED_PERMISSIONS)
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'assisted-reconciliation',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Conciliação assistida: ' + key.split(':')[1],
+  });
+PERMISSION_SEEDS.push({
+  key: 'asset-valuations:batch-create',
+  resource: 'asset-valuations',
+  action: 'batch-create',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'Registrar avaliações patrimoniais em lote',
+});
+for (const key of [
+  'contracts:read',
+  'contracts:edit',
+  'contracts:amend',
+  'contracts:archive',
+  'commercial-indicators:read',
+]) {
+  const [resource, action] = key.split(':');
+  PERMISSION_SEEDS.push({
+    key,
+    resource,
+    action,
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Gestão contratual: ' + action,
+  });
+}
+for (const action of ['read', 'edit', 'configure-prices', 'approve']) {
+  PERMISSION_SEEDS.push({
+    key: 'budgets:' + action,
+    resource: 'budgets',
+    action,
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Orçamentos: ' + action,
+  });
+}
+for (const key of FINANCE_PERMISSIONS) {
+  const [resource, action] = key.split(':');
+  PERMISSION_SEEDS.push({
+    key,
+    resource,
+    action,
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Financeiro: ' + action,
+  });
+}
+for (const key of DRE_PERMISSIONS) {
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'dre',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description: 'DRE gerencial: ' + key.split(':')[1],
+  });
+}
+for (const key of ['budgets:export', 'documents:templates'])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Documentos profissionais: ' + key,
+  });
 export async function seedPermissions(dataSource: DataSource): Promise<void> {
   const repo = dataSource.getRepository(PermissionEntity);
 
@@ -767,3 +853,18 @@ export async function seedPermissions(dataSource: DataSource): Promise<void> {
     }
   }
 }
+
+for (const key of [
+  'technical-reports:read',
+  'technical-reports:edit',
+  'technical-reports:templates',
+  'technical-reports:approve',
+  'technical-reports:export',
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'technical-reports',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description: 'Laudos tecnicos: ' + key.split(':')[1],
+  });

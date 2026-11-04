@@ -10,6 +10,11 @@ FILE="${1:?Usage: $0 <task-definition.json>}"
 : "${AWS_REGION:?}"
 CONTAINER_NAME="${CONTAINER_NAME:-gai-backend}"
 
+# Reconcile versioned document settings even when the current AWS task predates
+# the Terraform change. This step has no remote side effects.
+node "$(dirname "$0")/prepare-document-task.cjs" "$FILE" task-definition-documents.json "$CONTAINER_NAME"
+FILE=task-definition-documents.json
+
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 P="arn:aws:ssm:${AWS_REGION}:${ACCOUNT_ID}:parameter/gai/${ENV_NAME}"
 

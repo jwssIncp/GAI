@@ -1,0 +1,12 @@
+{
+  "name": "baseline-unit",
+  "exit_code": 0,
+  "seconds": 85.051,
+  "command": [
+    "node_modules/jest/bin/jest.js",
+    "--runInBand",
+    "--testPathIgnorePatterns=test/integration",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\baseline-unit.json"
+  ]
+}

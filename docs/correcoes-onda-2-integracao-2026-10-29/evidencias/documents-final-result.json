@@ -1,0 +1,16 @@
+{
+  "name": "documents-final",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "test/run-tests.cjs",
+    "mysql",
+    "--runTestsByPath",
+    "test/integration/technical-reports/report-volume.mysql.e2e-spec.ts",
+    "test/integration/technical-reports/reports.e2e-spec.ts",
+    "test/integration/documents/documents.e2e-spec.ts",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\documents-final-jest.json"
+  ],
+  "exit_code": 0,
+  "seconds": 94.622
+}

@@ -13,6 +13,7 @@ import {
 } from '../../../../common/persistence/entity-id.columns';
 import { ExportJobStatus } from '../../domain/enums/export-job-status.enum';
 import { ExportJobType } from '../../domain/enums/export-job-type.enum';
+import type { FinanceWorkbook } from '../../../receivables/finance-export.service';
 
 @Entity('export_jobs')
 @Index('idx_export_jobs_org_project_status', [
@@ -34,8 +35,16 @@ export class ExportJobEntity {
   @Column({ name: 'organization_id', ...FOREIGN_KEY_COLUMN })
   organizationId!: number;
 
-  @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN })
-  projectId!: number;
+  @Column({ name: 'project_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  projectId!: number | null;
+
+  @Column({
+    name: 'finance_payload',
+    type: 'json',
+    nullable: true,
+    select: false,
+  })
+  financePayload!: FinanceWorkbook | null;
 
   @Column({ type: 'varchar', length: 60 })
   type!: ExportJobType;

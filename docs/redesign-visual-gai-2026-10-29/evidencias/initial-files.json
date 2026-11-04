@@ -1,0 +1,4182 @@
+[
+  {
+    "path": "gai-frontend/.env.example",
+    "sha256": "fa124130fdb5c3033f5fcfeccd7dfc69e482e7d88626294298dba0950d4542c3"
+  },
+  {
+    "path": "gai-frontend/.env.local",
+    "sha256": "fa124130fdb5c3033f5fcfeccd7dfc69e482e7d88626294298dba0950d4542c3"
+  },
+  {
+    "path": "gai-frontend/.gitignore",
+    "sha256": "5cfc99ce9f5da1999b4b5fe4f736f1b42f49eaab070d3376d971078d66816e50"
+  },
+  {
+    "path": "gai-frontend/after-dashboard-mobile.png",
+    "sha256": "b2d968b4c34230e4b6b9af474f92535575dc1527be9943ebae8290e1760ef68b"
+  },
+  {
+    "path": "gai-frontend/after-dashboard.png",
+    "sha256": "8ffb68611bb8cf2bd4b34e63bc2dbef105267aaf3b48aa6980a64bf8b36cf08a"
+  },
+  {
+    "path": "gai-frontend/after-login-dark.png",
+    "sha256": "8973021c41117ceb21a79533bb79cd46dafe243c894404aec650bd7b9bf35439"
+  },
+  {
+    "path": "gai-frontend/after-login.png",
+    "sha256": "9596ddb61032876958fae35592d05a86bad1da1130f3d74b142f8da024b4d866"
+  },
+  {
+    "path": "gai-frontend/after-mobile-nav.png",
+    "sha256": "cc5206a57fc3f35eb4f694c3e654a051d0a2df687a3663e855c70f12a24ed528"
+  },
+  {
+    "path": "gai-frontend/before-login.png",
+    "sha256": "d8d33640b84b80bef83318d071589b4e5fd1277f3a01fcadeb5956c6332b6529"
+  },
+  {
+    "path": "gai-frontend/debug.log",
+    "sha256": "e0d291d35452e004db5d90ad8c5c3ce8cd23946a37212526199f7d7b50265c00"
+  },
+  {
+    "path": "gai-frontend/docs/gai-frontend-gap-analysis.md",
+    "sha256": "984a6a29a6181ddc1bb1711e8cff1e54ed8b2bf6c2e4da2b3f6669e74c12bc46"
+  },
+  {
+    "path": "gai-frontend/e2e/app.spec.ts",
+    "sha256": "5a785aac5990ddeda79f03c19ffd63ae6e438cc85047e603096243676da2417b"
+  },
+  {
+    "path": "gai-frontend/e2e/assisted-reconciliation-real.spec.ts",
+    "sha256": "4e11130b0bdb0e5082e8c6ae29826d29047bd9e7b7d2b23214e2ed9f61764f59"
+  },
+  {
+    "path": "gai-frontend/e2e/budgets-real.spec.ts",
+    "sha256": "8b55526e49db0acb8bbf67c9a998aafadfc2c1e5e5f26c3aafda0d685629993e"
+  },
+  {
+    "path": "gai-frontend/e2e/contracts-real.spec.ts",
+    "sha256": "4a0c6271b814db64c15f02c5434cac251b051fc4ed068a6786f9895357b4206f"
+  },
+  {
+    "path": "gai-frontend/e2e/documents-real.spec.ts",
+    "sha256": "27ee609c46b0ee077765bb40c6c2e18ca8cac5820f62c6cd2ae306b1554176ba"
+  },
+  {
+    "path": "gai-frontend/e2e/dre-real.spec.ts",
+    "sha256": "e399e06652566b30f260eb6d9163b66214c739000c82c51ba50cf952ab5369d7"
+  },
+  {
+    "path": "gai-frontend/e2e/field-coordination-real.spec.ts",
+    "sha256": "c7d05027b2550d7431e1c111b74f2a2f6e9efefe6670d4091d9b7920243131f2"
+  },
+  {
+    "path": "gai-frontend/e2e/homologation-real.spec.ts",
+    "sha256": "ce4ae33b723a0d18a5db362ca723fb020bc9d7e9645b0d65d38edcf1b69a8020"
+  },
+  {
+    "path": "gai-frontend/e2e/integration-navigation-real.spec.ts",
+    "sha256": "0c6aaf2640ffa5b5c85fdaca487070dbeaeb4ec67e21054f4fa33a1571c66ac0"
+  },
+  {
+    "path": "gai-frontend/e2e/project-navigation-real.spec.ts",
+    "sha256": "cf2d4583766b4081d9d7309771827e1b2ba54e2b62542adcc66626cb34aba625"
+  },
+  {
+    "path": "gai-frontend/e2e/receivables-real.spec.ts",
+    "sha256": "20db79ed3b50372b2e0b9809ef51cf1c8830f4cdf404111d58d54350b0b06e8c"
+  },
+  {
+    "path": "gai-frontend/e2e/reports-real.spec.ts",
+    "sha256": "f48fe9eb79f232b06b795ee26f00318cab260560d4f46452bf729e79d1786320"
+  },
+  {
+    "path": "gai-frontend/e2e/valuation-batches-real.spec.ts",
+    "sha256": "001378c3df07082bbbfafb05452a093fa9f62a083c6a46a5ed5240c21db5051b"
+  },
+  {
+    "path": "gai-frontend/eslint.config.js",
+    "sha256": "a0d54824bee193e4118f75a79c899432dbd2b9dc20497f36dd34aa68a5da4558"
+  },
+  {
+    "path": "gai-frontend/index.html",
+    "sha256": "e0d1b54a27fcbcf3b02e9e2d4a26d22b3f8059ee4159e532e0523afe2bb87b07"
+  },
+  {
+    "path": "gai-frontend/investor-theme-dashboard.png",
+    "sha256": "c5448935242da015bef359280624dcd5a6f7a9d4acba81f3f0d216e5e6ac0df6"
+  },
+  {
+    "path": "gai-frontend/package-lock.json",
+    "sha256": "7738d114f193cc3ea5eeebc29effdc634ebfa17407d1bbef2142c1f2cf489206"
+  },
+  {
+    "path": "gai-frontend/package.json",
+    "sha256": "98c566aa984fa28313ee65944f063a2c8d872e9a4a14e44d78e31f3b3e7531d1"
+  },
+  {
+    "path": "gai-frontend/playwright.config.ts",
+    "sha256": "c846863a727bf9e16f78d2500cf73b5b4e803b9ad4ff0a85d67a490f2988569d"
+  },
+  {
+    "path": "gai-frontend/playwright.real.config.ts",
+    "sha256": "02a4cfc784ac49f669e12ae6d4cd24afccbefd9dd32e22e1f23c23b98e2e546d"
+  },
+  {
+    "path": "gai-frontend/postcss.config.js",
+    "sha256": "98e8d8a143f16216f4b50a2520024f6254987049b2e199026742a96e16ba411e"
+  },
+  {
+    "path": "gai-frontend/README.md",
+    "sha256": "76a01bbb0e1688353344fa190644e8960c741a77917df70661cc014358ea8cf9"
+  },
+  {
+    "path": "gai-frontend/src/api/endpoints.ts",
+    "sha256": "f0e238a4bc17902854a46607635a81dd614f98340fcd77e571c379cfb6acc143"
+  },
+  {
+    "path": "gai-frontend/src/api/http.test.ts",
+    "sha256": "51700b3f2d202995d1de36b79594c723181f9d87473e6e47a1bf07b9f5c4bca5"
+  },
+  {
+    "path": "gai-frontend/src/api/http.ts",
+    "sha256": "58ef2088ef45db35fdc8ce392c4a0cf691652a71804cdbee9d9f32f68e476f7d"
+  },
+  {
+    "path": "gai-frontend/src/api/pagination.test.ts",
+    "sha256": "22ded4d2e66e2277be767d1b5901782c211cb0115c9aa59b5fe1f0c7fb1dca9e"
+  },
+  {
+    "path": "gai-frontend/src/api/pagination.ts",
+    "sha256": "03ff49b3a66c4e88be2e10ef25c398174615eb4f3cf228f1efd2133552d87a00"
+  },
+  {
+    "path": "gai-frontend/src/api/session-storage.ts",
+    "sha256": "edc3171e2a1352d25c60f23e98b2493f55a69e7552ca0f09e83f2b7e9b2d616d"
+  },
+  {
+    "path": "gai-frontend/src/app/AppProviders.tsx",
+    "sha256": "a9f3d9a19f0d292fc1032606282949410f6ae52d20b5130ca045d70c29b05b91"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Cards.tsx",
+    "sha256": "5cd7f3cd3a3d489f192f9762ab66b05bfb816429c4f4067c6763369fc072c78f"
+  },
+  {
+    "path": "gai-frontend/src/components/base/DataTable.tsx",
+    "sha256": "0a4f870eec723f6a26dfbf7d529ee76d5f345298d7092480187e68cd659bfe92"
+  },
+  {
+    "path": "gai-frontend/src/components/base/FilterPanel.tsx",
+    "sha256": "a2eb64475ed62104f2b41d9eaaceaa83e67fd2c70099fb4efcca968618bf9092"
+  },
+  {
+    "path": "gai-frontend/src/components/base/FormField.tsx",
+    "sha256": "fde97a8af855c53c0e24b9dd13bf9419fd6e8882ceaf6aea1ef6fae8e4a54204"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Inputs.tsx",
+    "sha256": "b676b019a1acded5bca3e0d6dbc0060d1263abb3e60090f05b4b91ddca3c2677"
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageContainer.tsx",
+    "sha256": "3cac4534ae03f241a42a22642df05a3d108200fce10cbd527828fbc8bbea91ad"
+  },
+  {
+    "path": "gai-frontend/src/components/base/PageHeader.tsx",
+    "sha256": "6be4c19901206c59fc666875963ecfdb6d214a1af91de0b13e38e5420f1f810c"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Pagination.tsx",
+    "sha256": "3b8ceed37d138a41dc449383a94b2d05ea61e278986cdfab37894d7e63ff1673"
+  },
+  {
+    "path": "gai-frontend/src/components/base/SearchInput.tsx",
+    "sha256": "570c49f5780fc795237a867c7905c4897ac4ec814e9d194dc9e31ca1d35679eb"
+  },
+  {
+    "path": "gai-frontend/src/components/base/States.tsx",
+    "sha256": "f2692cd7a9bcd5adbb218696a0aafa20a2ad0188e4fd1a1db7a82be12ff574cc"
+  },
+  {
+    "path": "gai-frontend/src/components/base/StatusBadge.tsx",
+    "sha256": "a6fd467a04616a5c6f975a6e2e376453d6ff38ddfe935a58385004f24b41646b"
+  },
+  {
+    "path": "gai-frontend/src/components/base/Tabs.tsx",
+    "sha256": "28de0cd82797a15df46d4a4af497d0ab5be6f08e6d844c53e151419a670f9deb"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/button.tsx",
+    "sha256": "c0990e31bc500ea9fa727f69608cb8be55c8f686e784b836215ec0351e332ad1"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/dialog.tsx",
+    "sha256": "5f88ed969d3339a58aff5155c45e36918dde16a6dbe047eaa4983eb16d497b5c"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/help-popover.test.tsx",
+    "sha256": "7451199275b34e8fb0dfde0a1993132d7475e7086311416892605069f5547029"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/help-popover.tsx",
+    "sha256": "e58204596713b14adf70634e25873d337706f30d2884aa3e516a9f94b7237a21"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/icon-input.tsx",
+    "sha256": "34b319886c288edefa253390b3434ccb3c6eb1fe5d3e373a9d680a4479e9793d"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/input.tsx",
+    "sha256": "59271a6815b744f5c15e666258e3a84e8c07408b92fdfadb99f3e94d60d8db7d"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/toast-context.ts",
+    "sha256": "07ecee8ec466d9f7575158bc4c37d2af1b60288444fb603e8b24ecf5de82c3fd"
+  },
+  {
+    "path": "gai-frontend/src/components/ui/toast.tsx",
+    "sha256": "9a00ae6246cf7caecc4ab54dd8bdaef123643bf8f7c0cbb42380628e07111e15"
+  },
+  {
+    "path": "gai-frontend/src/constants/navigation.ts",
+    "sha256": "bb603248449a140eb7a19cc684afc00b6b43c4c3e16eef38ef891273c4533cd8"
+  },
+  {
+    "path": "gai-frontend/src/features/accountabilities/accountabilityQueries.ts",
+    "sha256": "96ce82f8c17aea843f5c0dd822a0a25ae38a54e649d99c02b33ba4a213f0e9cc"
+  },
+  {
+    "path": "gai-frontend/src/features/accountabilities/ProjectAccountabilitiesPage.test.tsx",
+    "sha256": "c0a9b2c3e3acb1023e2889dad20aa7e9b67fa50d93856f8c63a0653f66e73b07"
+  },
+  {
+    "path": "gai-frontend/src/features/accountabilities/ProjectAccountabilitiesPage.tsx",
+    "sha256": "61eba1ca59fcd9f6adc0dc72264ec0d7d269855108185bd26c20e4cca7c586ac"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingImportsPanel.tsx",
+    "sha256": "f4de5736ba493bf3c97deb4900c18762a22043e9fbebbe7403bd9e3817252898"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingItemDetailDrawer.tsx",
+    "sha256": "04311c51406a6b0aac82e0391aec387bb04c88ae9a7040d3da7713de15bf5614"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/AccountingItemForm.tsx",
+    "sha256": "788212f2eea057b3e36a518747a83debd3d11766c40fc836e70561d6eac196e6"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/accountingItemSchemas.ts",
+    "sha256": "9cad56f3df043c410469ffaa4dda3225fba258b1b7ba28608b4e23002a3a8e4d"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/accountingItemsQueries.ts",
+    "sha256": "bf83644dddc47596e399d295b9e2e7ed4eac9a6a05a43a496f4e6b5f3c84f6fc"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/ProjectAccountingItemsPage.test.tsx",
+    "sha256": "38852df25e650f4464709272764d425ce3e7902e8bd2ef7174566abbd2dc9a50"
+  },
+  {
+    "path": "gai-frontend/src/features/accounting-items/ProjectAccountingItemsPage.tsx",
+    "sha256": "3d2e5ed652e499a788870443e53aade76e61ba34d0bc243f6e64e040ee8823d3"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/AuthContext.ts",
+    "sha256": "304176293015da3d45c0a82fad88f75c82f705117e9148ae4aaf954f69c01ca4"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/AuthProvider.tsx",
+    "sha256": "5649343f7ba867949f42e8e7825ceab6242976a418f87fc3f64bc13e26e0740c"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/LoginPage.tsx",
+    "sha256": "0b6b91c4dec37a1930b85993ef3eb44ba4711e74666489859a50a2a82bad54ab"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PasswordPages.tsx",
+    "sha256": "9fb93f8a1ce9eaff5ef801acf7910d982c84ad13c633a5493a26a78d3ceb1997"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/PermissionGate.tsx",
+    "sha256": "565e0f0966cb378892210520129c8b997aa698ae773df59ab0c5f8dc2cd84497"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/permissions.test.ts",
+    "sha256": "17530ac9828e29d9d9f58fa489d36378224233540c9c246ebc6b1a396b76eda8"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/permissions.ts",
+    "sha256": "9652d6a7a96bb065a02e36d1ff23695cc370e53cfeb9d7500d9f48ce798d9c4b"
+  },
+  {
+    "path": "gai-frontend/src/features/auth/usePermissions.ts",
+    "sha256": "6e388c179ebdd8672ef214c74c8341d73a59f830b360c8e51eac051506ddc05a"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/budgetApi.ts",
+    "sha256": "3dda39a178f8430138d685f7055d4b7757702a53dc6da15e7a371dd7dea8f1c7"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetDetailPage.tsx",
+    "sha256": "b0e0d209f10a1bf3a36c3598be815ec723cd9a26ac398aac01dc929c0687fb29"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetForm.test.tsx",
+    "sha256": "ff967a8706eb48d6ba1014edcd3e1d01f19965784c070759176b45dc7640a312"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetForm.tsx",
+    "sha256": "b14fd5d43a214fcf763a1dfc92200f5721b64211d3676259eafb55fde74292a9"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetLayout.tsx",
+    "sha256": "5e4ecc8de09906c628c0da1bdb308b7c7fa5b927f6ab14aeb16a3d5f2e2d8840"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetMemory.tsx",
+    "sha256": "593fa0a4fc834039e534891ab8c4eab2749bfbad86648aa7333537139a99293c"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetNavigation.test.tsx",
+    "sha256": "939d24081df42b11815d2496c00413f42424924f95a10a09ede273abf2f00d7d"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetPricingPage.tsx",
+    "sha256": "ef37130fc36418d932845c3a38a5645bcf5fc800d599c4527ef2700ae74106a9"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/BudgetsPage.tsx",
+    "sha256": "c7b1d5c9885680b42d7c5d5b58d77754003d1f904f5aace7d70b879834ffb996"
+  },
+  {
+    "path": "gai-frontend/src/features/budgets/budgetTestFixture.ts",
+    "sha256": "3b35974f0afff86374fffe771c69927cd495b2591fa4e7ddc85086ef5fcaac65"
+  },
+  {
+    "path": "gai-frontend/src/features/companies/CompaniesPage.tsx",
+    "sha256": "b8dfb62a60831ac3ddcf5315e9a957facfe622a7471e523a9eb76363ebb7900a"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/CommercialOverview.test.tsx",
+    "sha256": "f27290461d60a31af18b991305a888cc64cca24a0f1916a81efb805d2478fff6"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/CommercialOverview.tsx",
+    "sha256": "77097dec70d59739da8710c7df035ec7e511eb615c5ecdf5c57aa29bc4ab3ac1"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/contractsApi.ts",
+    "sha256": "7c016ba3ab2b628063b1d90d24a7102989ae3c8aec54a27e3eac38f402d0dda0"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/ProjectContractsPage.test.tsx",
+    "sha256": "c293bce86f499b560489f967b1fd29499e3ce50166e99ac2c6f5f127ed893f0a"
+  },
+  {
+    "path": "gai-frontend/src/features/contracts/ProjectContractsPage.tsx",
+    "sha256": "9b3b42edc77688c9d946465d22488414fa7ca36c5fe40a36851fea41c0b00169"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/brazilStatePaths.json",
+    "sha256": "768090417add96b0be37f0ae45701f639fa87fb1ca52ba5bc804860d92b13c18"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/DashboardPage.tsx",
+    "sha256": "1996a7f2dd115ba8b4aa004bd5fdf4ff13c21f4606064b54ae493b17f5544419"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.test.tsx",
+    "sha256": "fda6d629c77c3e384333f41e1d390de669b7801f93a1fe8b490de277b5a331a3"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx",
+    "sha256": "a86fc1cf77ffc85c6936e12f1d6020f522293a33a6d1cd3276e3f3033698ed36"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/OverviewDetails.tsx",
+    "sha256": "8e1674b6e2f0be2fa3a0dfa974ecad7d436113ac2d07e59c49a0ed538f868208"
+  },
+  {
+    "path": "gai-frontend/src/features/dashboard/projectStatuses.ts",
+    "sha256": "ed5294f45c30cc3673cc3b28e34025be5cef18710918ffbcdd566ec1d6eac41a"
+  },
+  {
+    "path": "gai-frontend/src/features/documents/DocumentExport.test.tsx",
+    "sha256": "3ecc2997c3fee1ff373043a29e9ee38139d828a5befd3b695066adc88116b99a"
+  },
+  {
+    "path": "gai-frontend/src/features/documents/DocumentExport.tsx",
+    "sha256": "7d7597182540eed0e85853693bbf833571e9ea8a9b0d1c59c2348bca20485929"
+  },
+  {
+    "path": "gai-frontend/src/features/documents/VisualTemplateEditor.tsx",
+    "sha256": "068c0c064e538b9fb9518ccd2aa6ff5cabb0b24b00465fc1eec39e2eb4954aea"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreAccountsPage.tsx",
+    "sha256": "b13703f6e2e83d7a69627222f793a3a5132da54e089f199d1cd75a9bbb5cfddf"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/dreApi.ts",
+    "sha256": "ea2d26c894ee8eff50084fa3bd64066bb6dd303944f736061afab39ed21cd481"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreEntriesPage.tsx",
+    "sha256": "4b7d69e7da744f27a2ecc9fe9aa47d69b2a35655d545b11e069ab3566d1fcdcd"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreLayout.tsx",
+    "sha256": "fde11b00e4062ceb1dcb5f33378b5064fcd7d3532ea8765f2409f585f6d849b5"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreNavigation.test.tsx",
+    "sha256": "eb03a45170f95c9f9c9e86c2184cd58cf82656c186199549d638e55ae729adf4"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DrePeriodsPage.tsx",
+    "sha256": "e487bd15bc938886f01bff797db05404a89d40e7685260de493dd3c2d9b937ca"
+  },
+  {
+    "path": "gai-frontend/src/features/dre/DreReportPage.tsx",
+    "sha256": "ceb155cdd59e2147f9e57c570f030219dab0ffb047ca7b548550ea6214bea352"
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/exportContentPermissions.ts",
+    "sha256": "2277e4a00fa1ea6057c2147f89137409710a93f1c4f2f534afdba086daa9e4e7"
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/exportJobSchemas.ts",
+    "sha256": "3f916e56de2bf8b69e7c6efa34ebb4136b99d3b66ac3000d1e95874d7b07b095"
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/exportJobsQueries.ts",
+    "sha256": "809c319218290518cef27bf0c7bc82c780ef0244c5a084f279098466c08cc360"
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/ProjectExportJobsPage.test.tsx",
+    "sha256": "f331d88efb0890ff346c19bc8c08ffd7bc8c926c6893a24475fd14cd05d7cf99"
+  },
+  {
+    "path": "gai-frontend/src/features/export-jobs/ProjectExportJobsPage.tsx",
+    "sha256": "f8cc385871d46b1b839bfbc4adb449d8e7c5b373857cfcc4b6747a71d34de39d"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/brazilianContact.test.ts",
+    "sha256": "b53d10a4cacc81c6baed89dc355fe223fb04b89fd6df64978daf2c53baea3a7e"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/brazilianContact.ts",
+    "sha256": "7988fe2d94fd6a53c6987028939a27232cd5172831dc8dee8deb2e7e698acd10"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentDetailDrawer.tsx",
+    "sha256": "36770fd5fee0faab7983d75102f0e546ebbd146884959d3d2d6e447f8321f3f3"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentForm.tsx",
+    "sha256": "4624ee781ed9c5dd3a6f48c1d01be3c2387b0432cc61048cb8ef247782e171d3"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/fieldAgentSchemas.ts",
+    "sha256": "69e34d70347443fb76953ed49ab2ba6084b62956238dc23e8215d1fee626a383"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentSelect.tsx",
+    "sha256": "93bd9035292f648ba4309efce0e938ea317354eb080ac342a4313102fbe09ece"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentsPage.test.tsx",
+    "sha256": "d1bdcf3f4ebe7bcab7e75947ce0eb51c1a962e8a86c0bf63cd2620b4daf06621"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/FieldAgentsPage.tsx",
+    "sha256": "910ed158fe4aad4086e0423346c0ee5f071cce4570a7e4a03722ed5856c7d76d"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/fieldAgentsQueries.ts",
+    "sha256": "8f86681430c6a853248e5987c02e4513d0421527a689d63d6f23c48a4832d394"
+  },
+  {
+    "path": "gai-frontend/src/features/field-agents/ProjectFieldAgentsPanel.tsx",
+    "sha256": "80ada7fda3e1762f11640c035ca569a00ce568ff1ae80b082e6830d2f4f77059"
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/fieldApi.ts",
+    "sha256": "c9d1cccbd2b854dff8854d0dcc3e388e1292f2e23b7fa7fb01cee18437e9ba0d"
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/FieldCoordinationPage.test.tsx",
+    "sha256": "6158f8d25cd0bfbb299f7a230ea2909b4df6a7943d5b58e4e327af4ac565f402"
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/FieldCoordinationPage.tsx",
+    "sha256": "ad35a64207b88875ce0a794837de7e2a60b19d0185a3eaab8e66fb7911379271"
+  },
+  {
+    "path": "gai-frontend/src/features/field-coordination/FieldTemplates.tsx",
+    "sha256": "99c15bbe29977975dae7c4371d547ec676fafa13fa3d2c7ea25480b244ae21d7"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ExpenseAttachmentsPanel.tsx",
+    "sha256": "d7933601b22604069c0b30b38883eded8a08deb7bd8db0c49570c3d0c756bdae"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ExpenseForm.tsx",
+    "sha256": "4583054baa438105cc14f46e6670a43ce09a0a0beef9acbb2c1180abe9831eae"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/financeQueries.ts",
+    "sha256": "9368956b80df65ee828214e2d995ade895c795ecd722375f8ff894b57cebb4fe"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/financeSchemas.ts",
+    "sha256": "1c41790a2da83bcea4d583c9d805627758df4a13c415b4379af489e1c98c6342"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/PaymentForm.tsx",
+    "sha256": "4cce88b052f9f9af15a4b7054278df5b4883b95e438ad71b3ab31dc27d951867"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ProjectFinancePage.test.tsx",
+    "sha256": "880d2c1ac6287d3f5335f4659005d26b9699ed52e736fc92779ff092b89e5e9a"
+  },
+  {
+    "path": "gai-frontend/src/features/finance/ProjectFinancePage.tsx",
+    "sha256": "f685bcb47cbc5d682b59a575a6f1264a7b0a490b4070a55e1530040dc1b306d9"
+  },
+  {
+    "path": "gai-frontend/src/features/import-sessions/importSessionSchemas.ts",
+    "sha256": "967262b8f9729a61277787303391ee5c110853ed69623efc82bf20d7978308a9"
+  },
+  {
+    "path": "gai-frontend/src/features/import-sessions/importSessionsQueries.ts",
+    "sha256": "0a5059d084bf62fba2f77dbfa61e7507231c25accdebda5d38a42403279985ce"
+  },
+  {
+    "path": "gai-frontend/src/features/import-sessions/ProjectImportSessionsPage.test.tsx",
+    "sha256": "edcad015ee414db484527d2c22d482773f61d58413e9ab1271b65d5e2f5aed56"
+  },
+  {
+    "path": "gai-frontend/src/features/import-sessions/ProjectImportSessionsPage.tsx",
+    "sha256": "9cf56f01e606934ad2a691a664649df0f529dceb18c471229833ffb98a7c3e28"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-item-images/InventoryItemImagesGallery.test.tsx",
+    "sha256": "5a6ce1f104c9389bd90f96531e9c268c6771330e0ca9581cab32ca10a6a2f8aa"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-item-images/InventoryItemImagesGallery.tsx",
+    "sha256": "70b007fd2ed551ea3724cb8277fc75ea7aa26b1286ef81e63afaae9eea08e8a4"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-item-images/inventoryItemImagesQueries.ts",
+    "sha256": "9405023242b2ce607503524d5a1f95da0433a61cfdf234cdf265fb0883acb93f"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/inventoryCache.test.tsx",
+    "sha256": "e427a3fde3b7fa1d20c21dbe9a0b1dd425a09a387a8404006e5a51479825d5bd"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/InventoryItemDetailDrawer.tsx",
+    "sha256": "186ca3d46507cad0ef000dc938f08510dc2e65566200e81402b0c4fa11b8201b"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/InventoryItemForm.tsx",
+    "sha256": "cdcd780ebee5df87f0a8423a8a9489841d098ce2cc43e4063102ad11dbe6b872"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/inventoryItemSchemas.ts",
+    "sha256": "30e8244d6e6f6913a83c72798049a74c25d1e4c4ff230b713cbc92d35db4e319"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/inventoryItemsQueries.ts",
+    "sha256": "732a71a39103da341cc22908a8fec8b4299cd1aa11b2f5066ae0afc0494be994"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ItemEvidencePanels.test.tsx",
+    "sha256": "8050424c39b216c055bfae5c4ed70295a7526a562d8736e82624850f26497515"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ItemEvidencePanels.tsx",
+    "sha256": "0b6ac2cce454b12684038f9101035c6889ca22237ca1f5c1c96660f20646544e"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.test.tsx",
+    "sha256": "38b5181eb93baca9f429da39b1922ee3e8b127d2dd562da2266ce023ceedfdbd"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.tsx",
+    "sha256": "94a90ccdc69c70e0391e95454858d863a3e59fd4693b52bd0b41cb355943668d"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/valuationBatchApi.ts",
+    "sha256": "ab7f0e5e26e5c274f2e4b417db6f0b2c70fe86960db06e9acd7d5e992fedb87a"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ValuationBatchPanel.test.tsx",
+    "sha256": "6f13ddc155b7e3f9eb130a8946b7fb594bb5b3d1c6cff68f40910681e1b1d5e4"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/ValuationBatchPanel.tsx",
+    "sha256": "402fe6c7f741c3c50191049d951752e67ae57bea3df6a623cedd71b9cf9e2950"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/valuationFormatting.test.ts",
+    "sha256": "0dafd451290dd7af1d150fbe1ee4f854064d2fe35ac9be4aa697a522d23989d1"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-items/valuationFormatting.ts",
+    "sha256": "f473ca58c09fb8df678af292a6c3a6ee71c5fc11a8b321dfe8cdb67d6421c936"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/assistedApi.ts",
+    "sha256": "63d4132a59630dc35dadadb54108a9a7c45600c42b0ff50c92ca2c9aa5dba0aa"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.test.tsx",
+    "sha256": "d4391295bba405e500f4383ade1fe6cabbfe18974cd7460b8ae368d9e86c13d8"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.tsx",
+    "sha256": "22c428f7ff4bcb08a2a455cb3490b583d8bae5471e6effe7f827d829082dc7ab"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/idempotency.test.ts",
+    "sha256": "01d261859c650fbfa4e1c6da00caf34f9b7a5fa28b348cc8ff9485dba1570479"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/idempotency.ts",
+    "sha256": "30e94335b3c693a01c58a38399131e095677333dcd3be3791683d0c2d75ebf15"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/inventoryOperationErrors.ts",
+    "sha256": "1463efc29e6121f26d145a433a7e71be92eb3937532ae0b6710729322279276a"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/inventoryOperationsQueries.ts",
+    "sha256": "d9cd26468feb49b3a028f8c4b7b9c62e2e9600a6e282870f79c1d548a75f243d"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.test.tsx",
+    "sha256": "75ab5a28949dd26f621296965d1eae0544df592b5339595c63fdbc2851787ca1"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.tsx",
+    "sha256": "d8acbd69048212c072b84cfa818c86d0c97b2cc0a60bcc48814a850e0833f1c8"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/ObservationEvidenceDrawer.tsx",
+    "sha256": "8857b76bce82e84d4df979ee23f6c407a444433060f43df3509e782a850e1679"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/ProjectInventorySessionsPage.test.tsx",
+    "sha256": "04faf9a5038795ebd2b0f38bb3bb00e9bedcbacaf1fbb6496702cc367d0606ee"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/ProjectInventorySessionsPage.tsx",
+    "sha256": "1bfe2c9478943b33f7fa06d4c32b83f55a919872226f971185f5c7294dec077b"
+  },
+  {
+    "path": "gai-frontend/src/features/inventory-operations/reconciliationContract.test.tsx",
+    "sha256": "8e6493f47d8d7845e74e17e33ca3bf9d601a57cdcc3ffff9bf3d6c057c60ed65"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationDetailDrawer.tsx",
+    "sha256": "0deea8b4731c0a47d07e8d0ba32c0e87a795cda67d1a079b89fc74a6c81e5141"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationForm.tsx",
+    "sha256": "893ab6cb22d3bd6c7eb420a2feb6a38799a756b8d13d8d327f5afd19f936b3e4"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/organizationSchemas.ts",
+    "sha256": "bfb3318d22f61531eff352ca1087b1c94f9ed664806904026e48b8c05cd7c3ed"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationsPage.test.tsx",
+    "sha256": "c306353d4ee85f6e70ebcea8e7466e0d937e2ce81c512173e46634e51f430b4e"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/OrganizationsPage.tsx",
+    "sha256": "06f69ea1538a9c8943cd06c292837ddd7c6efd40f8c078843cf73fe32ce55e5f"
+  },
+  {
+    "path": "gai-frontend/src/features/organizations/organizationsQueries.ts",
+    "sha256": "5a7172b3cb72b16124fe345221d6a5c038ad3a8bb564ff83a0667f0deb69be84"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/PendingIssueDetailDrawer.tsx",
+    "sha256": "6016357538febc54fda24ced6f9fa0f99bc9eedca633a9908864684b21914b84"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/PendingIssueForm.tsx",
+    "sha256": "a8bb35ca218b0449128d8936451faa55b132304f51cfead3d1e5e5e6373f54f2"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/pendingIssueSchemas.ts",
+    "sha256": "2f424c7642181e8c7e0a77346daebddb70c1e6ea5285128f854b026578dcc785"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/pendingIssuesQueries.ts",
+    "sha256": "fcfb63f709bf572048742eb30165606ce058ff9c96adf3f22c863e3bf75a0867"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/ProjectPendingIssuesPage.test.tsx",
+    "sha256": "682e585f0b5b127b3b861168f559b9bbadda293a074497212ff218fa138516f9"
+  },
+  {
+    "path": "gai-frontend/src/features/pending-issues/ProjectPendingIssuesPage.tsx",
+    "sha256": "782d3301ed3fc8a3329a22aa2764b110a3ee2319745b227ecdd2715f1445fcc8"
+  },
+  {
+    "path": "gai-frontend/src/features/placeholders/PlaceholderPage.tsx",
+    "sha256": "b0c879ae714773a28bf150cf7c3276fc6df356604c789ba38ed5742cc7a6ad3f"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/BrazilProjectMap.tsx",
+    "sha256": "8e8d48f2939891140352cb3a51adf121692030359fb9d622c9d0d745abb306db"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/dashboardVisuals.tsx",
+    "sha256": "bdabb111ed850e104c4eaa9a70bdbd98df69fb7e8c589edf07da0bfd6595ce5b"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/ProjectDashboardPage.test.tsx",
+    "sha256": "328492bd502b8e762353d49bf02884672413cd3cc8c865db897100b556d5dc93"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/ProjectDashboardPage.tsx",
+    "sha256": "219a518f7dc174be7ea96e47d9f44c24acd86126aa87e2a6bb22094806a489cb"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/projectDashboardQueries.ts",
+    "sha256": "c824cb53c70c6fadce4f58aab46d533ebb7a534160d15b32ab8d4a35918b42fb"
+  },
+  {
+    "path": "gai-frontend/src/features/project-dashboard/statusPresentation.ts",
+    "sha256": "0952983dc31069865e2ee67dc4594589bd93b76e8499eca32459159512fe8b91"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/PreparationForms.tsx",
+    "sha256": "51c8e88e34680d8924e3d437b4a668020a41d0afa8d30f56e45d08c3722060b3"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/preparationQueries.ts",
+    "sha256": "d83098df1241e8972f3647c3d0907c95821f3a4febd03abbe8b18d8d151c03ed"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/preparationTypes.ts",
+    "sha256": "ae6cbfa735673676a429667dbc5f408977f63409b0cb9d6bbb6bce6e123f589c"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.test.tsx",
+    "sha256": "93728135f50b95e06544b0d41aeab88269636e50ffe104b3c52a57901a2efa0f"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.tsx",
+    "sha256": "370cf9d64878bf3bc85fc4d63fdd833b430f291b26edd0b92998a956f487f161"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/referenceTemplates.ts",
+    "sha256": "c1fc42ada014f3ecb375c4014cc15caa3b718234ee9a6ccb2837e41dca022638"
+  },
+  {
+    "path": "gai-frontend/src/features/project-preparation/TemplateManager.tsx",
+    "sha256": "4a801d0857354884a5e9be552f47c8bc212b34c1e64f9fdd0db30797ef895ec9"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/navigationContext.test.ts",
+    "sha256": "1055ab60c3a7c3797932f2ab6e0808cbd499bc79b6d791b8d87d438396720e56"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/navigationContext.ts",
+    "sha256": "322ededf7436ef5a6127f67681aa20190cdd4c85dd7c987886cfef33bca84da9"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectContextLink.tsx",
+    "sha256": "e3adc2658492d680b89f63045cd5ce7a6e20ef1f55f8bdb652308245351a99de"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectForm.tsx",
+    "sha256": "d3714b862c9624cec37a62e81dff21870e0277247890da7301ca140d11f0b57a"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "sha256": "e46a741cf13a0efd439a7ce21e561918e7680c60e5b144c2ea7891b279176126"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/projectLifecycle.ts",
+    "sha256": "12bd72e87d22d48844714f5722bc6022ff0e34f8db2f43bb1723e0e6470793bb"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLifecycleActions.test.tsx",
+    "sha256": "4cff070439c1d6058b96f4d0e361d786b657cd01963e3597ff94458601b83b06"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectLifecycleActions.tsx",
+    "sha256": "f099b2160cc1bffb498249bf85f37b210e1203c1e0c98d88d606a781bb81c450"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/projectQueries.ts",
+    "sha256": "4820b5a6a0f66001c3c8ad490811520d26a9457561176e9fda6d72ad44bf7221"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/projectSchemas.ts",
+    "sha256": "f85358a73c9cc29f7a7efd9bce85363d1cf601f1f6aa7b481bb368b57e94c220"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSelectors.tsx",
+    "sha256": "0aa060c637ab0f0addcbef85406d48127d597313aba363416ce91e40dd1c9993"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectsPage.test.tsx",
+    "sha256": "7da4f4a84782864e62fe6ad44e94d3a0343acb43564aada95c9944bdf1cafdaf"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectsPage.tsx",
+    "sha256": "38420062fe0bff4ce063a41bb1c7f483c067e251b590312a0500d3c23e78a9cf"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSummaryPage.test.tsx",
+    "sha256": "958901f5334ac5ef0468e9d8b9b372d50e7d79152c9b732e480afd5444e881c8"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectSummaryPage.tsx",
+    "sha256": "bdfb5295a2f25b3543e2053f496d6d15d3f338ad61c36557df38e36afff7e1d6"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectUnitsPanel.test.tsx",
+    "sha256": "62b0630ce357a15d5bf2a102e1b9269d780e3a093a59b20f2268b235b6e650cc"
+  },
+  {
+    "path": "gai-frontend/src/features/projects/ProjectUnitsPanel.tsx",
+    "sha256": "e16ac1b49ca1bd757e50bd4f7e8dada9fd0d94ac4a54e4a2cb20353d5407f6c7"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/CashFlowPage.tsx",
+    "sha256": "4bfec755434a2682ef8a7f858908cf75d7e7f513fcf4e8dceebc06f8fa1a530a"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/financeApi.ts",
+    "sha256": "49689c4f6718c9f56fbb8646eec719489f77df51110e3a0ec7cdeef15aa1d4a8"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceLayout.tsx",
+    "sha256": "555b1f0b09220b77469b46a14f377bd439ebd3f9a6fc1397de55c3f787584387"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/financeMoney.test.ts",
+    "sha256": "0cabdf7c723f12a5fee4f741e2fab00270a1e9d9309efd922681b42c953cb3ce"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceNavigation.test.tsx",
+    "sha256": "b08e8186aa499305339a738e88b123c3dfcfadf1ac0167b02068e3b3b6514d8f"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/FinanceShared.tsx",
+    "sha256": "0cc561f00e568c8c4211a767e37784cd24f9c8d02fcfbd3d38412ac038d93558"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivableDetailPage.tsx",
+    "sha256": "f139c5dfaaabb6a10dc3ffc612f9dae1ea44350cc728407ec39d3b9dc140b20f"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivableForm.tsx",
+    "sha256": "50d0bafcaafdb86cd10aa75e617b182ef24b7e2a1f4408cfa5be36ad225f3fcb"
+  },
+  {
+    "path": "gai-frontend/src/features/receivables/ReceivablesPage.tsx",
+    "sha256": "af4633f7fb56dfba64d9d2c38b7b16353c08c8a73b1b49312ecc2bf951016903"
+  },
+  {
+    "path": "gai-frontend/src/features/roles/RolesPage.tsx",
+    "sha256": "4231fd09b771b4ab9150c788a07c4ba57cab4024abe27ce6460c49f0acfcade0"
+  },
+  {
+    "path": "gai-frontend/src/features/shared/ResourceListPage.test.tsx",
+    "sha256": "aa1082704df33187950741805fce95b784693d62e9a95023a92acc3ec00a0772"
+  },
+  {
+    "path": "gai-frontend/src/features/shared/ResourceListPage.tsx",
+    "sha256": "fcba802b33312f90d3e8a8e4621d052fd69db72aa9971f8b3e707212b8bc91cd"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/reportApi.ts",
+    "sha256": "38637b65601182cc0da9497eabbc37aab892bd2ef4580d30777e2aed9e0a76fc"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportDetailPage.tsx",
+    "sha256": "3fc2e5705cdd1c8b55cb1d235b15e4574444d232fe2a2352f6a3c51d50ada7fc"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportForms.tsx",
+    "sha256": "3124c0585438fa2d442fd6ab1f33a80b19d92c9af4ee4f4923eb2ab1b6331a48"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportPreview.tsx",
+    "sha256": "548931a161001cc01edf49b4dec1d79f5ea21c7577dd254f35b00dfea272619a"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/reports.css",
+    "sha256": "dc9f460577e648aa8f05eb306a22a73d6a02c9909ab83d7ae7beeae51a8dde64"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsLayout.tsx",
+    "sha256": "cfd057a9b548e878335fd44055efed2b779393ae1f5426615c265dc1754856aa"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsNavigation.test.tsx",
+    "sha256": "55879a449fa82d2616d9435d5c2aaef5df0366e27019f1c5dde815efa2721386"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportsPage.tsx",
+    "sha256": "ff281606a177079473e8621ebf01bf85b033ccc687885203efe6eb945df36bb9"
+  },
+  {
+    "path": "gai-frontend/src/features/technical-reports/ReportTemplatesPage.tsx",
+    "sha256": "6745ee12b508910900f4a5d31d77ce7995df5066e1510cb2051cb0c76fc16e91"
+  },
+  {
+    "path": "gai-frontend/src/features/users/UsersPage.tsx",
+    "sha256": "96bc3c9f630ac31205f7b8c63bd6a16bf539c71df7d329dd90f594c82f789f08"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useListState.ts",
+    "sha256": "9a9cd7a61d0d32345497541258980b5f3909f90e29e05ca2c0bc538626cc23b2"
+  },
+  {
+    "path": "gai-frontend/src/hooks/useTheme.ts",
+    "sha256": "f6e0d31298f8a74209d7bcd23d8c764cf7d862b1565c93ed9ffe594db8ba8e14"
+  },
+  {
+    "path": "gai-frontend/src/layouts/AppLayout.tsx",
+    "sha256": "92cb49e3b54c0120773681469099de3a7113c5e17b26b84cc16cde356b9801c5"
+  },
+  {
+    "path": "gai-frontend/src/layouts/AuthLayout.tsx",
+    "sha256": "5f0e922e73980c550d6ab4f51dc54953b0ba1499d50712402bed173906bdf3a7"
+  },
+  {
+    "path": "gai-frontend/src/layouts/Sidebar.tsx",
+    "sha256": "9b55bf6ce2a29062375b857b82885d6c3f7239dd057ba8c67f76bc3262f5e826"
+  },
+  {
+    "path": "gai-frontend/src/layouts/Topbar.tsx",
+    "sha256": "8ab5facdc23d0292a02b8fa747b853ee62a0001c0483ebc9a9eea6a09313c64e"
+  },
+  {
+    "path": "gai-frontend/src/main.tsx",
+    "sha256": "364593cd42d624db5083a031ae20fe14bdd6c71fc0cf7a8e3830e7b253895d48"
+  },
+  {
+    "path": "gai-frontend/src/router/ContextRedirect.tsx",
+    "sha256": "9a3e4a64672b65415a82c40408de0a319e8bca320b67948d6045112d099f9fbb"
+  },
+  {
+    "path": "gai-frontend/src/router/projectRoutes.test.tsx",
+    "sha256": "a47821f7f8c5823e4635f343a21291b65ee69703da391d939679a7f1e793d383"
+  },
+  {
+    "path": "gai-frontend/src/router/projectRoutes.tsx",
+    "sha256": "65b6557b5753b9396179539493317d3c60d21ca048c0709191229fd0732d467c"
+  },
+  {
+    "path": "gai-frontend/src/router/ProtectedRoute.tsx",
+    "sha256": "7e83efaa764932b0c76d5afeae401060817a3eee9abe7464014e3c496db6773e"
+  },
+  {
+    "path": "gai-frontend/src/router/router.tsx",
+    "sha256": "482cb94741b0b357e2fb641ad228aff39357c1a70cbeda9924d57084473c384e"
+  },
+  {
+    "path": "gai-frontend/src/styles/globals.css",
+    "sha256": "949f22a4df0ba5a7df713ac23f91e3cf450f844d0bbd0b4f0e510b2e2fc241dc"
+  },
+  {
+    "path": "gai-frontend/src/types/api.ts",
+    "sha256": "86b7c9bf9f7a21eac251d1d440541ce9b765a2e40601534e331beff945a7c1f1"
+  },
+  {
+    "path": "gai-frontend/src/utils/cn.ts",
+    "sha256": "4b705c7d7e5c7a2dd73d26ad35e9c0583d3d3655e2a5be1e67cea21458f29c01"
+  },
+  {
+    "path": "gai-frontend/src/utils/format.ts",
+    "sha256": "70c184d388f02de4648e6868ac80f23bf19af8ae3fde1f7eeff480a63b127a90"
+  },
+  {
+    "path": "gai-frontend/src/vite-env.d.ts",
+    "sha256": "424faf9241dd699dda995b367ed36665732da1e6ec1f33b2fd40394488ecac92"
+  },
+  {
+    "path": "gai-frontend/tailwind.config.ts",
+    "sha256": "17c6ebf685fe53bf3a208186ab30657afa95d70e5968ec363fd73afdf608ab7c"
+  },
+  {
+    "path": "gai-frontend/tsconfig.app.json",
+    "sha256": "71da4603353174ce38103fa34918ffd80daf732ca183260ebaa42b004e3ac58a"
+  },
+  {
+    "path": "gai-frontend/tsconfig.app.tsbuildinfo",
+    "sha256": "44b4a449684619f504d97f969bbbd4ee1e6869bbc595c8c589885a53518e5e4c"
+  },
+  {
+    "path": "gai-frontend/tsconfig.json",
+    "sha256": "ddfbd4be8ba0c63cb46e9ea6d68f68e929f270bc23f2f64ec9aa13dc5057c78c"
+  },
+  {
+    "path": "gai-frontend/tsconfig.node.json",
+    "sha256": "33a346e7c89bd55533ea8c29f8cfe70dbc3528b535608157215ae5f282257dbf"
+  },
+  {
+    "path": "gai-frontend/tsconfig.node.tsbuildinfo",
+    "sha256": "67228c4ee896f3f99bcf3b67f18bb2d47cfa47f3dbc18f155cf9fed34b98c987"
+  },
+  {
+    "path": "gai-frontend/vite.config.ts",
+    "sha256": "0528cd9335b7b57fb40ef3818b10e348235fed377cb92ee8c8b5ed0d4421a910"
+  },
+  {
+    "path": "gai-frontend/vite.real.config.ts",
+    "sha256": "de0ad8658a88eef4ecbaecac47f266c0ebba6aa1887b711a48713a30fc840bb7"
+  },
+  {
+    "path": "gai-frontend/vitest.config.ts",
+    "sha256": "d6266c1aef644d467caedc82760e5e725eb82b60f82257b4bea9546a8f2b1143"
+  },
+  {
+    "path": "gai-frontend/vitest.setup.ts",
+    "sha256": "4c8117420e79cc575c2c38fb289bae4984db722f52695e6dc69fd548c6021d15"
+  },
+  {
+    "path": "gai-backend/.cursor/rules/specify-rules.mdc",
+    "sha256": "6b41ab3c0d6eadd3211faf7a48b150a8db82e5011ed17039effa9ad493392780"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-agent-context-update/SKILL.md",
+    "sha256": "53afb27e02c53ebb2e42c038465e09f6c6919c7d3f507a3187cc0936bd443c82"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-analyze/SKILL.md",
+    "sha256": "30d567e1dcc9767fbb963c7c38cd35836eaefa73a7f00577df3f843f55d4a313"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-checklist/SKILL.md",
+    "sha256": "90b829872aad4a0685799822d33a54765e213b880b60c4ecd9fd0e8e71725396"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-clarify/SKILL.md",
+    "sha256": "9a0997bbeb5ed2fb3ea0331099dcfe65d8b8d484df7b582bb25c2395396739d0"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-constitution/SKILL.md",
+    "sha256": "9df7dedb8a2841563ef730002672eefe8831e1d382e1584bddc807f2b14e7e38"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-implement/SKILL.md",
+    "sha256": "8672e9e2680057aa6f7365c8484c8429a666e26dfc3d081542ede6b99a6f8ede"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-plan/SKILL.md",
+    "sha256": "355627e60e87aa53ba87ca1c0992cedf13a7fea85f19591814d2ccb129309814"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-specify/SKILL.md",
+    "sha256": "2299550e4fb9a26cdf45e7dff43ff1756565a41061af5c2c342470be52c68736"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-tasks/SKILL.md",
+    "sha256": "414d9a67baa9b675286147789a9afb60e100ede67c54dd32c8c1aafacf9bc0a9"
+  },
+  {
+    "path": "gai-backend/.cursor/skills/speckit-taskstoissues/SKILL.md",
+    "sha256": "b7f65b62a84940a50ec1aface1b56476f755430641f59ef4c680e59eed8ee69b"
+  },
+  {
+    "path": "gai-backend/.dockerignore",
+    "sha256": "40c9f28ecd544b5c9b6c4d6b5585d4dcd6d7fb05b1cdfd5c6132aa18ff826677"
+  },
+  {
+    "path": "gai-backend/.env",
+    "sha256": "8c9335f87d7b8d39a2f49b438a2b42115aa22ac340bdc700e0f31e6a55cb15ee"
+  },
+  {
+    "path": "gai-backend/.env.example",
+    "sha256": "2729f4ea8726e0a69b50e94dfe0da3d79736d640f58a84fe70280c4b5cfff811"
+  },
+  {
+    "path": "gai-backend/.gitignore",
+    "sha256": "d49b87f7124229d94a51b9187fef61358546e346b4bd4649aa2fcd131504ce15"
+  },
+  {
+    "path": "gai-backend/.prettierrc",
+    "sha256": "30d23aaa5811720602dec802795cbc172c65bc56eb8c683fc5b12c10dcb05563"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/.registry",
+    "sha256": "038a5c1539868d23d4de89aea1862cc06f6b5fa1148cd29b3d9aacbe4b69f768"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/agent-context-config.yml",
+    "sha256": "2a76dc0087e833286093ae338cbf2fac318f89c5f45d47a3d58394e26b01fb7e"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/commands/speckit.agent-context.update.md",
+    "sha256": "55c04b7bb072949e70eb3b9e5449196ab6db20aba1357e50b7847fde0000964a"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/extension.yml",
+    "sha256": "84b23a2568e1727d43ee63da34d6cdac1401267babe086e09b9dd625f428ee99"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/README.md",
+    "sha256": "9b4e66716fe3a072182cd114c882429f0a387c00b44f8e8af8a6e1fa5e9fc1f7"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/scripts/bash/update-agent-context.sh",
+    "sha256": "dc4906eaba6fe452a47d1f9dfb32af9a9701cc3758568836bb88a13b7dbeca15"
+  },
+  {
+    "path": "gai-backend/.specify/extensions/agent-context/scripts/powershell/update-agent-context.ps1",
+    "sha256": "380637b09de1f453004ab846afcfe454d79029333a9fa3fb98d00ecfcef1591e"
+  },
+  {
+    "path": "gai-backend/.specify/extensions.yml",
+    "sha256": "619a95e524c8ff95bd7fa4673ff9e64088567434a6a81c5b140e1ef17a485aa4"
+  },
+  {
+    "path": "gai-backend/.specify/feature.json",
+    "sha256": "8ddeb4b46a5b13bc0c5864784763520f6ec5ce0a40ddf8ae0d7b7db13338ca8b"
+  },
+  {
+    "path": "gai-backend/.specify/init-options.json",
+    "sha256": "f1c3169820601b25025d3bc74ba5ff2f51966c765668d7f21f57d56c0da87311"
+  },
+  {
+    "path": "gai-backend/.specify/integration.json",
+    "sha256": "d77e7c6bb49744e67daa72105c2cfd49771019008f9541045e62c1dcf0e37498"
+  },
+  {
+    "path": "gai-backend/.specify/integrations/cursor-agent.manifest.json",
+    "sha256": "442916b0c969247f585114c90b7d2897bf3a94e724aae85e1b2c1b40aeb68faa"
+  },
+  {
+    "path": "gai-backend/.specify/integrations/speckit.manifest.json",
+    "sha256": "f1501248c9e92fe5f8d156ceed1709af4572b5bbe043d698d76e9bfd49aaf334"
+  },
+  {
+    "path": "gai-backend/.specify/memory/constitution.md",
+    "sha256": "da74877645dc0a88f17c79d61acb3a839e7a90ce690176c35d8ec28b21b77b26"
+  },
+  {
+    "path": "gai-backend/.specify/scripts/bash/check-prerequisites.sh",
+    "sha256": "e616a8a390ccc4f4b3f562f2d072b7891b5db06a9425ce5a46bcfee628aa1b21"
+  },
+  {
+    "path": "gai-backend/.specify/scripts/bash/common.sh",
+    "sha256": "12b5f48c7e69bf50d4109beb3bce4c4c7481bde22bbce07911f7e2b90d19c985"
+  },
+  {
+    "path": "gai-backend/.specify/scripts/bash/create-new-feature.sh",
+    "sha256": "a98f9fd5e5818531333b19b849810312a3756b51cbf37112bfe3bfc21ac00e18"
+  },
+  {
+    "path": "gai-backend/.specify/scripts/bash/setup-plan.sh",
+    "sha256": "574afa34cc763ec6b27abb1fd1e4e2d8143a4e52b6a09d6900ce51b0c7c8ed85"
+  },
+  {
+    "path": "gai-backend/.specify/scripts/bash/setup-tasks.sh",
+    "sha256": "3a81b6600af9e491648cf3ba5a185483938615d0c09f8767a5e485c1bd36b910"
+  },
+  {
+    "path": "gai-backend/.specify/templates/checklist-template.md",
+    "sha256": "dd87ec5630cb510019f4a7e1d13d68239113b77e99c0516d2ce5aee7a1cd95da"
+  },
+  {
+    "path": "gai-backend/.specify/templates/constitution-template.md",
+    "sha256": "29fc1837b20f493d302203554923322a245123b4be9ed5734d9e1af96cd5ef0b"
+  },
+  {
+    "path": "gai-backend/.specify/templates/plan-template.md",
+    "sha256": "9236f3c5e674734f8569a441944c14d1bf4a6d6d867504377d89dd2d3feefe64"
+  },
+  {
+    "path": "gai-backend/.specify/templates/spec-template.md",
+    "sha256": "c257d9d1bfea7d167985d94b736ea19d52abfedaa0c81b869d2407a76dfa4175"
+  },
+  {
+    "path": "gai-backend/.specify/templates/tasks-template.md",
+    "sha256": "1105b9cdc6dce31550d63ccdad0c4e9e3d4d73e7d1a895766c2a4aeaba7db736"
+  },
+  {
+    "path": "gai-backend/.specify/workflows/speckit/workflow.yml",
+    "sha256": "0aaec347809e466247f73461211d1c8e6416a156dbd420b6736ef9f510830987"
+  },
+  {
+    "path": "gai-backend/.specify/workflows/workflow-registry.json",
+    "sha256": "9a95f15365739ce4fa5731171d6b8d28cec5758f2f6e2262800f9e9a963680ba"
+  },
+  {
+    "path": "gai-backend/data-source.ts",
+    "sha256": "698480224a04dc3475903bb1fa207de137fd7357e97c19fb5bc926008d41f97e"
+  },
+  {
+    "path": "gai-backend/docker-compose.yml",
+    "sha256": "815301cb42a2e01430bdffd294edb9542046fcd95e0d7c97376674c21fee4bf6"
+  },
+  {
+    "path": "gai-backend/Dockerfile",
+    "sha256": "017f0ce5508d7b3621285906f0c01c5fadf69d6cb1c4eced7b55bae412d787cc"
+  },
+  {
+    "path": "gai-backend/docs/gai-backend-gap-analysis.md",
+    "sha256": "cdf0b066238c75a314e21951b5214a8eb183bcaeaf1639b531ea8d5cb8133320"
+  },
+  {
+    "path": "gai-backend/eslint.config.mjs",
+    "sha256": "ac18af2d534e6ee0e37d33d0c681466d2346091fa1dda621f228a413d477e15d"
+  },
+  {
+    "path": "gai-backend/infra/README.md",
+    "sha256": "edd28cf04c30a3abb6d89746654323388de399954a1dbbf520bd115018edeb3a"
+  },
+  {
+    "path": "gai-backend/jest.config.cjs",
+    "sha256": "5755423aba7ae5dec03547e51aeef68235c69bf3ef455b414be59e59a4fcef77"
+  },
+  {
+    "path": "gai-backend/nest-cli.json",
+    "sha256": "84dc81177a0db2270bd71242b910f07982c56eec68285694c9cbffc3911912ba"
+  },
+  {
+    "path": "gai-backend/package-lock.json",
+    "sha256": "5cd4eabe10f86010dfe62b749796e5f246870fdd20f2c044ee58c3c1850c5529"
+  },
+  {
+    "path": "gai-backend/package.json",
+    "sha256": "95c5eb0ec0c50929481b057e1abee77ef6aa613794ec87dbcc75626ae5fcf9d7"
+  },
+  {
+    "path": "gai-backend/README.md",
+    "sha256": "5e87b28bd419d1c83f2f44de2e150d0260da361547fc53d60016d0b64153101d"
+  },
+  {
+    "path": "gai-backend/scripts/data-source.prod.cjs",
+    "sha256": "69537ea7bc7c40b08022c49a4b052f6442097cc0493b92ea5468006e035a7731"
+  },
+  {
+    "path": "gai-backend/scripts/docker-entrypoint.prod.sh",
+    "sha256": "cdaa8bc2df221c0bde3a4063b502aeeba668a745d95766d31e95a66f0893bb74"
+  },
+  {
+    "path": "gai-backend/scripts/docker-entrypoint.sh",
+    "sha256": "06e9c0e4a5fc8a73313ea67d8e55ece68c4f65ea0f2107d262705db3c5960f11"
+  },
+  {
+    "path": "gai-backend/scripts/reset-db.sh",
+    "sha256": "7633f479e66ad26b43265270849da76c72a444c7040c72a875397fbda6071dea"
+  },
+  {
+    "path": "gai-backend/scripts/seed-project-test.sql",
+    "sha256": "53379e68c249d18db3c92ba9842ec5a3a7391dd07facb844bebab202abfeba1b"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/checklists/requirements.md",
+    "sha256": "898f139008f745dcab1db47cf90a23d21e2b6233573f2146028dac48530bc000"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/contracts/auth-api.yaml",
+    "sha256": "d730b98d4d9f95e8079d4df3057f7cc5329b5b77fcc35290086eb4d01da2f4e0"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/data-model.md",
+    "sha256": "a5da4e990b55884eadd5b38283cbfc05625f38f6869d28172cbed0c7779643a0"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/plan.md",
+    "sha256": "23afd55fdad971fb031515b92941dae60f9be35233cd3b74c9453c954897624e"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/quickstart.md",
+    "sha256": "a300c84daf3d7969a442340ec034114fb3c730f3debfe51f1031148ee04cb469"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/research.md",
+    "sha256": "f42dad599eb3f06c8d6b1a0da850c633d98671c0231104800b71455a340c1a63"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/spec.md",
+    "sha256": "720df78f7474c199f727d8d850ea1b8f72ad0e8c0781fa7f4aa0edf0a80b0708"
+  },
+  {
+    "path": "gai-backend/specs/001-user-auth/tasks.md",
+    "sha256": "c4ffdeabc3bfc1fdd6fb6611c728e843afe0af5cd337b2eb530e27c3177393ff"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/checklists/requirements.md",
+    "sha256": "559803a6294f96c576ef9e02d86b52d0e7d3744bd9be464ea195ab4e043da812"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/contracts/organizations-api.yaml",
+    "sha256": "8a3d25d2c536388be07eaabd2221f83d29cce163eae684f9377d470439eceee3"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/data-model.md",
+    "sha256": "131a43cf897a59ce67c74806f130566c41d0d37bca3c5064d0a4879e647dd9a4"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/plan.md",
+    "sha256": "c315e9f1356b314704fc7f0b346966ad458856f0d86257547bdf80c2a7c4273c"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/quickstart.md",
+    "sha256": "7a3281bda7ef22d5242fb1517f1543da8bc1f950cd424cedc5fe0f58137ed033"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/research.md",
+    "sha256": "4ae47bd96f8aacfbf576e245e3cba7cab261e721fc5a00ba0b4322798af12345"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/spec.md",
+    "sha256": "17be8a7968e8f552f2d2ee438d95db717abe285d55bfbdc7ac0d4928a744672a"
+  },
+  {
+    "path": "gai-backend/specs/002-organizations-crud/tasks.md",
+    "sha256": "c4e7e17af8a63344fbe6d0f2133efefb536e016da994f3160c008ece0d7b86fe"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/checklists/requirements.md",
+    "sha256": "ad1b6ba3f31837138c6200bd534f6136a97fa5e53f809b577dbb307e0f53f015"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/contracts/rbac-api.yaml",
+    "sha256": "468221787d344e662eb1579daa8f11b5239ac53bd08ba15d00709f3f64aac842"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/contracts/users-api.yaml",
+    "sha256": "d8337f9cafaaee5d6d08e04e431e6ab6b7a2643f40075088489123d924af377b"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/data-model.md",
+    "sha256": "af36b8ac92aeeb84bf13a792598e78a55c85b57a549d37c54c8ec290c63c04f9"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/plan.md",
+    "sha256": "0f5e0e20f34005b7dda47ee7295fcc93083df9cba10393d1ea39bb92f3977014"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/quickstart.md",
+    "sha256": "c47786e546ec5bc29d52080867264a5f2257da3531282b02ed1a12747b3e1088"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/research.md",
+    "sha256": "37f6ab7c35e9df5327adbda4ced2cb93f52e59470f18df6ba8585eda897bafaf"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/spec.md",
+    "sha256": "230ef08af86b9593678d8077559e767f9af5d612b2b257283613984390e614ef"
+  },
+  {
+    "path": "gai-backend/specs/003-users-roles-permissions/tasks.md",
+    "sha256": "0f87d6cc7fd900f0287fe23b2e32869310c76f2b0ae167884a957ce1f9d4c8f6"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/checklists/requirements.md",
+    "sha256": "e32959e54a60bfa085b658a83763a97f8ad46d2a7d1d411f5dc998ad2eaf8179"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/contracts/projects-api.yaml",
+    "sha256": "efe2a57c0edf220a719242191227185f97d075f9deac2f93823b2a28ce38ab6c"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/data-model.md",
+    "sha256": "1163ea92b852ddc62f45c96d347b5daec98228a88135ed52680cf8ec65815434"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/plan.md",
+    "sha256": "85d040b8ae949b976f8f6e7e1997a026801acf63c7c3edc69ef0e124615df817"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/quickstart.md",
+    "sha256": "1ede899d6f7e60acdb0ebeee9d60effe72a8027d79164338e04f1a19e4505c20"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/research.md",
+    "sha256": "edcd56d239fa09d75879c24a18b167f1e43e4966ce116fcce86a6c3022f2e93f"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/spec.md",
+    "sha256": "d92c9dd23567eda3fc9bb7f9e65aa852ea58927b0c11cf8560fdc1491bc29262"
+  },
+  {
+    "path": "gai-backend/specs/004-projects/tasks.md",
+    "sha256": "04f97cd10d9318f3ef6b80802ce77a02659e11ea8b99be4d3edff7378f230a85"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/checklists/requirements.md",
+    "sha256": "e43e01136bf818511e31350ffc708a0dcc685648f65b563c40f4b5a3aaa37557"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/contracts/field-agents-api.yaml",
+    "sha256": "f9fd07cc4c710d52fc8ce474c5dade7b7ca8d8485d3cae112d8b9d6e2a00104c"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/data-model.md",
+    "sha256": "047221e925833f26182643ea8411b9f547a1a5054d8570c34d81cf4bdee79c55"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/plan.md",
+    "sha256": "2c7cfcb207192c2d2d799ce78ea68a1669d51e521c1ebc2e223df41e7153f96f"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/quickstart.md",
+    "sha256": "b6b69de08f0f043dae6fc7ed50a6dd0f5d9d44ac1b116bdd30f1e10dcc20f827"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/spec.md",
+    "sha256": "e1ddcf2da0c901bae0c038e6d1f2e648ad6d0f511458802d4e56bf8a43a3b3b6"
+  },
+  {
+    "path": "gai-backend/specs/005-field-agents/tasks.md",
+    "sha256": "7b0b774d89f88067ef0b6d50a6798a116c01852d759cdbe3ec0b043e7899d666"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/checklists/requirements.md",
+    "sha256": "28ee36c3b8b7087924db19e16622be486ea415805a0d2e5917c40fe66e1a724a"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/contracts/inventory-items-api.yaml",
+    "sha256": "275164200f32d2913ac30cc4fd075e323fcba432cf2c8b8504bb01a5d6557295"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/data-model.md",
+    "sha256": "9315644ea49a90784154d83bf79b2e8c0bd172538c0a2380b80e617ae64033be"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/plan.md",
+    "sha256": "d72fc0feed281e21e96b3bb6fbef2eb345c29a1ddc743a2230f09d5b4704dd5d"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/quickstart.md",
+    "sha256": "caf44a84ab51dd91388f3f83b63a531fd7c6b044ad8bbed2e71a7c86cd930748"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/spec.md",
+    "sha256": "b43dbc5d8ebe85ff779f17f0d133cceb2ab95cf45f44f2256e534bfdb366d8ab"
+  },
+  {
+    "path": "gai-backend/specs/006-inventory-items/tasks.md",
+    "sha256": "a232946db9ed8c63615809eace25a353021e3de523741f02786e51e3d6d05307"
+  },
+  {
+    "path": "gai-backend/specs/007-inventory-item-images/contracts/inventory-item-images-api.yaml",
+    "sha256": "061c448a2077727f8c123e7973c19d99b6b6539426c5d3d20b06932b4b5aaa6d"
+  },
+  {
+    "path": "gai-backend/specs/007-inventory-item-images/data-model.md",
+    "sha256": "e59df2689cb49ce4fe2a3c8eba17a82cc7085bc2a53539361596f9f108d58f4c"
+  },
+  {
+    "path": "gai-backend/specs/007-inventory-item-images/spec.md",
+    "sha256": "5efbf61b9a0ec57fa361d219bd73f0043bc2c5ebce5bd0cb3521116403bed490"
+  },
+  {
+    "path": "gai-backend/specs/008-catalog-assets/contracts/catalog-assets-api.yaml",
+    "sha256": "3fe9899245312b7109868febf0968c763b1bff628187a20a179e20d45b0775f7"
+  },
+  {
+    "path": "gai-backend/specs/008-catalog-assets/data-model.md",
+    "sha256": "2c2ce8c393576cfcd10711a0402d693b4ef3505e1f4faf741c64c812b8b8ec21"
+  },
+  {
+    "path": "gai-backend/specs/008-catalog-assets/spec.md",
+    "sha256": "ba643349c5cb4536fc91db6b9cef4d484ca4fc0737884ec5ca369b39ad99fa65"
+  },
+  {
+    "path": "gai-backend/specs/009-inventory-accounting-items/contracts/inventory-accounting-items-api.yaml",
+    "sha256": "d9242c7b1933cc6e0cbbdb8b099a9991f67d5fbb67801f34a1c51533a6460d32"
+  },
+  {
+    "path": "gai-backend/specs/009-inventory-accounting-items/data-model.md",
+    "sha256": "4ed300d88f3d1ec7649c8e6451745dbd8ba1614c29ec862ebf50e2c1883e7e70"
+  },
+  {
+    "path": "gai-backend/specs/009-inventory-accounting-items/spec.md",
+    "sha256": "6aa33733f0dd814dc42434b37ef36329e0b5499a38ef73c12659dc107eb53559"
+  },
+  {
+    "path": "gai-backend/specs/010-inventory-pending-issues/contracts/inventory-pending-issues-api.yaml",
+    "sha256": "61e14dfef2c529f05b78696763e9d77342caca195a32b873ad9290c9b3f7d222"
+  },
+  {
+    "path": "gai-backend/specs/010-inventory-pending-issues/data-model.md",
+    "sha256": "5e5048f53b9b19ee1fa2b7ee8a1a36463c5dde1be55e120eeaa684ec3177ff8e"
+  },
+  {
+    "path": "gai-backend/specs/010-inventory-pending-issues/spec.md",
+    "sha256": "5317fade0746d75b2f3e8c1ca656a0c1508dba01d5e73622be04751817ab56dd"
+  },
+  {
+    "path": "gai-backend/specs/011-payments-expenses/contracts/payments-expenses-api.yaml",
+    "sha256": "52f0b002107486a97b3d75782577e2e700282ca0ddcae2dc18222cebc7cdec29"
+  },
+  {
+    "path": "gai-backend/specs/011-payments-expenses/data-model.md",
+    "sha256": "b10fb87da685adaabb2e3dc6e143d39354116a4c48909eef266fd13ff4a2f5c2"
+  },
+  {
+    "path": "gai-backend/specs/011-payments-expenses/spec.md",
+    "sha256": "cac3a0fa61dc33447ea2adafb8c8f4e6c129d52e485c715afbc21ae234f0625f"
+  },
+  {
+    "path": "gai-backend/specs/012-import-sessions/contracts/import-sessions-api.yaml",
+    "sha256": "6f66b1410ab306c4355a5d320330166b0d56087ae5603b6e25fa42d7ff3bbba2"
+  },
+  {
+    "path": "gai-backend/specs/012-import-sessions/data-model.md",
+    "sha256": "897a207281e35177769bc41d6c217b48e83f53739601aaeb70c489084299a803"
+  },
+  {
+    "path": "gai-backend/specs/012-import-sessions/spec.md",
+    "sha256": "8c4c7ceb02c282c3f8988eab72e82a92c52ddcb6d2350bedbe186c376ab97e75"
+  },
+  {
+    "path": "gai-backend/specs/013-project-dashboard/contracts/project-dashboard-api.yaml",
+    "sha256": "a033d8c19b9da465d51913504904b8ea5a7819e62edba274cd72a5cf9ec5690c"
+  },
+  {
+    "path": "gai-backend/specs/013-project-dashboard/spec.md",
+    "sha256": "e65b2d594c9a70c10370fbbcfe64906f3d25ff3a6395874a83905a14d8140c2b"
+  },
+  {
+    "path": "gai-backend/specs/014-companies-company-units/contracts/companies-company-units-api.yaml",
+    "sha256": "18701970b131c8bc81c8d38356289a770c61243fb886daca348464b7f34cd6f8"
+  },
+  {
+    "path": "gai-backend/specs/014-companies-company-units/data-model.md",
+    "sha256": "da9f896ad23c0a3466c6824d0641cfb7177a755713189af9a4b925eaca898ac6"
+  },
+  {
+    "path": "gai-backend/specs/014-companies-company-units/spec.md",
+    "sha256": "8b850e816891c78432c3d8a7f870821bd9aef4631dc114e5a80e460fe58edb7b"
+  },
+  {
+    "path": "gai-backend/specs/015-export-jobs/contracts/export-jobs-api.yaml",
+    "sha256": "67a67835219de6dff60d95cdcbb49cf6b02989822c25948f9771baeb9475e532"
+  },
+  {
+    "path": "gai-backend/specs/015-export-jobs/data-model.md",
+    "sha256": "7355a507fa0cfc52a43071e2af145ce5b12820dc3092b41485544aeac2b2853c"
+  },
+  {
+    "path": "gai-backend/specs/015-export-jobs/spec.md",
+    "sha256": "d9b7045bbffa1757ea3e2782aca3fc9c13427ed7129105181fc20a7ee7c32bc1"
+  },
+  {
+    "path": "gai-backend/specs/016-inventory-operations/contracts/inventory-operations-api.yaml",
+    "sha256": "ede344cff54107a5b397ac646d661c20853e34c528ad6275e3a267191ab9f035"
+  },
+  {
+    "path": "gai-backend/specs/016-inventory-operations/data-model.md",
+    "sha256": "d4c381f996308a775c379876a953ad3159e636e885bd8ebe6ca82bb880e4c206"
+  },
+  {
+    "path": "gai-backend/specs/016-inventory-operations/spec.md",
+    "sha256": "348a4f2c4542a4fe03a59591b354786241d0ea485bfb2f37f454e55dc48e3ca1"
+  },
+  {
+    "path": "gai-backend/specs/017-expense-accountabilities/contracts/expense-accountabilities-api.yaml",
+    "sha256": "8a937acb4dbbc81f08d8175d490485f4070afe6dd06f0c2d2eac152fd796195a"
+  },
+  {
+    "path": "gai-backend/specs/017-expense-accountabilities/spec.md",
+    "sha256": "12b28cfeecc933f653ba0347b7ef72d07fa26b18eea6405511f976b5a667b87b"
+  },
+  {
+    "path": "gai-backend/src/app.controller.spec.ts",
+    "sha256": "06dc58efb7b1e7affd62274fccc2777d4ba04ab5e8bb453c76888abe5a729840"
+  },
+  {
+    "path": "gai-backend/src/app.controller.ts",
+    "sha256": "60279220b094d94321779c34bd84cb0618b5e9bd2de9b22dd1e05bc7a7426297"
+  },
+  {
+    "path": "gai-backend/src/app.module.ts",
+    "sha256": "602ccb2a679ad51acc91698edc605d90db6e853297530f4e532ffbb264437a11"
+  },
+  {
+    "path": "gai-backend/src/common/config/app.config.ts",
+    "sha256": "582a0c452761d8258ea2046af2ff689b9c209f199b2ee5ac7fd761d5a1592fac"
+  },
+  {
+    "path": "gai-backend/src/common/config/auth.config.ts",
+    "sha256": "88ed8819e3b7470d903f333d7b1a5f8730df740c05f2e5caa360a11ba1389a21"
+  },
+  {
+    "path": "gai-backend/src/common/filters/http-exception.filter.ts",
+    "sha256": "49a007b64abc4cc1a6e3803cf21c15d00d62f64cca30ce85d40bed631aeb8d47"
+  },
+  {
+    "path": "gai-backend/src/common/interceptors/correlation-id.interceptor.ts",
+    "sha256": "60286da6ef8afa245abe26a469458abb0723ca88469e7fab814b1fbee18004b9"
+  },
+  {
+    "path": "gai-backend/src/common/logging/sensitive-log-redaction.ts",
+    "sha256": "4cc9d65ae4e711013c12399dd846451debe5a4bc6676cbea98048f974fa769f5"
+  },
+  {
+    "path": "gai-backend/src/common/pagination/paginated-result.ts",
+    "sha256": "ade451624940a4a06b5760ea86220a42505fe762116333862ac5b7daa71be46f"
+  },
+  {
+    "path": "gai-backend/src/common/persistence/civil-date.transformer.ts",
+    "sha256": "85bef926369c5a2ef2bf84dda57d1bd42f4735fbae173bfc1a10c6c395bf13af"
+  },
+  {
+    "path": "gai-backend/src/common/persistence/entity-id.columns.ts",
+    "sha256": "55a2370c2d87776422660b7377d76ebc4087995468a8f3ed795a67db4c1aaf38"
+  },
+  {
+    "path": "gai-backend/src/common/persistence/mysql-utc-options.ts",
+    "sha256": "8bb45e1a3056cd200918fbfab9d721b31b82f1f80c203d9146e3573e0b72e1c8"
+  },
+  {
+    "path": "gai-backend/src/common/storage/configured-storage-signer.service.ts",
+    "sha256": "5ef77b7f1ff7a0561e1ac780e5100e19ebd5bf9cdd6ed2c82f859a891d358474"
+  },
+  {
+    "path": "gai-backend/src/common/storage/s3-storage-adapter.service.ts",
+    "sha256": "2917474d5290f5e36eb311c984fe253b05270f1398b8135359eff70df827720b"
+  },
+  {
+    "path": "gai-backend/src/common/storage/storage-object.policy.ts",
+    "sha256": "77bf124ddc9f63bee85207668a02944c259163eb002c7fd92b6c3b72e846666e"
+  },
+  {
+    "path": "gai-backend/src/common/storage/storage-signer.port.ts",
+    "sha256": "dc818498fcc1a38b516f453efe47bcb154a197cac295eaf68411d7b85cc74c86"
+  },
+  {
+    "path": "gai-backend/src/common/swagger/api-error-responses.ts",
+    "sha256": "952b200ff5b82f03315b15a0c3b9bc38a2504e752c688aa0e20d72676851b56a"
+  },
+  {
+    "path": "gai-backend/src/common/swagger/error-code.enum.ts",
+    "sha256": "687a8373a6ab84bf732926f49e80d476ab1eab53e9eafecd9e6a519855b45f6e"
+  },
+  {
+    "path": "gai-backend/src/common/swagger/error-response.dto.ts",
+    "sha256": "9a900181a8443705958003e351e2d297dd67a410e644115eb73acdbc34408a85"
+  },
+  {
+    "path": "gai-backend/src/common/validation/civil-date.ts",
+    "sha256": "3045b226baad36e2036978cd08b324156f5d7359c00af63eac6c4db800f25490"
+  },
+  {
+    "path": "gai-backend/src/common/validation/instant-date.ts",
+    "sha256": "ac072e4889d7102e172f9b4304bde181fa12a4de18a28a3abfba00a5a490af3d"
+  },
+  {
+    "path": "gai-backend/src/crypto-polyfill.ts",
+    "sha256": "4c018a37f86870616a019edf56e6340dbce690ec4d8bb4c55cb119c14995423d"
+  },
+  {
+    "path": "gai-backend/src/main.ts",
+    "sha256": "94b52be386e2de3f9b0753df6cfef36bee7c008eb59eaae3ae9a3511dbfb8732"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739500000001-create-organizations.ts",
+    "sha256": "f8e1085021329be47c3075ffe8889c96950562481020f4def48c151ce6b64b7c"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739500000002-create-auth-tables.ts",
+    "sha256": "9857bafcf3c08db8f8fcb995064058a56f33ea83d44bd56ff8d13e9a76b547fc"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739600000001-migrate-to-numeric-ids-and-rbac.ts",
+    "sha256": "b9580eeaba3817c27b838b3444fb19e819a9326d8dc458e29bb9d122111871bb"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739700000001-decouple-user-authorization.ts",
+    "sha256": "cb31e737fe7e2cf758e16456afd9426189d96de8d1113099b6a10cff23606a73"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739800000001-create-projects.ts",
+    "sha256": "a07abf172882bd9dd61959f8f27966f8ff062a8bd616fa0a7fedb0f4486157fc"
+  },
+  {
+    "path": "gai-backend/src/migrations/1739900000001-create-field-agents.ts",
+    "sha256": "39c9c15d86a9af9f8332ee57e4ab5b5c839d0d1f0094455ef878cd2d9ac9ce4a"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740000000001-create-inventory-items.ts",
+    "sha256": "aa75453c57fb9854e641271d18f6fbc4da5f4e4f2e18e6026bf6599f2d0a2228"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740100000001-create-inventory-item-images.ts",
+    "sha256": "183750dfeced5aedd0921f442b6d41d06d68aae660c0c181979fbfe8cd6f333f"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740200000001-create-catalog-assets.ts",
+    "sha256": "ff06ef981bc3e33a724b9e11bcb5b2b610f162b8cbd65ba2aa37bb95d10965c7"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740300000001-create-inventory-accounting-items.ts",
+    "sha256": "8cc518c8e441ee569482db44d9a9892431fa1ebb0edc4cb48054e70ac4719ad6"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740400000001-create-inventory-pending-issues.ts",
+    "sha256": "f36ca83b57669231a46f50972b54dc7c5b5ca99d0e46a3cff1faaf9814f80f72"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740500000001-create-payments-expenses.ts",
+    "sha256": "35e9b6d50f83a875e96d28e25ee9aa97a9f8f644ecdefeca87ca44dbf6da2046"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740600000001-create-import-sessions.ts",
+    "sha256": "44116e9b475538cd5a793bbb37772c25594488b3f08466f125e0018fb306c545"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740700000001-create-companies-company-units.ts",
+    "sha256": "8d41d30464d1711c4adcd29071d3d7d8a49fc596abcd08d975774c858b161246"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740800000001-protect-active-field-agent-assignments.ts",
+    "sha256": "fff89f9a6b2bf2bd234035148673bbaf59f6ee07dde310c5cd7e0cbe55e6da55"
+  },
+  {
+    "path": "gai-backend/src/migrations/1740900000001-add-project-unit-soft-delete.ts",
+    "sha256": "c8085132c32e74f188500373db230c270feb6e8446de372d4e4774a4e2f21742"
+  },
+  {
+    "path": "gai-backend/src/migrations/1741000000001-create-export-jobs.ts",
+    "sha256": "fc6d27c07e997fbd7d4f47df26065fe313e602ae9599bf1f72574deb88b0c04d"
+  },
+  {
+    "path": "gai-backend/src/migrations/1741100000001-add-project-dashboard-indexes.ts",
+    "sha256": "40da5db84d10708016706f4639fa64b1d6acef0874e1a992f8dfbc9dae1ebefc"
+  },
+  {
+    "path": "gai-backend/src/migrations/1741200000001-create-inventory-operations.ts",
+    "sha256": "4d9c9996b3f5b5ca313d33d6fc5c7b432eb9ea66adb32298de006cdb3a342e01"
+  },
+  {
+    "path": "gai-backend/src/migrations/1741300000001-create-expense-accountabilities.ts",
+    "sha256": "26cf6896e27ad10420d2fb72a3641479de7e8fcfbb93daad23542bb62e8497b3"
+  },
+  {
+    "path": "gai-backend/src/migrations/1741400000001-close-inventory-operation-gaps.ts",
+    "sha256": "ae38056d2e6ff8b7ac7c598a921d2ae3244351058ea9c70ca6a1eb570e8d03e7"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793000000001-fix-evidence-storage-key-index.ts",
+    "sha256": "84a28ebf764915f67c097099e7af4ab3023525ebc62f9bc74f74e2d07e60638c"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793100000001-create-project-preparation.ts",
+    "sha256": "2a916231416aacc07328db30dc965b2aed4174f9e94c785a00d73c0f01cbeb47"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793200000001-create-field-coordination.ts",
+    "sha256": "23d9f0bb60379fb751c1fefd30e08eae1aee00e95e5e38d292a3cb3ee0bddd87"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793300000001-create-assisted-reconciliation.ts",
+    "sha256": "ffbde2120bd5813b0c9d5801a2e1ebad37f9d2633604cc163d07b7059559457c"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793400000001-create-valuation-batches.ts",
+    "sha256": "cc22712304d6c0f4cc761f34d22741d7e3b882e6e20ff8a43c5b1a09787d6441"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793500000001-create-project-contracts.ts",
+    "sha256": "32bfee93ecabc62915191438ba827e9b36538d5c9e21ad3d44a695903ddfc253"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793600000001-create-budgets.ts",
+    "sha256": "fc06ecc927a584580c958fa17cbb396ab2ad464f4e072c48e1afb39473b466fa"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793700000001-create-receivables.ts",
+    "sha256": "e6c4f41ba6e83018816d03068502ab297437629aa335a4a514da8d068821e43a"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793800000001-create-managerial-dre.ts",
+    "sha256": "30e98fd3d5041fdbfe527c21c2f7cba9e131add87885d147b7914fdd3bbb7400"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793900000001-create-technical-reports.ts",
+    "sha256": "7bdaec53010a116b9417b892646ac44905b17f3a2779abd6051d275deef3575c"
+  },
+  {
+    "path": "gai-backend/src/migrations/1793900000002-create-professional-documents.ts",
+    "sha256": "95ac3dc4235987f2ff93146a4d12640140f9dcc974489e6f7a23f5bdc797a5de"
+  },
+  {
+    "path": "gai-backend/src/migrations/1794000000001-register-generated-column-metadata.ts",
+    "sha256": "88676c9debd0f6b1c96600af3f77c01634d00b6cbe1f09b19bc22d8938776e03"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/assisted.controller.ts",
+    "sha256": "b17cd65a8b74a411b5bdf69c3ba0598bbd1308ac86017e7ac0884fca709b2682"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/assisted.dto.ts",
+    "sha256": "960344d88146261ebdbb679c7c4b570b9081abc75706e7166d434baadec06b1e"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/assisted.entity.ts",
+    "sha256": "b282ba5cbf6d7025edccb78cc6fda671a1a221e1bf5a65f68794f4b78dbbee32"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/assisted.module.ts",
+    "sha256": "89f99a0a8fd63bd477ba2204ed54c941c900d4d1e8a0a46cf4fc82a34f22d5a2"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/assisted.service.ts",
+    "sha256": "71d121142a041c477a105651e20110bc5ec685507673823e59703354468d103c"
+  },
+  {
+    "path": "gai-backend/src/modules/assisted-reconciliation/matching.policy.ts",
+    "sha256": "53ba27e752794de400a6b11ef2f47ef02cbc100a77bf1c3f611a2cca19878e2e"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/dto/login-response.dto.ts",
+    "sha256": "5bd012dbba466234e8ca4a5552d3a5b7e116c33344dc96a13a23448d07d1d707"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/dto/login.dto.ts",
+    "sha256": "aa54f405ec2b8052570b86cfaf54fbe7e32ae2fea6b0b2b676a80d639f2a2f8b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/dto/password-reset-confirm.dto.ts",
+    "sha256": "e99e7705b5d376bb4b0d49271ce3b196c1ffc18e4ed86da3bf841eb5b59f936b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/dto/password-reset-request.dto.ts",
+    "sha256": "5ee0d8979b95e7d30309fc898a017bfe1f504316c000064d41fe6de2216c6ee5"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/services/permission-access.ts",
+    "sha256": "5e42bb8f6fe76a09f76ad31aac58484dcd67ddb930aa937b6a6423c225780c2b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/services/role-authorization.service.ts",
+    "sha256": "d607ac2adfc4aae43ec4ce05dc7cc90c3887f393fc4e25f43f1651ba61cf8887"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/use-cases/confirm-password-reset.use-case.ts",
+    "sha256": "be1aa22221da2656de2abba3ca21b201e11cab450421460e9ebfb47628b0df68"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/use-cases/get-current-user.use-case.ts",
+    "sha256": "886fc549ab14a15f72a36c38a899642f56a3586f3f638c3c22ef03e793bef3e4"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/use-cases/login.use-case.ts",
+    "sha256": "2545ad4c3d2d8625b78b25d6175d0a3a6d0d724f45380a222bc5679881ab7842"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/use-cases/logout.use-case.ts",
+    "sha256": "65aafde241b1397fa904e923f3e33433b673202de8dac4d1b593c1e7fe2b9be7"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/application/use-cases/request-password-reset.use-case.ts",
+    "sha256": "f9c60a9028035c8a1d0c0543f3875ba1d4e7b52061a427fa9b0088abfec49157"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/auth.module.ts",
+    "sha256": "f87a566f882689bcf4e28f687b9549f0be0c35aea15e2d8a5200d78512e3838b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/entities/user.ts",
+    "sha256": "f4cc6404e5c557271f3f8ffc894e3f507ee23d6d25f3af3d9c1038930ee3d769"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/enums/auth-audit.enums.ts",
+    "sha256": "58bf1cbee99e33ef430348c18c2105dd6219b2fc8660524cf711b3e60fdb7d3b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/enums/user.enums.ts",
+    "sha256": "0d927f408bb8b75499a351973626d2cba4eb3d3c2bb55298210e05f48c17438f"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/auth-audit.repository.port.ts",
+    "sha256": "66de499d6e059a6bc928ace5c6c37400f85914c4673935e6009975cafbd10078"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/email-sender.port.ts",
+    "sha256": "561c39701010f9f46383d9b624e1e95abe1952340e14ec8797772ebc03a0093c"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/organization-gate.port.ts",
+    "sha256": "3c142b46b4c043d0954bb2a0beaa7b1280beff7c3f7d4b6e642c19d721b2702d"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/password-hasher.port.ts",
+    "sha256": "c838b56715ec9ec1fe4df417ccf3dec8ccbbb24f4ba8b1bc27bd88ff49fa3990"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/password-reset-token.repository.port.ts",
+    "sha256": "a2668dee2d58d7611bf251861336bc9b88ca347242df0b74a01c2770885322ad"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/permission-resolver.port.ts",
+    "sha256": "4c9034f52ae8b0444447ab96d8196f95eaef7035c69830cef49cd05a07d3eae6"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/session.repository.port.ts",
+    "sha256": "ebdf40d5d2d17e6065455a9eac497d3f3b1dfc754ca86f68b17abed0e0a39f1e"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/ports/user.repository.port.ts",
+    "sha256": "f37ffe255c2cc57f5b75aaabf01daeb3684747541622f8fa123da74d69828914"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/domain/value-objects/password.ts",
+    "sha256": "29fa1ba39487bdf54ee0de2b5c0ef6a84e2a9b52c69102a8cffd70ccfd2ef134"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/email/ses-email.sender.ts",
+    "sha256": "6baa2f4de9d6b8e6c94e17d17308e1807647a659f98ea4c8f296a75b0649d402"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/auth-audit-log.entity.ts",
+    "sha256": "93555a210ab75e7deca0b20563ea09b6337875804e904faa4749bca148cb7989"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/organization-gate.adapter.ts",
+    "sha256": "ae970b90c71b4b2311d71b6cbdc78a7143d41caba88ea40ef16e777c8d709cd9"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/password-reset-token.entity.ts",
+    "sha256": "5024a2e682be6351ee256fed91a2152f82ee53b6ef617ad5a7b3c684f8895144"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/session.entity.ts",
+    "sha256": "be930c960234084ff9d5aa77fd4bab0dcca2b620545ad6b784b8f63447b1d82a"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-auth-audit.repository.ts",
+    "sha256": "6207b5fce35c1da7a9095feaea8234630a3a407f3cf62d12c22157ef8fad5f26"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-password-reset-token.repository.ts",
+    "sha256": "e1a0f8db5235e5938dc6c39b4e0627baa9866339be0975b9abe8b942acd4ee69"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-permission-resolver.ts",
+    "sha256": "bfd38954361a10ff781b439e1f5266836a6e2f95d2efdf7bb1ab5f785e326741"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-session.repository.ts",
+    "sha256": "077cf05dd9c227341e620b295b3fb3109089aaedacdd867c26df14d4e921fca4"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-user.repository.ts",
+    "sha256": "7c51ba9f2d7f63502faef2ab7ab6a0b289ccaa2e6c698173f88f1a791d3f5d67"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/persistence/user.entity.ts",
+    "sha256": "ea87ee10c18bad6d9bdcb920f17cc809b47278b439c76794fdc2d8eedbdf66b2"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/infrastructure/security/argon2-password-hasher.ts",
+    "sha256": "f4a70f247f738c980f9a2923fc4b6bb9668e1d2e35f4265f1b52047252529889"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+    "sha256": "56053b6e4b215f9c854314bda1884a6b23d9fbb0bc576fa7ee20554ea0e35444"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/decorators/require-permissions.decorator.ts",
+    "sha256": "3e932a6e2b5f41e3e43cdcacec4bf3de37c160f82b4519cf1d298873b30f4860"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/decorators/roles.decorator.ts",
+    "sha256": "753e81273fceeb73aa92351c9166d6e8d150d7b50c79cd7bd574ee673811a3b6"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/guards/dev-admin.guard.ts",
+    "sha256": "c47b9df8da652d9ca1fdeef2c7d12ff64be146c514576ad5dfa2315cd3b6636b"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/guards/organization-scope.guard.ts",
+    "sha256": "e8e17ed31d5bd4e141b2bb42d8e98be1f7e871f2444793bea3443f83d3396d87"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/guards/permissions.guard.ts",
+    "sha256": "86f3c37a94d9d9f675f940b48f58702dda8ccd9a9dc085788835d81313f3fd29"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/guards/roles.guard.ts",
+    "sha256": "0c8e193e878410739c794d35ca535489a55ebc29511b8f59d7a07cef1291dcf5"
+  },
+  {
+    "path": "gai-backend/src/modules/auth/presentation/guards/session-auth.guard.ts",
+    "sha256": "9a662c68adcadd6c6ada21d772decec5a5ae44b14f6d019f175199ecabd0a72d"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budget.controller.ts",
+    "sha256": "79009c5811532a2a9802d36240a927a975c0c644765a48955c25c9534d94413a"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budget.dto.ts",
+    "sha256": "65bdc81ddb8d814ca54fadbe75e5e3d9fee824ccad3876b8bdb7274dae590f8e"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budget.entity.ts",
+    "sha256": "e0064ed3d20345536f01e526f5e20042ab92f3573d04b8f2f49507b22d7c092d"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budget.policy.ts",
+    "sha256": "8141bc9dfba5dd76336d47438b0eb2a3de83c68b6bf770acdd14b58dc55957b2"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budget.service.ts",
+    "sha256": "f31af227ba9b812f6039b9ff833b56b48bc18771d168afeb80c1788b2984002e"
+  },
+  {
+    "path": "gai-backend/src/modules/budgets/budgets.module.ts",
+    "sha256": "7ffc9d75657edd696f76e41fc0c1e6454a09649aab58bd89e3606d8593c4d0f6"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/dto/catalog-asset-inputs.ts",
+    "sha256": "632c37f3e44bebf817c7ae7002cef168b2cfd201c2f796953717ca588e0513d1"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/dto/catalog-asset-response.dto.ts",
+    "sha256": "b621312d60f62697db0ac0d9f09e3935c875dfc707a6adcc98ce71bac83f3808"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/dto/list-catalog-assets-query.dto.ts",
+    "sha256": "e4deb058d839fdb32afe597b9a322e134b4cf670ca7563e46fa40be637f4f335"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/services/catalog-asset-scope.service.ts",
+    "sha256": "a968b0b7f68b2baae2c94893ff2218b0103b240a8d7c39d82edf6f86afb7336d"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/use-cases/create-catalog-asset.use-case.ts",
+    "sha256": "f7877e797b54c17e2729c0da912b8e466529ebfe80ce533fd675c7de21354223"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/use-cases/get-catalog-asset.use-case.ts",
+    "sha256": "c4694cd0f9e3efe3f362ded157af759e4983a2bd3968e47e6c88a1bd968fae0c"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/use-cases/list-catalog-assets.use-case.ts",
+    "sha256": "5fa2b3f5dc191f39deb0a0e8dd79008e8ef866b04b3f7d838c19b1b32b4e3ea2"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/use-cases/update-catalog-asset-status.use-case.ts",
+    "sha256": "814237b194ee792a379b196188aa4da2a1ff4fc83f82798a53a8d29c54a837c2"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/application/use-cases/update-catalog-asset.use-case.ts",
+    "sha256": "b05174b9ba1fb6a69d35846e3fff412d3e5e104d2f2c16191ae28dfb85574b2d"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/catalog-assets.module.ts",
+    "sha256": "ab70c28f6834175d87da671f6e9ddb37b0303124d4f52f18fe7a5f972c944fad"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/domain/entities/catalog-asset.ts",
+    "sha256": "701f959f429a3e15054e143604360feaf47a217b4fa4930476869f871a1fec86"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/domain/enums/catalog-asset-audit-operation.enum.ts",
+    "sha256": "8276702786d753522b4490f7565356e595381717fe6e7b19bf5230fe3ac1965d"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/domain/enums/catalog-asset-status.enum.ts",
+    "sha256": "47de1bd8db2b48fa0d8fcc3e86ff2fac155ee7e201049fc2f67fa6d6e91e2f47"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/domain/ports/catalog-asset.repository.port.ts",
+    "sha256": "b8edbc42325b55e051fbd3d8b154265143b07b4332418ce42a43933e0c65672f"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/infrastructure/persistence/catalog-asset-audit-log.entity.ts",
+    "sha256": "1da6a3808997a941c603116ce6d77331377b8c0e8918398d17c94c1a18c9807c"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/infrastructure/persistence/catalog-asset.entity.ts",
+    "sha256": "6c9b47880b374d69dba16c4b38f1c720fb13b7b6ab6bd8f9f58a3baae72c22e6"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/infrastructure/persistence/typeorm-catalog-asset.repository.ts",
+    "sha256": "78f56dd195fd058486b0bd35ad481e0ed78c890c2c88910dd096297b00e7da3a"
+  },
+  {
+    "path": "gai-backend/src/modules/catalog-assets/presentation/catalog-assets.controller.ts",
+    "sha256": "3ef1038e5cf905e81c56ff3fa319fe79e3b8bb2a6f3314a34649d4aac5017a1d"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/application/dto/company-inputs.dto.ts",
+    "sha256": "f7ada710486134cc66e3deb407cc9a6254866fa69c325d202d7015a5e9ed0041"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/application/dto/company-query.dto.ts",
+    "sha256": "10333839c6daacf5d235496516e5d7a0e4d66a65dc7314a75c217fa21c5edbf5"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/application/dto/company-response.dto.ts",
+    "sha256": "75aedbc0ca243efdcbc6d3efa0844dfc296af22dd187cac7ffc05c6d51cc89a1"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/application/services/companies.service.ts",
+    "sha256": "5a381f51be63d05cbbb545e1e6dbd2c22b2c25d4c3852be40a877fee7283c82f"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/application/services/company-scope.service.ts",
+    "sha256": "54416f38b81ca07f256839c7cb76aad89149df0b90f8e0978f5dbd1880684242"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/companies.module.ts",
+    "sha256": "dd2418cc32d065203d916e3f5428d1e9942b593146e882aa30c26a0b328de51c"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/domain/entities/company-unit.ts",
+    "sha256": "4cf05ab2b8f1346c84dd279908b7a519f3b941bcf13327fb809fa5a8f42acc2e"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/domain/entities/company.ts",
+    "sha256": "b195f037e0f5818701a27c51bc5e4ad1f4a219171bac4a30f647ccfc08197aa0"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/domain/enums/company-audit-operation.enum.ts",
+    "sha256": "d5aa48501c8b1ffdb7008330738866f835c02d3178d42e925b00221679c3faa3"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/domain/enums/company-status.enum.ts",
+    "sha256": "d886d2cc7fa4132d3f8ade7cc9508c4931bdc1d0d00f793c3d13bbe3a788dd8e"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/domain/enums/company-unit-status.enum.ts",
+    "sha256": "baa42a78f170d692f261baaccbd5263133edda7895c042cae10504ebe9ecabf5"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/company-audit-log.entity.ts",
+    "sha256": "644bc029e9e183760323562831a279dd86a4aa991d5df3d9a41ce48cb8a420bd"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/company-unit-audit-log.entity.ts",
+    "sha256": "7d77de1225980d2705fdca748e9e5a410528991e1b8b3eac7f2b189455dedda3"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/company-unit.entity.ts",
+    "sha256": "388358ebf0884fe493c021b5bbe2171e66a4498db283674386536aa50bdb5c7a"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/company.entity.ts",
+    "sha256": "c9dc6f43d6bb811f8b43ccbeb56a22e21c25d6031dec003d52eb780b525476cc"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/project-unit-audit-log.entity.ts",
+    "sha256": "891bf48477f0a0131149497d708143ea1d61bb41bb8871f37bf5af94bf3933c4"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/project-unit.entity.ts",
+    "sha256": "cb9f2c35ed3ed011d9f7158a868e4c7295a57b4bcebafdba9e298b0838e60fa2"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/infrastructure/persistence/typeorm-companies.repository.ts",
+    "sha256": "e45afcfa95534ab03efc540173e9c3d99acac6cabd82122157682215975f3101"
+  },
+  {
+    "path": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+    "sha256": "236f6c421a422e9dbd7c468a91e949ec34edbcbf4852e06ba5bf18371f21323b"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/commercial-filters.ts",
+    "sha256": "365511e6d3ba9e8da6d4955f9857653134ad7e6af5858ad19372c43a8e358b06"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/commercial.controller.ts",
+    "sha256": "e8011cad0ed823b2391f408bc19176941f7e66afb0ea56d4da569c4a9e242a58"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/commercial.service.ts",
+    "sha256": "46c8708194f88116ec92e30205e0aab582d3fdd2f975d5f8568fb832416d0681"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contract.controller.ts",
+    "sha256": "ea22a244fe3a4c553af5de26e31fc40f772ae334c551b902b2ad9c882482b931"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contract.dto.ts",
+    "sha256": "f9b76d9ebf521ffdf9ed19ed0ff3e5abe25b3dd4633102f65209bdad2f1c5fe0"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contract.entity.ts",
+    "sha256": "47f654102ecc7e362cea88a4c6c204ef4794a58f07c9cdfded132c6aa6f8ff4e"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contract.policy.ts",
+    "sha256": "7eb73572e13633b2ea3ef599212d6dbfe3a98e435bbe29db1c2445c7264faefe"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contract.service.ts",
+    "sha256": "c82d30e15c1963197ac716a9cd5ed8a928d371ea6ff36d7c73dedf303ea914cc"
+  },
+  {
+    "path": "gai-backend/src/modules/contracts/contracts.module.ts",
+    "sha256": "e4193a4c5bda5447d9101a60d3befb88e454620e7114fbb8624024f72a3c914c"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document-renderer.service.ts",
+    "sha256": "c43aad136140f9f3ae05988359f8026717014c2823a4731e7360351dbd15973c"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document-templates.module.ts",
+    "sha256": "20a564eb229f2a5dbdb1d0fbc59cb0a69ec89e371fc81cc77f0d7c34932de5e1"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document-templates.service.ts",
+    "sha256": "a7639392d139fc8167d318082932dde890f4fe1ca95c9a4769b2907e356671d7"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.builder.ts",
+    "sha256": "b3496e7d88ca0e802aa5a5e32c3a0a45618ec0b33696afe9f26a44ac2856a0d8"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.contract.ts",
+    "sha256": "5e4b129d10e324e4e8e29ec45dd2f2eec50a3f170c880817adf4e760d47ed6b4"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.dto.ts",
+    "sha256": "7af53c002f5f13b06d81143c9be43c2268e3ed4dd7a2acf0429b1963a84882bf"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.entity.ts",
+    "sha256": "fe10a185f09d7bd33ed4a75e89de9010aef72e140c98c724c799062db9e3ee58"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.render.ts",
+    "sha256": "ff34d56269c3900d64b0ced5800ccf68a9bbb69eb91ba11416264ecf30ffb7ee"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/document.worker.ts",
+    "sha256": "b4ed745748e0965519e97dff087e8e58431af8bccb3aee9dc9ad6b0363530f95"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/documents.controller.ts",
+    "sha256": "372f1117f814d126e892e1ce8aaa6faccff8b792ed35c3f7c7995ff2d0e58169"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/documents.module.ts",
+    "sha256": "03c8fa70cb456bb9ddc73fe495ed8b8b857e1705078a3202ed484bec8cddbe42"
+  },
+  {
+    "path": "gai-backend/src/modules/documents/documents.service.ts",
+    "sha256": "a33ebe46ebb0edb2e7faa879666c072664bc07b79be2f64a961394d4e55dd956"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.controller.ts",
+    "sha256": "6589d2ede12ee8151306a52950789d7295e2f62d83b2c43cbe2ba32b33b0517d"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.module.ts",
+    "sha256": "74acff2f341156ab60f2152e73c127bc2590bab8aa8a3d16bb3ee0d4ffe849e6"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts",
+    "sha256": "4714c6e7a2f2864abdc38556e8807d7ceaba8b6f287fc92f7f5582dfa41c4524"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts",
+    "sha256": "d98f3e56c411773a5e835a0aa979f4d4ab39696a303ae1d71d28a543c54fe5d3"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/expense-accountability.entity.ts",
+    "sha256": "97c4e55a4bd1b5c8becf2776548f9b5e3a9f549398a7605cbfba0e4dc20f0817"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/installment-allocation.policy.ts",
+    "sha256": "a64268b8df10bd5c885e03b5014cb7545de9d96cca25cd103024b07041ec3437"
+  },
+  {
+    "path": "gai-backend/src/modules/expense-accountabilities/monthly-due-date.policy.ts",
+    "sha256": "8297e4fa9099a3c1fe53beaf8192f2ef85a30a20bda32e669b4bdf068e5de1da"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/dto/export-job-inputs.dto.ts",
+    "sha256": "126614f059051f57198d01da475e0c9ffc2c195fba071d1ea3e07aa07444e501"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/dto/export-job-query.dto.ts",
+    "sha256": "e608a41d3bdbd46df5c36a4e7ecca0244103d246d017dea06bef6d43d8ce8925"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/dto/export-job-response.dto.ts",
+    "sha256": "4de67b1c005ec9c0d7b46fbf4fe4468a4d344e7ea1117d2807b67eb7d43cb3ba"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/services/export-job-processor.service.ts",
+    "sha256": "b449539c7507c1bd3c4c3d98d8a9009a1f46ed0624902c0ebb8d0acca486fedb"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/services/export-jobs.service.ts",
+    "sha256": "92c1e9090e58a48c9ffc517e28e124f4921ebcd9cca014540f044528493136bb"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/application/services/export-workbook-builder.service.ts",
+    "sha256": "e379a722d50453e1192cb6d20e34382f6831a1b6bb13f8461156f3ac98ddd337"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/domain/enums/export-job-audit-operation.enum.ts",
+    "sha256": "faeb2cbc69701ddb81a5348b6fb9044a2a52e7f4828ae99f6edf3cf2f0c6a78d"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/domain/enums/export-job-status.enum.ts",
+    "sha256": "43702a66490aa00085acf2facd945942d40e253bca6f5617a655d0dc52f49b76"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/domain/enums/export-job-type.enum.ts",
+    "sha256": "918bff1e3eb09a71dd9af6894487432204b7fb545b1840480f2244097f4686ba"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts",
+    "sha256": "dcada062f861cadf5a58226556c2748b158c4b3a31c7dd10c9d8808456736ff9"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/export-jobs.module.ts",
+    "sha256": "6ea4bc815fa90cbdac49242d709857e3ff1ba2cd10ed1cfde1af73eccf0f0d2d"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity.ts",
+    "sha256": "c95241aff81a1754166934ddaf629dba5e82ef6f1b85aa97f2470fa6c981b041"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job.entity.ts",
+    "sha256": "803b1c58c53f276f7f0c5187fb7624057ed6f57a9d05106a25a3a05a01b11a37"
+  },
+  {
+    "path": "gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts",
+    "sha256": "3202f7d3dff26e8e9497a4763c9699b864b67bc83bae91c374ada1e882d9e675"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/dto/create-field-agent.dto.ts",
+    "sha256": "944f4620baaf08f63e4ced66245f9934d1788356cf038ee35f0e5eb8ab200c4f"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/dto/field-agent-response.dto.ts",
+    "sha256": "03c451abdf9001f95aad0062cc0699d4abdb375b8dd33a4ca4db41affe041b7c"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/dto/list-field-agents-query.dto.ts",
+    "sha256": "4a310dd67160aa4fb707bcae5c2e71f62c7419d600609e5fc9a952f51a78c52a"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts",
+    "sha256": "84d32d8845f88359dbe5e468d221133a3ad0453b9fedacca7e22d5737f787d7a"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/dto/update-field-agent.dto.ts",
+    "sha256": "3d97bd0f446b466ab75e709fabfa3f5ce9680f31cf8eb7c6c5e8901d8e510442"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/errors/field-agent-conflict.ts",
+    "sha256": "e7f725d58c66d8a1efd01660a88b27bac5206a113e3d6121026a3888465a0bb6"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/errors/project-status-blocks-operation.ts",
+    "sha256": "303565155dacd5960b9c8b80f236a272b23cadd5c3d0cea47575fbf520514efd"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/services/field-agent-scope.service.ts",
+    "sha256": "0b18fda36e4cead97f15058d04d84f6212cd0795d2a71e630ee17ef14c969fed"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/assign-project-field-agent.use-case.ts",
+    "sha256": "406e56b80da0d2484a58f74d690a49ace22686a0b6ba9885cdfa927bad7f7a1d"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/create-field-agent.use-case.ts",
+    "sha256": "9840cafff857868ff90dafe1297905b91ff7f7a45c24d3908b7562d169f4e385"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/delete-field-agent.use-case.ts",
+    "sha256": "359cd7ebdff61407f40c5d431fe74bc14ea6d14a62c046f855f113858e3779cd"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/get-field-agent.use-case.ts",
+    "sha256": "cb26170caac3c6de14584d54404a02acf22e7bc69f45744ff48a1de044f6d90c"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/list-field-agents.use-case.ts",
+    "sha256": "08aa7244f537783d93d21a517793e95bd8a048e77c8fba4a7f485efe9633f473"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/list-project-field-agents.use-case.ts",
+    "sha256": "8db9ab3351546423d8aa7e7204717f440c48a370543278afae64522c03057f46"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/remove-project-field-agent.use-case.ts",
+    "sha256": "3890cf6922f08c2e3d4d713132c049c3e7c64166cf83953171b88850894e0cb0"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/update-field-agent-status.use-case.ts",
+    "sha256": "83fbdc8f9f171fa0b41ed0111d9e6247c0f626f297540f26e6b51d3fbfef76d9"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/update-field-agent.use-case.ts",
+    "sha256": "1c7becc55572a9c471950744fd6caeef2b1950f430a8fee419935f32308ce8d9"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/use-cases/update-project-field-agent.use-case.ts",
+    "sha256": "0b24fb6d3780f43ee803c624c9be55db3c26d27b927c58a892c1b251615481b1"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/application/validation/field-agent.validators.ts",
+    "sha256": "e3af62ca83c14440f55836f196d3983a662ca8ed8668a2b453fc06e7fe2228d0"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/entities/field-agent.ts",
+    "sha256": "67e37bfe383e0b547b57825aa19e40923f7326e146484585a1c826d083a2e6ff"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/entities/project-field-agent.ts",
+    "sha256": "39b97fba95e5a8f8d22454b2525793dbeeb62410a41226475b38420a59e6e72f"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/enums/field-agent-audit-operation.enum.ts",
+    "sha256": "5ff9d997de46782dc92743b2cf9dc229003e1696265e97475d105ab22b2cbda5"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/enums/field-agent-status.enum.ts",
+    "sha256": "3225ed91654c67df1200b76b1583c5ceb8138ebdd71ec3059de024f5b37f11e3"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/enums/project-field-agent-status.enum.ts",
+    "sha256": "d23bf61747e0f2bf3c6cba3e3f71325a9535b1e58ad0e9fc7847499c31d3b9b0"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/ports/field-agent.repository.port.ts",
+    "sha256": "42747a2810e4c5b6db6d0793bade6258647157bf509b5db309966654b95cae63"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/domain/validation/brazilian-contact.ts",
+    "sha256": "821a63203a2cdb261bed6a9bc12994413843d2a8a1a340360c8d8d4408df8eb5"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/field-agents.module.ts",
+    "sha256": "8d64d9ce3a4ec0c138cb230cdd94d066657b41dc575800d52845db2f1d226b2f"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/infrastructure/persistence/field-agent-audit-log.entity.ts",
+    "sha256": "76428db9df82454110f69630c78a64eaadb0b55c142bfca5ca6a24b38fc050de"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/infrastructure/persistence/field-agent.entity.ts",
+    "sha256": "3e61c6c9da907402877ecc331a0365f8145689fdd67cd63bbcd9386290663a59"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/infrastructure/persistence/project-field-agent.entity.ts",
+    "sha256": "87108d975772edbb99ccf2e0e951451cbb11ebf85a195df2cb2817ffce2b3e19"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/infrastructure/persistence/typeorm-field-agent.repository.ts",
+    "sha256": "02fa497fb7226e5212322aece8e007699bfa6b5ae3c47a794a4debc198ac0afe"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/presentation/field-agents.controller.ts",
+    "sha256": "c9a90e1c5c8629b4c8a6568dfdb10563172fa8186e8dd8e0f0e0ee614224c835"
+  },
+  {
+    "path": "gai-backend/src/modules/field-agents/presentation/project-field-agents.controller.ts",
+    "sha256": "eeb8fb4168d68c5a08d118e0aa7d575d2a012eabe18c8ae800720e9e563e8f3b"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.controller.ts",
+    "sha256": "ea190087a60bd2ce44de1f303ac11164a680b1794f4019f7cca93f4f9c9a7667"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.dto.ts",
+    "sha256": "9bd56292f83299f14cb484de5253bd576eca96e8fbe153a60beff2b82e262c18"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.entity.ts",
+    "sha256": "5862f8250f4f0fe49dbabc397ff19fc17ed6c379e5f4805cbb080d20b24c68e4"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.module.ts",
+    "sha256": "0b5f14403284f920bbd349cb559f39b260b6663193139b27b36d30617274a9a0"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.policy.ts",
+    "sha256": "24de4356373acdab3b080d2357a7f6b17584911c3e02678235503906a045782f"
+  },
+  {
+    "path": "gai-backend/src/modules/field-coordination/field.service.ts",
+    "sha256": "a113c3f8df0be67e8c0f8f16ae08205a11fa67db3b51130637398be3249ef736"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/dto/import-sessions-inputs.ts",
+    "sha256": "39ece844d29e677f4bae64b89182bcd7cceefe3bc6a4511c1e54ff700665b78b"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/dto/import-sessions-query.dto.ts",
+    "sha256": "cd0bc8ba58d35bc43a546ea7ede9064f3338fefb81c96651f006dc577a31d0d8"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/dto/import-sessions-response.dto.ts",
+    "sha256": "86503ca6b64089b4cd5fc0680aab081ffa16e1fedc99e2a086e6ed16ebc53015"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/services/import-session-scope.service.ts",
+    "sha256": "f77d7c07718d02c4369c65a81c70ddee1ddf7dfad121397305a52fee241ef974"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "sha256": "e9943853211e147573dc958ff3aa80b469d9b95cc2c738cd34a84d4a2ae8a8d1"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/application/services/physical-observation-import-parser.service.ts",
+    "sha256": "0526ebdcebce5529e67cfc38af4b46ae2af74d5ea8eefebbcbb7887ceae594b3"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-file-status.enum.ts",
+    "sha256": "f6d34d494845c74ddd20d400e89bb71bd4f0aa478fc2734b7472bb4183456178"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-file-type.enum.ts",
+    "sha256": "0eea4c520fa42ca30feb8ae183597cd77e5b14d9ea52ae490676a33fce560691"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-operation.enum.ts",
+    "sha256": "b0115b0fe73b8ce1aa32b0c408d7ef3a3976ba8316f8b4c67fb97c1f78c50e56"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-payload-status.enum.ts",
+    "sha256": "2f8f0b4a617746fa40a4a7066041e8603421aa11a92fe5a907f108309029cf66"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-session-source.enum.ts",
+    "sha256": "305a3722b884f9f75935f16ee5bdac0bb125bdbffb2c477c0dcc80ed45dcc24a"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-session-status.enum.ts",
+    "sha256": "cba56caeda71889fb8fb256f3f0186e5306b5172b83c81a6b9bbc55c79904256"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/enums/import-session-type.enum.ts",
+    "sha256": "dbad8834d0afb9121e661de9ea0113aa0e0e341683c08036141f3b03dac11ab1"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/domain/ports/import-sessions.repository.port.ts",
+    "sha256": "0784f92427c5c367813a80e34e17cfa7e244e8e6e022f4cca920054690016824"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/import-sessions.module.ts",
+    "sha256": "851ccb95dc5147f755bda85228fe6b25e6e59edb26e3c648aacc5cb597d80fb1"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/import-file.entity.ts",
+    "sha256": "5d0d1fc1456738443857138000e003a5fc6db4701574a9175d52fb285d0a610f"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/import-payload-error.entity.ts",
+    "sha256": "a7e02cacfe274c84811b91d528336261bdb394196890cb0658fa824a41cdee70"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/import-payload.entity.ts",
+    "sha256": "e43e5d76396ae9ed1df5e312ad0847ba511eae4d0aeb9211f342ad06109b8e05"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/import-session-audit-log.entity.ts",
+    "sha256": "fcc98eca93582d94bc704dbc41a54e147268073951ca09c5872a088d8543c8e4"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/import-session.entity.ts",
+    "sha256": "d58e7726fed745aa95ed2e36498ad9b3d203ba8eadfd2b66b6c5ecf18ff5ef91"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/infrastructure/persistence/typeorm-import-sessions.repository.ts",
+    "sha256": "ed5304e59e4e5f4d2776e94c49d28908b2be438611d0cbe4264c86f2ff1fdb83"
+  },
+  {
+    "path": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+    "sha256": "6d6da35400724f5c0206224837644f1842c2a37275e558888c16591d7b4137ae"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-inputs.ts",
+    "sha256": "17da6e53a1c4de0cfbc94ff3010724a17ba4196803de72394b6d130c1f5c1108"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-response.dto.ts",
+    "sha256": "26cb67fd208be4c94d59347366d0068184f7dbe7d2425c3c957aa9e6ba1b3b84"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/dto/list-inventory-accounting-items-query.dto.ts",
+    "sha256": "62941b04f0f20ebf10e08529970c8704fc3bea6bf8009a9b7ca56e4b5968081f"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/services/accounting-import-parser.service.ts",
+    "sha256": "2f784e45012a2deeb39f09e14e9d0de34e418d54c41b4948727dee7166508b7b"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-item-scope.service.ts",
+    "sha256": "d92bbf600004a5fadb368514ad8061dc3cd93d5482aefd01fdd0dae75ed7409d"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-items.service.ts",
+    "sha256": "f8ba62b0d039261eae88ae5ecd16187659146a2d89e210a02403cc066db07c25"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/entities/accounting-import-batch.ts",
+    "sha256": "c4285f8ab8791e3eb124dc56966f80e7c39400b884bbccd372ed1a950f109749"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/entities/inventory-accounting-item.ts",
+    "sha256": "155b4be45f8ca638de47b63425e9713646d02cd13056924c6054a021d799c23d"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/enums/accounting-import-batch-status.enum.ts",
+    "sha256": "0605c370ab7abc3261e1f3d477721bf31266c448754002c17a2b49b7ab696726"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/enums/inventory-accounting-item-audit-operation.enum.ts",
+    "sha256": "3e329bdaf04076d81e03a79dcc7027ee0e2ee7b76d92e783d085cf0dc4403b67"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/enums/inventory-accounting-item-status.enum.ts",
+    "sha256": "9d4568855268d5a502e36e62a6da162e8ea38609c116ecf51e9628556067aa79"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/domain/ports/inventory-accounting-item.repository.port.ts",
+    "sha256": "d96f15ec2032979f3e14c26b37bd1ec22e8dc0a0c8b0c48ea5143ddb2359b1b3"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/accounting-import-batch.entity.ts",
+    "sha256": "b5e9d62e56ca431cdf0f95d485b15bc09652749d386aa0bc9771077ee7e9e417"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/inventory-accounting-item-audit-log.entity.ts",
+    "sha256": "0558a5efb227fd2f13be3ebb7fe5e373a41f88da7c84f800d480080080fa43cc"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity.ts",
+    "sha256": "692e29fec2ab71f159a43c472509a7fa24087fe439bf70c4e149b97ca6e9660e"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/typeorm-inventory-accounting-item.repository.ts",
+    "sha256": "a262cdc4b97f36d4ada91d870193ad64f47dd5add343ce77abde3ec92155969e"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/inventory-accounting-items.module.ts",
+    "sha256": "dd5eec7d1019bec4e263d2a6852aa68902529c8b4039050012fa193db99de805"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-accounting-items/presentation/inventory-accounting-items.controller.ts",
+    "sha256": "4216453b492a920ed92c03fdf47ce90326486ed2ff4d807ae85f9b745c2b3fa2"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/dto/inventory-item-image-inputs.ts",
+    "sha256": "821c4cf3bd1b77477093a881f7bca15d7edc42edfbc15e6aecd2c6e0acd18292"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/dto/inventory-item-image-response.dto.ts",
+    "sha256": "992cbd2696b744dc1f6bf4b97b69b6e4ae3412013c418359629d0345fefe1bf5"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/dto/list-inventory-item-images-query.dto.ts",
+    "sha256": "ad00b7fd10a0c63b15487278bce78c7206bf0057de2dbd29cb08f72ccba9fd3d"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/services/inventory-item-image-scope.service.ts",
+    "sha256": "14459711a13843de62e709bfa77ef5e4cc8e5dd72a8bd954468591f7b4359c46"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/confirm-inventory-item-image-upload.use-case.ts",
+    "sha256": "f06a5b8d447ca5f1f7ddbbc7b03ac5cb356f43ec0355644cd0a0e53ee36ef674"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-download-url.use-case.ts",
+    "sha256": "2713aafdf77bbc85560d4f2412a9326d26178750e16acb1b6b727d532a7d02cf"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-upload-url.use-case.ts",
+    "sha256": "a2edeaee70a53f0db0fd92d454edab66c454da2ce3f80d3f845a49d77d43e5aa"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/get-inventory-item-image.use-case.ts",
+    "sha256": "da0207270ecda81d7a3d0c63dd09bc8cda3d8f3ca86d0c5464f8fac89f0b0014"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/list-inventory-item-images.use-case.ts",
+    "sha256": "e826c6b342b2ef1559f1c4709e609e7fd3495f759b9435898db6234cf0a76081"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/application/use-cases/remove-inventory-item-image.use-case.ts",
+    "sha256": "11935de13bd596bbadd52dfce0b5d66d93b851c2cba11dfb8731b75d098fe1a7"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/domain/entities/inventory-item-image.ts",
+    "sha256": "099830b332917245ce77fdff3b152b8c62eaaa5b2f541f62bd09a9c504008294"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/domain/enums/inventory-item-image-audit-operation.enum.ts",
+    "sha256": "58f2e38e08b36ca2f0231c91b4275e1d18af31e3c3c443b5f7665db4a5c6a09b"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/domain/enums/inventory-item-image-status.enum.ts",
+    "sha256": "ae4327c73a089890edd9f9ce3595df9ad117dcf03135e4f41df0e4857f27d14a"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/domain/ports/inventory-item-image.repository.port.ts",
+    "sha256": "7912ec0e8cec6aa1094f3c05c782227d7d4dec6c64c6026015d1a3e43a1b2ac2"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/infrastructure/persistence/inventory-item-image-audit-log.entity.ts",
+    "sha256": "e84c112a67dd476f3631d7522ee35136ac68e1af518290dcb9ccb5b5e9fa0c8a"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/infrastructure/persistence/inventory-item-image.entity.ts",
+    "sha256": "6a24837ed271ed9e0c881084a46f4af73c39f4e896fc64a6120855d2ce0390d8"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/infrastructure/persistence/typeorm-inventory-item-image.repository.ts",
+    "sha256": "3d8bf3ebb956ac3f6d078c03fc37ffbebcb3e9a07e754de35ceee8b598cd9c69"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/inventory-item-images.module.ts",
+    "sha256": "adca82507ce1eae154275a660488246592c91ee8ba6589cc26018b0c4c412469"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-item-images/presentation/inventory-item-images.controller.ts",
+    "sha256": "4481cfba63fd52d52af9532fcc0814122ad2e34eafc0810ca2dad138b85fed8f"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/dto/inventory-item-inputs.ts",
+    "sha256": "16125ac0e24ff53b0fc7138eb932830ec3e3b72a333e23450d559da02d813522"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/dto/inventory-item-response.dto.ts",
+    "sha256": "3c29444180fbbf79f6aefec05125e071e7b58aca04c2d0445805918554b8b287"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/dto/list-inventory-items-query.dto.ts",
+    "sha256": "22d38910c1aa4b9ba0c97b1df2fed3a8a0c82ba6183b8229c0d2b58a28e46826"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/services/inventory-item-scope.service.ts",
+    "sha256": "c18c308bd6d6ef154101a49bcab52dd5aef9819cea06f9ad9ff9fb945a45e8e4"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/use-cases/create-inventory-item.use-case.ts",
+    "sha256": "4f791d5b5c7ad62d1c2fd148d668d4648d0459de7c554bae70d3bf46f81803a3"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/use-cases/get-inventory-item.use-case.ts",
+    "sha256": "36c84ee188de569e6c1292fad50afc3d5a1ff61104abc04b3d6973b2c5985636"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/use-cases/list-inventory-items.use-case.ts",
+    "sha256": "95b8f2fe9e82fa6485f5e294f8b371fdde3fdcb309ea55b6390d4612a36b00c2"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/use-cases/update-inventory-item-status.use-case.ts",
+    "sha256": "a89f9a8b38c44c85b51458f3c1720fbae830fc17ad34d864f8a2a9d1addc8e64"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/application/use-cases/update-inventory-item.use-case.ts",
+    "sha256": "a8475f7f7b25776376e67936687ae177bdf4b745236968650e2a7c272ab24627"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/domain/entities/inventory-item.ts",
+    "sha256": "f6d8c319c7846e078909f07a5b4c724350a50e95400b9ad0103ff1a327cd80ed"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/domain/enums/inventory-item-audit-operation.enum.ts",
+    "sha256": "7c9d0fcd120d93e48e621d149cee5f9ba76f703b668c172e0e33b544602b5aaf"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/domain/enums/inventory-item-status.enum.ts",
+    "sha256": "f1a9f5210ecd8b41f6e7a8d6a7542b023ab2f657c8236a1173fc727e1ff6b80d"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/domain/ports/inventory-item.repository.port.ts",
+    "sha256": "c568f63efaccbd3bbe3a7a6bfb8f57ba3debd958a6baa2e6358b9bac9467c398"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/infrastructure/persistence/inventory-item-audit-log.entity.ts",
+    "sha256": "fbce17fbb42d3e3de85ddcb2d5928043ee8336bf16bdb19bde27e918cc9fe82f"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/infrastructure/persistence/inventory-item.entity.ts",
+    "sha256": "22df505284e37cd2caabc26dc46e9af95656fd70803845caaafc22bfc0cc9e72"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/infrastructure/persistence/typeorm-inventory-item.repository.ts",
+    "sha256": "9723d57110d72dbe6c6668797aee4736ed9df5e545a7ad95a78be90c76907a50"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/inventory-items.module.ts",
+    "sha256": "eb1f8ec6eb0db5ff79260ef8cfdbc4b8f2c9fcd1318b8503e24c03f119f4f320"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+    "sha256": "611caf0dd6346214152e7319995e6363509ea7b26407577d288bc9661bfd5257"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/inventory-operation.dto.ts",
+    "sha256": "e73ba396724de91a3b6b866c7266e51e36216e74c9d4e6bc96e1ddcdd90895c6"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/inventory-operation.policy.ts",
+    "sha256": "7bbf9eb4323bf9c1a29ebebb3cff5b472aab405aee6dac520a66333212555173"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+    "sha256": "ca2fca77307adc6acd2b48758ff631025293a6451e84af066f74954438c73acf"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/inventory-reconciliation-response.dto.ts",
+    "sha256": "9343ff3afb317d0cfb32aeb05194ddc41f10f35db490b40ef1082f4946587753"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/valuation-batch.dto.ts",
+    "sha256": "8ba10807c7b02f9ea37b26a3ac658a2f7ec6d9dfc7350723b7bc53e1b638f4e5"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/valuation-batch.service.ts",
+    "sha256": "04706f1dd7e2c7257f43bfaf41d8db8b8083322fd185d5329ef6d8591a6b15de"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/application/valuation.policy.ts",
+    "sha256": "51161716b51875e7a6afcc07d5c0b9376cb6d2f1e77033da915754420f775546"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/domain/inventory-operation.enums.ts",
+    "sha256": "61e076741f3215aa0b9df711fece1a769a4b0a6220190f2f6c933899fb02b273"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts",
+    "sha256": "eb78188e5ed64b481e69f3c639dfec35a26c1f4a5bdb83d1b2cdd91723e75649"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/valuation-batch.entity.ts",
+    "sha256": "5bffcf70722ac8f145c1168a4fa3c3c5717f325f0736d025c1cb14eb4d4215ee"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/inventory-operations.module.ts",
+    "sha256": "2eaed763b4027da29d2961ce5b5b87aa4eb110ab7fd77ee335f7cbefa3a35068"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts",
+    "sha256": "d53e47d86519fa22de53c94fc7d0b53e2fbf7252d77cf0547aee49da3a087646"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts",
+    "sha256": "4fe140a7f0804e63523704a9bdaf9b73a3fcbd2a1f02eb0db3fb481b1bcdb408"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/application/dto/inventory-pending-issue-inputs.ts",
+    "sha256": "a5984ffa267ee1d449496cdf0aa6d764f512f9f85dc01fa008290b67d1a7962a"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/application/dto/inventory-pending-issue-response.dto.ts",
+    "sha256": "681fa6c020f1cc8ea6c471ee7ff9fd82076d23d0862cae5ea305fd7b9e550a39"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/application/dto/list-inventory-pending-issues-query.dto.ts",
+    "sha256": "08029f5d4f3fb614c04b9cad63965bea4b9f2095801497e7e3ca9e24fac40188"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/application/services/inventory-pending-issue-scope.service.ts",
+    "sha256": "fda40edae50565e82628eee42bb3ca20e5aec8214fcdf069993fc6133e64e763"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/application/services/inventory-pending-issues.service.ts",
+    "sha256": "faa6ea998e481b1c5103c287136f9685ade9395b58aa8ae995939b6e43163a75"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/entities/inventory-pending-issue.ts",
+    "sha256": "e77ffee2e1be43a92c11b089f521696c84b1fb93fe881e8471557fae2cab2375"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/enums/inventory-pending-issue-audit-operation.enum.ts",
+    "sha256": "1a7a3dcf6a6dc1f90785e5b13b4876a1c49651d74aec2655d568009f6b59df6f"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/enums/inventory-pending-issue-severity.enum.ts",
+    "sha256": "2e6aaaef3354c862c216631ad324067209785f950aa28d23823a6ef1657b791a"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/enums/inventory-pending-issue-status.enum.ts",
+    "sha256": "b85867e8916897adfb7344a1f18f1e8df593073aa0a77da37ff031715c221945"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/enums/inventory-pending-issue-type.enum.ts",
+    "sha256": "f82e29457155ffbd3219f5120b376687a8848e4fd96e01884a80edd0b8ae1d04"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/domain/ports/inventory-pending-issue.repository.port.ts",
+    "sha256": "f08582a138f864ec47e15b6f044e4acf6ffdfff5e20c5d5ead99cb7fbf1ac9c9"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/infrastructure/persistence/inventory-pending-issue-audit-log.entity.ts",
+    "sha256": "346f048d89835a265142342aa99097e536724fe8fe2b8240b66609a732829c52"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/infrastructure/persistence/inventory-pending-issue.entity.ts",
+    "sha256": "8614f277fe84726aeddd2a54ecbd8a92a6d5fb2e68f5951ea7486ede60d222d2"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/infrastructure/persistence/typeorm-inventory-pending-issue.repository.ts",
+    "sha256": "f9b7786908c157b9dadd71bfae63c8cc79ad4f409bbd9e6bd57b6a6cdc572a3f"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/inventory-pending-issues.module.ts",
+    "sha256": "3b9da028d30bfaeaee7bf786602f26c17a40646bb599c73b50c21ee269188015"
+  },
+  {
+    "path": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+    "sha256": "b8beb07b1b85f3456cefbd52edf3de7876017fde7cdcfb5989616c0455d817a2"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre-export.service.ts",
+    "sha256": "b60b2f945a59e67ec3ac5c8826439374f21e7e4c32b43cd5c479a437e63acb71"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+    "sha256": "6c43af96041194cbc8beab96ef4aca5ada327f3f766ad6cb98ce80cee619085d"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.dto.ts",
+    "sha256": "3bb87017547832ef2c1b4d45a7954474e2a7c50f6e0e8eb451b0e41d5ddf9070"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.entity.ts",
+    "sha256": "c7a56d513d4ff5d52039c688c39bb82839ab1686beccfb0ad3929ae4515ecd29"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.policy.ts",
+    "sha256": "f43ca5bd76e28c668e30831a5c93c495d641e0356c71b8dd058a291aa9583735"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.report.ts",
+    "sha256": "565aa60a01c5bcf5b134c6a35cf1dc3f3f9b6b375923c6f4f65693793c5a7933"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/dre.service.ts",
+    "sha256": "beb8df955bc72b5210f2a5a41b4dd5f0be2bc9f69bed42f779a303f52ca1ab4e"
+  },
+  {
+    "path": "gai-backend/src/modules/managerial-dre/managerial-dre.module.ts",
+    "sha256": "d46ccec8dee992694b14b80c1e746420688457605c6db0d16f90f69148155bfb"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/dto/create-organization.dto.ts",
+    "sha256": "a33009cf4c9a7b9dcdbcc3aef74397edf0f4b64b85df27abd92979c8a2a9bf14"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/dto/list-organizations-query.dto.ts",
+    "sha256": "cc0c4d9888d837dec90c5209a911da4bb82cd1f6c9b93c2466dcc35a0a9ab753"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/dto/organization-response.dto.ts",
+    "sha256": "fd76c1a7b2a93a8a1019c01212a48880472e4bdd8b66a872d2ce5c2d0f4339e5"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/dto/update-organization.dto.ts",
+    "sha256": "bee32c49b1216be37547442f9e472cf92473173559ffe47dd07b05b8da5020cc"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/activate-organization.use-case.ts",
+    "sha256": "37266e9231353cdf4d0dbaa136347b8718eab678a6631de79f3e6536292a2426"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/create-organization.use-case.ts",
+    "sha256": "cadd60cf709a82ad2cd1cb816d5494e5f162afb858b1c8d0e6721f4512baf029"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/deactivate-organization.use-case.ts",
+    "sha256": "8c7a65046a68440088e97fbe062380ebe0138db3f669d615daedc21bba266959"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/get-organization.use-case.ts",
+    "sha256": "e17239a61ccd106bd82e0f21d47ba11905bbeff4749aabce674ba410d66c8dbc"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/list-organizations.use-case.ts",
+    "sha256": "0dce3fea81acc1511218e28fff19ce4055e1cf14e9fe2b607ea392c5b37d6254"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/application/use-cases/update-organization.use-case.ts",
+    "sha256": "2641cb93767d84ae486c59a5650c6c95f936af0035eb8b4c74403ec07396d06c"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/domain/entities/organization.ts",
+    "sha256": "a8fa6c4447789d81b1e2029c671ab44cf920add7441bcad1df0fb7b533a921d5"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/domain/enums/organization-audit-operation.enum.ts",
+    "sha256": "22f3ce35be1d76302d71785a059902257bc04b62821f4578be966ce8b72e5ddc"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/domain/enums/organization-status.enum.ts",
+    "sha256": "18524390ce55723562375577900246ba7de7a42c2b79511590009dbfdd3d003c"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/domain/ports/organization.repository.port.ts",
+    "sha256": "31f3440cc8e477ff58db07e1f665368216965137da8700cdb46046445ef26c17"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/domain/value-objects/cnpj.ts",
+    "sha256": "85c0f7e3f3c80c803b1ff967878af3220703e2e450a23b7bec5c4332400689d5"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/infrastructure/persistence/organization-audit-log.entity.ts",
+    "sha256": "f11cf6426c0a0f71b42918ae27a1bf8651c5f7b34d318e27b50d10af15fa673f"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/infrastructure/persistence/organization.entity.ts",
+    "sha256": "d73221d028c80dcad9b39e092370752cfbd2927121026c79a6fe9166d12c76a3"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/infrastructure/persistence/typeorm-organization.repository.ts",
+    "sha256": "63426ab4d138b3d54041b592e670abbe418b12b615d5a8f1d7f344d0dae545f0"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/organizations.module.ts",
+    "sha256": "2e998641cdbaa47bce3308db2f05825438b6645f6977c4851bdcea597db399db"
+  },
+  {
+    "path": "gai-backend/src/modules/organizations/presentation/organizations.controller.ts",
+    "sha256": "c5b3162f8a28e78deee733738b01dd773084d29bedb6c43c167145d175a38628"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-inputs.ts",
+    "sha256": "768c8abc6a0146316d8c38a14b3f4c020b975fd698c84baf7db9bc61394cf1a4"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts",
+    "sha256": "a98f901f7347f58997f06d0203eb6bb55d0e14ef83b27d45b320ca0e9458fc3b"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-response.dto.ts",
+    "sha256": "85ca7d5e7f946466cc05c331469ad5780ff0aadf7e3a2059876385a392e83c39"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses-scope.service.ts",
+    "sha256": "d208e95be71d18aba9d4b2936a3d46dd8c0e87226161105716eaa69187da9d56"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+    "sha256": "bc198646d8ff2527e6ec1a40a510170e452beb085a0c712964e20d351fe13fbf"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/entities/expense-attachment.ts",
+    "sha256": "000b8ecd330e5844c2d94d2c342decb76d29593036acb05bac2a6e68f0d63494"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/entities/expense.ts",
+    "sha256": "840d5308f9146cbb932a5d17005e11b60be9eb2504fa04ed3a681e3f460bc589"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/entities/field-agent-payment.ts",
+    "sha256": "b209334353bbca0beb91d2d60e37b5676cb9e33275d0dd89a04186a8e44c05c9"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/entities/payment-state-conflict.ts",
+    "sha256": "49951d1d5d7a921b21f99cf5a44220fb57f6f4c03a71e0f2c390b31f998eb8a4"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/enums/expense-attachment-status.enum.ts",
+    "sha256": "4394ddacfa5e12a212a4857b9a0268cef3a1609f3652b3ac52ef92e6702d3e6e"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/enums/expense-status.enum.ts",
+    "sha256": "9d5b9e7d2ec526bd7964117d647dd87cf7fd0c9256c6cd24e0a533c1e3c85ce4"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/enums/payment-expense-audit-operation.enum.ts",
+    "sha256": "c2322ea4ad6a693b37ae29a0ece1bbf3075b1b202380bbccf1b0e751d1a43670"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/enums/payment-status.enum.ts",
+    "sha256": "b1d53ff94d0529610ef0cd5492cde956a1738ab06b0ba3e9fa85b209ed575e34"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts",
+    "sha256": "438094112be36ae98f6d349af399c972f7b7a9b25a1f522929417410281a4edd"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/expense-attachment.entity.ts",
+    "sha256": "6faca6eb4b169bcc7960e2c29509bcd344da5e090f2fde68645be9eb913768df"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/expense.entity.ts",
+    "sha256": "1c08ef5cf781ce438c7b24d54c59f66562ad7019766499ca6d17021c2720e2b2"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity.ts",
+    "sha256": "34ab2822660e72dae1d0f7131d0fd8e85b3961b19b97e29518e0b693494c6634"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/payment-expense-audit-log.entity.ts",
+    "sha256": "95dbee74f701cfd1550e5cacef309e70873fc3fdd70a7e4a8b34d20f32dcdbd1"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts",
+    "sha256": "da56ad805140527b4ab4c8c08917b222c00fba49cbd95f17d17fa0d6bf84e4c7"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/payments-expenses.module.ts",
+    "sha256": "051787523362afe52aa8661cdac7f71437ad71476e23189010db53283df33fe0"
+  },
+  {
+    "path": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+    "sha256": "2431f7edeaf4bd54f7c441b99f34b1d06e7b23e86fca82a60c7c4fe91d077302"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts",
+    "sha256": "f98a9b0baae37cfe48250e14d4cdf6c6add300b5629fe15a9e58545e05abd72b"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/dto/project-dashboard-query.dto.ts",
+    "sha256": "1a496ad8252ed7d70ee5acb35932cd4b8c381c478661c9f746d477478806126e"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/dto/project-dashboard-response.dto.ts",
+    "sha256": "50ec159179f8148ed5a3b1c3be615797ec19fb201808e41300aff45c4e6862b0"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/dto/project-summary-query.dto.ts",
+    "sha256": "3a64d4aca65611b3d8d586650dd4ff9ddf834861cfbd5408c3a4b94181f3045f"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/dto/project-summary-response.dto.ts",
+    "sha256": "b1730f99dd86ddf3d7df9e83738920fc08041d5a91666d735fe36cd83d1e0c09"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/services/organization-overview.service.ts",
+    "sha256": "7b57cc1d7b205cf7813f08716941ca9f1171a2ef5392090b2a6b634253b386bc"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/services/project-dashboard-analytics.service.ts",
+    "sha256": "72a757618cb66ee1e6adabebdbe0f922ee00212e0bab20e8dafb5cade176bacc"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/services/project-summary-calculations.ts",
+    "sha256": "58a704263d283147966a1260bfbc9b0640cc3420e1d545aee4188cd3dcab04bf"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/application/services/project-summary.service.ts",
+    "sha256": "bfe545695a6b9308772ca11d9fa7878aa759dd6ee19cc395a9072320b299350c"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/domain/ports/project-dashboard-analytics.repository.port.ts",
+    "sha256": "3e731a46db309a983caf66d40ded76724dc6f75fafeec23dd35c2f0160b45ef2"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/domain/ports/project-summary.repository.port.ts",
+    "sha256": "48c646c164675563131348634e6fbe18c5009474669069a30f91d287309ca7b0"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/infrastructure/persistence/typeorm-project-dashboard-analytics.repository.ts",
+    "sha256": "6c37688a8a4676786c0f6076c6ece1e6c62a3c1906d461b7549c4e15c7ce0af3"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/infrastructure/persistence/typeorm-project-summary.repository.ts",
+    "sha256": "655852136359cde14309be0b4d8bcd49db3cf27586552435673b6a0b73fadcc1"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts",
+    "sha256": "11fc9b0829a979a0a78a713b8860e7aa886cdd0d716afe21c3edbd9184d52450"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts",
+    "sha256": "21b8fb93855f934f9237d9cb0ed0b5aa35a9cc6adb65d475a9ddb404c66fb8dd"
+  },
+  {
+    "path": "gai-backend/src/modules/project-dashboard/project-dashboard.module.ts",
+    "sha256": "fa9b0dccf0c7b15e861d23a54cbef1910fdfd24e690b0743f77849eac5f71e83"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/domain/preparation.policy.ts",
+    "sha256": "0c5ee8661a32abd831b7e68901fff169511fe96f0e38d2921032e863461df18b"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/domain/preparation.types.ts",
+    "sha256": "8d007c37e3fd8d6fab9ccb760073455e4187836cb8b10ec42f8afda33786bf2f"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+    "sha256": "ba88e3f01e991978b5e6149bb4981a6228158aed2686f8b3bb542d7a2be5b2b8"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/preparation.dto.ts",
+    "sha256": "7206081e5779d44e354519b8d72587a2ec94c44ba0d42c6d85ead0435b33e1b9"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/preparation.entity.ts",
+    "sha256": "7d17adc550a7b64b67611fb1bfed21a307fedd5dbc35c1fd3e77e666dc2c1107"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/preparation.repository.ts",
+    "sha256": "a1316fea1c3f47f60dcb479579fa95ede3dd01a1463bd840de7f3cc460b17172"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/preparation.service.ts",
+    "sha256": "26aeb16892b5990b590bc40d3f3702c3611d91650963c7669e8b44e52e902fa5"
+  },
+  {
+    "path": "gai-backend/src/modules/project-preparation/project-preparation.module.ts",
+    "sha256": "cc0f700b6a5d4d6c498d58aee54d3f92f9c7dafd0a747628a921d3d4010ecb74"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/dto/create-project.dto.ts",
+    "sha256": "b484ca5b2c436c9377c4151ddc239fb530f6d093d80b93cdcc980e88d28a9cf5"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/dto/list-projects-query.dto.ts",
+    "sha256": "e37ebccab1d35be65ee882e66fe4f0ebd128b1caddf4fdad6a3f0ba3e916f305"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/dto/project-response.dto.ts",
+    "sha256": "ffa28cf7e2f9bf82dbcb9b4eb9b0460ce2317e7822d413db23e6b9f61ca44c00"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/dto/update-project.dto.ts",
+    "sha256": "3730885a5e536881d20c818c787038517ad1b2b1c2a93896711e8d6d9fa97ddc"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/services/project-scope.service.ts",
+    "sha256": "3dbe2291d2ed0386308daa33be2fa7d14255ea09cfaddf8c0cf5f8a7f0f8b5dd"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/use-cases/create-project.use-case.ts",
+    "sha256": "22640e5931f0e42267d1bcba56decad7af295e435d05eb6f0f25995296d61293"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/use-cases/get-project.use-case.ts",
+    "sha256": "0212b5928bc2460c3406284d793c196f60d9f76c5d2527b4532de74dd6e87ac4"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/use-cases/list-projects.use-case.ts",
+    "sha256": "99177654181e77191e9b100976f55e6b78d477c2c448d48187f5fef5e2a04693"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/use-cases/update-project-status.use-case.ts",
+    "sha256": "2047e9dfc307355bdafd5ec238c4cafc9458f3a0433d6c594567cc14da50b5c0"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/application/use-cases/update-project.use-case.ts",
+    "sha256": "5391e775623233ce4e56f0c923494577b852f53e811d941072da5ac7e40cd14d"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/domain/entities/project.ts",
+    "sha256": "ed2f61ddb4e1ba2a0a035ddfab19c9311da8a30d39c950a02cf86e03447a8cf8"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/domain/enums/project-audit-operation.enum.ts",
+    "sha256": "ce7f950a69ec2bcf89327298d0d543abda3196c50f383b791761fe471b4a922e"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/domain/enums/project-status.enum.ts",
+    "sha256": "1c8f99d0baf23e978c36ebae9693ea85ef616a8ce2cee6038f68425c8c11c664"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/domain/ports/project.repository.port.ts",
+    "sha256": "bc2cefb1a7c9b424daacd4c2fa1230d632db6d6109875ef7168948c626fa5d38"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/domain/services/project-status-transition.policy.ts",
+    "sha256": "93ff8e9d1675ae849bb434dc1790f4400c6f76815966d8d553c2ae036361c7c7"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/infrastructure/persistence/project-audit-log.entity.ts",
+    "sha256": "8b920eed76613ecfdbd783a466810a1e89cb6b976afce1aa7d1cea41727b51dc"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/infrastructure/persistence/project.entity.ts",
+    "sha256": "114f8e71cd538f11b7fd9954346c41b9f5f7b1ce72cd6b3f3193bf4cefef3b77"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/infrastructure/persistence/typeorm-project.repository.ts",
+    "sha256": "90ae8d377f000c6ba39f050be1fc648fbe3ab04cbcf61380b108cf04e25ce691"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/presentation/projects.controller.ts",
+    "sha256": "e8cc65efee590ed1a82ec044a29c338d7215771886028aae5df5135bcfc879aa"
+  },
+  {
+    "path": "gai-backend/src/modules/projects/projects.module.ts",
+    "sha256": "fbe852e2ab354d8e8753da0459164c669cfa8f1ab385bdbf182959b43ef7c778"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/cash-flow.service.ts",
+    "sha256": "c367cbcbc524d1f9da0c6b5e45b1c266b88327e72d95901df2e0d114fe3da33a"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/finance-export.service.ts",
+    "sha256": "f8736f040df8f01f60e3773831d31c5d727699b4a08c8f909045868e8dee4875"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivable.controller.ts",
+    "sha256": "657611966f8d05472f7f658fe9044f6358fe5484f3856f7a30d55f508404f2fb"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivable.dto.ts",
+    "sha256": "663005ee24ce11592c082af3079b6d648fc4b9aa907b6d20e2cea1731163c4ba"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivable.entity.ts",
+    "sha256": "e82fc6ecaa4a05ed641a95d7a6e3d0c983339f2012ed2f41bec06167502369fc"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivable.policy.ts",
+    "sha256": "b67052a464d9b2f31054174c11f8f631e7e379d980accbd3493c5512cf4ec3cb"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivable.service.ts",
+    "sha256": "aedd8ccf0884bedcd3881d6ff331d3e8e2b6a61897c52649057e0cc4cf2e9d87"
+  },
+  {
+    "path": "gai-backend/src/modules/receivables/receivables.module.ts",
+    "sha256": "1c043873cb69df0a2a5a0d622222c3170de4830d6e02d0486496dec4e727dd51"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.controller.ts",
+    "sha256": "cbe90564e7b5475ba0ae0f52712a56f88e415b9c1b68ec1b50a6207d0531bb3f"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.dto.ts",
+    "sha256": "04cdffa038674231c73e25c8af70349a73c777b0644ffce80394a29b5236588a"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.entity.ts",
+    "sha256": "2571e2ad768e3ecd1c6c328856b76996954b23a65026d4f2b12d106bbbbdd04c"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.hash.ts",
+    "sha256": "ed13d724f8f91129510bbbc728c8329b6fe6d8ca100dd97894bbdbfbc3765c00"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.policy.ts",
+    "sha256": "8aad54f1358f1165f2d27f6dcc5070b2b5cda5d41d9575a694339acccf11d984"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.service.ts",
+    "sha256": "efd0fe4bad67bc14c2439f5c4bc64149251a49a02edac450a54e022b9571ff19"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/report.sources.ts",
+    "sha256": "3b82b7de9147da967f4d2ed4c92ea35e9e091bc2572c0a9619e4318dc11bec6e"
+  },
+  {
+    "path": "gai-backend/src/modules/technical-reports/technical-reports.module.ts",
+    "sha256": "bc3ef419a4a825722bdc2fe5ecb626c5869ad8ec442b3e4ebf9775663c971978"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/assign-user-role.dto.ts",
+    "sha256": "e3ff853c63ea704f7fc617f926d1e186898b312a8a84cdb4de7d1743542ee90f"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/create-org-role.dto.ts",
+    "sha256": "30cc0bbed7312d29ac423c4f11020a2d83848dadc6c2e4a8c91306f18a7c791f"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/create-user.dto.ts",
+    "sha256": "7285bdb3b5cc1262c565ee8c6a9e217e8df0ea720474612570b8c8b7830dd976"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/list-users-query.dto.ts",
+    "sha256": "ab2e3f13dc5154afff80b00ffa49f6834c237c6cde1e1e6e11b043627b5c4de6"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/org-role-response.dto.ts",
+    "sha256": "4ee779e5b35fd4df3461a6ba177e7a96c9483daac0f97095425286945c439469"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/permission-response.dto.ts",
+    "sha256": "efdb38b724e8ab7ee76c00eb52fae62ed2ff4e6c1df7c38222a0c015141c74bd"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/update-org-role.dto.ts",
+    "sha256": "ea1f53f23573d770c0f09cd3e17f9156ec961ca5e78820c3fb7d6f0fc3684dc6"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/update-user.dto.ts",
+    "sha256": "664e356968821648763c8d1b4e974f19069ef8700c6b1d6769de920d37521647"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/dto/user-response.dto.ts",
+    "sha256": "05444db4c98ddbc06034a1d89e8b7e30e5aabdfd65268e7ac69973976c1d372b"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/services/user-scope.service.ts",
+    "sha256": "92c5d168b0573415d461c11dbbc779edca63aea52ca810069997ff501d1504d4"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/activate-user.use-case.ts",
+    "sha256": "5f47e3bb263c88e3570ed186c3cdea9e9ba3007772339acd75bea8719f77d894"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/assign-user-role.use-case.ts",
+    "sha256": "084f8755718e3da63f0bfec0153e4329ce3fa77989d7015dc982f693e90d86c1"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/create-org-role.use-case.ts",
+    "sha256": "bc5bfea23f4ad84b783c92a0943f09c0f6b29b707ca9120b00503375c15f9b05"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/create-user.use-case.ts",
+    "sha256": "36c7812262472cb8b95414496d2b8c3cbcdaa701940889f6f3cc3f274d04f7e5"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/deactivate-org-role.use-case.ts",
+    "sha256": "524118cc8f862d78e618d1463d4e67a3021fee9dee3682dc2b9f2aab8df1c651"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/deactivate-user.use-case.ts",
+    "sha256": "527e0077639645fc5c9740908c87dab7c19fcac3bd652f45b0b35ac236c47b67"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/get-org-role.use-case.ts",
+    "sha256": "652ae366a557ed922f00fdede6420e94bbe29f40aa510bfe4d0f14937cb07056"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/get-user.use-case.ts",
+    "sha256": "0a4edaf208517d45f3b59ff71e4406f8191696abd3a334795310924b2d26da34"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/list-org-roles.use-case.ts",
+    "sha256": "f86e93cfda2128b4f3291b3c7286c60dc72ba20c0b4bb15296a6765cec58d59a"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/list-permissions.use-case.ts",
+    "sha256": "31ef66207f087bf5c8076844fd66b553c2cc14f99cca3249fb7ed773019c93ee"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/list-user-role-assignments.use-case.ts",
+    "sha256": "e197a9b8f7ac5708529cd7c409fa5413caec8254a4ddc51ae45a3d993fb03ae9"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/list-users.use-case.ts",
+    "sha256": "167c68dc2bd152d09f231d60d69063b6dd33fc3c89cd402ead64f888370aac83"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/revoke-user-role-assignment.use-case.ts",
+    "sha256": "1d55443232833b19960680633fd8ffc37827777cad72d5593fb2d5d9b5a76de5"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/update-org-role.use-case.ts",
+    "sha256": "235f4de6f82fb5b74f7939ef5e657cc74220c8e40b66b72f7fce76892078444e"
+  },
+  {
+    "path": "gai-backend/src/modules/users/application/use-cases/update-user.use-case.ts",
+    "sha256": "93e5d4a491a2ca1e305b54e50ad176d1b296c2a24e866328c628bc95ce26d42c"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/entities/managed-user.ts",
+    "sha256": "2c0af1dc9515e5041eb4f35cf71c8f250f8d86a6f56c19ffb5bffa5a0c3208d7"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/entities/org-role.ts",
+    "sha256": "3f60222ee215326f674e752e44324271a1af950f7547675b886d9134f1eb529d"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/enums/org-role-audit-operation.enum.ts",
+    "sha256": "951743b4b278f3413627391dad4aa7bb34414204932535927ed6ab2534c91566"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/enums/permission-scope.enum.ts",
+    "sha256": "60a200f24e550bb517ab99e1f3b714b428107f485d758554382cb087b1edffe0"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/enums/role-type.enum.ts",
+    "sha256": "c45c532fee84a2e687f493b77a8277d711970533bf04e9d3ea674b89628519b5"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/enums/user-audit-operation.enum.ts",
+    "sha256": "b8cfe67e239ec2961ffbdfc752a32d8a055cfc6c4fbaa1f8b9be7d091dfb5533"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/ports/org-role.repository.port.ts",
+    "sha256": "afa95f3463ec86b52b6e8fdd2a1901223993381e52069c467ba2b22bf39cd602"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/ports/permission.repository.port.ts",
+    "sha256": "357245fb0950f7495fd498df7415777ea44df552f535b32e92b8a1825bb7b31d"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/ports/user-management.repository.port.ts",
+    "sha256": "1298d4784597d9589eed952222626b6f01de8459bc56865664cede40366d40cd"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/ports/user-role-assignment.repository.port.ts",
+    "sha256": "63ca31e92ff8840b324e5feabc449ff7be1b171b4569cec87f298634a5a1e1e5"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/services/role-assignment-scope.ts",
+    "sha256": "3317a29b0683f9f868bd6b4a650a547759353f127c9b5d1a7adc8e9d50706149"
+  },
+  {
+    "path": "gai-backend/src/modules/users/domain/value-objects/permission-key.ts",
+    "sha256": "06b9b27b1d070f362537c49ca78c6421c42a0bbaadbf9e158e87783b319272f8"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/permission.entity.ts",
+    "sha256": "bb98e465844d229af3507c69b5815373d8ef91cc5a6196baf9a2d01162c050e7"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/role-audit-log.entity.ts",
+    "sha256": "37ce81da8d298eed0bb3fab2f36eecfa15b90883b0f1f684bc4d9895d77055b2"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/role-permission.entity.ts",
+    "sha256": "438c6f086946030096f5f9bbc581225fec755602e0d291d4ab25d462d04609cd"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/role.entity.ts",
+    "sha256": "d0284b5507dbceeaa39ec65acab639ee7537e572fbc6719a71a9bfb592cb40a3"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/typeorm-org-role.repository.ts",
+    "sha256": "2212470b98bcebf3c710c12cbd6fd33d444493f4b7697dd7fca12298f71e4dac"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/typeorm-permission.repository.ts",
+    "sha256": "fea3467c4134058dfe3e669f45f137259b14512475d7bbacfbab703e2b64910d"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/typeorm-user-management.repository.ts",
+    "sha256": "9a5d9680c1f72253e523d30602dd4228ebb92fcf2ff56e6ec403652832b9d45f"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/typeorm-user-role-assignment.repository.ts",
+    "sha256": "ac44df13aa1fd8051d62b8d78c29438b92213496d1a510035e92236e2b8a40d7"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/user-audit-log.entity.ts",
+    "sha256": "8fdf5777a8e148755cba06c1b1778c51339a6285c20b115d329985aef332112f"
+  },
+  {
+    "path": "gai-backend/src/modules/users/infrastructure/persistence/user-role-assignment.entity.ts",
+    "sha256": "4e66b9e213b8b393c3c1e47c3639d0e13c6506b69ccb13fc16948b478d2d1c74"
+  },
+  {
+    "path": "gai-backend/src/modules/users/presentation/org-roles.controller.ts",
+    "sha256": "c1e29e7617301d0b2ea6543df94ccd113d8c0466f6618a53fe15dc660cd991f9"
+  },
+  {
+    "path": "gai-backend/src/modules/users/presentation/permissions.controller.ts",
+    "sha256": "5f7e75d0c4c9d291ed51e6e5c1fa1bf7ef055ae09062399973212f55f61f0fcb"
+  },
+  {
+    "path": "gai-backend/src/modules/users/presentation/user-role-assignments.controller.ts",
+    "sha256": "1a5b5c2bbbf4bd5d6bcf4dd7672ebfa3c56c1ae1c112f790308bd2e804f90849"
+  },
+  {
+    "path": "gai-backend/src/modules/users/presentation/users.controller.ts",
+    "sha256": "724ffb7232e337890e26da0173093fb4fad577637526a67b31aa8ef86cabd8d1"
+  },
+  {
+    "path": "gai-backend/src/modules/users/users.module.ts",
+    "sha256": "20b6289d09c38091d91002ecb585a8780293887358409a0ed6928b001d5bf723"
+  },
+  {
+    "path": "gai-backend/src/scripts/seed/bootstrap.ts",
+    "sha256": "f2969abaa43ed5312529b7b17cd9654e844c87c04b85ad4583f449d70ccb2180"
+  },
+  {
+    "path": "gai-backend/src/scripts/seed/ensure-db-operator.ts",
+    "sha256": "366bd12174aacdf1e7a3ec37747e526b1dc5e680d181c87ec3d00b9e7dec60a3"
+  },
+  {
+    "path": "gai-backend/src/scripts/seed/ensure-platform-admin.ts",
+    "sha256": "504217e93de683c46e0724da9b88a512ef47bbe10bf59faf28a491a38e1f5613"
+  },
+  {
+    "path": "gai-backend/src/scripts/seed/permissions.seed.ts",
+    "sha256": "5f43c557e01f14a8f94ef3ed151761c1b6ce048ee29a5147452d73a04932b627"
+  },
+  {
+    "path": "gai-backend/src/scripts/seed/sync-permissions.ts",
+    "sha256": "930e922994223ca5ee8ac7841f79faf21fd6f1eef9c381f60617361721d2954e"
+  },
+  {
+    "path": "gai-backend/test/contract/auth-api.spec.ts",
+    "sha256": "4520b8aa804730d0d2cf40209f487a2bc5512c82c0eaeb7778a3487c3e72dd12"
+  },
+  {
+    "path": "gai-backend/test/contract/catalog-assets-api.spec.ts",
+    "sha256": "8654ff382e30eb5c41068290f518e0346a6d64270f1221b3c8640e0cbc95a871"
+  },
+  {
+    "path": "gai-backend/test/contract/companies-company-units-api.spec.ts",
+    "sha256": "85a43a33fe048ff0bf39d74e474e9321e5cb9a6c3fc906b226b9b6d69f604d1a"
+  },
+  {
+    "path": "gai-backend/test/contract/expense-accountabilities-api.spec.ts",
+    "sha256": "ac084d6350114892afbbf212860bc04832f27893070ce08d18578549fd80a51d"
+  },
+  {
+    "path": "gai-backend/test/contract/export-jobs-api.spec.ts",
+    "sha256": "e411b091a3fa7c5fe92d974a5f22979f0fe08946206ed4319910f022e455a5ef"
+  },
+  {
+    "path": "gai-backend/test/contract/field-agents-api.spec.ts",
+    "sha256": "21250d9569dc365de1658f2bb053ed873568f7267baa01c6bb7b3b26b267fcc9"
+  },
+  {
+    "path": "gai-backend/test/contract/import-sessions-api.spec.ts",
+    "sha256": "94b803e329320d2f8a34d53460e1d40e1932544d5a23e09935987abb61c94992"
+  },
+  {
+    "path": "gai-backend/test/contract/inventory-accounting-items-api.spec.ts",
+    "sha256": "8889cc3af4656c897dca42bd7acb19e2fb7820a604d9922a1d2ee039ce3e92d9"
+  },
+  {
+    "path": "gai-backend/test/contract/inventory-item-images-api.spec.ts",
+    "sha256": "65406423709e8a86e7e0f7356de7ddbbc8462721a147a418fe86df8df5376e27"
+  },
+  {
+    "path": "gai-backend/test/contract/inventory-items-api.spec.ts",
+    "sha256": "64c8830950df49316655f55e3e570b9dee5bbc4d4f0e80e3d7397b46176ca8a3"
+  },
+  {
+    "path": "gai-backend/test/contract/inventory-operations-api.spec.ts",
+    "sha256": "3ab14f17d2017a5d80665e4ad934bf8c892b7048366f0dc4cdfbf6603a3830de"
+  },
+  {
+    "path": "gai-backend/test/contract/inventory-pending-issues-api.spec.ts",
+    "sha256": "dbcab0d5277185394db63067198fa03639bb285f9f7d69112f878f36730435e4"
+  },
+  {
+    "path": "gai-backend/test/contract/organizations-api.spec.ts",
+    "sha256": "d25a8c6c1489f534f4e194a1544a4ae9bc6c50f96be9137da74f3489e5d23ac8"
+  },
+  {
+    "path": "gai-backend/test/contract/payments-expenses-api.spec.ts",
+    "sha256": "03d89eaa025079ed146c49c7c4a4163cc67b6160850fc3e3ce21e43becdb5702"
+  },
+  {
+    "path": "gai-backend/test/contract/project-dashboard-api.spec.ts",
+    "sha256": "612eb1729e708e5533afe2a51e5b0bc1935d222e08b8762532f90a608d1741c7"
+  },
+  {
+    "path": "gai-backend/test/contract/projects-api.spec.ts",
+    "sha256": "b5498dda44f36f5e8ed9d112db9985439358449849113e7a4f5d0a17fb305fa2"
+  },
+  {
+    "path": "gai-backend/test/contract/swagger-fidelity.spec.ts",
+    "sha256": "c046889e5289aad0db1272dd1286d5bc16f92a364e1b4c5926109079fdade464"
+  },
+  {
+    "path": "gai-backend/test/contract/users-api.spec.ts",
+    "sha256": "7421057f2c9ed6bc24e597517bfd9611142cc050b3cf066a94ef58a9b315fa02"
+  },
+  {
+    "path": "gai-backend/test/fixtures/navigation-seed.ts",
+    "sha256": "b433ac341d653cd86128f9a4021e3696232987f994b66f0407dca9257c31ffdb"
+  },
+  {
+    "path": "gai-backend/test/fixtures/temporal-probe.cjs",
+    "sha256": "19e1e181711a83362438cc989e5faf8ddfff077789e8d8e0a4531ad0e9e21ba4"
+  },
+  {
+    "path": "gai-backend/test/integration/assisted-reconciliation/assisted.e2e-spec.ts",
+    "sha256": "32716a6572ad24d35e0c5c5ff11969e63270572199d5b102cae6e9c31a39721c"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/brute-force-protection.e2e-spec.ts",
+    "sha256": "0ff2d21efc67dfa3427f6ea4237b072f3587fe40c7aa5d22c7d287866c56bd73"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/login.e2e-spec.ts",
+    "sha256": "f21d965b61c4ffbd41ec690037de4629e803865de80d57826bee9ed202973756"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/organization-gate.e2e-spec.ts",
+    "sha256": "75a8622b4af668e486d4274fdd10d190f765369cfbbab8f5a80d23430de84f22"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/password-reset.e2e-spec.ts",
+    "sha256": "067b5c3481296df6a3959311286de6ea569f743bee25af09ba9a07d073ab6a7b"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/rbac-multi-tenancy.e2e-spec.ts",
+    "sha256": "b771185b57e4876d979027905e02482c90ba8c7ab7b9346bb01d15095a78404d"
+  },
+  {
+    "path": "gai-backend/test/integration/auth/session-invalidation.e2e-spec.ts",
+    "sha256": "0fd8d9fb5a82781bc5b58e6a17ff2388c064eb9807102c88d8bd0ca943b9fc4c"
+  },
+  {
+    "path": "gai-backend/test/integration/budgets/budgets.e2e-spec.ts",
+    "sha256": "1f51db5ac4bf3a8ac7984c5b1d443977ac936c3f24280c6eadfee496dc908311"
+  },
+  {
+    "path": "gai-backend/test/integration/catalog-assets/catalog-assets.e2e-spec.ts",
+    "sha256": "4aa576de7745d6b0e050e1fed903fc9b4c76949c787256bb2ed8698783c1e8c7"
+  },
+  {
+    "path": "gai-backend/test/integration/companies/companies.e2e-spec.ts",
+    "sha256": "725d5337f081aa151eae1c7f06cbe5cb6b8fd3d3ccc7290552a1ba04c1bbf58d"
+  },
+  {
+    "path": "gai-backend/test/integration/contracts/contracts.e2e-spec.ts",
+    "sha256": "26fbaac2ef7e9808e6468b9f60f76c4efb611df70ac950850ece4f261fe36c95"
+  },
+  {
+    "path": "gai-backend/test/integration/documents/documents.e2e-spec.ts",
+    "sha256": "0ef72d623d6b949ad831d5e253eecdbad412758aba2524e11c4939fc1e0038b0"
+  },
+  {
+    "path": "gai-backend/test/integration/export-jobs/export-jobs.e2e-spec.ts",
+    "sha256": "304e190b43611dcfd93a682e845f022881c9b6c9630ae16e9d02b4035d8f5aec"
+  },
+  {
+    "path": "gai-backend/test/integration/field-agents/field-agents.e2e-spec.ts",
+    "sha256": "e69896a1dd6e9866c29cf1375dcc07ab477b898181df163fdd240f6999cd53b0"
+  },
+  {
+    "path": "gai-backend/test/integration/field-coordination/field.e2e-spec.ts",
+    "sha256": "39a9a51e7e26f600bf84b3b5ae2c90a91e063e5b17063669e2e89c3c371deaf7"
+  },
+  {
+    "path": "gai-backend/test/integration/import-sessions/import-sessions.e2e-spec.ts",
+    "sha256": "4a4253ae4c44938bbe93322234e4d0084970268711268d3bb9ac4c892212c4b1"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-accounting-items/inventory-accounting-items.e2e-spec.ts",
+    "sha256": "3db3ffe2c2ab35502e111a52ab69bc8c1cc7c0ed46071a56567b5efbb789089e"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-item-images/inventory-item-images.e2e-spec.ts",
+    "sha256": "53892f3b3b0b4301b9cc1d4190baa73345d2d5cd9f2e4625da2a2aa715d59341"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-items/inventory-items.e2e-spec.ts",
+    "sha256": "da2e3fb8035e7981858b9e497876a01800dd12884f0af286745c2b5ab505dd0f"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-operations/inventory-operation-gaps.e2e-spec.ts",
+    "sha256": "865669f1cff05815e07a6ad32aab895e4f95734c2506dd52bd52c1a324dad748"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-operations/inventory-operations.e2e-spec.ts",
+    "sha256": "452e4ea503e202888b1972754c1596db5d09f41600560e6f443d702685e39a23"
+  },
+  {
+    "path": "gai-backend/test/integration/inventory-pending-issues/inventory-pending-issues.e2e-spec.ts",
+    "sha256": "6570f232dbdaa8065a5db4b01da4ffd139ef8d23bbcb67dd7bc49e8fb85e7e16"
+  },
+  {
+    "path": "gai-backend/test/integration/managerial-dre/dre.e2e-spec.ts",
+    "sha256": "3ddd88c811447cf6036e3d5d112754b1e2f9d644b8ed5baa375b930463848ab9"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/create-organization.e2e-spec.ts",
+    "sha256": "d01cac6ba55db3daf031cb87972572032b43cb27522063bf6999b9d60cceaa5e"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/deactivate-activate-organization.e2e-spec.ts",
+    "sha256": "13346e53de00d5437311a80f0113dc93e5ce5b6e4a71947770b2083311e1e543"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/error-flows.e2e-spec.ts",
+    "sha256": "3933d36ca690996e9ee6624b85501a3be44722c7fa91e4b7edc53e9b1bb26a66"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/get-organization.e2e-spec.ts",
+    "sha256": "79e5f3c3d44f7e2ed39b395eff10b98933f6f85609d19a20e682bbaa915080e7"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/list-organizations.e2e-spec.ts",
+    "sha256": "5e9a94672a3ed921c7d59de433113447cdf057e82f749f7c2fcfa029657a14fc"
+  },
+  {
+    "path": "gai-backend/test/integration/organizations/update-organization.e2e-spec.ts",
+    "sha256": "fc85fc794cc496c1a65ec3505d422228b09fd13074e90d59de21e13405991089"
+  },
+  {
+    "path": "gai-backend/test/integration/payments-expenses/payment-integrity.mysql.e2e-spec.ts",
+    "sha256": "643d4c862677f1c9874764ff1639afa0ea5bce01584074ac526726fc16f2cec8"
+  },
+  {
+    "path": "gai-backend/test/integration/payments-expenses/payments-expenses.e2e-spec.ts",
+    "sha256": "22aae7cf792bf81b9bfb977f0e466c612f7224b3ca98f247d64710fe4e1fdf81"
+  },
+  {
+    "path": "gai-backend/test/integration/project-dashboard/project-dashboard.e2e-spec.ts",
+    "sha256": "3aa3d712889cbe4af48968ea7b9c7a1f3d1a05833034b46d1dbf819940ce5b99"
+  },
+  {
+    "path": "gai-backend/test/integration/project-preparation/project-preparation.e2e-spec.ts",
+    "sha256": "4bdfb8e565b93537af00fd07c4953c0e4fa554af0adc60256ba1b7514672d695"
+  },
+  {
+    "path": "gai-backend/test/integration/projects/projects.e2e-spec.ts",
+    "sha256": "cc78f2c8f4fff104534b4f15a3baa431123b33776bdfd80be28409f75d1466a8"
+  },
+  {
+    "path": "gai-backend/test/integration/receivables/receivables.e2e-spec.ts",
+    "sha256": "87e3ab39e8244e1f5fc59350464a904f849c82cd1eee6c79cd7130fbd13d75d4"
+  },
+  {
+    "path": "gai-backend/test/integration/storage/s3-isolated.e2e-spec.ts",
+    "sha256": "73a573aea884889c9e12556955e726e3cdcd43b60c5dfb3827ff0d6b1bd1341c"
+  },
+  {
+    "path": "gai-backend/test/integration/storage.fake.ts",
+    "sha256": "325e8845b244b678732043f39c005ed4c8da3810d45accaac332c70868d2c216"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-reports/report-volume.mysql.e2e-spec.ts",
+    "sha256": "e4f0b1d861b1d2878b2fa1b0f01d8e3f90d60a1cf1266080f4c022b12d907e80"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-reports/reports.e2e-spec.ts",
+    "sha256": "4d864f14ba986937a93b90b2cd3f0d3e39106212f7c79d0e7144b92b0a4fe440"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-validation/generated-metadata.mysql.e2e-spec.ts",
+    "sha256": "68b8a3c2a4fb2899ce29191bec5677c9a3bc74718dbaf8b2af783c3c20fee79d"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-validation/security-storage.e2e-spec.ts",
+    "sha256": "0fd0147d083dadbd3577c3a5ee1c88d21e5121f3b8c92a06dea5dcef804cece3"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-validation/specialized-exports.mysql.e2e-spec.ts",
+    "sha256": "1e997a3e05fafb94f45571af77d297fb2e6a1214220d7f1daa49761ab2c1a323"
+  },
+  {
+    "path": "gai-backend/test/integration/technical-validation/temporal-integrity.mysql.e2e-spec.ts",
+    "sha256": "af92cb8cfb019b7ee4aea7cd248a65ac2ba89397355cfcf614cb6ec34a6a77ae"
+  },
+  {
+    "path": "gai-backend/test/integration/test-app.helper.ts",
+    "sha256": "6bd15f75edbf814e944d25a3657b2d6b8fd2a5af15629fe35e2c87f6ca87d34d"
+  },
+  {
+    "path": "gai-backend/test/integration/users/create-user.e2e-spec.ts",
+    "sha256": "ecdad45e994902c94d4146a2564d6dc23f9aec66ac73edea06acf1c3d929eddb"
+  },
+  {
+    "path": "gai-backend/test/integration/users/list-users.e2e-spec.ts",
+    "sha256": "97370fc9c0cf7069c2c4774624d608b54bcc14fa638d9748fee793dc1bc4b283"
+  },
+  {
+    "path": "gai-backend/test/integration/users/org-roles.e2e-spec.ts",
+    "sha256": "25b751edf753ecc311a842cbe644500d7be74cc08f1976f7c4e743ede756065f"
+  },
+  {
+    "path": "gai-backend/test/integration/users/role-assignments.e2e-spec.ts",
+    "sha256": "3c726b1667acd16589ca6442d8cfc12ace59248878de44c272edb8e4822fe0b1"
+  },
+  {
+    "path": "gai-backend/test/integration/valuation-batches/valuation-batch.e2e-spec.ts",
+    "sha256": "4f43f063677976b66c670ad2e2ea55205985c8e413b5992286831fdc4ecd0bac"
+  },
+  {
+    "path": "gai-backend/test/jest-e2e.json",
+    "sha256": "5d2488e08113dca2cbf0066e0f789d59bb89b0e2bef6d1a0e40378eeb083ae0e"
+  },
+  {
+    "path": "gai-backend/test/jest.base.cjs",
+    "sha256": "fabe22f79367f9bb2dfac3cad38fb0421fe2ee9216cf86ab6c3cf7f52c582bbf"
+  },
+  {
+    "path": "gai-backend/test/jest.mysql.cjs",
+    "sha256": "27a786c47dc8e5fea68126327083f8a0132793c588b31207eaf7ef1cf076fdb7"
+  },
+  {
+    "path": "gai-backend/test/jest.s3.cjs",
+    "sha256": "a96098fa3ab2a791bb9a89deb9cdc041a1d9f0528f09579b8144f7b1973ccfe4"
+  },
+  {
+    "path": "gai-backend/test/jest.sqlite.cjs",
+    "sha256": "13de0567da2a0068b80280f44ac8da23b8d678cfe80c1750810495b735f7c2d1"
+  },
+  {
+    "path": "gai-backend/test/jest.unit.cjs",
+    "sha256": "7022c69ffca1b13fd21e19faf0e78046c2f5b2f42f1822469b832e341a1333b3"
+  },
+  {
+    "path": "gai-backend/test/real-api.cjs",
+    "sha256": "0c1f0197b2312cbc08dbe72dedff4a3992efc273669dfb041b1d365af6a655f9"
+  },
+  {
+    "path": "gai-backend/test/run-tests.cjs",
+    "sha256": "6ccaf2b6babcdb785186040dd781e2b43d2cebf7679c5048e442241da87bba6b"
+  },
+  {
+    "path": "gai-backend/test/storage-test.config.ts",
+    "sha256": "4e9dfeda55db4f36fef6bf602a3fabbe2045a743e6529afc3cf161418f69f0a2"
+  },
+  {
+    "path": "gai-backend/test/unit/common/civil-date.spec.ts",
+    "sha256": "61455cfe846c1716f7ace985b81cbb68fd4a793e18944da91bcb1a00c5bc2690"
+  },
+  {
+    "path": "gai-backend/test/unit/common/common.spec.ts",
+    "sha256": "14f3708ecf0ea3f166b0f183bcf1934f4bfff035e529163680012249313f0f6f"
+  },
+  {
+    "path": "gai-backend/test/unit/common/logger-redaction.spec.ts",
+    "sha256": "389874e3c21f940421d71d5dd2e0d9509fa7784fe8933eee3de76118f0a8c356"
+  },
+  {
+    "path": "gai-backend/test/unit/common/storage-signer-validation.spec.ts",
+    "sha256": "b4c9cd9653af4e5d1462edcecd9c7f6b135db326afa25445b2a7586c63e3922a"
+  },
+  {
+    "path": "gai-backend/test/unit/migrations/new-operations-migrations.spec.ts",
+    "sha256": "dd47cfe12f4ae99f44036ce7accf80d960aa8568fe7bf078454b75259013c142"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/assisted-reconciliation/matching.policy.spec.ts",
+    "sha256": "c26b69ec47d3ff7d31692c836a69640930d51f749e75e1558a41f9675185a181"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/auth/login.use-case.spec.ts",
+    "sha256": "85def10ddcdb0ab864951593cc5f6a1debbabd5b4f8529a183e056d229c530c9"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/auth/password.spec.ts",
+    "sha256": "3e7e355faeedfd15dfd4e279044023e149fb8d770cf3236d0a9738f4620c7888"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/auth/permission-resolver.spec.ts",
+    "sha256": "6a19d59a5577c28e38a462e23697dc45f1f1cbb4197cd38c23e6892a2eaeff7c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/auth/permissions-negative.spec.ts",
+    "sha256": "f2867658c93543e287b34f0f87871cacb2fad99b2f52f57309d4af14e915e517"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/auth/session-auth.guard.spec.ts",
+    "sha256": "f78e01ceec9e48a8ae087feedb63cfd58acb94eeb724d8053886af78adf87b26"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/branch-coverage.spec.ts",
+    "sha256": "6139e17e9d7096561b6f0f70949d101a05c43e42c8852f56aab88eef7271645c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/budgets/budget.fixtures.ts",
+    "sha256": "685031fe5707978d737084484f6fa1cc88838f6be1e32857a20fa8505cbc6813"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/budgets/budget.policy.spec.ts",
+    "sha256": "31a5f4bcfdd3eacfb876a8454a4fe43e650a9262ea9bbeefb4061504567eb3cb"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/catalog-assets/catalog-asset.spec.ts",
+    "sha256": "588a5811503fc0347444eb86210f71ccfed81ab8525f8a19fe6930e8a2d261e3"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/companies/company.spec.ts",
+    "sha256": "11b29d823d418bbb5446ca379dc83f969698c35384b1d53fcc3cf50e55758af4"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/contracts/commercial.policy.spec.ts",
+    "sha256": "bee478b96c28190f4fdb23ea17161cba2abcd05246320fa460789507efc7eb58"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/documents/document.render.spec.ts",
+    "sha256": "4a15ea1b5240bde4aa2874b0f26551327dc5e4c42e0ccc1cad38d74bdc05e1c9"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/documents/document.worker.spec.ts",
+    "sha256": "ff2ecd3275f8158c6c03e2aa63ba37425eef26dc833a57a8003380e4a16b1d41"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/domain-entities.spec.ts",
+    "sha256": "4c082608a509f9302e6b2083b177fdf88b7c54a25043c5592c9ca9e0ac1b0963"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/expense-accountabilities/expense-accountabilities.service.spec.ts",
+    "sha256": "c05db7d934da978dbad98fa300280ee0be6b811397fac9964d129e83344772fb"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/expense-accountabilities/installment-allocation.policy.spec.ts",
+    "sha256": "9d23d735007cff9cb431ffdd50b8e3fe0793156a49eb3f66aac8da7e9bb14578"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/expense-accountabilities/monthly-due-date.policy.spec.ts",
+    "sha256": "fb46ff5faafae620fc9cf4db665c702a403aa4407644ad6aaa2c58f7a7de560b"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/field-agents/brazilian-contact.spec.ts",
+    "sha256": "9051e5f5843e0afccb88b25b70563744eee7ef2f893e3da185f37081413c7576"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/field-agents/field-agent.spec.ts",
+    "sha256": "4035225505fdd9f31215491a5a0871c1d2ba6f22a3aeb6e36788160e2e1e10b2"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/field-coordination/field.policy.spec.ts",
+    "sha256": "e5e3a083e40a5e708f9159b2e585d7607cc82ac6479a67c18018ddf5d510d1c5"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/import-sessions/import-sessions.spec.ts",
+    "sha256": "3153b85cda9757c7eab42081759620f2e09822c40f31fea8481cb9edd592e6b0"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/import-sessions/physical-observation-import-parser.service.spec.ts",
+    "sha256": "c2e1c084c56206d0db5e656da9fadd003bc5bab59fbf9d0faab4b09d344a09fc"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-accounting-items/inventory-accounting-item.spec.ts",
+    "sha256": "ca4f8d80edc9b69fc1735ef7cc93bc23e402d8dfc786efba7ceab8b16dabaa5e"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-item-images/inventory-item-image.spec.ts",
+    "sha256": "ccc64135ed9c740dcec310d0040ccb25ea9b19611c3bdfd21527e18b013bd662"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-items/inventory-item.spec.ts",
+    "sha256": "5ddc78b3cfe73c89466373913a94c2a39c7b2918426f9b577c17f9a0b3fc6f87"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-operations/inventory-operation.entity.spec.ts",
+    "sha256": "6d6e638b857f27b39ec6357d22eac77a73330e4d3b935d5abc724c782682f6f6"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-operations/inventory-operation.policy.spec.ts",
+    "sha256": "bc4015ed0939ca734cf3d00c1f739fb9220d9ce7f56c714583f7a5c3a537fec1"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-operations/valuation.policy.spec.ts",
+    "sha256": "19261f262be38c97ea14c5f4e318af76ac43d65b2ddcfeefbc64c96e39458bd4"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/inventory-pending-issues/inventory-pending-issue.spec.ts",
+    "sha256": "dbcf58ec08bb6e388678a88a7d6dca1e43c8e03907edfe09913b8908ca3aba2c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/managerial-dre/dre.policy.spec.ts",
+    "sha256": "ff013720042756c70777b9bbd559fb194ce06c430fdf06e0461cd00e6d1c58d9"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/organization-scope-services.spec.ts",
+    "sha256": "817824bc8d6290a9dcb796a694be801d4d5efe64b2a7bab67f8386214c988fcd"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/organizations/cnpj.spec.ts",
+    "sha256": "562b42d7f8fc4d2455bdd6088f706133e764645fe88b787c64b2a04758b1f03f"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/organizations/create-organization.use-case.spec.ts",
+    "sha256": "d4f02dbc42c12dc20fa79d3947e2726bd38ac16bc3ecee827cbb465975dfe688"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/payments-expenses/payments-expenses.spec.ts",
+    "sha256": "9dc48bdd6c14a3ae6310eb9ba58647dc57094208374bcae3ef92a89a361a9f4e"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-dashboard/organization-overview.spec.ts",
+    "sha256": "8903eaeece444f9f9d01667b17396271fe80b0196bbddc7821c91df38cf60cd0"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-dashboard/project-dashboard-analytics.service.spec.ts",
+    "sha256": "37b4fe38855a82c3b2c954eb08740925a04d5d260ddf9d169ea7d5aa1c2690a1"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-dashboard/project-summary-calculations.spec.ts",
+    "sha256": "a8c7c522cdb94136c68bc78565566ea4685465a8308e8aa946acdf73eff4b209"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-dashboard/project-summary-dates.spec.ts",
+    "sha256": "8c526e61c9ff578d051e728c6d83b3a6f52083ae62d3d4cd28ab64d572b79004"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-dashboard/project-summary.service.spec.ts",
+    "sha256": "03f65c6a7f5276e6e07e7d6e9fbc54b04952a01619924a63dafc06107ea966d1"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/project-preparation/preparation.policy.spec.ts",
+    "sha256": "4b7568eb7e230cbd937673d9d235ceae24e965af974ff072d4f7af070bd89823"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/projects/project-status-transition.policy.spec.ts",
+    "sha256": "ba5c011772b20c65f0312ee90ac212650a310f1fc356855a93dc9d51e54a8796"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/projects/project.spec.ts",
+    "sha256": "be47c1e56c96673336002ef3a80c1101763f8ac8991389535a0023d2b265607e"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/projects/update-project-status.use-case.spec.ts",
+    "sha256": "f35e82b0b6c95857174e4498ea677778e703ee3aa67c824c1a8a46be6420ee96"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/projects/update-project.use-case.spec.ts",
+    "sha256": "d390c842d3380bc340f9239db7aedf0509f6a9bfe7a0eadc9b9bc1c91f92a55c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/receivables/receivable.policy.spec.ts",
+    "sha256": "20df1eb762cb95cf4421f10074abccc7d8c4199d79bf8b5c8b41eb11043693ed"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/technical-reports/report.fixtures.ts",
+    "sha256": "b98837c9bb2888f0757be87ea41dad96c7e4c4e9f9a76d221395567f060e2b4d"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/technical-reports/report.policy.spec.ts",
+    "sha256": "5469333386061304b45cc3325b4fdd60642355923cbd9085be688b07ce67b1a5"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/use-cases-extended.spec.ts",
+    "sha256": "2b15d9ce9d06aa69fc81a7699f92487444be0d0741433354dc8bc910c9b5600c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/activate-user.use-case.spec.ts",
+    "sha256": "f61d94f2ce731333ade4fc2f994f2c53f032c1abe21d0d872485cd4b143842b1"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/assign-user-role.use-case.spec.ts",
+    "sha256": "40d2755db16e6f16e7cacdd6dbc3328eece93106c9d354769047fa2bb46f1e21"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/create-user.use-case.spec.ts",
+    "sha256": "03028a2321972b9731646ea83d90a2989b5fcaa9ba13da4a79e98f98fb4e449c"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/deactivate-user.use-case.spec.ts",
+    "sha256": "a2520aa6b8f209d9f505446e24f7dcb17ae5f75727c543bd60a9ebd542dd89dc"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/revoke-user-role-assignment.use-case.spec.ts",
+    "sha256": "4efbdde32fa3fedf53c8b305352dde55a54d09618f4015d0614232c77f05d572"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/update-user-organization.use-case.spec.ts",
+    "sha256": "f90caea6664bddaf54756b8afa1096fbb617a8e7825c078145a090228e184a2e"
+  },
+  {
+    "path": "gai-backend/test/unit/modules/users/user-scope.service.spec.ts",
+    "sha256": "12dc62a76653cdb96b81859935aced09ccf18156a12491eb9e3d3333c512eaa3"
+  },
+  {
+    "path": "gai-backend/third-party/Roboto-OFL.txt",
+    "sha256": "061402327a96aadb0bfb694a960ed289ecd38d383e396243831ab81feb109c41"
+  },
+  {
+    "path": "gai-backend/tsconfig.build.json",
+    "sha256": "ef5be6c06c3ac6c3eca6c81885a12d03e33059086b4b275cf39f6e9359965378"
+  },
+  {
+    "path": "gai-backend/tsconfig.json",
+    "sha256": "9f14a66ca5ada4e5f20a0c5d4a1a1d1d631aeb03a5940c737b73893c897a8dad"
+  },
+  {
+    "path": "gai-backend/vendor/README.md",
+    "sha256": "fb553962aa8d12b36d80c76c3a63ba520fa31070de740905013dba2ea84d1e9f"
+  },
+  {
+    "path": "gai-backend/vendor/xlsx-0.20.3.tgz",
+    "sha256": "8dc73fc3b00203e72d176e85b50938627c7b086e607c682e8d3c22c02bb99fe8"
+  }
+]

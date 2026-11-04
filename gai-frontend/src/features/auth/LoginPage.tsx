@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { IconInput } from '@/components/ui/icon-input';
 import { ApiError } from '@/api/http';
 import { useAuth } from './AuthContext';
+import { GaiLogo } from '@/components/base/GaiLogo';
 
 const schema = z.object({ identifier: z.string().min(1, 'Informe login ou email'), password: z.string().min(8, 'Senha minima de 8 caracteres') });
 
@@ -35,8 +36,7 @@ export function LoginPage() {
   return (
     <section className="glass-surface mx-auto w-full max-w-[460px] rounded-2xl border border-border/80 bg-card/85 p-6 shadow-elevated sm:p-9">
       <div className="mb-8 flex items-center gap-3 lg:hidden">
-        <div className="grid size-10 place-items-center rounded-xl bg-premium-gradient text-sm font-black text-white shadow-glow">G</div>
-        <div><p className="font-extrabold leading-none tracking-tight">GAI</p><p className="mt-1 text-[0.625rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">Asset intelligence</p></div>
+        <GaiLogo />
       </div>
       <div className="eyebrow"><Sparkles size={13} /> Acesso seguro</div>
       <h1 className="mt-3 text-3xl font-bold tracking-[-0.045em]">Entrar no GAI</h1>
@@ -61,7 +61,7 @@ export function LoginPage() {
           />
         </FormField>
         <div className="flex justify-end">
-          <Link className="text-xs font-semibold text-primary transition hover:text-primary/80" to="/forgot-password">Esqueci minha senha</Link>
+          <Link className="text-xs font-semibold text-primary transition hover:text-primary-text hover:underline" to="/forgot-password">Esqueci minha senha</Link>
         </div>
         <Button size="lg" loading={formState.isSubmitting}><LogIn size={17} /> Entrar</Button>
       </form>

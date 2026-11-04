@@ -1,0 +1,172 @@
+ M gai-backend/src/app.module.ts
+ M gai-backend/src/common/persistence/entity-id.columns.ts
+ M gai-backend/src/common/storage/configured-storage-signer.service.ts
+ M gai-backend/src/common/storage/storage-signer.port.ts
+ M gai-backend/src/common/swagger/error-code.enum.ts
+ M gai-backend/src/common/swagger/error-response.dto.ts
+ M gai-backend/src/modules/auth/presentation/guards/permissions.guard.ts
+MM gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts
+ M gai-backend/src/modules/expense-accountabilities/expense-accountability.dto.ts
+ M gai-backend/src/modules/expense-accountabilities/expense-accountability.entity.ts
+ M gai-backend/src/modules/export-jobs/application/dto/export-job-query.dto.ts
+ M gai-backend/src/modules/export-jobs/application/services/export-jobs.service.ts
+ M gai-backend/src/modules/export-jobs/application/services/export-workbook-builder.service.ts
+ M gai-backend/src/modules/export-jobs/domain/enums/export-job-type.enum.ts
+ M gai-backend/src/modules/export-jobs/export-jobs.module.ts
+ M gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity.ts
+ M gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job.entity.ts
+ M gai-backend/src/modules/export-jobs/presentation/export-jobs.controller.ts
+ M gai-backend/src/modules/field-agents/application/dto/project-field-agent.dto.ts
+ M gai-backend/src/modules/field-agents/infrastructure/persistence/project-field-agent.entity.ts
+ M gai-backend/src/modules/import-sessions/application/dto/import-sessions-inputs.ts
+ M gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts
+ M gai-backend/src/modules/import-sessions/application/services/physical-observation-import-parser.service.ts
+ M gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-inputs.ts
+ M gai-backend/src/modules/inventory-accounting-items/application/dto/inventory-accounting-item-response.dto.ts
+ M gai-backend/src/modules/inventory-accounting-items/application/services/accounting-import-parser.service.ts
+ M gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-item-scope.service.ts
+ M gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-items.service.ts
+ M gai-backend/src/modules/inventory-accounting-items/domain/entities/inventory-accounting-item.ts
+ M gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity.ts
+ M gai-backend/src/modules/inventory-accounting-items/infrastructure/persistence/typeorm-inventory-accounting-item.repository.ts
+ M gai-backend/src/modules/inventory-item-images/application/use-cases/confirm-inventory-item-image-upload.use-case.ts
+ M gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-download-url.use-case.ts
+ M gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-upload-url.use-case.ts
+ M gai-backend/src/modules/inventory-operations/application/inventory-operation.dto.ts
+ M gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts
+MM gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts
+ M gai-backend/src/modules/inventory-operations/inventory-operations.module.ts
+ M gai-backend/src/modules/inventory-operations/presentation/inventory-operations.controller.ts
+ M gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-inputs.ts
+ M gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-query.dto.ts
+ M gai-backend/src/modules/payments-expenses/application/services/payments-expenses-scope.service.ts
+ M gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts
+ M gai-backend/src/modules/payments-expenses/domain/entities/field-agent-payment.ts
+ M gai-backend/src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts
+ M gai-backend/src/modules/payments-expenses/infrastructure/persistence/expense.entity.ts
+ M gai-backend/src/modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity.ts
+ M gai-backend/src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts
+ M gai-backend/src/modules/project-dashboard/application/dto/project-dashboard-query.dto.ts
+ M gai-backend/src/modules/project-dashboard/application/dto/project-summary-query.dto.ts
+ M gai-backend/src/modules/project-dashboard/application/services/project-summary.service.ts
+ M gai-backend/src/modules/project-dashboard/infrastructure/persistence/typeorm-project-summary.repository.ts
+ M gai-backend/src/modules/project-dashboard/presentation/project-dashboard.controller.ts
+ M gai-backend/src/modules/project-dashboard/project-dashboard.module.ts
+ M gai-backend/src/modules/projects/application/dto/create-project.dto.ts
+ M gai-backend/src/modules/projects/application/dto/update-project.dto.ts
+ M gai-backend/src/modules/projects/application/services/project-scope.service.ts
+ M gai-backend/src/modules/projects/infrastructure/persistence/project.entity.ts
+ M gai-backend/src/scripts/seed/ensure-platform-admin.ts
+ M gai-backend/src/scripts/seed/permissions.seed.ts
+ M gai-frontend/package-lock.json
+ M gai-frontend/package.json
+ M gai-frontend/src/api/endpoints.ts
+ M gai-frontend/src/api/http.ts
+ M gai-frontend/src/constants/navigation.ts
+ M gai-frontend/src/features/accountabilities/ProjectAccountabilitiesPage.test.tsx
+ M gai-frontend/src/features/accountabilities/ProjectAccountabilitiesPage.tsx
+ M gai-frontend/src/features/accounting-items/AccountingItemForm.tsx
+ M gai-frontend/src/features/accounting-items/accountingItemSchemas.ts
+ M gai-frontend/src/features/dashboard/DashboardPage.tsx
+ M gai-frontend/src/features/export-jobs/ProjectExportJobsPage.test.tsx
+ M gai-frontend/src/features/export-jobs/ProjectExportJobsPage.tsx
+ M gai-frontend/src/features/export-jobs/exportJobSchemas.ts
+ M gai-frontend/src/features/field-agents/ProjectFieldAgentsPanel.tsx
+ M gai-frontend/src/features/inventory-items/ItemEvidencePanels.tsx
+ M gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.test.tsx
+ M gai-frontend/src/features/inventory-items/ProjectInventoryItemsPage.tsx
+ M gai-frontend/src/features/inventory-items/inventoryItemsQueries.ts
+ M gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.test.tsx
+ M gai-frontend/src/features/inventory-operations/InventorySessionDetailPage.tsx
+ M gai-frontend/src/features/project-dashboard/projectDashboardQueries.ts
+ M gai-frontend/src/features/projects/ProjectSummaryPage.test.tsx
+ M gai-frontend/src/features/projects/ProjectSummaryPage.tsx
+ M gai-frontend/src/features/projects/ProjectUnitsPanel.tsx
+ M gai-frontend/src/features/projects/ProjectsPage.tsx
+ M gai-frontend/src/layouts/Sidebar.tsx
+ M gai-frontend/src/layouts/Topbar.tsx
+ M gai-frontend/src/router/router.tsx
+ M gai-frontend/src/types/api.ts
+?? gai-backend/src/common/persistence/civil-date.transformer.ts
+?? gai-backend/src/common/persistence/mysql-utc-options.ts
+?? gai-backend/src/common/storage/s3-storage-adapter.service.ts
+?? gai-backend/src/common/storage/storage-object.policy.ts
+?? gai-backend/src/common/validation/
+?? gai-backend/src/migrations/1793000000001-fix-evidence-storage-key-index.ts
+?? gai-backend/src/migrations/1793100000001-create-project-preparation.ts
+?? gai-backend/src/migrations/1793200000001-create-field-coordination.ts
+?? gai-backend/src/migrations/1793300000001-create-assisted-reconciliation.ts
+?? gai-backend/src/migrations/1793400000001-create-valuation-batches.ts
+?? gai-backend/src/migrations/1793500000001-create-project-contracts.ts
+?? gai-backend/src/migrations/1793600000001-create-budgets.ts
+?? gai-backend/src/migrations/1793700000001-create-receivables.ts
+?? gai-backend/src/migrations/1793800000001-create-managerial-dre.ts
+?? gai-backend/src/migrations/1793900000001-create-technical-reports.ts
+?? gai-backend/src/migrations/1793900000002-create-professional-documents.ts
+?? gai-backend/src/migrations/1794000000001-register-generated-column-metadata.ts
+?? gai-backend/src/modules/assisted-reconciliation/
+?? gai-backend/src/modules/auth/application/services/permission-access.ts
+?? gai-backend/src/modules/budgets/
+?? gai-backend/src/modules/contracts/
+?? gai-backend/src/modules/documents/
+?? gai-backend/src/modules/expense-accountabilities/monthly-due-date.policy.ts
+?? gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts
+?? gai-backend/src/modules/field-coordination/
+?? gai-backend/src/modules/inventory-operations/application/inventory-reconciliation-response.dto.ts
+?? gai-backend/src/modules/inventory-operations/application/valuation-batch.dto.ts
+?? gai-backend/src/modules/inventory-operations/application/valuation-batch.service.ts
+?? gai-backend/src/modules/inventory-operations/application/valuation.policy.ts
+?? gai-backend/src/modules/inventory-operations/infrastructure/persistence/valuation-batch.entity.ts
+?? gai-backend/src/modules/inventory-operations/presentation/valuation-batch.controller.ts
+?? gai-backend/src/modules/managerial-dre/
+?? gai-backend/src/modules/payments-expenses/domain/entities/payment-state-conflict.ts
+?? gai-backend/src/modules/project-dashboard/application/dto/organization-overview-query.dto.ts
+?? gai-backend/src/modules/project-dashboard/application/services/organization-overview.service.ts
+?? gai-backend/src/modules/project-dashboard/presentation/organization-overview.controller.ts
+?? gai-backend/src/modules/project-preparation/
+?? gai-backend/src/modules/receivables/
+?? gai-backend/src/modules/technical-reports/
+?? gai-frontend/e2e/assisted-reconciliation-real.spec.ts
+?? gai-frontend/e2e/budgets-real.spec.ts
+?? gai-frontend/e2e/contracts-real.spec.ts
+?? gai-frontend/e2e/documents-real.spec.ts
+?? gai-frontend/e2e/dre-real.spec.ts
+?? gai-frontend/e2e/field-coordination-real.spec.ts
+?? gai-frontend/e2e/homologation-real.spec.ts
+?? gai-frontend/e2e/integration-navigation-real.spec.ts
+?? gai-frontend/e2e/project-navigation-real.spec.ts
+?? gai-frontend/e2e/receivables-real.spec.ts
+?? gai-frontend/e2e/reports-real.spec.ts
+?? gai-frontend/e2e/valuation-batches-real.spec.ts
+?? gai-frontend/src/api/http.test.ts
+?? gai-frontend/src/features/budgets/
+?? gai-frontend/src/features/contracts/
+?? gai-frontend/src/features/dashboard/OrganizationOverviewPage.test.tsx
+?? gai-frontend/src/features/dashboard/OrganizationOverviewPage.tsx
+?? gai-frontend/src/features/dashboard/OverviewDetails.tsx
+?? gai-frontend/src/features/dashboard/brazilStatePaths.json
+?? gai-frontend/src/features/dashboard/projectStatuses.ts
+?? gai-frontend/src/features/documents/
+?? gai-frontend/src/features/dre/
+?? gai-frontend/src/features/export-jobs/exportContentPermissions.ts
+?? gai-frontend/src/features/field-coordination/
+?? gai-frontend/src/features/inventory-items/ValuationBatchPanel.test.tsx
+?? gai-frontend/src/features/inventory-items/ValuationBatchPanel.tsx
+?? gai-frontend/src/features/inventory-items/inventoryCache.test.tsx
+?? gai-frontend/src/features/inventory-items/valuationBatchApi.ts
+?? gai-frontend/src/features/inventory-items/valuationFormatting.test.ts
+?? gai-frontend/src/features/inventory-items/valuationFormatting.ts
+?? gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.test.tsx
+?? gai-frontend/src/features/inventory-operations/AssistedReconciliationPanel.tsx
+?? gai-frontend/src/features/inventory-operations/assistedApi.ts
+?? gai-frontend/src/features/inventory-operations/reconciliationContract.test.tsx
+?? gai-frontend/src/features/project-preparation/
+?? gai-frontend/src/features/projects/ProjectContextLink.tsx
+?? gai-frontend/src/features/projects/ProjectLayout.tsx
+?? gai-frontend/src/features/projects/navigationContext.test.ts
+?? gai-frontend/src/features/projects/navigationContext.ts
+?? gai-frontend/src/features/receivables/
+?? gai-frontend/src/features/technical-reports/
+?? gai-frontend/src/router/ContextRedirect.tsx
+?? gai-frontend/src/router/projectRoutes.test.tsx
+?? gai-frontend/src/router/projectRoutes.tsx

@@ -23,6 +23,8 @@ export class PasswordResetTokenEntity {
 
   @Column({ name: 'token_hash', type: 'varchar', length: 64 })
   tokenHash!: string;
+  @Column({ type: 'varchar', length: 24, default: 'PASSWORD_RESET' })
+  purpose!: 'PASSWORD_RESET' | 'INVITATION';
 
   @Column({ name: 'expires_at', type: 'datetime', precision: 3 })
   expiresAt!: Date;

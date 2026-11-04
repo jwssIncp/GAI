@@ -1,6 +1,8 @@
+import { ProjectRegistrationFieldsDto } from './project-registration-fields.dto';
+import { IsProjectJson } from './project-json.validator';
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsInt,
   IsObject,
   IsOptional,
@@ -26,12 +28,18 @@ const trimOptionalString = (value: unknown): unknown => {
 const normalizeOptionalDate = (value: unknown): unknown =>
   value === '' ? undefined : value;
 
-export class CreateProjectDto {
-  @ApiProperty({ type: 'integer', format: 'int64' })
+export class CreateProjectDto extends ProjectRegistrationFieldsDto {
+  @ApiPropertyOptional({
+    type: 'integer',
+    format: 'int64',
+    description:
+      'Platform admin only; otherwise derived from authenticated context',
+  })
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  organization_id!: number;
+  organization_id?: number;
 
   @ApiProperty({ type: 'integer', format: 'int64' })
   @Type(() => Number)
@@ -60,7 +68,7 @@ export class CreateProjectDto {
     normalizeOptionalDate(params.value as unknown),
   )
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   start_date?: string | null;
 
@@ -69,7 +77,7 @@ export class CreateProjectDto {
     normalizeOptionalDate(params.value as unknown),
   )
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   end_date?: string | null;
 
@@ -80,6 +88,7 @@ export class CreateProjectDto {
   })
   @IsOptional()
   @IsObject()
+  @IsProjectJson()
   settings?: JsonRecord | null;
 
   @ApiPropertyOptional({
@@ -89,5 +98,6 @@ export class CreateProjectDto {
   })
   @IsOptional()
   @IsObject()
+  @IsProjectJson()
   metadata?: JsonRecord | null;
 }

@@ -41,7 +41,7 @@ export API="http://localhost:3000/api/v1"
 # Login PLATFORM_ADMIN
 export TOKEN=$(curl -s -X POST "$API/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"identifier":"platform.admin","password":"Admin@123456"}' \
+  -d '{"identifier":"platform.admin","password":"<runtime-credential-required>"}' \
   | jq -r '.access_token')
 ```
 
@@ -98,7 +98,7 @@ curl -s -X POST "$API/users/$USER_ID/role-assignments" \
 ```bash
 export ORG_TOKEN=$(curl -s -X POST "$API/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"identifier":"org.admin","password":"Admin@123456"}' \
+  -d '{"identifier":"org.admin","password":"<runtime-credential-required>"}' \
   | jq -r '.access_token')
 
 # Lista apenas usuários da org 1
@@ -120,7 +120,7 @@ curl -s -o /dev/null -w "%{http_code}" -X POST "$API/users/2/role-assignments" \
 ```bash
 export USER_TOKEN=$(curl -s -X POST "$API/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"identifier":"test.user","password":"Test@123456"}' \
+  -d '{"identifier":"test.user","password":"<runtime-credential-required>"}' \
   | jq -r '.access_token')
 
 # ORG_USER não pode listar usuários (sem users:read no papel)

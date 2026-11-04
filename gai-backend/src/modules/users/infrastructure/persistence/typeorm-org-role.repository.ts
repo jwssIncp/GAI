@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { OrgRole, type PermissionRef } from '../../domain/entities/org-role';
@@ -12,6 +12,7 @@ import { RolePermissionEntity } from './role-permission.entity';
 import { RoleEntity } from './role.entity';
 import { PermissionEntity } from './permission.entity';
 import { UserRoleAssignmentEntity } from './user-role-assignment.entity';
+import { lockAccessAdministration } from './access-administration-lock';
 
 @Injectable()
 export class TypeOrmOrgRoleRepository implements OrgRoleRepository {
@@ -102,12 +103,25 @@ export class TypeOrmOrgRoleRepository implements OrgRoleRepository {
     audit: OrgRoleAuditEntry,
   ): Promise<OrgRole> {
     return this.roleRepo.manager.transaction(async (manager) => {
+      await lockAccessAdministration(manager);
       const roleRepository = manager.getRepository(RoleEntity);
       const rolePermRepository = manager.getRepository(RolePermissionEntity);
       const auditRepository = manager.getRepository(RoleAuditLogEntity);
       const permRepository = manager.getRepository(PermissionEntity);
 
       const props = role.toProps();
+      if (
+        props.id > 0 &&
+        !props.isActive &&
+        (await manager
+          .getRepository(UserRoleAssignmentEntity)
+          .countBy({ roleId: props.id, isActive: true }))
+      ) {
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message: 'Revogue os vínculos do perfil antes de desativá-lo.',
+        });
+      }
       let entity: RoleEntity;
 
       if (props.id > 0) {

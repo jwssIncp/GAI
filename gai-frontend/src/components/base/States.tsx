@@ -36,7 +36,7 @@ export function EmptyState({ title = 'Nenhum registro encontrado', description =
 
 export function ErrorState({ message = 'Nao foi possivel carregar os dados.', onRetry }: { message?: string; onRetry?: () => void }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-destructive/25 bg-destructive/[0.045] p-5 shadow-panel">
+    <div role="alert" className="relative overflow-hidden rounded-xl border border-destructive/25 bg-destructive/[0.045] p-5 shadow-panel">
       <div className="absolute inset-y-0 left-0 w-1 bg-destructive" aria-hidden="true" />
       <div className="flex items-center gap-2.5 font-semibold text-destructive">
         <span className="grid size-8 place-items-center rounded-lg bg-destructive/10"><AlertTriangle size={16} /></span> Nao foi possivel concluir

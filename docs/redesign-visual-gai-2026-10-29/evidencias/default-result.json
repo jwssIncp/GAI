@@ -1,0 +1,13 @@
+{
+  "name": "default",
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "default",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\default-jest.json"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-backend",
+  "exit_code": 0,
+  "seconds": 497.077
+}

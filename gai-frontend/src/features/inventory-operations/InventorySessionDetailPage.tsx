@@ -25,6 +25,7 @@ import type {
 import { createIdempotencyKey } from './idempotency';
 import { getInventoryOperationErrorMessage } from './inventoryOperationErrors';
 import { ObservationEvidenceDrawer } from './ObservationEvidenceDrawer';
+import { AssistedReconciliationPanel } from './AssistedReconciliationPanel';
 import {
   useCancelInventorySession,
   useConsolidate,
@@ -97,6 +98,7 @@ export function InventorySessionDetailPage() {
     <RoundsSection projectId={projectId} sessionId={sessionId} currentRoundId={item.current_round_id} />
     <ObservationsSection projectId={projectId} sessionId={sessionId} sessionActive={item.status === 'active'} currentRoundId={item.current_round_id} rounds={initialRoundPage.items} />
     <ReconciliationsSection projectId={projectId} sessionId={sessionId} />
+    <PermissionGate permissions={['assisted-reconciliation:read']}><AssistedReconciliationPanel key={`${projectId}:${sessionId}`} projectId={projectId} sessionId={sessionId} /></PermissionGate>
 
     <ConfirmDialog
       open={finishingSession}

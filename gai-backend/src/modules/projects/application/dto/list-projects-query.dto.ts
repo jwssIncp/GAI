@@ -1,6 +1,15 @@
+import { ProjectType } from '../../domain/enums/project-type.enum';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
 
 export class ListProjectsQueryDto {
@@ -38,7 +47,22 @@ export class ListProjectsQueryDto {
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
 
-  @ApiPropertyOptional({ description: 'Busca por nome ou descricao' })
+  @ApiPropertyOptional({ enum: ProjectType })
+  @IsOptional()
+  @IsEnum(ProjectType)
+  project_type?: ProjectType;
+  @ApiPropertyOptional({
+    enum: ['name', 'code', 'start_date', 'end_date', 'created_at'],
+  })
+  @IsOptional()
+  @IsIn(['name', 'code', 'start_date', 'end_date', 'created_at'])
+  sort_by?: 'name' | 'code' | 'start_date' | 'end_date' | 'created_at';
+  @ApiPropertyOptional({ enum: ['ASC', 'DESC'] })
+  @IsOptional()
+  @IsIn(['ASC', 'DESC'])
+  sort_order?: 'ASC' | 'DESC';
+
+  @ApiPropertyOptional({ description: 'Busca por nome, codigo ou descricao' })
   @IsOptional()
   @IsString()
   search?: string;

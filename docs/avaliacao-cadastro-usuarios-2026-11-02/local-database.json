@@ -1,0 +1,660 @@
+{
+  "inspectedAt": "2026-11-03T00:45:24.027Z",
+  "target": "localhost:3306/gai",
+  "mode": "READ ONLY",
+  "queries": {
+    "columns": [
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "user_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "operation",
+        "COLUMN_TYPE": "varchar(50)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "ip_address",
+        "COLUMN_TYPE": "varchar(45)",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "result",
+        "COLUMN_TYPE": "varchar(20)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "metadata",
+        "COLUMN_TYPE": "json",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "auth_audit_logs",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "user_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "token_hash",
+        "COLUMN_TYPE": "char(64)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "expires_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "used_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "password_reset_tokens",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "char(36)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "user_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "organization_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "expires_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "revoked_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "sessions",
+        "COLUMN_NAME": "last_activity_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "user_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "operation",
+        "COLUMN_TYPE": "varchar(50)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "performed_by",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "changes",
+        "COLUMN_TYPE": "json",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "user_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "role_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "is_active",
+        "COLUMN_TYPE": "tinyint(1)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "1",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "assigned_by",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "assigned_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "revoked_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "organization_id",
+        "COLUMN_TYPE": "bigint unsigned",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "login",
+        "COLUMN_TYPE": "varchar(100)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "email",
+        "COLUMN_TYPE": "varchar(255)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "password_hash",
+        "COLUMN_TYPE": "varchar(255)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "status",
+        "COLUMN_TYPE": "enum('ACTIVE','INACTIVE','LOCKED')",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "ACTIVE",
+        "COLLATION_NAME": "utf8mb4_unicode_ci"
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "failed_login_attempts",
+        "COLUMN_TYPE": "int",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "0",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "locked_until",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "password_changed_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": null,
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "created_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "updated_at",
+        "COLUMN_TYPE": "datetime(3)",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)",
+        "COLLATION_NAME": null
+      }
+    ],
+    "constraints": [
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "performed_by",
+        "CONSTRAINT_NAME": "fk_user_audit_performed_by",
+        "REFERENCED_TABLE_NAME": "users",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "user_id",
+        "CONSTRAINT_NAME": "fk_user_audit_user",
+        "REFERENCED_TABLE_NAME": "users",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "user_audit_logs",
+        "COLUMN_NAME": "id",
+        "CONSTRAINT_NAME": "PRIMARY",
+        "REFERENCED_TABLE_NAME": null,
+        "REFERENCED_COLUMN_NAME": null
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "assigned_by",
+        "CONSTRAINT_NAME": "fk_ura_assigned_by",
+        "REFERENCED_TABLE_NAME": "users",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "role_id",
+        "CONSTRAINT_NAME": "fk_ura_role",
+        "REFERENCED_TABLE_NAME": "roles",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "user_id",
+        "CONSTRAINT_NAME": "fk_ura_user",
+        "REFERENCED_TABLE_NAME": "users",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "user_role_assignments",
+        "COLUMN_NAME": "id",
+        "CONSTRAINT_NAME": "PRIMARY",
+        "REFERENCED_TABLE_NAME": null,
+        "REFERENCED_COLUMN_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "organization_id",
+        "CONSTRAINT_NAME": "fk_users_organization",
+        "REFERENCED_TABLE_NAME": "organizations",
+        "REFERENCED_COLUMN_NAME": "id"
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "id",
+        "CONSTRAINT_NAME": "PRIMARY",
+        "REFERENCED_TABLE_NAME": null,
+        "REFERENCED_COLUMN_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "email",
+        "CONSTRAINT_NAME": "uk_users_email",
+        "REFERENCED_TABLE_NAME": null,
+        "REFERENCED_COLUMN_NAME": null
+      },
+      {
+        "TABLE_NAME": "users",
+        "COLUMN_NAME": "login",
+        "CONSTRAINT_NAME": "uk_users_login",
+        "REFERENCED_TABLE_NAME": null,
+        "REFERENCED_COLUMN_NAME": null
+      }
+    ],
+    "users": [
+      {
+        "total": 3,
+        "active": "3",
+        "inactive": "0",
+        "locked": "0",
+        "platform": "1",
+        "organization": "2",
+        "argon2id_hashes": "3",
+        "short_trimmed_login": "0",
+        "oversized_login": "0",
+        "untrimmed_login": "0",
+        "unnormalized_email": "0"
+      }
+    ],
+    "organizations": [
+      {
+        "id": 1,
+        "status": "ACTIVE"
+      },
+      {
+        "id": 2,
+        "status": "ACTIVE"
+      }
+    ],
+    "invalidOrganizations": [
+      {
+        "missing_organization": 0,
+        "active_users": null
+      }
+    ],
+    "inactiveOrganizations": [
+      {
+        "users_in_inactive_organizations": 0
+      }
+    ],
+    "usersWithoutEffectiveRole": [
+      {
+        "total": 0,
+        "active": null
+      }
+    ],
+    "identitiesCollidingAcrossColumns": [
+      {
+        "pairs": 0
+      }
+    ],
+    "duplicateActiveAssignments": [
+      {
+        "duplicate_groups": 0
+      }
+    ],
+    "incompatibleActiveAssignments": [
+      {
+        "total": 0
+      }
+    ],
+    "accessProfiles": [
+      {
+        "id": 1,
+        "key": "PLATFORM_ADMIN",
+        "type": "SYSTEM",
+        "organization_id": null,
+        "is_active": 1,
+        "permissions": 0,
+        "active_assignments": 1
+      },
+      {
+        "id": 2,
+        "key": "ORG_ADMIN",
+        "type": "SYSTEM",
+        "organization_id": null,
+        "is_active": 1,
+        "permissions": 0,
+        "active_assignments": 1
+      },
+      {
+        "id": 3,
+        "key": null,
+        "type": "ORGANIZATION",
+        "organization_id": 1,
+        "is_active": 1,
+        "permissions": 1,
+        "active_assignments": 1
+      },
+      {
+        "id": 4,
+        "key": "ORG_USER",
+        "type": "SYSTEM",
+        "organization_id": null,
+        "is_active": 1,
+        "permissions": 0,
+        "active_assignments": 0
+      }
+    ],
+    "organizationAdministrators": [
+      {
+        "id": 1,
+        "status": "ACTIVE",
+        "active_administrators": 1
+      },
+      {
+        "id": 2,
+        "status": "ACTIVE",
+        "active_administrators": 0
+      }
+    ],
+    "auditOperations": [],
+    "migrations": [
+      {
+        "name": "CreateOrganizations1739500000001"
+      },
+      {
+        "name": "CreateAuthTables1739500000002"
+      },
+      {
+        "name": "MigrateToNumericIdsAndRbac1739600000001"
+      },
+      {
+        "name": "DecoupleUserAuthorization1739700000001"
+      },
+      {
+        "name": "CreateProjects1739800000001"
+      },
+      {
+        "name": "CreateFieldAgents1739900000001"
+      },
+      {
+        "name": "CreateInventoryItems1740000000001"
+      },
+      {
+        "name": "CreateInventoryItemImages1740100000001"
+      },
+      {
+        "name": "CreateCatalogAssets1740200000001"
+      },
+      {
+        "name": "CreateInventoryAccountingItems1740300000001"
+      },
+      {
+        "name": "CreateInventoryPendingIssues1740400000001"
+      },
+      {
+        "name": "CreatePaymentsExpenses1740500000001"
+      },
+      {
+        "name": "CreateImportSessions1740600000001"
+      },
+      {
+        "name": "CreateCompaniesCompanyUnits1740700000001"
+      },
+      {
+        "name": "ProtectActiveFieldAgentAssignments1740800000001"
+      },
+      {
+        "name": "AddProjectUnitSoftDelete1740900000001"
+      },
+      {
+        "name": "CreateExportJobs1741000000001"
+      },
+      {
+        "name": "AddProjectDashboardIndexes1741100000001"
+      },
+      {
+        "name": "CreateInventoryOperations1741200000001"
+      },
+      {
+        "name": "CreateExpenseAccountabilities1741300000001"
+      },
+      {
+        "name": "CloseInventoryOperationGaps1741400000001"
+      },
+      {
+        "name": "FixEvidenceStorageKeyIndex1793000000001"
+      },
+      {
+        "name": "CreateProjectPreparation1793100000001"
+      },
+      {
+        "name": "CreateFieldCoordination1793200000001"
+      },
+      {
+        "name": "CreateAssistedReconciliation1793300000001"
+      },
+      {
+        "name": "CreateValuationBatches1793400000001"
+      },
+      {
+        "name": "CreateProjectContracts1793500000001"
+      },
+      {
+        "name": "CreateBudgets1793600000001"
+      },
+      {
+        "name": "CreateReceivables1793700000001"
+      },
+      {
+        "name": "CreateManagerialDre1793800000001"
+      },
+      {
+        "name": "CreateTechnicalReports1793900000001"
+      },
+      {
+        "name": "CreateProfessionalDocuments1793900000002"
+      },
+      {
+        "name": "RegisterGeneratedColumnMetadata1794000000001"
+      },
+      {
+        "name": "EnsureOrgUserRole1794100000001"
+      }
+    ]
+  }
+}

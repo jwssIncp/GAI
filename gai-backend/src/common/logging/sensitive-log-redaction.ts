@@ -19,6 +19,8 @@ const SENSITIVE_FIELD_NAMES = [
   'confirm_password',
   'confirmPassword',
   'token',
+  'activationUrl',
+  'activation_url',
   'token_hash',
   'tokenHash',
   'session_token',

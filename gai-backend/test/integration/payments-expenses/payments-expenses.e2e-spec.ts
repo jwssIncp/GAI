@@ -1,3 +1,5 @@
+import { STORAGE_SIGNER } from '../../../src/common/storage/storage-signer.port';
+import { FakeStorage, TEST_OBJECT_CHECKSUM } from '../storage.fake';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import {
@@ -136,14 +138,15 @@ describe('Payments & Expenses (e2e)', () => {
       })
       .expect(201);
     const upload = uploadResponse.body as UploadBody;
-    expect(upload.upload_url).toContain('X-GAI-Signature');
+    app.get<FakeStorage>(STORAGE_SIGNER).put(upload.upload_url);
+    expect(upload.upload_url).toContain('X-Amz-Signature');
 
     await request(app.getHttpServer())
       .post(
         `/api/v1/projects/${projectId}/expenses/${expense.id}/attachments/${upload.attachment.id}/confirm-upload`,
       )
       .set('Authorization', `Bearer ${token}`)
-      .send({ checksum: 'abc', size_bytes: 123 })
+      .send({ checksum: TEST_OBJECT_CHECKSUM, size_bytes: 123 })
       .expect(200)
       .expect((response) => {
         const body = response.body as { status: string };

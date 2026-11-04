@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  ForbiddenException,
   ExecutionContext,
   Inject,
   Injectable,
@@ -91,7 +92,10 @@ export class SessionAuthGuard implements CanActivate {
       });
     }
 
-    if (!user.canLogin(now)) {
+    if (
+      (session.authVersion ?? 0) !== (user.authVersion ?? 0) ||
+      !user.canLogin(now)
+    ) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
         message: 'Invalid or expired session',
@@ -108,6 +112,31 @@ export class SessionAuthGuard implements CanActivate {
       });
     }
 
+    if (
+      user.mustChangePassword &&
+      user.temporaryPasswordExpiresAt &&
+      user.temporaryPasswordExpiresAt <= now
+    ) {
+      throw new UnauthorizedException({
+        code: 'UNAUTHORIZED',
+        message:
+          'A senha temporária expirou. Solicite uma nova ao administrador.',
+      });
+    }
+    const endpoint = (request.path || request.url || '').replace(/\/$/, '');
+    if (
+      user.mustChangePassword &&
+      ![
+        '/api/v1/auth/me',
+        '/api/v1/auth/logout',
+        '/api/v1/auth/password/change',
+      ].includes(endpoint)
+    ) {
+      throw new ForbiddenException({
+        code: 'PASSWORD_CHANGE_REQUIRED',
+        message: 'Altere a senha temporária para continuar.',
+      });
+    }
     const sessionTtlHours = this.configService.get<number>(
       'auth.sessionTtlHours',
       8,

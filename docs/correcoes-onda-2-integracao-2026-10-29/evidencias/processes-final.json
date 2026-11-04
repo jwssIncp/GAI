@@ -1,0 +1,112 @@
+﻿[
+    {
+        "ProcessId":  20208,
+        "Name":  "node.exe",
+        "CommandLine":  "C:\\Users\\Jonathan\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe C:\\Users\\Jonathan\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\node_modules\\@oai\\artifact-tool\\dist\\artifact-session\\host-daemon.mjs"
+    },
+    {
+        "ProcessId":  2616,
+        "Name":  "Docker Desktop.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe\" -Autostart "
+    },
+    {
+        "ProcessId":  9052,
+        "Name":  "Docker Desktop.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe\" --reason=open-tray --analytics-enabled=true --name=dashboard"
+    },
+    {
+        "ProcessId":  12104,
+        "Name":  "Docker Desktop.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe\" --type=gpu-process --user-data-dir=\"C:\\Users\\Jonathan\\AppData\\Roaming\\Docker Desktop\" --gpu-preferences=SAAAAAAAAADgAAAEAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --field-trial-handle=1840,i,9046748202998323356,18329428383265743219,262144 --enable-features=EnableTransparentHwndEnlargement,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1848,i,1975827750502658978,4562999445548360101,4 --trace-process-track-uuid=3190708988185955192 --mojo-platform-channel-handle=1836 /prefetch:2"
+    },
+    {
+        "ProcessId":  3964,
+        "Name":  "docker-sandbox.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\cli-plugins\\docker-sandbox.exe\" daemon start"
+    },
+    {
+        "ProcessId":  16564,
+        "Name":  "Docker Desktop.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --user-data-dir=\"C:\\Users\\Jonathan\\AppData\\Roaming\\Docker Desktop\" --standard-schemes=app --enable-sandbox --secure-schemes=app --cors-schemes=dd --fetch-schemes=dd --code-cache-schemes=app --field-trial-handle=1840,i,9046748202998323356,18329428383265743219,262144 --enable-features=EnableTransparentHwndEnlargement,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1848,i,1975827750502658978,4562999445548360101,4 --trace-process-track-uuid=3190708989122997041 --mojo-platform-channel-handle=2132 /prefetch:3"
+    },
+    {
+        "ProcessId":  5520,
+        "Name":  "Docker Desktop.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\frontend\\Docker Desktop.exe\" --type=renderer --user-data-dir=\"C:\\Users\\Jonathan\\AppData\\Roaming\\Docker Desktop\" --standard-schemes=app --enable-sandbox --secure-schemes=app --cors-schemes=dd --fetch-schemes=dd --code-cache-schemes=app --app-user-model-id=Docker.DockerForWindows.Settings --app-path=\"C:\\Program Files\\Docker\\Docker\\frontend\\resources\\app.asar\" --enable-sandbox --video-capture-use-gpu-memory-buffer --lang=en-US --device-scale-factor=1 --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1793213180260031 --launch-time-ticks=937804022 --field-trial-handle=1840,i,9046748202998323356,18329428383265743219,262144 --enable-features=EnableTransparentHwndEnlargement,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,NetworkServiceSandbox,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=1848,i,1975827750502658978,4562999445548360101,4 --trace-process-track-uuid=3190708990060038890 --mojo-platform-channel-handle=3328 --desktop-ui-preload-params=\"{\\\"needsBackendErrorsIpcClient\\\":true,\\\"needsPrimaryIpcClient\\\":true}\" /prefetch:1"
+    },
+    {
+        "ProcessId":  23452,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/vite/bin/vite.js --host 127.0.0.1 --strictPort "
+    },
+    {
+        "ProcessId":  19368,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" node_modules/@nestjs/cli/bin/nest.js start --watch "
+    },
+    {
+        "ProcessId":  23276,
+        "Name":  "node_repl.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_repl.exe\""
+    },
+    {
+        "ProcessId":  10148,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node.exe\" --import file:///C:/Users/Jonathan/.codex/plugins/cache/openai-bundled/unified-computer-use/26.1023.50603/require-browser-access.mjs C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_modules\\@oai\\cua-repl\\bin\\cua-repl.mjs"
+    },
+    {
+        "ProcessId":  1588,
+        "Name":  "node_repl.exe",
+        "CommandLine":  "C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_repl.exe"
+    },
+    {
+        "ProcessId":  11468,
+        "Name":  "node_repl.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_repl.exe\""
+    },
+    {
+        "ProcessId":  3984,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node.exe\" --import file:///C:/Users/Jonathan/.codex/plugins/cache/openai-bundled/unified-computer-use/26.1023.50603/require-browser-access.mjs C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_modules\\@oai\\cua-repl\\bin\\cua-repl.mjs"
+    },
+    {
+        "ProcessId":  17108,
+        "Name":  "node_repl.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_repl.exe\""
+    },
+    {
+        "ProcessId":  13696,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node.exe\"  ./server.mjs"
+    },
+    {
+        "ProcessId":  1432,
+        "Name":  "node_repl.exe",
+        "CommandLine":  "C:\\Users\\Jonathan\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\e8c74e7ee9bd567e\\bin\\node_repl.exe"
+    },
+    {
+        "ProcessId":  26888,
+        "Name":  "node.exe",
+        "CommandLine":  "node  --enable-source-maps C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\gai-backend\\dist\\src\\main"
+    },
+    {
+        "ProcessId":  8224,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" docs/correcoes-onda-2-integracao-2026-10-29/run-volume-final.cjs"
+    },
+    {
+        "ProcessId":  22932,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" test/run-tests.cjs mysql --runTestsByPath test/integration/technical-reports/report-volume.mysql.e2e-spec.ts --json --outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\volume-final-jest.json"
+    },
+    {
+        "ProcessId":  24960,
+        "Name":  "node.exe",
+        "CommandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\workspace\\gai-backend\\node_modules\\jest\\bin\\jest.js --config=test/jest.mysql.cjs --runInBand --runTestsByPath test/integration/technical-reports/report-volume.mysql.e2e-spec.ts --json --outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\evidencias\\volume-final-jest.json"
+    },
+    {
+        "ProcessId":  22332,
+        "Name":  "docker.exe",
+        "CommandLine":  "\"C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe\" stats --all --no-trunc --no-stream --format \"{{ json .}}\""
+    }
+]

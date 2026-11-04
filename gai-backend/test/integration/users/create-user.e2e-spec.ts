@@ -23,14 +23,17 @@ describe('Users - Create (e2e)', () => {
     await app.close();
   });
 
-  it('POST /users creates profile-only user without role_assignments', async () => {
+  it('POST /users creates user with required initial role', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/v1/users')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
         login: 'novo.usuario',
         email: 'novo@empresa.com.br',
-        password: 'Senha@123456',
+        full_name: 'Pessoa de teste',
+        role_ids: [3],
+        activation_method: 'TEMPORARY_PASSWORD',
+        password: 'Temporary password 2026!',
         organization_id: 1,
       })
       .expect(201);
@@ -39,7 +42,9 @@ describe('Users - Create (e2e)', () => {
     expect(typeof response.body.id).toBe('number');
     expect(response.body.login).toBe('novo.usuario');
     expect(response.body.organization_id).toBe(1);
-    expect(response.body.role_assignments).toEqual([]);
+    expect(response.body.role_assignments).toEqual(
+      expect.arrayContaining([expect.objectContaining({ role_id: 3 })]),
+    );
   });
 
   it('ORG_ADMIN creates user scoped to own organization', async () => {
@@ -49,7 +54,10 @@ describe('Users - Create (e2e)', () => {
       .send({
         login: 'org.scoped',
         email: 'scoped@empresa.com.br',
-        password: 'Senha@123456',
+        full_name: 'Pessoa de teste',
+        role_ids: [3],
+        activation_method: 'TEMPORARY_PASSWORD',
+        password: 'Temporary password 2026!',
       })
       .expect(201);
 
@@ -62,7 +70,10 @@ describe('Users - Create (e2e)', () => {
       .send({
         login: 'no.auth',
         email: 'noauth@test.com',
-        password: 'Senha@123456',
+        full_name: 'Pessoa de teste',
+        role_ids: [3],
+        activation_method: 'TEMPORARY_PASSWORD',
+        password: 'Temporary password 2026!',
       })
       .expect(401);
   });

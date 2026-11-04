@@ -1,3 +1,5 @@
+import { STORAGE_SIGNER } from '../../../src/common/storage/storage-signer.port';
+import { FakeStorage, TEST_OBJECT_CHECKSUM } from '../storage.fake';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
@@ -135,10 +137,11 @@ describe('Inventory operation gap closure (e2e)', () => {
         original_name: 'placa frente.webp',
         mime_type: 'image/webp',
         size_bytes: 4096,
-        checksum: 'checksum-1',
+        checksum: TEST_OBJECT_CHECKSUM,
       })
       .expect(201);
-    expect(evidenceUpload.body.upload_url).toContain('X-GAI-Method=PUT');
+    app.get<FakeStorage>(STORAGE_SIGNER).put(evidenceUpload.body.upload_url);
+    expect(evidenceUpload.body.upload_url).toContain('operation=PUT');
     expect(evidenceUpload.body.evidence).toMatchObject({
       observation_id: first.body.id,
       session_id: context.session.body.id,
@@ -157,7 +160,7 @@ describe('Inventory operation gap closure (e2e)', () => {
     await request(app.getHttpServer())
       .post(`${evidenceBase}/${evidenceUpload.body.evidence.id}/confirm-upload`)
       .set(auth())
-      .send({ checksum: 'checksum-1', size_bytes: 4096 })
+      .send({ checksum: TEST_OBJECT_CHECKSUM, size_bytes: 4096 })
       .expect(200)
       .expect((response) => expect(response.body.status).toBe('uploaded'));
     await request(app.getHttpServer())
@@ -175,7 +178,7 @@ describe('Inventory operation gap closure (e2e)', () => {
       .set(auth())
       .expect(200)
       .expect((response) =>
-        expect(response.body.download_url).toContain('X-GAI-Method=GET'),
+        expect(response.body.download_url).toContain('operation=GET'),
       );
 
     const reinventory = await request(app.getHttpServer())

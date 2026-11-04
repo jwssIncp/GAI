@@ -81,7 +81,7 @@ export class RevokeUserRoleAssignmentUseCase {
       }
     }
 
-    await this.assignments.revoke(assignmentId, new Date());
+    await this.assignments.revoke(assignmentId, new Date(), actor);
 
     this.logger.info({
       operation: 'REVOKE_USER_ROLE',

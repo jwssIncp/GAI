@@ -11,8 +11,15 @@ import { navigation } from '@/constants/navigation';
 import { useAuth } from '@/features/auth/AuthContext';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { cn } from '@/utils/cn';
+import { OrganizationOverviewPage } from './OrganizationOverviewPage';
 
 export function DashboardPage() {
+  const { user } = useAuth();
+  if (user?.role_assignments.some(role => role.role_key === 'ORG_ADMIN') && !user.role_assignments.some(role => role.role_key === 'PLATFORM_ADMIN')) return <OrganizationOverviewPage />;
+  return <OperationalDashboardPage />;
+}
+
+function OperationalDashboardPage() {
   const { canAccess } = usePermissions();
   const { user } = useAuth();
   const queries = {
@@ -45,10 +52,10 @@ export function DashboardPage() {
                   <Sparkles size={13} /> Visão consolidada
                 </div>
                 <h2 className="mt-5 max-w-xl text-3xl font-bold leading-tight tracking-[-0.045em] sm:text-4xl">Olá, {user?.login ?? 'usuário'}. Sua operação começa aqui.</h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-white/58">Navegue pelos módulos e acompanhe o universo de ativos disponível para o seu perfil.</p>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-white/75">Navegue pelos módulos e acompanhe o universo de ativos disponível para o seu perfil.</p>
               </div>
               {canAccess(['projects:read']) ? (
-                <Link className="mt-8 inline-flex h-10 w-fit items-center gap-2 rounded-lg border border-primary/30 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition hover:brightness-105" to="/app/projects">
+                <Link className="mt-8 inline-flex h-10 w-fit items-center gap-2 rounded-lg border border-primary/30 bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition hover:brightness-105" to="/app/projects?return_to=%2Fapp%2Fdashboard">
                   <span>Abrir projetos</span> <ArrowUpRight size={15} />
                 </Link>
               ) : null}
@@ -94,7 +101,7 @@ function PortfolioPulse({ cards }: { cards: Array<{ key: string; label: string; 
     <div className="relative z-10 m-4 flex flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.07] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,.08)] backdrop-blur-xl sm:m-6 sm:p-6 lg:m-8 lg:ml-0">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/45">Distribuição do workspace</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/75">Distribuição do workspace</p>
           <p className="mt-1 text-sm font-semibold text-white/85">Volume por módulo</p>
         </div>
         <span className="grid size-10 place-items-center rounded-xl bg-primary/[0.1] text-primary"><TrendingUp size={18} /></span>
@@ -103,7 +110,7 @@ function PortfolioPulse({ cards }: { cards: Array<{ key: string; label: string; 
         {cards.map((card, index) => (
           <div key={card.key}>
             <div className="mb-2 flex items-center justify-between gap-4 text-xs">
-              <span className="font-medium text-white/58">{card.label}</span>
+              <span className="font-medium text-white/75">{card.label}</span>
               <span className="font-bold text-white">{card.value ?? '-'}</span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.08]">

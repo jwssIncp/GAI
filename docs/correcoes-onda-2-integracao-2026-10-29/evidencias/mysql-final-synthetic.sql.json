@@ -1,0 +1,7 @@
+{
+  "file": "mysql-final-synthetic.sql",
+  "target": "gai-wave2-20261029-mysql:33347/gai_validation_disposable",
+  "bytes": 213284,
+  "sha256": "b61e2c15bcd0dc45dea44a3a6c61cac9bc83d65a5027b02f9751361654d86d4c",
+  "created_at": "2026-10-29T11:26:22.424Z"
+}

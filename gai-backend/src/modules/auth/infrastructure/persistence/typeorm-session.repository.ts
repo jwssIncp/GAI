@@ -65,6 +65,9 @@ export class TypeOrmSessionRepository implements SessionRepository {
     lastActivityAt: Date,
     expiresAt: Date,
   ): Promise<void> {
-    await this.repo.update({ id: sessionId }, { lastActivityAt, expiresAt });
+    await this.repo.update(
+      { id: sessionId, revokedAt: IsNull() },
+      { lastActivityAt, expiresAt },
+    );
   }
 }

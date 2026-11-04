@@ -1,0 +1,424 @@
+{
+  "count": 26,
+  "sha256": "92dbbdda02d8b692c3577598f2a78dc0090638cfd45a207feffbaf88341e7904",
+  "columns": [
+    {
+      "Field": "id",
+      "Type": "bigint unsigned",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": null,
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "organization_id",
+      "Type": "bigint unsigned",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "name",
+      "Type": "varchar(255)",
+      "Null": "NO",
+      "Key": "MUL",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "corporate_name",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "document",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "state_registration",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "municipal_registration",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "email",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "phone",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "zipcode",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "address",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "number",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "complement",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "district",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "city",
+      "Type": "varchar(120)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "state",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "country",
+      "Type": "varchar(80)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "BR",
+      "Extra": ""
+    },
+    {
+      "Field": "status",
+      "Type": "varchar(20)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "active",
+      "Extra": ""
+    },
+    {
+      "Field": "metadata",
+      "Type": "json",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "created_by_id",
+      "Type": "bigint unsigned",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "updated_by_id",
+      "Type": "bigint unsigned",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": null,
+      "Extra": ""
+    },
+    {
+      "Field": "created_at",
+      "Type": "datetime(3)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP(3)",
+      "Extra": "DEFAULT_GENERATED"
+    },
+    {
+      "Field": "updated_at",
+      "Type": "datetime(3)",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP(3)",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP(3)"
+    },
+    {
+      "Field": "deleted_at",
+      "Type": "datetime(3)",
+      "Null": "YES",
+      "Key": "",
+      "Default": null,
+      "Extra": ""
+    }
+  ],
+  "indexes": [
+    {
+      "Table": "companies",
+      "Non_unique": 0,
+      "Key_name": "PRIMARY",
+      "Seq_in_index": 1,
+      "Column_name": "id",
+      "Collation": "A",
+      "Cardinality": 26,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 0,
+      "Key_name": "idx_companies_organization_document",
+      "Seq_in_index": 1,
+      "Column_name": "organization_id",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 0,
+      "Key_name": "idx_companies_organization_document",
+      "Seq_in_index": 2,
+      "Column_name": "document",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "YES",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_organization_status",
+      "Seq_in_index": 1,
+      "Column_name": "organization_id",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_organization_status",
+      "Seq_in_index": 2,
+      "Column_name": "status",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_organization_city_state",
+      "Seq_in_index": 1,
+      "Column_name": "organization_id",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_organization_city_state",
+      "Seq_in_index": 2,
+      "Column_name": "city",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "YES",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_organization_city_state",
+      "Seq_in_index": 3,
+      "Column_name": "state",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "YES",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "idx_companies_name",
+      "Seq_in_index": 1,
+      "Column_name": "name",
+      "Collation": "A",
+      "Cardinality": 26,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "fk_companies_created_by",
+      "Seq_in_index": 1,
+      "Column_name": "created_by_id",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "YES",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    },
+    {
+      "Table": "companies",
+      "Non_unique": 1,
+      "Key_name": "fk_companies_updated_by",
+      "Seq_in_index": 1,
+      "Column_name": "updated_by_id",
+      "Collation": "A",
+      "Cardinality": 2,
+      "Sub_part": null,
+      "Packed": null,
+      "Null": "YES",
+      "Index_type": "BTREE",
+      "Comment": "",
+      "Index_comment": "",
+      "Visible": "YES",
+      "Expression": null
+    }
+  ],
+  "dependencies": [
+    {
+      "TABLE_NAME": "budgets",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "budgets_ibfk_2"
+    },
+    {
+      "TABLE_NAME": "company_audit_logs",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "fk_company_audit_company"
+    },
+    {
+      "TABLE_NAME": "company_unit_audit_logs",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "fk_company_unit_audit_company"
+    },
+    {
+      "TABLE_NAME": "company_units",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "fk_company_units_company"
+    },
+    {
+      "TABLE_NAME": "project_contracts",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "project_contracts_ibfk_3"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "fk_projects_company"
+    },
+    {
+      "TABLE_NAME": "receivables",
+      "COLUMN_NAME": "company_id",
+      "CONSTRAINT_NAME": "receivables_ibfk_2"
+    }
+  ]
+}

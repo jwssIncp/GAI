@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isExplicitInstant } from '../../../../common/validation/instant-date';
 import * as XLSX from 'xlsx';
 import { InventoryObservationResult } from '../../../inventory-operations/domain/inventory-operation.enums';
 import {
@@ -48,7 +49,7 @@ export class PhysicalObservationImportParserService {
     const workbook = XLSX.read(buffer, {
       type: 'buffer',
       cellDates: true,
-      raw: false,
+      raw: true,
     });
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) return [];
@@ -145,6 +146,7 @@ export class PhysicalObservationImportParserService {
       return undefined;
     }
     const raw = String(value);
+    if (!isExplicitInstant(raw)) return raw;
     const date = new Date(raw);
     return Number.isNaN(date.getTime()) ? raw : date.toISOString();
   }

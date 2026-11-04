@@ -1,0 +1,73 @@
+{
+  "engine": "SQLite :memory:",
+  "syntheticOnly": true,
+  "cases": 11,
+  "results": [
+    {
+      "name": "password_policy",
+      "createStatus": 201,
+      "resetPolicyRejectsSamePassword": true
+    },
+    {
+      "name": "whitespace_login",
+      "status": 201,
+      "persistedLoginLength": 0
+    },
+    {
+      "name": "short_login_after_trim",
+      "status": 201,
+      "persistedLoginLength": 1
+    },
+    {
+      "name": "oversized_login",
+      "sqliteStatus": 201,
+      "persistedLength": 101,
+      "limitation": "SQLite does not enforce VARCHAR length; MySQL behavior not exercised here."
+    },
+    {
+      "name": "login_email_collision",
+      "createStatus": 201,
+      "ownerId": 8,
+      "collisionId": 9,
+      "secondUserLoginStatus": 200,
+      "firstUserLoginStatus": 401
+    },
+    {
+      "name": "admin_password_change",
+      "updateStatus": 200,
+      "previousSessionStatus": 200,
+      "previousPasswordStatus": 401,
+      "newPasswordStatus": 200,
+      "passwordChangedAtUpdated": false
+    },
+    {
+      "name": "nullable_optional_field",
+      "field": "email",
+      "status": 500,
+      "code": "INTERNAL_ERROR"
+    },
+    {
+      "name": "nullable_optional_field",
+      "field": "password",
+      "status": 500,
+      "code": "INTERNAL_ERROR"
+    },
+    {
+      "name": "org_admin_foreign_id",
+      "status": 201,
+      "requestedOrganization": 999999,
+      "persistedOrganization": 1
+    },
+    {
+      "name": "inactive_organization",
+      "createStatus": 201,
+      "createdUserStatus": "ACTIVE",
+      "loginStatus": 401
+    },
+    {
+      "name": "lockout_expiry",
+      "lockedAfterConfiguredExpiry": true,
+      "note": "Domain-level check; separate from registration."
+    }
+  ]
+}

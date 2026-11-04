@@ -1,0 +1,184 @@
+{
+  "verified_at": "2026-10-28T14:58:54.665Z",
+  "note": "Somente arquivos desta implementação e integrações necessárias. Alterações locais anteriores preservadas; manifesto não inclui seu próprio hash.",
+  "files": [
+    {
+      "path": "docs/implementacao-contas-receber-2026-10-28/README.md",
+      "sha256": "ee8de3718bbef7508dc3e19a9ba540b76303a3239219d10b17dc65dcb94fefcc"
+    },
+    {
+      "path": "docs/implementacao-contas-receber-2026-10-28/runtime-local.json",
+      "sha256": "60c3413fa92775f48488075261c3534021b7b9a2fba5321d25bb1b7818d769cf"
+    },
+    {
+      "path": "docs/implementacao-contas-receber-2026-10-28/saidas-runtime-local.json",
+      "sha256": "7a0a388b35359c11460fc7dfbd031f307e5c2207c01b6732ccc72dc6566696a7"
+    },
+    {
+      "path": "docs/implementacao-contas-receber-2026-10-28/testes.json",
+      "sha256": "7f7242cb6a4c2b4e2751fa5beb016a6bf5bffd9e5112d37119a089a1f1e0eafa"
+    },
+    {
+      "path": "gai-backend/src/app.module.ts",
+      "sha256": "a0c24d898cd0be68918121901038d6f8c4a289349334c26ed7f1d6d7c975b7d1"
+    },
+    {
+      "path": "gai-backend/src/migrations/1793700000001-create-receivables.ts",
+      "sha256": "e6c4f41ba6e83018816d03068502ab297437629aa335a4a514da8d068821e43a"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/application/services/export-jobs.service.ts",
+      "sha256": "59cf67661d4153ed7ac16dfb5e026251916b3dd813a9180a4448a8a131a86742"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/application/services/export-workbook-builder.service.ts",
+      "sha256": "4b7cfefa7141cdd4b5da98fc0acd2931ea11676a639a04844881acc5bdab01a4"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/domain/enums/export-job-type.enum.ts",
+      "sha256": "19e15db4bb03112233c1bdc00fffdc219a49227d73b01d1860681d415fde6c69"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/domain/export-content-permissions.ts",
+      "sha256": "eed171f995093e64c0bd2166ce6c1594c7693e2db48dfc9b21ffb4cfa2a8a44f"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/export-jobs.module.ts",
+      "sha256": "6ea4bc815fa90cbdac49242d709857e3ff1ba2cd10ed1cfde1af73eccf0f0d2d"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity.ts",
+      "sha256": "c95241aff81a1754166934ddaf629dba5e82ef6f1b85aa97f2470fa6c981b041"
+    },
+    {
+      "path": "gai-backend/src/modules/export-jobs/infrastructure/persistence/export-job.entity.ts",
+      "sha256": "803b1c58c53f276f7f0c5187fb7624057ed6f57a9d05106a25a3a05a01b11a37"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/cash-flow.service.ts",
+      "sha256": "c367cbcbc524d1f9da0c6b5e45b1c266b88327e72d95901df2e0d114fe3da33a"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/finance-export.service.ts",
+      "sha256": "b17c6e27cecb058e2a1ea06592ba5a65f7a1ea204d9b007b03c44f03af39edb4"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "sha256": "657611966f8d05472f7f658fe9044f6358fe5484f3856f7a30d55f508404f2fb"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivable.dto.ts",
+      "sha256": "ed359e90158e66daf81d8bab343438d2fceac60d90e3c6a8814225dd954de2b9"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivable.entity.ts",
+      "sha256": "6bc41b3fdb29b5d62e3d5d18bb9db69c47b040184fe4278887fa9eedc5559c7e"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivable.policy.ts",
+      "sha256": "b67052a464d9b2f31054174c11f8f631e7e379d980accbd3493c5512cf4ec3cb"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivable.service.ts",
+      "sha256": "aedd8ccf0884bedcd3881d6ff331d3e8e2b6a61897c52649057e0cc4cf2e9d87"
+    },
+    {
+      "path": "gai-backend/src/modules/receivables/receivables.module.ts",
+      "sha256": "06f3d0f679f9584ea7bfbc1fb8bc204437d0c57562aa50cd49432ccdb9590eac"
+    },
+    {
+      "path": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "sha256": "84b97c04bf8051d371f8dd062b81c5c5d5f970f3d994ff3454cf89220f335a3b"
+    },
+    {
+      "path": "gai-backend/test/integration/receivables/receivables.e2e-spec.ts",
+      "sha256": "87e3ab39e8244e1f5fc59350464a904f849c82cd1eee6c79cd7130fbd13d75d4"
+    },
+    {
+      "path": "gai-backend/test/integration/test-app.helper.ts",
+      "sha256": "2ce1dace137aefa2871b1522625347ab51a98ad0efaa5bf2a6f9565448a3b5fe"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/receivables/receivable.policy.spec.ts",
+      "sha256": "20df1eb762cb95cf4421f10074abccc7d8c4199d79bf8b5c8b41eb11043693ed"
+    },
+    {
+      "path": "gai-frontend/e2e/receivables-real.spec.ts",
+      "sha256": "f782a1342f9febd7d11b937897c46559e4ef503689e92a9999ca7531620dc6d9"
+    },
+    {
+      "path": "gai-frontend/src/constants/navigation.ts",
+      "sha256": "e0b12bbc50e28d93720bd0a54c54ca2122fbf999cb3823bf57313429cdcd37ae"
+    },
+    {
+      "path": "gai-frontend/src/features/budgets/BudgetDetailPage.tsx",
+      "sha256": "8741ce5da1c7b21ce40e50c396d29ea8c1e497131056f20401b68198878dbc26"
+    },
+    {
+      "path": "gai-frontend/src/features/contracts/ProjectContractsPage.tsx",
+      "sha256": "cfa77491784b835a884c8aa1b4bab6029a486c6482b02361a622634f49badbc8"
+    },
+    {
+      "path": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+      "sha256": "31adb794d5f6b26b086b1129c2c7a56991efd87254951c66e7597768db2994ef"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/CashFlowPage.tsx",
+      "sha256": "427827d6bad6a150096d5c4ff23a177256792ec5e679107293d168a78640c6a2"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/FinanceLayout.tsx",
+      "sha256": "d7c5d58c64ff9cff74a774f0c3aed9e2253deaec8ded97da9a40a6da1b76647c"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/FinanceNavigation.test.tsx",
+      "sha256": "d36b7ffe2ab3565e04fd5baf140d4389226c985d836fdd8ef4a6970d67b72503"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/FinanceShared.tsx",
+      "sha256": "e6a363d5a0759cf56a28d35f3543ac4d384164e9a9420f919bdaf19bd9bbc0b5"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/ReceivableDetailPage.tsx",
+      "sha256": "829b86fa683ca51072ae4e81a188088ca9eaa7aa1c065ee4e531ad4fa8d47217"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/ReceivableForm.tsx",
+      "sha256": "dd45c6c31badac012bfb14853080230e783a6d5a7911377e62a58e60074b167b"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/ReceivablesPage.tsx",
+      "sha256": "fbe7ce73c604063f536f79bcfef755baad27651ac0bca6774e12fa323d5fa3b9"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/financeApi.ts",
+      "sha256": "49689c4f6718c9f56fbb8646eec719489f77df51110e3a0ec7cdeef15aa1d4a8"
+    },
+    {
+      "path": "gai-frontend/src/features/receivables/financeMoney.test.ts",
+      "sha256": "0cabdf7c723f12a5fee4f741e2fab00270a1e9d9309efd922681b42c953cb3ce"
+    },
+    {
+      "path": "gai-frontend/src/layouts/Topbar.tsx",
+      "sha256": "970e7132f565495ea5dd1223d661741697cfaeed76957a8c4fa37ae303868085"
+    },
+    {
+      "path": "gai-frontend/src/router/router.tsx",
+      "sha256": "c45ab0034de6cc21c235aba8fc26f98c8d6062a44ff242d5e86308fa623b5671"
+    }
+  ],
+  "real_artifacts": [
+    {
+      "path": ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/cash-mobile.png",
+      "sha256": "ea9a49a7da83a90475dea6b1180c60dd625f86115deecd68d1272c45c007f58e"
+    },
+    {
+      "path": ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/cash-statement.xlsx",
+      "sha256": "58ca16160afde1b8b25f92fc47ca44867dbf4df4a212382067ff3e6232e423f9"
+    },
+    {
+      "path": ".local/receivables-playwright/receivables-real-ORG-ADMIN-e5100-sal-cash-export-and-refresh-chromium/receivable-history-desktop.png",
+      "sha256": "ad4f0437a34f2931cea1bfeb56af488e017b67455cc18bcb5e8b276f8aeb44fc"
+    }
+  ]
+}

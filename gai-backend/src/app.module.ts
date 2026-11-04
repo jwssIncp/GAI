@@ -1,4 +1,21 @@
+import { DOCUMENT_ENTITIES } from './modules/documents/document.entity';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { TECHNICAL_REPORT_ENTITIES } from './modules/technical-reports/report.entity';
+import { TechnicalReportsModule } from './modules/technical-reports/technical-reports.module';
+import { DRE_ENTITIES } from './modules/managerial-dre/dre.entity';
+import { ManagerialDreModule } from './modules/managerial-dre/managerial-dre.module';
+import { RECEIVABLE_ENTITIES } from './modules/receivables/receivable.entity';
+import { ReceivablesModule } from './modules/receivables/receivables.module';
+import { BUDGET_ENTITIES } from './modules/budgets/budget.entity';
+import { BudgetsModule } from './modules/budgets/budgets.module';
+import { CONTRACT_ENTITIES } from './modules/contracts/contract.entity';
+import { ContractsModule } from './modules/contracts/contracts.module';
+import { ASSISTED_ENTITIES } from './modules/assisted-reconciliation/assisted.entity';
+import { AssistedReconciliationModule } from './modules/assisted-reconciliation/assisted.module';
+import { FIELD_ENTITIES } from './modules/field-coordination/field.entity';
+import { FieldCoordinationModule } from './modules/field-coordination/field.module';
 import { Module } from '@nestjs/common';
+import { MYSQL_UTC_OPTIONS } from './common/persistence/mysql-utc-options';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -68,6 +85,8 @@ import {
 import { ExportJobAuditLogEntity } from './modules/export-jobs/infrastructure/persistence/export-job-audit-log.entity';
 import { ExportJobEntity } from './modules/export-jobs/infrastructure/persistence/export-job.entity';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { ProjectPreparationModule } from './modules/project-preparation/project-preparation.module';
+import { PREPARATION_ENTITIES } from './modules/project-preparation/preparation.entity';
 import { ProjectDashboardModule } from './modules/project-dashboard/project-dashboard.module';
 import { ProjectAuditLogEntity } from './modules/projects/infrastructure/persistence/project-audit-log.entity';
 import { ProjectEntity } from './modules/projects/infrastructure/persistence/project.entity';
@@ -106,6 +125,7 @@ import { UsersModule } from './modules/users/users.module';
       imports: [ConfigModule],
       useFactory: () => ({
         type: 'mysql' as const,
+        ...MYSQL_UTC_OPTIONS,
         host: process.env.DB_HOST ?? 'localhost',
         port: parseInt(process.env.DB_PORT ?? '3306', 10),
         username: process.env.DB_USERNAME ?? 'gai',
@@ -149,6 +169,15 @@ import { UsersModule } from './modules/users/users.module';
           ExportJobEntity,
           ExportJobAuditLogEntity,
           ...EXPENSE_ACCOUNTABILITY_ENTITIES,
+          ...PREPARATION_ENTITIES,
+          ...FIELD_ENTITIES,
+          ...ASSISTED_ENTITIES,
+          ...CONTRACT_ENTITIES,
+          ...BUDGET_ENTITIES,
+          ...RECEIVABLE_ENTITIES,
+          ...DRE_ENTITIES,
+          ...TECHNICAL_REPORT_ENTITIES,
+          ...DOCUMENT_ENTITIES,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -183,6 +212,15 @@ import { UsersModule } from './modules/users/users.module';
     ImportSessionsModule,
     ExportJobsModule,
     ExpenseAccountabilitiesModule,
+    ProjectPreparationModule,
+    FieldCoordinationModule,
+    ContractsModule,
+    BudgetsModule,
+    ReceivablesModule,
+    ManagerialDreModule,
+    TechnicalReportsModule,
+    DocumentsModule,
+    AssistedReconciliationModule,
     CatalogAssetsModule,
     CompaniesModule,
   ],

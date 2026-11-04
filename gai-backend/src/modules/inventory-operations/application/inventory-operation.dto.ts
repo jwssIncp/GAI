@@ -1,6 +1,7 @@
+import { IsExplicitInstant } from '../../../common/validation/instant-date';
+import { IsCivilDate } from '../../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -102,7 +103,7 @@ export class CreateInventoryObservationDto {
   notes?: string | null;
   @ApiPropertyOptional({ format: 'date-time' })
   @IsOptional()
-  @IsDateString()
+  @IsExplicitInstant()
   captured_at?: string;
 }
 
@@ -127,7 +128,7 @@ export class CreateAssetValuationDto {
   @IsOptional()
   @Matches(/^\d{1,13}(\.\d{1,2})?$/)
   used_value?: string | null;
-  @ApiProperty({ format: 'date' }) @IsDateString() valuation_date!: string;
+  @ApiProperty({ format: 'date' }) @IsCivilDate() valuation_date!: string;
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()

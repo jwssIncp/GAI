@@ -59,6 +59,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [clear, expiresAt]);
 
+  useEffect(() => {
+    if (!accessToken) return;
+    // The API resolves grants on every request; refresh visible UI as well.
+    let disposed = false;
+    const refresh = async () => {
+      if (document.visibilityState === 'hidden') return;
+      try {
+        const currentUser = await authApi.me();
+        const stored = readStoredSession();
+        if (!disposed && stored?.accessToken === accessToken) {
+          setUser(currentUser);
+          writeStoredSession({ ...stored, user: currentUser });
+        }
+      } catch { /* HTTP 401 uses the existing session-expired event. */ }
+    };
+    const timer = window.setInterval(() => void refresh(), 60_000);
+    const onFocus = () => void refresh();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => { disposed = true; window.clearInterval(timer); window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
+  }, [accessToken]);
+
   const login = useCallback(async (payload: LoginRequest) => {
     const response = await authApi.login(payload);
     writeStoredSession({ accessToken: response.access_token, expiresAt: response.expires_at, user: response.user });

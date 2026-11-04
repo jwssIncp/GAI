@@ -1,0 +1,58 @@
+[
+  {
+    "name": "backend-tests",
+    "start": "2026-10-28T19:45:04.070Z",
+    "seconds": 478.761,
+    "exit_code": 1,
+    "command": [
+      "node",
+      "node_modules/jest/bin/jest.js",
+      "--runInBand",
+      "--json",
+      "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\backend-jest.json"
+    ]
+  },
+  {
+    "name": "backend-typescript",
+    "start": "2026-10-28T19:53:02.836Z",
+    "seconds": 25.339,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "--pretty",
+      "false"
+    ]
+  },
+  {
+    "name": "backend-build",
+    "start": "2026-10-28T19:53:28.176Z",
+    "seconds": 4.176,
+    "exit_code": 1,
+    "command": [
+      "node",
+      "node_modules/@nestjs/cli/bin/nest.js",
+      "build",
+      "--path",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\tsconfig.audit.json"
+    ]
+  },
+  {
+    "name": "backend-lint",
+    "start": "2026-10-28T19:53:32.353Z",
+    "seconds": 103.249,
+    "exit_code": 1,
+    "command": [
+      "node",
+      "node_modules/eslint/bin/eslint.js",
+      "{src,apps,libs,test}/**/*.ts",
+      "--format",
+      "json",
+      "--output-file",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\backend-eslint.json"
+    ]
+  }
+]

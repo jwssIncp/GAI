@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "node_modules/@nestjs/cli/bin/nest.js",
+    "build"
+  ],
+  "cwd": "gai-backend",
+  "started_at": "2026-11-03T10:08:47.701Z",
+  "duration_seconds": 104.625,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\build-backend.log"
+}

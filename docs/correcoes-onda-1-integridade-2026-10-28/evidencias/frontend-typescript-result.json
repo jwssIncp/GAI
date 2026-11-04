@@ -1,0 +1,15 @@
+{
+  "name": "frontend-typescript",
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\evidencias\\workspace\\gai-frontend",
+  "command": [
+    "node",
+    "node_modules/typescript/bin/tsc",
+    "-p",
+    "tsconfig.app.json",
+    "--noEmit",
+    "--incremental",
+    "false"
+  ],
+  "exit_code": 0,
+  "seconds": 27.485
+}

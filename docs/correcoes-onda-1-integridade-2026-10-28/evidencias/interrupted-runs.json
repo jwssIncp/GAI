@@ -1,0 +1,8 @@
+{
+  "reason": "Final compatible Swagger 11.4.7 / JS-YAML 4.3.2 resolution after npm ls exposed an invalid nested package. Interrupted runs are not approved or counted.",
+  "runs": [
+    "mysql",
+    "coverage"
+  ],
+  "captured_at": "2026-10-29T05:28:10.166Z"
+}

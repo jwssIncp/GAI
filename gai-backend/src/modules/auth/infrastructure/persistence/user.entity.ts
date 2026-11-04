@@ -18,6 +18,30 @@ import { UserStatus } from '../../domain/enums/user.enums';
 export class UserEntity {
   @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN)
   id!: number;
+  @Column({ name: 'full_name', type: 'varchar', length: 160, nullable: true })
+  fullName!: string | null;
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  phone!: string | null;
+  @Column({ name: 'job_title', type: 'varchar', length: 120, nullable: true })
+  jobTitle!: string | null;
+  @Column({
+    name: 'last_login_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  lastLoginAt!: Date | null;
+  @Column({
+    name: 'temporary_password_expires_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  temporaryPasswordExpiresAt!: Date | null;
+  @Column({ name: 'must_change_password', type: 'boolean', default: false })
+  mustChangePassword!: boolean;
+  @Column({ name: 'auth_version', type: 'int', default: 0 })
+  authVersion!: number;
 
   @Column({ name: 'organization_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   organizationId!: number | null;

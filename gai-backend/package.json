@@ -12,12 +12,12 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
+    "test": "node test/run-tests.cjs default",
+    "test:watch": "node test/run-tests.cjs default --watch",
+    "test:cov": "node test/run-tests.cjs default --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "node test/run-tests.cjs e2e",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d data-source.ts",
     "migration:run:prod": "typeorm migration:run -d scripts/data-source.prod.cjs",
     "migration:show": "typeorm-ts-node-commonjs migration:show -d data-source.ts",
@@ -28,29 +28,41 @@
     "permissions:sync:prod": "node dist/src/scripts/seed/sync-permissions.js",
     "admin:ensure:prod": "node dist/src/scripts/seed/ensure-platform-admin.js",
     "db-operator:ensure:prod": "node dist/src/scripts/seed/ensure-db-operator.js",
-    "release:prod": "npm run migration:run:prod && npm run permissions:sync:prod && npm run admin:ensure:prod && npm run db-operator:ensure:prod"
+    "release:prod": "npm run migration:run:prod && npm run permissions:sync:prod && npm run admin:ensure:prod && npm run db-operator:ensure:prod",
+    "test:unit": "node test/run-tests.cjs unit",
+    "test:integration:sqlite": "node test/run-tests.cjs sqlite",
+    "test:integration:mysql": "node test/run-tests.cjs mysql",
+    "test:integration:s3": "node test/run-tests.cjs s3",
+    "test:e2e:real": "node test/run-tests.cjs e2e",
+    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1069.0",
     "@aws-sdk/client-ses": "^3.1069.0",
-    "@nestjs/common": "^11.0.1",
+    "@aws-sdk/s3-request-presigner": "3.1069.0",
+    "@nestjs/common": "11.2.8",
     "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/core": "11.2.8",
+    "@nestjs/platform-express": "11.2.8",
     "@nestjs/swagger": "^11.4.4",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.1",
     "argon2": "^0.44.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "docx": "9.15.0",
     "dotenv": "^16.4.7",
-    "mysql2": "^3.22.5",
+    "fflate": "0.8.3",
+    "mysql2": "3.24.6",
     "nestjs-pino": "^4.6.1",
+    "pdf-lib": "1.17.1",
+    "pdfmake": "0.2.23",
     "pino-http": "^11.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20",
+    "typeorm": "0.3.31",
     "uuid": "^11.0.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "file:vendor/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -61,6 +73,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
+    "@types/pdfmake": "0.2.12",
     "@types/supertest": "^7.0.0",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.18.0",
@@ -68,6 +81,7 @@
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
     "jest": "^30.0.0",
+    "pdfjs-dist": "5.4.296",
     "pino-pretty": "^13.0.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
@@ -80,37 +94,12 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": ".*\\.(spec|e2e-spec)\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "2.5.0"
     },
-    "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/**/*.spec.ts",
-      "!src/main.ts",
-      "!src/app.module.ts",
-      "!src/**/*.entity.ts",
-      "!src/modules/auth/infrastructure/email/ses-email.sender.ts",
-      "!src/migrations/**",
-      "!src/scripts/**"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageThreshold": {
-      "global": {
-        "branches": 60,
-        "functions": 60,
-        "lines": 60,
-        "statements": 60
-      }
-    },
-    "testEnvironment": "node",
-    "testTimeout": 60000
+    "@nestjs/swagger": {
+      "js-yaml": "4.3.2"
+    }
   }
 }

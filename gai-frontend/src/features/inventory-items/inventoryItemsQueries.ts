@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { inventoryItemImagesApi, inventoryItemsApi } from '@/api/endpoints';
 import { projectKeys } from '@/features/projects/projectQueries';
+import { projectDashboardKeys } from '@/features/project-dashboard/projectDashboardQueries';
 import type { InventoryItemInput, PageParams } from '@/types/api';
 
 export const inventoryItemKeys = {
@@ -30,6 +31,7 @@ export function useCreateInventoryItem(projectId: number) {
     onSuccess: async () => Promise.all([
       queryClient.invalidateQueries({ queryKey: inventoryItemKeys.project(projectId) }),
       queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+      queryClient.invalidateQueries({ queryKey: projectDashboardKeys.project(projectId) }),
     ]),
   });
 }
@@ -42,6 +44,7 @@ export function useUpdateInventoryItem(projectId: number) {
       await queryClient.invalidateQueries({ queryKey: inventoryItemKeys.project(projectId) });
       await queryClient.invalidateQueries({ queryKey: inventoryItemKeys.detail(projectId, variables.id) });
       await queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) });
+      await queryClient.invalidateQueries({ queryKey: projectDashboardKeys.project(projectId) });
     },
   });
 }
@@ -53,6 +56,7 @@ export function useChangeInventoryItemStatus(projectId: number, action: 'deactiv
     onSuccess: async () => Promise.all([
       queryClient.invalidateQueries({ queryKey: inventoryItemKeys.project(projectId) }),
       queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
+      queryClient.invalidateQueries({ queryKey: projectDashboardKeys.project(projectId) }),
     ]),
   });
 }

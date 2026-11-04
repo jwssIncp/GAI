@@ -1,0 +1,12 @@
+[
+  {
+    "name": "terraform-fmt-final",
+    "exit_code": 0,
+    "seconds": 0.228
+  },
+  {
+    "name": "terraform-validate-final",
+    "exit_code": 0,
+    "seconds": 26.706
+  }
+]

@@ -66,7 +66,7 @@ export function ResourceListPage<T, C>({
         description={description}
         action={canCreate ? <Button onClick={() => setOpen(true)}><Plus size={17} /> Novo</Button> : null}
       />
-      <FilterPanel><SearchInput value={state.search} onChange={(value) => { state.setSearch(value); state.setPage(1); }} placeholder={`Buscar em ${title.toLowerCase()}`} /></FilterPanel>
+      <FilterPanel><SearchInput value={state.search} onChange={state.setSearch} placeholder={`Buscar em ${title.toLowerCase()}`} /></FilterPanel>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : page ? (
         <>
           <DataTable columns={columns} items={page.items} getKey={getKey} />

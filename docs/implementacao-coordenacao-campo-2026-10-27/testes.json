@@ -1,0 +1,40 @@
+{
+  "backendRelevant": {
+    "suites": 4,
+    "passed": 50
+  },
+  "fieldDomain": {
+    "unit": 6,
+    "integration": 10,
+    "engines": [
+      "sqlite-memory",
+      "mysql8-disposable"
+    ]
+  },
+  "frontend": {
+    "files": 31,
+    "passed": 201
+  },
+  "frontendFinalRegression": {
+    "files": 2,
+    "passed": 10
+  },
+  "playwright": {
+    "passed": 1,
+    "realApi": true,
+    "realMysql": true,
+    "user": "org.admin",
+    "lastSeconds": 33.6,
+    "projectId": 7,
+    "checklistId": 2,
+    "httpErrors": 0,
+    "pageErrors": 0
+  },
+  "builds": {
+    "backend": true,
+    "frontend": true,
+    "typescript": true
+  },
+  "lintChangedFiles": true,
+  "productionAccess": false
+}

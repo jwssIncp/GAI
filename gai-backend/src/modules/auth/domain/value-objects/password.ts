@@ -1,31 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
-
 export class Password {
-  private static readonly MIN_LENGTH = 8;
-  private static readonly POLICY =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-
+  static readonly MIN_LENGTH = 15;
+  static readonly MAX_LENGTH = 128;
   private constructor(private readonly value: string) {}
-
   static create(raw: string): Password {
-    if (raw.length < Password.MIN_LENGTH) {
-      throw new BadRequestException({
-        code: 'VALIDATION_ERROR',
-        message: 'Password must be at least 8 characters',
-      });
-    }
-
-    if (!Password.POLICY.test(raw)) {
+    if (
+      typeof raw !== 'string' ||
+      [...raw].length < this.MIN_LENGTH ||
+      [...raw].length > this.MAX_LENGTH ||
+      !raw.trim()
+    ) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
         message:
-          'Password must include uppercase, lowercase, number and special character',
+          'A senha deve ter de 15 a 128 caracteres. Você pode usar uma frase, espaços e colar do gerenciador de senhas.',
       });
     }
-
     return new Password(raw);
   }
-
   getValue(): string {
     return this.value;
   }

@@ -1,0 +1,14 @@
+{
+  "mode": "unit",
+  "exit_code": 0,
+  "seconds": 44.115,
+  "command": [
+    "node_modules/jest/bin/jest.js",
+    "--runInBand",
+    "--testTimeout=300000",
+    "--testPathPatterns=test/unit",
+    "--json",
+    "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\unit-jest.json"
+  ],
+  "target": "127.0.0.1:33327/gai_validation_disposable"
+}

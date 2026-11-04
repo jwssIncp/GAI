@@ -7,11 +7,13 @@ export const exportJobTypes = [
   'payments_xlsx',
   'expenses_xlsx',
   'project_backup_xlsx',
+  'valuation_batches_xlsx',
 ] as const;
 
 export const exportJobStatuses = ['pending', 'processing', 'finished', 'failed', 'cancelled', 'expired'] as const;
 
 export const exportJobTypeLabels: Record<(typeof exportJobTypes)[number], string> = {
+  valuation_batches_xlsx: 'Resultados de avaliações em lote XLSX',
   inventory_items_xlsx: 'Itens inventariados XLSX',
   inventory_accounting_items_xlsx: 'Base contabil XLSX',
   pending_issues_xlsx: 'Pendencias XLSX',

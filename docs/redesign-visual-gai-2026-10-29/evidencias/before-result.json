@@ -1,0 +1,12 @@
+{
+  "name": "before",
+  "command": [
+    "node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config=playwright.redesign.config.ts"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-frontend",
+  "exit_code": 0,
+  "seconds": 114.267
+}

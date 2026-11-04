@@ -1,0 +1,11 @@
+{
+  "extends": "../../gai-backend/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./evidencias/build-backend",
+    "tsBuildInfoFile": "./evidencias/backend.tsbuildinfo",
+    "typeRoots": ["../../gai-backend/node_modules/@types"],
+    "types": ["node"]
+  },
+  "include": ["../../gai-backend/src/**/*.ts"],
+  "exclude": ["../../gai-backend/node_modules", "../../gai-backend/test", "../../gai-backend/dist", "../../gai-backend/**/*spec.ts"]
+}

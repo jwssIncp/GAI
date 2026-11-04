@@ -1,0 +1,181 @@
+{
+  "completed_at": "2026-10-29T07:04:53.881Z",
+  "engines": {
+    "unit": {
+      "suites": 60,
+      "passed": 430,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 59.024
+    },
+    "sqlite": {
+      "suites": 53,
+      "passed": 253,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 430.456
+    },
+    "default": {
+      "suites": 113,
+      "passed": 683,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 349.856
+    },
+    "coverage": {
+      "suites": 113,
+      "passed": 683,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 566.629
+    },
+    "mysql": {
+      "suites": 45,
+      "passed": 307,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1007.956
+    },
+    "s3": {
+      "suites": 1,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 30.291
+    }
+  },
+  "unit": {
+    "suites": 60,
+    "passed": 430
+  },
+  "sqlite": {
+    "suites": 53,
+    "passed": 253
+  },
+  "backend_distinct_cases": 812,
+  "frontend": {
+    "passed": 247,
+    "failed": 0,
+    "skipped": 0
+  },
+  "playwright": {
+    "startTime": "2026-10-29T06:03:41.568Z",
+    "duration": 56868.768,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "lint": {
+    "backend": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "frontend": {
+      "errors": 0,
+      "warnings": 0
+    }
+  },
+  "coverage": {
+    "lines": {
+      "total": 14551,
+      "covered": 11354,
+      "skipped": 0,
+      "pct": 78.02
+    },
+    "statements": {
+      "total": 15531,
+      "covered": 12042,
+      "skipped": 0,
+      "pct": 77.53
+    },
+    "functions": {
+      "total": 2834,
+      "covered": 1981,
+      "skipped": 0,
+      "pct": 69.9
+    },
+    "branches": {
+      "total": 9521,
+      "covered": 5808,
+      "skipped": 0,
+      "pct": 61
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": "Unknown"
+    }
+  },
+  "concurrency": {
+    "pairs": 124,
+    "with_innodb_barrier": 109,
+    "stress": 100
+  },
+  "related_http_asserted": 16,
+  "schema": {
+    "tables": 103,
+    "migrations": 33,
+    "pending": false,
+    "unapplied_queries": 627
+  },
+  "dependencies": {
+    "backend_omit_dev": {
+      "info": 0,
+      "low": 2,
+      "moderate": 0,
+      "high": 4,
+      "critical": 1,
+      "total": 7
+    },
+    "frontend_omit_dev": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 1,
+      "critical": 0,
+      "total": 1
+    }
+  },
+  "preservation": {
+    "captured_at": "2026-10-29T07:04:53.870Z",
+    "wave0_files_hashed_unchanged": 50,
+    "old_migrations_hashed_unchanged": 32,
+    "staged_paths_unchanged": [
+      {
+        "index": "M",
+        "path": "gai-backend/src/modules/expense-accountabilities/expense-accountabilities.service.ts"
+      },
+      {
+        "index": "M",
+        "path": "gai-backend/src/modules/inventory-operations/infrastructure/persistence/inventory-operation.entity.ts"
+      },
+      {
+        "index": "M",
+        "path": "gai-backend/test/unit/migrations/new-operations-migrations.spec.ts"
+      }
+    ],
+    "git_before": {
+      "entries": 19246,
+      "staged": 3,
+      "unstaged": 15494,
+      "untracked": 3751
+    },
+    "git_after": {
+      "entries": 20613,
+      "staged": 3,
+      "unstaged": 15522,
+      "untracked": 5090
+    },
+    "no_git_write_command": true,
+    "audit_original_text_preserved": [
+      "README.md",
+      "problemas-priorizados.md",
+      "plano-correcoes.md",
+      "testes.md",
+      "banco-migrations.md",
+      "dependencias-seguranca.md"
+    ]
+  }
+}

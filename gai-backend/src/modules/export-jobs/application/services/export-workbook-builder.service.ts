@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ValuationBatchRow,
+  ValuationBatch,
+} from '../../../inventory-operations/infrastructure/persistence/valuation-batch.entity';
+import {
   DataSource,
   EntityManager,
   ObjectLiteral,
@@ -33,6 +37,83 @@ export class ExportWorkbookBuilderService {
       const workbook = XLSX.utils.book_new();
 
       switch (job.type) {
+        case ExportJobType.DRE_XLSX:
+        case ExportJobType.FINANCE_XLSX: {
+          const source = await manager
+            .getRepository(ExportJobEntity)
+            .createQueryBuilder('j')
+            .addSelect('j.financePayload')
+            .where('j.id=:id AND j.organizationId=:org', {
+              id: job.id,
+              org: job.organizationId,
+            })
+            .getOneOrFail();
+          if (!source.financePayload)
+            throw new Error('Missing validated finance snapshot');
+          for (const sheet of source.financePayload.sheets) {
+            if (sheet.rows.length > this.maxRows())
+              throw new ExportRowLimitExceededError(this.maxRows());
+            this.addSheet(workbook, sheet.name, sheet.headers, sheet.rows);
+          }
+          break;
+        }
+        case ExportJobType.VALUATION_BATCHES_XLSX: {
+          const rows = await manager
+            .getRepository(ValuationBatchRow)
+            .createQueryBuilder('row')
+            .innerJoin(
+              ValuationBatch,
+              'batch',
+              'batch.id = row.batchId AND batch.projectId = row.projectId AND batch.organizationId = row.organizationId',
+            )
+            .where(
+              'row.projectId = :projectId AND row.organizationId = :organizationId AND batch.status = :status',
+              {
+                projectId: job.projectId,
+                organizationId: job.organizationId,
+                status: 'applied',
+              },
+            )
+            .orderBy('row.batchId', 'DESC')
+            .addOrderBy('row.inventoryItemId', 'ASC')
+            .take(this.maxRows() + 1)
+            .getMany();
+          if (rows.length > this.maxRows())
+            throw new ExportRowLimitExceededError(this.maxRows());
+          this.addSheet(
+            workbook,
+            'Avaliacoes em lote',
+            [
+              'Operacao ID',
+              'Item ID',
+              'Placa antiga',
+              'Placa nova',
+              'Descricao',
+              'Fonte',
+              'Data',
+              'Valor novo',
+              'Valor usado',
+              'Observacoes',
+              'Avaliacao ID',
+              'Resultado',
+            ],
+            rows.map((row) => [
+              row.batchId,
+              row.inventoryItemId,
+              row.snapshot.old_plate,
+              row.snapshot.new_plate,
+              row.snapshot.description,
+              row.proposed.source,
+              row.proposed.valuationDate,
+              row.proposed.newValue,
+              row.proposed.usedValue,
+              row.proposed.notes,
+              row.valuationId,
+              'Aprovado',
+            ]),
+          );
+          break;
+        }
         case ExportJobType.INVENTORY_ITEMS_XLSX:
           this.addInventorySheet(
             workbook,

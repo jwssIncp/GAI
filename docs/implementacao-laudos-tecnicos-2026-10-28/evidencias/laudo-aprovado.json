@@ -1,0 +1,233 @@
+{
+  "format": "gai-technical-report-snapshot-v1",
+  "engine": "technical-report-v1",
+  "version": {
+    "id": 23,
+    "organizationId": 1,
+    "reportId": 5,
+    "projectId": 44,
+    "revision": 4,
+    "status": "approved",
+    "data": {
+      "title": "SINTETICO Laudo 1793212674812",
+      "fields": [
+        {
+          "key": "projeto",
+          "label": "Projeto",
+          "value": "SINTETICO Projeto laudos 1793212674812",
+          "origin": "system",
+          "source_key": "project.name",
+          "original_value": "SINTETICO Projeto laudos 1793212674812"
+        }
+      ],
+      "sources": {
+        "hash": "648f9d05ae0ccce629f6770029b7cf635eabe91974d13d24a1a12a4fe976c870",
+        "fields": {
+          "company.id": "26",
+          "project.id": "44",
+          "company.name": "SINTETICO Cliente laudos 1793212674812",
+          "project.name": "SINTETICO Projeto laudos 1793212674812",
+          "project.status": "draft",
+          "inventory.count": "1",
+          "company.document": null
+        },
+        "tables": [
+          {
+            "hash": "ec074614928087fe9c6cb11e55b8933611aa9f1a517085573207b09f48d97668",
+            "rows": [
+              [
+                44,
+                "SINTETICO Projeto laudos 1793212674812",
+                "SINTETICO Cliente laudos 1793212674812",
+                null,
+                null,
+                null
+              ]
+            ],
+            "family": "identity",
+            "columns": [
+              "Projeto ID",
+              "Projeto",
+              "Empresa",
+              "Documento",
+              "Início",
+              "Fim"
+            ],
+            "references": [
+              {
+                "id": 44,
+                "entity": "Object",
+                "version": "e102aace23e729ccd28e2ec0b19e6e293a55ea88c3b0c193fc74a2b19cf53570"
+              },
+              {
+                "id": 26,
+                "entity": "CompanyEntity",
+                "version": "1db1d8024de8e48302607a6a9cfb7e3be34fea8cbdae4f017fec8d88fdee2548"
+              }
+            ]
+          },
+          {
+            "hash": "6bf2be48b0f4a62312b1f8735cfbca18656649e544b20dc7670b2b2a3b30fcc0",
+            "rows": [
+              [
+                226,
+                "SYN1793212674812",
+                null,
+                "SINTETICO Equipamento original 1793212674812",
+                null,
+                null,
+                "pending"
+              ]
+            ],
+            "family": "inventory",
+            "columns": [
+              "Item ID",
+              "Placa original",
+              "Placa atual",
+              "Descrição",
+              "Unidade informada",
+              "Local",
+              "Situação"
+            ],
+            "references": [
+              {
+                "id": 226,
+                "entity": "InventoryItemEntity",
+                "version": "3d02203d50533088d1c639641e26265b402c8a734547170038d36b1ade8bd9ec"
+              }
+            ]
+          }
+        ],
+        "metrics": {
+          "inventory.count": 1
+        },
+        "missing": [],
+        "selection": {
+          "families": [
+            "identity",
+            "inventory"
+          ]
+        },
+        "unresolved": null,
+        "permissions": [
+          "projects:read",
+          "companies:read",
+          "inventory-items:read"
+        ],
+        "generated_at": "2026-10-28T18:38:07.685Z"
+      },
+      "sections": [
+        {
+          "key": "identificacao",
+          "text": "Projeto: {{projeto}}",
+          "title": "Identificação",
+          "origin": "template"
+        },
+        {
+          "key": "objetivo",
+          "text": "SINTETICO escopo editado no laudo, com limitacoes documentais",
+          "title": "Objetivo e escopo",
+          "origin": "manual"
+        },
+        {
+          "key": "consideracoes",
+          "text": "",
+          "title": "Considerações técnicas e limitações",
+          "origin": "template"
+        }
+      ],
+      "template": {
+        "id": 6,
+        "data": {
+          "name": "SINTETICO Modelo Laudo 1793212674812",
+          "rules": {
+            "stale_sources": "block",
+            "valuation_required": false,
+            "responsible_required": true,
+            "incomplete_indicators": "warning",
+            "unresolved_divergences": "warning",
+            "reconciliation_required": false,
+            "professional_registration_required": false
+          },
+          "fields": [
+            {
+              "key": "projeto",
+              "label": "Projeto",
+              "required": true,
+              "system_key": "project.name"
+            }
+          ],
+          "tables": [
+            "identity",
+            "inventory"
+          ],
+          "sections": [
+            {
+              "key": "identificacao",
+              "text": "Projeto: {{projeto}}",
+              "title": "Identificação",
+              "required": true
+            },
+            {
+              "key": "objetivo",
+              "text": "SINTETICO escopo documental do modelo",
+              "title": "Objetivo e escopo",
+              "required": true
+            },
+            {
+              "key": "consideracoes",
+              "text": "",
+              "title": "Considerações técnicas e limitações",
+              "required": false
+            }
+          ],
+          "description": "",
+          "report_type": "Relatório patrimonial"
+        },
+        "hash": "53b332646958f4ded0428ee5c0f007fef2dc13f938202c00a6aba6ce0debc855",
+        "version_id": 12
+      },
+      "conclusion": "SINTETICO conclusao baseada apenas nas fontes extraidas, sem afirmacao normativa",
+      "responsibles": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "function": "Elaborador documental em homologacao",
+          "display_name": "SINTETICO Responsavel laudos",
+          "registration_evidence": "",
+          "professional_registration": ""
+        }
+      ],
+      "technical_notes": ""
+    },
+    "validation": {
+      "valid": true,
+      "engine": "technical-report-v1",
+      "issues": [
+        {
+          "code": "INTERNAL_APPROVAL",
+          "message": "Aprovação interna não é assinatura digital nem comprova habilitação ou conformidade normativa.",
+          "severity": "warning"
+        }
+      ],
+      "source_hash": "648f9d05ae0ccce629f6770029b7cf635eabe91974d13d24a1a12a4fe976c870",
+      "hash_algorithm": "sha256-canonical-json-v1"
+    },
+    "hash": "7e47ecb1f8a454bde3a628c9a6f4677adae819b35b91ebc8646c329c7e4cf54a",
+    "actorId": 2,
+    "recordedAt": "2026-10-28T18:38:20.051Z",
+    "reason": "SINTETICO aprovacao interna de homologacao"
+  },
+  "pdf_docx_contract": {
+    "input": "immutable approved snapshot",
+    "required": [
+      "escaped plain text",
+      "professional A4 template",
+      "paginated tables",
+      "authorized private export job",
+      "render and visual QA",
+      "checksum and current source permission validation"
+    ],
+    "available": false
+  }
+}

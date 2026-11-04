@@ -1,0 +1,73 @@
+{
+  "verified_at": "2026-10-28T12:11:13.880Z",
+  "project_id": 34,
+  "field_agent_id": 14,
+  "payment_id": 14,
+  "before": {
+    "totals": [
+      {
+        "currency": "UNSPECIFIED",
+        "expected_in": "0.00",
+        "expected_out": "3.33",
+        "actual_in": "0.00",
+        "actual_out": "0.00",
+        "overdue": "0.00",
+        "actual_net": "0.00",
+        "projected_net": "-3.33"
+      }
+    ],
+    "movements": [
+      {
+        "company_id": 16,
+        "project_id": 34,
+        "contract_id": null,
+        "currency": "UNSPECIFIED",
+        "direction": "out",
+        "receivable_id": null,
+        "installment_id": null,
+        "description": "Pagamento de inventariante #14",
+        "status": "open",
+        "source": "field_agent_payment",
+        "source_id": 14,
+        "amount": "3.33",
+        "view": "expected",
+        "on": "2026-10-01",
+        "overdue": true
+      }
+    ]
+  },
+  "after": {
+    "totals": [
+      {
+        "currency": "UNSPECIFIED",
+        "expected_in": "0.00",
+        "expected_out": "0.00",
+        "actual_in": "0.00",
+        "actual_out": "3.33",
+        "overdue": "0.00",
+        "actual_net": "-3.33",
+        "projected_net": "-3.33"
+      }
+    ],
+    "movements": [
+      {
+        "company_id": 16,
+        "project_id": 34,
+        "contract_id": null,
+        "currency": "UNSPECIFIED",
+        "direction": "out",
+        "receivable_id": null,
+        "installment_id": null,
+        "description": "Pagamento de inventariante #14",
+        "status": "paid",
+        "source": "field_agent_payment",
+        "source_id": 14,
+        "amount": "3.33",
+        "view": "actual",
+        "on": "2026-10-03",
+        "overdue": false
+      }
+    ]
+  },
+  "note": "Somente novas entidades SINTETICO em desenvolvimento. Nenhuma operação bancária ou dado existente alterado."
+}

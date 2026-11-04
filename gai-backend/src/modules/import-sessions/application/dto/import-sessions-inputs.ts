@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsExplicitInstant } from '../../../../common/validation/instant-date';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -255,6 +256,7 @@ export class ImportPayloadItemDto {
   @ApiPropertyOptional({ format: 'date-time' })
   @IsOptional()
   @IsString()
+  @IsExplicitInstant()
   captured_at?: string;
 }
 

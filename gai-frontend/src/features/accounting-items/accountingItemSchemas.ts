@@ -11,6 +11,7 @@ export const accountingItemStatuses = ['pending', 'matched', 'divergent', 'not_f
 export const accountingImportStatuses = ['pending', 'processing', 'finished', 'failed', 'cancelled'] as const;
 
 export const accountingItemFormSchema = z.object({
+  serial_number: z.string().trim().max(100).optional(),
   plate: optionalText,
   description: optionalText,
   accounting_account_description: optionalText,

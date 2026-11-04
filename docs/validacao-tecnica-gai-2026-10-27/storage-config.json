@@ -1,0 +1,8 @@
+{
+  "localEndpointInvalid": true,
+  "localCustomSecretConfigured": true,
+  "localImageProvider": "s3",
+  "localImportProvider": "s3",
+  "terraformProvider": "s3",
+  "networkBucketOperations": 0
+}

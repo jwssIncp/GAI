@@ -1,6 +1,6 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEnum,
   IsOptional,
   IsString,
@@ -37,7 +37,7 @@ export class ProjectDashboardQueryDto {
     description: 'Obrigatório quando period=custom.',
   })
   @IsOptional()
-  @IsDateString({ strict: true })
+  @IsCivilDate()
   date_from?: string;
 
   @ApiPropertyOptional({
@@ -45,7 +45,7 @@ export class ProjectDashboardQueryDto {
     description: 'Obrigatório quando period=custom.',
   })
   @IsOptional()
-  @IsDateString({ strict: true })
+  @IsCivilDate()
   date_to?: string;
 
   @ApiPropertyOptional({

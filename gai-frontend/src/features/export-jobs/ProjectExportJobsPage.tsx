@@ -1,3 +1,4 @@
+import { canExportContent } from './exportContentPermissions';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Download, FileSpreadsheet, RefreshCw, XCircle } from 'lucide-react';
 import { useState } from 'react';
@@ -25,6 +26,7 @@ import { useCancelExportJob, useCreateExportJob, useDownloadExportJob, useExport
 export function ProjectExportJobsPage() {
   const projectId = Number(useParams().projectId);
   const { hasPermission } = usePermissions();
+  const availableTypes = exportJobTypes.filter(type => canExportContent(type, hasPermission));
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const page = positiveInt(searchParams.get('page')) ?? 1;
@@ -97,9 +99,9 @@ export function ProjectExportJobsPage() {
       header: 'Acoes',
       cell: (job) => (
         <div className="flex flex-wrap gap-1">
-          {job.status === 'finished' && hasPermission('export-jobs:download') ? <Button type="button" variant="ghost" size="sm" disabled={download.isPending} onClick={() => void downloadJob(job)}><Download size={15} /> Baixar</Button> : null}
+          {job.status === 'finished' && hasPermission('export-jobs:download') && canExportContent(job.type, hasPermission) ? <Button type="button" variant="ghost" size="sm" disabled={download.isPending} onClick={() => void downloadJob(job)}><Download size={15} /> Baixar</Button> : null}
           {(job.status === 'pending' || job.status === 'processing') && hasPermission('export-jobs:cancel') ? <Button type="button" variant="ghost" size="sm" onClick={() => setCanceling(job)}><XCircle size={15} /> Cancelar</Button> : null}
-          {(['failed', 'cancelled', 'expired'] as ExportJobStatus[]).includes(job.status) && hasPermission('export-jobs:retry') ? <Button type="button" variant="ghost" size="sm" onClick={() => setRetrying(job)}><RefreshCw size={15} /> Tentar novamente</Button> : null}
+          {(['failed', 'cancelled', 'expired'] as ExportJobStatus[]).includes(job.status) && hasPermission('export-jobs:retry') && canExportContent(job.type, hasPermission) ? <Button type="button" variant="ghost" size="sm" onClick={() => setRetrying(job)}><RefreshCw size={15} /> Tentar novamente</Button> : null}
         </div>
       ),
     },
@@ -110,7 +112,7 @@ export function ProjectExportJobsPage() {
       <PageHeader
         title="Exportacoes"
         description="Gere e acompanhe arquivos XLSX do projeto sem expor caminhos internos de armazenamento."
-        action={hasPermission('export-jobs:create') ? <Button type="button" onClick={() => updateParams({ new: 1 }, false)}><FileSpreadsheet size={17} /> Nova exportacao</Button> : null}
+        action={hasPermission('export-jobs:create') && availableTypes.length > 0 ? <Button type="button" onClick={() => updateParams({ new: 1 }, false)}><FileSpreadsheet size={17} /> Nova exportacao</Button> : null}
       />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
@@ -138,7 +140,7 @@ export function ProjectExportJobsPage() {
         </>
       ) : null}
       <ModalForm open={createOpen && hasPermission('export-jobs:create')} onOpenChange={(open) => !open && updateParams({ new: undefined })} title="Nova exportacao">
-        <CreateExportForm busy={create.isPending} onSubmit={async (value) => {
+        <CreateExportForm types={availableTypes} busy={create.isPending} onSubmit={async (value) => {
           await create.mutateAsync(value);
           updateParams({ new: undefined });
           toast({ title: 'Exportacao solicitada', description: 'O processamento foi iniciado e a lista sera atualizada automaticamente.', tone: 'success' });
@@ -150,11 +152,12 @@ export function ProjectExportJobsPage() {
   );
 }
 
-function CreateExportForm({ busy, onSubmit }: { busy: boolean; onSubmit: (type: ExportJobType) => Promise<void> }) {
+function CreateExportForm({ busy, onSubmit, types }: { types: ExportJobType[]; busy: boolean; onSubmit: (type: ExportJobType) => Promise<void> }) {
   const form = useForm<ExportJobFormValues>({ resolver: zodResolver(exportJobFormSchema), defaultValues: { type: undefined } });
   return (
     <form className="grid gap-4" onSubmit={form.handleSubmit(async ({ type }) => {
       try {
+        if (!types.includes(type)) throw new Error('Seu acesso nao permite exportar este conteudo.');
         await onSubmit(type);
       } catch (error) {
         form.setError('root', { message: error instanceof Error ? error.message : 'Nao foi possivel solicitar a exportacao.' });
@@ -163,7 +166,7 @@ function CreateExportForm({ busy, onSubmit }: { busy: boolean; onSubmit: (type: 
       <label className="grid gap-2 text-sm font-semibold">Tipo de exportacao
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('type')}>
           <option value="">Selecione</option>
-          {exportJobTypes.map((type) => <option key={type} value={type}>{exportJobTypeLabels[type]}</option>)}
+          {types.map((type) => <option key={type} value={type}>{exportJobTypeLabels[type]}</option>)}
         </select>
       </label>
       {form.formState.errors.type?.message ? <p role="alert" className="text-sm text-destructive">{form.formState.errors.type.message}</p> : null}

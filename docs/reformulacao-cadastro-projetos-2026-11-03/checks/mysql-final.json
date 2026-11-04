@@ -1,0 +1,17 @@
+{
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "mysql",
+    "--runTestsByPath",
+    "test/integration/projects/projects.e2e-spec.ts",
+    "test/integration/projects/project-registration.e2e-spec.ts",
+    "test/integration/users/role-assignments.e2e-spec.ts",
+    "test/integration/technical-validation/generated-metadata.mysql.e2e-spec.ts"
+  ],
+  "cwd": "gai-backend",
+  "started_at": "2026-11-03T17:12:27.716Z",
+  "duration_seconds": 76.613,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\mysql-final.log"
+}

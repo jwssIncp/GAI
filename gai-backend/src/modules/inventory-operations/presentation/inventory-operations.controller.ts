@@ -17,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { InventoryReconciliationRunResponseDto } from '../application/inventory-reconciliation-response.dto';
 import { RequirePermissions } from '../../auth/presentation/decorators/require-permissions.decorator';
 import { PermissionsGuard } from '../../auth/presentation/guards/permissions.guard';
 import {
@@ -325,6 +326,7 @@ export class InventoryOperationsController {
   @HttpCode(201)
   @RequirePermissions('reconciliations:create')
   @ApiOperation({ summary: 'Executar conciliacao fisico-contabil versionada' })
+  @ApiCreatedResponse({ type: InventoryReconciliationRunResponseDto })
   reconcile(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('sessionId', ParseIntPipe) sessionId: number,

@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, In, IsNull, Repository } from 'typeorm';
+import {
+  EntityManager,
+  In,
+  IsNull,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { ProjectFieldAgentStatus } from '../../../field-agents/domain/enums/project-field-agent-status.enum';
 import { ProjectFieldAgentEntity } from '../../../field-agents/infrastructure/persistence/project-field-agent.entity';
 import { ImportFileStatus } from '../../../import-sessions/domain/enums/import-file-status.enum';
@@ -25,6 +31,10 @@ import { PaymentStatus } from '../../../payments-expenses/domain/enums/payment-s
 import { ExpenseAttachmentEntity } from '../../../payments-expenses/infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from '../../../payments-expenses/infrastructure/persistence/expense.entity';
 import { FieldAgentPaymentEntity } from '../../../payments-expenses/infrastructure/persistence/field-agent-payment.entity';
+import { CompanyEntity } from '../../../companies/infrastructure/persistence/company.entity';
+import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
+import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
+import { ProjectStatus } from '../../domain/enums/project-status.enum';
 import { Project } from '../../domain/entities/project';
 import {
   ListProjectsParams,
@@ -51,14 +61,19 @@ export class TypeOrmProjectRepository implements ProjectRepository {
   ) {}
 
   async findById(id: number): Promise<Project | null> {
-    const entity = await this.projectRepo.findOne({ where: { id } });
+    const [entity] = await this.withLabels(this.projectRepo)
+      .where('project.id = :id', { id })
+      .getRawAndEntities()
+      .then((result) => this.hydrateLabels(result));
     return entity ? this.toDomain(entity) : null;
   }
 
-  async list(
-    params: ListProjectsParams,
-  ): Promise<{ items: Project[]; total: number }> {
-    const qb = this.projectRepo.createQueryBuilder('project');
+  async list(params: ListProjectsParams): Promise<{
+    items: Project[];
+    total: number;
+    counts?: Partial<Record<ProjectStatus, number>>;
+  }> {
+    const qb = this.withLabels(this.projectRepo);
 
     if (params.organizationId) {
       qb.andWhere('project.organizationId = :organizationId', {
@@ -73,40 +88,73 @@ export class TypeOrmProjectRepository implements ProjectRepository {
         companyId: params.companyId,
       });
     }
+    if (params.projectType)
+      qb.andWhere('project.projectType = :projectType', {
+        projectType: params.projectType,
+      });
     if (params.search) {
       qb.andWhere(
-        '(LOWER(project.name) LIKE :term OR LOWER(project.description) LIKE :term)',
+        '(LOWER(project.name) LIKE :term OR LOWER(project.code) LIKE :term OR LOWER(project.description) LIKE :term)',
         { term: `%${params.search.toLowerCase()}%` },
       );
     }
 
-    qb.orderBy('project.createdAt', 'DESC');
+    const sort = {
+      name: 'project.name',
+      code: 'project.code',
+      start_date: 'project.startDate',
+      end_date: 'project.endDate',
+      created_at: 'project.createdAt',
+    };
+    const counts = await qb
+      .clone()
+      .select('project.status', 'status')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy('project.status')
+      .getRawMany<{ status: ProjectStatus; total: string }>();
+    const total = await qb.getCount();
+    qb.orderBy(
+      sort[params.sortBy ?? 'created_at'],
+      params.sortOrder ?? 'DESC',
+    ).addOrderBy('project.id', 'DESC');
     qb.skip((params.page - 1) * params.pageSize);
     qb.take(params.pageSize);
 
-    const [entities, total] = await qb.getManyAndCount();
-    return { items: entities.map((entity) => this.toDomain(entity)), total };
+    const entities = this.hydrateLabels(await qb.getRawAndEntities());
+    return {
+      items: entities.map((entity) => this.toDomain(entity)),
+      total,
+      counts: Object.fromEntries(
+        counts.map((row) => [row.status, Number(row.total)]),
+      ),
+    };
   }
 
   async saveWithAudit(
     project: Project,
     audit: ProjectAuditEntry,
   ): Promise<Project> {
-    return this.projectRepo.manager.transaction(async (manager) => {
-      const projectRepository = manager.getRepository(ProjectEntity);
-      const auditRepository = manager.getRepository(ProjectAuditLogEntity);
+    return this.projectRepo.manager
+      .transaction(async (manager) => {
+        const projectRepository = manager.getRepository(ProjectEntity);
+        const auditRepository = manager.getRepository(ProjectAuditLogEntity);
 
-      const saved = await projectRepository.save(this.toEntity(project));
-      await auditRepository.save({
-        projectId: audit.projectId || saved.id,
-        organizationId: audit.organizationId,
-        operation: audit.operation,
-        performedBy: audit.performedBy,
-        changes: audit.changes,
-      });
+        await this.validateCreationContext(manager, project);
+        const saved = await projectRepository.save(this.toEntity(project));
+        await auditRepository.save({
+          projectId: audit.projectId || saved.id,
+          organizationId: audit.organizationId,
+          operation: audit.operation,
+          performedBy: audit.performedBy,
+          changes: {
+            ...audit.changes,
+            project_id: { before: null, after: saved.id },
+          },
+        });
 
-      return this.toDomain(saved);
-    });
+        return this.toDomain(saved);
+      })
+      .catch((error: unknown) => this.persistenceError(error));
   }
 
   async updateFieldsWithAudit(params: {
@@ -118,58 +166,84 @@ export class TypeOrmProjectRepository implements ProjectRepository {
     now: Date;
     audit: ProjectAuditEntry;
   }): Promise<ProjectFieldsUpdateResult> {
-    return this.projectRepo.manager.transaction(async (manager) => {
-      const projectRepository = manager.getRepository(ProjectEntity);
-      const auditRepository = manager.getRepository(ProjectAuditLogEntity);
-      const fields = params.fields;
-
-      const update = await projectRepository.update(
-        {
-          id: params.id,
-          status: params.expectedStatus,
-          updatedAt: params.expectedUpdatedAt,
-        },
-        {
-          ...(fields.name !== undefined ? { name: fields.name } : {}),
-          ...(fields.description !== undefined
-            ? { description: fields.description }
-            : {}),
-          ...(fields.startDate !== undefined
-            ? { startDate: fields.startDate }
-            : {}),
-          ...(fields.endDate !== undefined ? { endDate: fields.endDate } : {}),
-          updatedById: params.actorId,
-          updatedAt: params.now,
-        },
-      );
-
-      if (update.affected !== 1) {
-        const current = await projectRepository.findOne({
+    return this.projectRepo.manager
+      .transaction<ProjectFieldsUpdateResult>(async (manager) => {
+        const projectRepository = manager.getRepository(ProjectEntity);
+        const auditRepository = manager.getRepository(ProjectAuditLogEntity);
+        const fields = params.fields;
+        const currentProject = await projectRepository.findOne({
           where: { id: params.id },
         });
-        if (!current) {
-          return { kind: 'not_found' };
+        if (!currentProject) return { kind: 'not_found' };
+        await this.validateResponsibleUsers(
+          manager,
+          currentProject.organizationId,
+          [fields.responsibleUserId, fields.planningResponsibleUserId],
+        );
+
+        const update = await projectRepository.update(
+          {
+            id: params.id,
+            status: params.expectedStatus,
+            updatedAt: params.expectedUpdatedAt,
+          },
+          {
+            ...(fields.code !== undefined ? { code: fields.code } : {}),
+            ...(fields.projectType !== undefined
+              ? { projectType: fields.projectType }
+              : {}),
+            ...(fields.responsibleUserId !== undefined
+              ? { responsibleUserId: fields.responsibleUserId }
+              : {}),
+            ...(fields.planningResponsibleUserId !== undefined
+              ? { planningResponsibleUserId: fields.planningResponsibleUserId }
+              : {}),
+            ...(fields.planningNotes !== undefined
+              ? { planningNotes: fields.planningNotes }
+              : {}),
+            ...(fields.name !== undefined ? { name: fields.name } : {}),
+            ...(fields.description !== undefined
+              ? { description: fields.description }
+              : {}),
+            ...(fields.startDate !== undefined
+              ? { startDate: fields.startDate }
+              : {}),
+            ...(fields.endDate !== undefined
+              ? { endDate: fields.endDate }
+              : {}),
+            updatedById: params.actorId,
+            updatedAt: params.now,
+          },
+        );
+
+        if (update.affected !== 1) {
+          const current = await projectRepository.findOne({
+            where: { id: params.id },
+          });
+          if (!current) {
+            return { kind: 'not_found' };
+          }
+          return {
+            kind: 'concurrent_modification',
+            currentStatus: current.status,
+            currentUpdatedAt: this.toDate(current.updatedAt),
+          };
         }
-        return {
-          kind: 'concurrent_modification',
-          currentStatus: current.status,
-          currentUpdatedAt: this.toDate(current.updatedAt),
-        };
-      }
 
-      await auditRepository.save({
-        projectId: params.audit.projectId || params.id,
-        organizationId: params.audit.organizationId,
-        operation: params.audit.operation,
-        performedBy: params.audit.performedBy,
-        changes: params.audit.changes,
-      });
+        await auditRepository.save({
+          projectId: params.audit.projectId || params.id,
+          organizationId: params.audit.organizationId,
+          operation: params.audit.operation,
+          performedBy: params.audit.performedBy,
+          changes: params.audit.changes,
+        });
 
-      const saved = await projectRepository.findOneOrFail({
-        where: { id: params.id },
-      });
-      return { kind: 'success', project: this.toDomain(saved) };
-    });
+        const saved = await projectRepository.findOneOrFail({
+          where: { id: params.id },
+        });
+        return { kind: 'success', project: this.toDomain(saved) };
+      })
+      .catch((error: unknown) => this.persistenceError(error));
   }
 
   async transitionStatusWithAudit(params: {
@@ -473,12 +547,156 @@ export class TypeOrmProjectRepository implements ProjectRepository {
     return Number(first.count ?? 0);
   }
 
+  private withLabels(
+    repository: Repository<ProjectEntity>,
+  ): SelectQueryBuilder<ProjectEntity> {
+    return repository
+      .createQueryBuilder('project')
+      .leftJoin(
+        CompanyEntity,
+        'company',
+        'company.id = project.company_id AND company.organization_id = project.organization_id',
+      )
+      .leftJoin(
+        UserEntity,
+        'responsible',
+        'responsible.id = project.responsible_user_id AND responsible.organization_id = project.organization_id',
+      )
+      .leftJoin(
+        UserEntity,
+        'planner',
+        'planner.id = project.planning_responsible_user_id AND planner.organization_id = project.organization_id',
+      )
+      .addSelect('company.name', 'project_company_name')
+      .addSelect(
+        'COALESCE(responsible.full_name, responsible.login)',
+        'project_responsible_name',
+      )
+      .addSelect(
+        'COALESCE(planner.full_name, planner.login)',
+        'project_planner_name',
+      );
+  }
+
+  private hydrateLabels(result: {
+    entities: ProjectEntity[];
+    raw: Array<Record<string, unknown>>;
+  }): ProjectEntity[] {
+    const byId = new Map(
+      result.raw.map((row) => [Number(row.project_id), row]),
+    );
+    return result.entities.map((entity) => {
+      const row = byId.get(Number(entity.id));
+      entity.companyName =
+        typeof row?.project_company_name === 'string'
+          ? row.project_company_name
+          : null;
+      entity.responsibleUserName =
+        typeof row?.project_responsible_name === 'string'
+          ? row.project_responsible_name
+          : null;
+      entity.planningResponsibleUserName =
+        typeof row?.project_planner_name === 'string'
+          ? row.project_planner_name
+          : null;
+      return entity;
+    });
+  }
+
+  private async validateResponsibleUsers(
+    manager: EntityManager,
+    organizationId: number,
+    ids: Array<number | null | undefined>,
+  ): Promise<void> {
+    for (const id of [
+      ...new Set(ids.filter((value): value is number => value != null)),
+    ].sort((a, b) => a - b)) {
+      let query = manager
+        .getRepository(UserEntity)
+        .createQueryBuilder('user')
+        .where(
+          'user.id = :id AND user.organization_id = :organizationId AND user.status = :status',
+          { id, organizationId, status: 'ACTIVE' },
+        );
+      if (this.supportsPessimisticLock(manager))
+        query = query.setLock('pessimistic_read');
+      if (!(await query.getOne()))
+        throw new ConflictException({
+          code: 'PROJECT_INVALID_RESPONSIBLE',
+          message:
+            'O responsável deve ser um usuário ativo da organização do projeto.',
+        });
+    }
+  }
+
+  private async validateCreationContext(
+    manager: EntityManager,
+    project: Project,
+  ): Promise<void> {
+    let organization = manager
+      .getRepository(OrganizationEntity)
+      .createQueryBuilder('organization')
+      .where('organization.id = :id AND organization.status = :status', {
+        id: project.organizationId,
+        status: 'ACTIVE',
+      });
+    let company = manager
+      .getRepository(CompanyEntity)
+      .createQueryBuilder('company')
+      .where(
+        'company.id = :id AND company.organization_id = :organizationId AND company.status = :status',
+        {
+          id: project.companyId,
+          organizationId: project.organizationId,
+          status: 'active',
+        },
+      );
+    if (this.supportsPessimisticLock(manager)) {
+      organization = organization.setLock('pessimistic_read');
+      company = company.setLock('pessimistic_read');
+    }
+    if (!(await organization.getOne()) || !(await company.getOne()))
+      throw new ConflictException({
+        code: 'PROJECT_INVALID_CONTEXT',
+        message: 'Organização ou empresa indisponível para criação do projeto.',
+      });
+    await this.validateResponsibleUsers(manager, project.organizationId, [
+      project.responsibleUserId,
+      project.planningResponsibleUserId,
+    ]);
+  }
+
+  private persistenceError(error: unknown): never {
+    const detail = error as { code?: string; message?: string };
+    if (
+      detail.message?.includes('uq_projects_organization_code') ||
+      (detail.code === 'SQLITE_CONSTRAINT' &&
+        detail.message?.includes('projects.organization_id, projects.code'))
+    )
+      throw new ConflictException({
+        code: 'PROJECT_CODE_ALREADY_EXISTS',
+        message: 'Este código já está em uso na organização.',
+        details: [
+          {
+            field: 'code',
+            message: 'Informe um código único nesta organização.',
+          },
+        ],
+      });
+    throw error;
+  }
+
   private toEntity(project: Project): ProjectEntity {
     const props = project.toProps();
     const entity = this.projectRepo.create({
       organizationId: props.organizationId,
       companyId: props.companyId,
       name: props.name,
+      code: props.code ?? null,
+      projectType: props.projectType ?? null,
+      responsibleUserId: props.responsibleUserId ?? null,
+      planningResponsibleUserId: props.planningResponsibleUserId ?? null,
+      planningNotes: props.planningNotes ?? null,
       description: props.description,
       status: props.status,
       startDate: props.startDate,
@@ -504,6 +722,20 @@ export class TypeOrmProjectRepository implements ProjectRepository {
       organizationId: Number(entity.organizationId),
       companyId: entity.companyId === null ? null : Number(entity.companyId),
       name: entity.name,
+      code: entity.code,
+      projectType: entity.projectType,
+      responsibleUserId:
+        entity.responsibleUserId == null
+          ? null
+          : Number(entity.responsibleUserId),
+      planningResponsibleUserId:
+        entity.planningResponsibleUserId == null
+          ? null
+          : Number(entity.planningResponsibleUserId),
+      planningNotes: entity.planningNotes,
+      companyName: entity.companyName,
+      responsibleUserName: entity.responsibleUserName,
+      planningResponsibleUserName: entity.planningResponsibleUserName,
       description: entity.description,
       status: entity.status,
       startDate: this.toNullableDate(entity.startDate),

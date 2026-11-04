@@ -9,7 +9,11 @@ export class LoginDto {
   @IsString()
   identifier!: string;
 
-  @ApiProperty({ format: 'password', minLength: 8, example: 'Admin@123456' })
+  @ApiProperty({
+    format: 'password',
+    minLength: 8,
+    example: 'Example only: supply a runtime password',
+  })
   @IsString()
   @MinLength(8)
   password!: string;

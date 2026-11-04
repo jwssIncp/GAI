@@ -1,0 +1,107 @@
+[
+  {
+    "file": "docs/implementacao-coordenacao-campo-2026-10-27/README.md",
+    "bytes": 22387,
+    "sha256": "7119eeb169e309ebc47167a16c3563d07813086083f008e445eb3cb6240e5ac7"
+  },
+  {
+    "file": "gai-backend/src/app.module.ts",
+    "bytes": 11614,
+    "sha256": "95f1b136c95a3b0e72236a6b0cdea5468196c4e1bcd1ad42061cfe5efa736091"
+  },
+  {
+    "file": "gai-backend/src/common/swagger/error-code.enum.ts",
+    "bytes": 2312,
+    "sha256": "687a8373a6ab84bf732926f49e80d476ab1eab53e9eafecd9e6a519855b45f6e"
+  },
+  {
+    "file": "gai-backend/src/migrations/1793200000001-create-field-coordination.ts",
+    "bytes": 5666,
+    "sha256": "23d9f0bb60379fb751c1fefd30e08eae1aee00e95e5e38d292a3cb3ee0bddd87"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.controller.ts",
+    "bytes": 8800,
+    "sha256": "ea190087a60bd2ce44de1f303ac11164a680b1794f4019f7cca93f4f9c9a7667"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.dto.ts",
+    "bytes": 4328,
+    "sha256": "9bd56292f83299f14cb484de5253bd576eca96e8fbe153a60beff2b82e262c18"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.entity.ts",
+    "bytes": 6083,
+    "sha256": "29f71f34f87341a29c21e5b14c4651a54d6f383eae510bf5389e16cf20f219c6"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.module.ts",
+    "bytes": 621,
+    "sha256": "0b5f14403284f920bbd349cb559f39b260b6663193139b27b36d30617274a9a0"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.policy.ts",
+    "bytes": 6915,
+    "sha256": "c8f76dfc7efc951030a6324312e8d3bf3f9b7bc826013dfe6964de06406e97d2"
+  },
+  {
+    "file": "gai-backend/src/modules/field-coordination/field.service.ts",
+    "bytes": 41534,
+    "sha256": "a113c3f8df0be67e8c0f8f16ae08205a11fa67db3b51130637398be3249ef736"
+  },
+  {
+    "file": "gai-backend/src/scripts/seed/permissions.seed.ts",
+    "bytes": 21603,
+    "sha256": "7220438a269f98a578e5f75fdffac04a7af45349845a25360a7a5fe6184aa2e1"
+  },
+  {
+    "file": "gai-backend/test/integration/field-coordination/field.e2e-spec.ts",
+    "bytes": 22708,
+    "sha256": "39a9a51e7e26f600bf84b3b5ae2c90a91e063e5b17063669e2e89c3c371deaf7"
+  },
+  {
+    "file": "gai-backend/test/integration/test-app.helper.ts",
+    "bytes": 22407,
+    "sha256": "4377c0e2aed819cd5c7c8c44f7db593c6f061f8eef28c6a2e8662d8dac086d62"
+  },
+  {
+    "file": "gai-backend/test/unit/modules/field-coordination/field.policy.spec.ts",
+    "bytes": 3316,
+    "sha256": "e5e3a083e40a5e708f9159b2e585d7607cc82ac6479a67c18018ddf5d510d1c5"
+  },
+  {
+    "file": "gai-frontend/e2e/field-coordination-real.spec.ts",
+    "bytes": 9627,
+    "sha256": "7f5a10e1ad32ba20a34c0714cd843a83f8bfc2e0af1da39b5b5ac97c38bf2e99"
+  },
+  {
+    "file": "gai-frontend/src/features/field-coordination/FieldCoordinationPage.test.tsx",
+    "bytes": 10587,
+    "sha256": "6158f8d25cd0bfbb299f7a230ea2909b4df6a7943d5b58e4e327af4ac565f402"
+  },
+  {
+    "file": "gai-frontend/src/features/field-coordination/FieldCoordinationPage.tsx",
+    "bytes": 44675,
+    "sha256": "ad35a64207b88875ce0a794837de7e2a60b19d0185a3eaab8e66fb7911379271"
+  },
+  {
+    "file": "gai-frontend/src/features/field-coordination/FieldTemplates.tsx",
+    "bytes": 18508,
+    "sha256": "99c15bbe29977975dae7c4371d547ec676fafa13fa3d2c7ea25480b244ae21d7"
+  },
+  {
+    "file": "gai-frontend/src/features/field-coordination/fieldApi.ts",
+    "bytes": 7395,
+    "sha256": "c9d1cccbd2b854dff8854d0dcc3e388e1292f2e23b7fa7fb01cee18437e9ba0d"
+  },
+  {
+    "file": "gai-frontend/src/features/projects/ProjectLayout.tsx",
+    "bytes": 5359,
+    "sha256": "f6b789766238bfa6e4c6121503e22046646632da81df721e0033b96971442dd4"
+  },
+  {
+    "file": "gai-frontend/src/router/projectRoutes.tsx",
+    "bytes": 4403,
+    "sha256": "431f52b2a577c5be01cd4f806d61b4fd08183b527befd2e201059781bb09f009"
+  }
+]

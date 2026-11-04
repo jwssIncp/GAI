@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "test/run-tests.cjs",
+    "sqlite"
+  ],
+  "cwd": "gai-backend",
+  "started_at": "2026-11-03T10:09:40.633Z",
+  "duration_seconds": 796.209,
+  "exit_code": 1,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\sqlite.log"
+}

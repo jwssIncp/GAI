@@ -1,3 +1,4 @@
+import { fixturePasswords } from '../../fixtures/passwords';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createTestApp, seedTestData } from '../test-app.helper';
@@ -30,7 +31,7 @@ describe('Auth - Login/Logout/Me (e2e)', () => {
       .post('/api/v1/auth/login')
       .send({
         identifier: 'platform.admin',
-        password: 'Admin@123456',
+        password: fixturePasswords.admin,
       })
       .expect(200);
     const body = response.body as unknown as LoginBody;
@@ -54,7 +55,7 @@ describe('Auth - Login/Logout/Me (e2e)', () => {
       .post('/api/v1/auth/login')
       .send({
         identifier: 'platform.admin',
-        password: 'Admin@123456',
+        password: fixturePasswords.admin,
       });
     const loginBody = login.body as unknown as LoginBody;
 
@@ -75,7 +76,7 @@ describe('Auth - Login/Logout/Me (e2e)', () => {
       .post('/api/v1/auth/login')
       .send({
         identifier: 'platform.admin',
-        password: 'Admin@123456',
+        password: fixturePasswords.admin,
       });
     const loginBody = login.body as unknown as LoginBody;
 

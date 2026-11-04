@@ -1,0 +1,22 @@
+[
+  {
+    "file": "volume-2500.docx",
+    "sha256": "07e817f5a403077bfc6f68a27c017c73b40ba51eab22dc7bf4103d1b0fb32676",
+    "zip_crc": true,
+    "xml_and_relationships_valid": true,
+    "native_rows_in_order": 2500,
+    "page_fields": true,
+    "word_pagination_certified": false,
+    "approved_snapshot_cells_equal": true,
+    "approved_snapshot_hash": "4d820f9a43c370ea1e46aaac818de734baa5416be9450c49f9d19989d63dc58b"
+  },
+  {
+    "file": "volume-2500.pdf",
+    "sha256": "abea9f6ff35cf74001356180c12573a19f0cc479f093b1eacde651e3f85a9102",
+    "pages": 135,
+    "all_pages_rendered": true,
+    "all_2500_row_markers_present": true,
+    "outside_margin_characters": 0,
+    "visual_review": "pending"
+  }
+]

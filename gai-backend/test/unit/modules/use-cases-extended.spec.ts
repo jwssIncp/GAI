@@ -1,138 +1,78 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PinoLogger } from 'nestjs-pino';
 import { ConfirmPasswordResetUseCase } from '../../../src/modules/auth/application/use-cases/confirm-password-reset.use-case';
 import { RequestPasswordResetUseCase } from '../../../src/modules/auth/application/use-cases/request-password-reset.use-case';
 import { LoginUseCase } from '../../../src/modules/auth/application/use-cases/login.use-case';
 import { UpdateOrganizationUseCase } from '../../../src/modules/organizations/application/use-cases/update-organization.use-case';
 import { DeactivateOrganizationUseCase } from '../../../src/modules/organizations/application/use-cases/deactivate-organization.use-case';
-import { User } from '../../../src/modules/auth/domain/entities/user';
-import {
-  UserRole,
-  UserStatus,
-} from '../../../src/modules/auth/domain/enums/user.enums';
+import { UserStatus } from '../../../src/modules/auth/domain/enums/user.enums';
 import { Organization } from '../../../src/modules/organizations/domain/entities/organization';
 import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
 import { Cnpj } from '../../../src/modules/organizations/domain/value-objects/cnpj';
 
-describe('Auth use cases (extended)', () => {
-  const now = new Date();
-  const adminUser = new User({
-    id: 1,
-    organizationId: null,
-    login: 'admin',
-    email: 'admin@test.com',
-    passwordHash: 'hash',
-    status: UserStatus.ACTIVE,
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-    passwordChangedAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  it('LoginUseCase succeeds with valid credentials', async () => {
-    const users = {
-      findByLoginOrEmail: jest.fn().mockResolvedValue(adminUser),
-      save: jest.fn().mockResolvedValue(adminUser),
-    };
-    const sessions = { create: jest.fn().mockResolvedValue({}) };
-    const hasher = {
-      verify: jest.fn().mockResolvedValue(true),
-      hash: jest.fn(),
-    };
-    const orgGate = { isActive: jest.fn() };
-    const audit = { save: jest.fn() };
-    const configService = {
-      get: (_key: string, fallback?: unknown) => fallback,
-    } as ConfigService;
-    const logger = {
-      setContext: jest.fn(),
-      info: jest.fn(),
-    } as unknown as PinoLogger;
-
-    const assignments = {
-      findActiveByUserId: jest.fn().mockResolvedValue([
-        {
-          assignmentId: 1,
-          roleId: 1,
-          roleKey: UserRole.PLATFORM_ADMIN,
-          roleName: 'Platform Administrator',
-          roleType: 'SYSTEM',
-          organizationId: null,
-          isActive: true,
-          assignedAt: now,
+describe('Auth transactional facades', () => {
+  it('returns the authenticated session with effective grants', async () => {
+    const now = new Date();
+    const credentials = {
+      authenticate: jest.fn().mockResolvedValue({
+        user: {
+          id: 1,
+          login: 'person',
+          email: 'person@example.com',
+          status: UserStatus.ACTIVE,
+          organizationId: 1,
+          mustChangePassword: false,
         },
-      ]),
+        session: { id: 'synthetic-session', expiresAt: now },
+      }),
     };
+    const assignments = { findActiveByUserId: jest.fn().mockResolvedValue([]) };
     const permissions = {
       resolveForUser: jest
         .fn()
-        .mockResolvedValue([{ key: 'projects:read', scope: 'PLATFORM' }]),
+        .mockResolvedValue([{ key: 'projects:read', scope: 'ORGANIZATION' }]),
     };
-    const useCase = new LoginUseCase(
-      users as never,
-      sessions as never,
-      hasher,
-      orgGate,
-      audit,
+    const result = await new LoginUseCase(
+      credentials as never,
       assignments as never,
       permissions as never,
-      configService,
-      logger,
+    ).execute(
+      { identifier: 'person', password: 'valid legacy password' },
+      null,
     );
-
-    const result = await useCase.execute(
-      { identifier: 'admin', password: 'Admin@123456' },
-      '127.0.0.1',
-    );
-    expect(result.access_token).toBeDefined();
-    expect(result.user.role_assignments[0].role_key).toBe(
-      UserRole.PLATFORM_ADMIN,
-    );
-    expect(result.user.permissions).toEqual([
-      { key: 'projects:read', scope: 'PLATFORM' },
-    ]);
+    expect(result.access_token).toBe('synthetic-session');
+    expect(result.user.permissions).toHaveLength(1);
   });
-
-  it('RequestPasswordResetUseCase returns generic message when user missing', async () => {
-    const users = { findByEmail: jest.fn().mockResolvedValue(null) };
-    const tokens = { invalidateAllForUser: jest.fn(), create: jest.fn() };
-    const emailSender = { sendPasswordResetEmail: jest.fn() };
-    const audit = { save: jest.fn() };
-    const configService = { get: () => 1 } as unknown as ConfigService;
-    const logger = {
-      setContext: jest.fn(),
-      info: jest.fn(),
-    } as unknown as PinoLogger;
-
-    const useCase = new RequestPasswordResetUseCase(
-      users as never,
-      tokens as never,
-      emailSender,
-      audit,
-      configService,
-      logger,
+  it('delegates a public reset request without exposing tokens', async () => {
+    const service = {
+      requestReset: jest
+        .fn()
+        .mockResolvedValue({ message: 'Solicitação recebida' }),
+    };
+    const result = await new RequestPasswordResetUseCase(
+      service as never,
+    ).execute({ email: 'person@example.com' }, null);
+    expect(result).toEqual({ message: 'Solicitação recebida' });
+    expect(service.requestReset).toHaveBeenCalledWith(
+      'person@example.com',
+      null,
     );
-
-    const result = await useCase.execute({ email: 'missing@test.com' }, null);
-    expect(result.message).toContain('If the email is registered');
   });
-
-  it('ConfirmPasswordResetUseCase rejects invalid token', async () => {
-    const tokens = { findValidByHash: jest.fn().mockResolvedValue(null) };
-    const useCase = new ConfirmPasswordResetUseCase(
-      tokens as never,
-      {} as never,
-      {} as never,
-      {} as never,
-      { save: jest.fn() },
-      { setContext: jest.fn(), info: jest.fn() } as never,
-    );
-
+  it('propagates invalid or used token rejection from the transaction', async () => {
+    const service = {
+      consumeToken: jest.fn().mockRejectedValue(new UnauthorizedException()),
+    };
     await expect(
-      useCase.execute({ token: 'bad', new_password: 'NewPass@123456' }, null),
+      new ConfirmPasswordResetUseCase(service as never).execute(
+        { token: 'synthetic', new_password: 'A valid new passphrase' },
+        null,
+      ),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(service.consumeToken).toHaveBeenCalledWith(
+      'synthetic',
+      'A valid new passphrase',
+      'PASSWORD_RESET',
+      null,
+    );
   });
 });
 

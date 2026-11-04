@@ -1,0 +1,60 @@
+{
+  "verifiedAt": "2026-11-03T01:45:56.906Z",
+  "target": "http://127.0.0.1:3000/api/v1",
+  "credentialsAndIdentityUnchanged": true,
+  "existingUsers": 3,
+  "results": [
+    {
+      "id": 1,
+      "login": "platform.admin",
+      "offlineCredentialMatch": true,
+      "loginStatus": 200,
+      "currentUserStatus": 200,
+      "administrativeUsersStatus": 200,
+      "logoutStatus": 204,
+      "organizationId": null,
+      "roles": [
+        "PLATFORM_ADMIN"
+      ],
+      "permissionCount": 161
+    },
+    {
+      "id": 2,
+      "login": "org.admin",
+      "offlineCredentialMatch": true,
+      "loginStatus": 200,
+      "currentUserStatus": 200,
+      "administrativeUsersStatus": 200,
+      "logoutStatus": 204,
+      "organizationId": 1,
+      "roles": [
+        "ORG_ADMIN"
+      ],
+      "permissionCount": 159
+    },
+    {
+      "id": 3,
+      "login": "test.user",
+      "offlineCredentialMatch": true,
+      "loginStatus": 200,
+      "currentUserStatus": 200,
+      "administrativeUsersStatus": 403,
+      "logoutStatus": 204,
+      "organizationId": 1,
+      "roles": [
+        "Operador"
+      ],
+      "permissionCount": 1
+    }
+  ],
+  "organizations": [
+    {
+      "id": 1,
+      "administrators": 1
+    },
+    {
+      "id": 2,
+      "administrators": 0
+    }
+  ]
+}

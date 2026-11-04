@@ -1,0 +1,752 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.real.config.ts"
+    ],
+    "configFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\workspace\\gai-frontend\\playwright.real.config.ts",
+    "rootDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/workspace/gai-frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/e2e/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-real",
+        "name": "chromium-real",
+        "testDir": "C:/Users/Jonathan/Documents/GAI/GAI/docs/redesign-visual-gai-2026-10-29/evidencias/workspace/gai-frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "receivables-real.spec.ts",
+          "dre-real.spec.ts",
+          "budgets-real.spec.ts",
+          "contracts-real.spec.ts",
+          "reports-real.spec.ts",
+          "documents-real.spec.ts",
+          "valuation-batches-real.spec.ts",
+          "field-coordination-real.spec.ts",
+          "assisted-reconciliation-real.spec.ts",
+          "integration-navigation-real.spec.ts",
+          "project-navigation-real.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\e2e\\playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "assisted-reconciliation-real.spec.ts",
+      "file": "assisted-reconciliation-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN reviews and persists assisted reconciliation while retaining project navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11314,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:59:01.856Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjQsInNlc3Npb25JZCI6MSwiaXRlbUlkIjoxLCJ1cmwiOiJodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy80L2ludmVudG9yeS9zZXNzaW9ucy8xIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "873a617b408c0a4e7082-1aac334524bf65100a2e",
+          "file": "assisted-reconciliation-real.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "budgets-real.spec.ts",
+      "file": "budgets-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN publishes explicit prices, builds a standalone budget, compares scenarios and approves an immutable proposal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20905,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:59:13.389Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-budget",
+                      "contentType": "application/json",
+                      "body": "eyJidWRnZXRfaWQiOjEsImxpbmtlZF9idWRnZXRfaWQiOjIsImxpbmtlZF9wcm9qZWN0X2lkIjo1LCJjb21wYW55X2lkIjoyLCJ1bml0X2lkIjoxLCJudW1iZXIiOiJTSU5URVRJQ08tT1JDLTE3OTMyODIzNTQ2ODAiLCJwYXJhbWV0ZXJfbmFtZSI6IlNJTlRFVElDTyBQUkVDT1MgMTc5MzI4MjM1NDY4MCIsInZlcnNpb25zIjozLCJhcHByb3ZlZF9wcmljZSI6IjIzNzYuNzkiLCJodHRwX2Vycm9ycyI6W10sInBhZ2VfZXJyb3JzIjpbXX0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "28bc03777a640e0dc322-728619f1b83fb1ca6e5a",
+          "file": "budgets-real.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "contracts-real.spec.ts",
+      "file": "contracts-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN manages contracts/amendments, refreshes history and exports filtered commercial overview",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18305,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:59:34.344Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0X2lkIjo2LCJzZWNvbmRfcHJvamVjdF9pZCI6NywiY29udHJhY3RfaWQiOjEsInNlZ21lbnQiOiJTSU5URVRJQ08tQ09NRVJDSUFMLTE3OTMyODIzNzYwMTEiLCJudW1iZXIiOiJURVNURS0xNzkzMjgyMzc2MDExIiwidmVyc2lvbnMiOjMsIm9yaWdpbmFsIjoiMTAwLjEwIiwiY3VycmVudCI6IjEwMC4zMCIsImh0dHBfZXJyb3JzIjpbXSwicGFnZV9lcnJvcnMiOltdfQ=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "89fbb35072f9f80056b6-5adeed166d2b1d4b7d63",
+          "file": "contracts-real.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "documents-real.spec.ts",
+      "file": "documents-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN generates and downloads approved PDF/DOCX and commercial versions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23960,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T13:59:52.706Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c5b8e4191e38cefdbb0c-d2a81d036929fbb4a37f",
+          "file": "documents-real.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "dre-real.spec.ts",
+      "file": "dre-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15844,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:00:16.713Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcm9qZWN0IjogOSwKICAiY29tcGFueSI6IDQsCiAgInJlY2VpdmFibGUiOiAxLAogICJlbnRyeUlkIjogMSwKICAiYWNjb3VudCI6IDEsCiAgInJldmlzaW9uIjogMiwKICAibW9udGgiOiAiMjAyNi0wMSIsCiAgImlzc3VlZF9vbiI6ICIyMDI2LTEwLTAxIiwKICAiYW1vdW50IjogIjgwLjAxIiwKICAiZXJyb3JzIjogW10sCiAgImh0dHAiOiBbXQp9"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17d1d91c481fcf249161-32be1bc35c5dc4bd5ad6",
+          "file": "dre-real.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "field-coordination-real.spec.ts",
+      "file": "field-coordination-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN creates a versioned field model, assigns and approves a task, completes/reopens field and retains workspace navigation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19206,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:00:32.605Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "field-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjEwLCJjaGVja2xpc3RJZCI6MSwidXJsIjoiaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMTAvZmllbGQtY29vcmRpbmF0aW9uIiwiZXJyb3JzIjpbXSwiaHR0cCI6W119"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d1806635d75db447e652-28b7d11b049f4417f588",
+          "file": "field-coordination-real.spec.ts",
+          "line": 7,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "integration-navigation-real.spec.ts",
+      "file": "integration-navigation-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN preserves context, history and tenant boundaries at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12869,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:00:51.902Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "025ce02b885d9b5ffbd0-9a5c65eaf4f08b4ee1a8",
+          "file": "integration-navigation-real.spec.ts",
+          "line": 39,
+          "column": 3
+        },
+        {
+          "title": "restricted reader preserves context, history and tenant boundaries at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12882,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:01:05.902Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "025ce02b885d9b5ffbd0-6712ad0a2d76d943592c",
+          "file": "integration-navigation-real.spec.ts",
+          "line": 39,
+          "column": 3
+        },
+        {
+          "title": "ORG_ADMIN preserves context, history and tenant boundaries at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9653,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:01:18.804Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "025ce02b885d9b5ffbd0-205393baf5850d8d78af",
+          "file": "integration-navigation-real.spec.ts",
+          "line": 39,
+          "column": 3
+        },
+        {
+          "title": "restricted reader preserves context, history and tenant boundaries at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10261,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:01:28.480Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "025ce02b885d9b5ffbd0-a40de56262ccd55eb23a",
+          "file": "integration-navigation-real.spec.ts",
+          "line": 39,
+          "column": 3
+        }
+      ]
+    },
+    {
+      "title": "project-navigation-real.spec.ts",
+      "file": "project-navigation-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN continuously navigates real project pages, history, deep links, mobile and tenant boundaries",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23206,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "Navigation passed: Itens inventory-items\n"
+                    },
+                    {
+                      "text": "Navigation passed: Financeiro finance\n"
+                    },
+                    {
+                      "text": "Navigation passed: Pendências pending-issues\n"
+                    },
+                    {
+                      "text": "Navigation passed: Dashboard dashboard\n"
+                    },
+                    {
+                      "text": "Navigation passed: Base contábil accounting-items\n"
+                    },
+                    {
+                      "text": "Navigation passed: Unidades summary#unidades\n"
+                    },
+                    {
+                      "text": "Navigation passed: Configurações summary#configuracoes\n"
+                    },
+                    {
+                      "text": "Navigation passed: Visão geral summary\n"
+                    },
+                    {
+                      "text": "Navigation passed: Preparação preparation/kickoff\n"
+                    },
+                    {
+                      "text": "Navigation passed: Itens inventory-items\n"
+                    },
+                    {
+                      "text": "Navigation passed: Inventário inventory/sessions\n"
+                    },
+                    {
+                      "text": "Navigation passed: Imagens inventory-items?view=images\n"
+                    },
+                    {
+                      "text": "Navigation passed: Inventariantes summary#inventariantes\n"
+                    },
+                    {
+                      "text": "Navigation passed: Prestações finance/accountabilities\n"
+                    },
+                    {
+                      "text": "Navigation passed: Importações import-sessions\n"
+                    },
+                    {
+                      "text": "Navigation passed: Exportações export-jobs\n"
+                    },
+                    {
+                      "text": "Navigation passed: Preparação preparation/kickoff\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:01:38.792Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "navigation-evidence",
+                      "contentType": "application/json",
+                      "body": "ewogICJwcmltYXJ5IjogIjIiLAogICJzZWNvbmRhcnkiOiAiMyIsCiAgImZvcmVpZ24iOiAiMSIsCiAgInN0ZXBzIjogWwogICAgIkl0ZW5zOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL2ludmVudG9yeS1pdGVtcyIsCiAgICAiRmluYW5jZWlybzogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9maW5hbmNlIiwKICAgICJQZW5kw6puY2lhczogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9wZW5kaW5nLWlzc3VlcyIsCiAgICAiRGFzaGJvYXJkOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL2Rhc2hib2FyZCIsCiAgICAiQmFzZSBjb250w6FiaWw6IGh0dHA6Ly8xMjcuMC4wLjE6MzMzNTAvYXBwL3Byb2plY3RzLzIvYWNjb3VudGluZy1pdGVtcyIsCiAgICAiVW5pZGFkZXM6IGh0dHA6Ly8xMjcuMC4wLjE6MzMzNTAvYXBwL3Byb2plY3RzLzIvc3VtbWFyeSN1bmlkYWRlcyIsCiAgICAiQ29uZmlndXJhw6fDtWVzOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL3N1bW1hcnkjY29uZmlndXJhY29lcyIsCiAgICAiVmlzw6NvIGdlcmFsOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL3N1bW1hcnkiLAogICAgIlByZXBhcmHDp8OjbzogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9wcmVwYXJhdGlvbi9raWNrb2ZmIiwKICAgICJJdGVuczogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9pbnZlbnRvcnktaXRlbXMiLAogICAgIkludmVudMOhcmlvOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL2ludmVudG9yeS9zZXNzaW9ucyIsCiAgICAiSW1hZ2VuczogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9pbnZlbnRvcnktaXRlbXM/dmlldz1pbWFnZXMiLAogICAgIkludmVudGFyaWFudGVzOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL3N1bW1hcnkjaW52ZW50YXJpYW50ZXMiLAogICAgIlByZXN0YcOnw7VlczogaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMi9maW5hbmNlL2FjY291bnRhYmlsaXRpZXMiLAogICAgIkltcG9ydGHDp8O1ZXM6IGh0dHA6Ly8xMjcuMC4wLjE6MzMzNTAvYXBwL3Byb2plY3RzLzIvaW1wb3J0LXNlc3Npb25zIiwKICAgICJFeHBvcnRhw6fDtWVzOiBodHRwOi8vMTI3LjAuMC4xOjMzMzUwL2FwcC9wcm9qZWN0cy8yL2V4cG9ydC1qb2JzIiwKICAgICJQcmVwYXJhw6fDo286IGh0dHA6Ly8xMjcuMC4wLjE6MzMzNTAvYXBwL3Byb2plY3RzLzIvcHJlcGFyYXRpb24va2lja29mZiIKICBdLAogICJlcnJvcnMiOiBbXSwKICAidW5leHBlY3RlZCI6IFtdLAogICJmb3JlaWduU3RhdHVzIjogNDAzCn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b280a027acc25d8fb8d9-396486c842f9b25e0823",
+          "file": "project-navigation-real.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "receivables-real.spec.ts",
+      "file": "receivables-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15122,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:02:02.043Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "37d8aba6d7dab189abb9-6cd4d3b4ee084608c9e3",
+          "file": "receivables-real.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "reports-real.spec.ts",
+      "file": "reports-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN creates model, drafts, validates, approves and preserves historical report",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18384,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:02:17.207Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-evidence",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0IjoxNCwiY29tcGFueSI6NiwiaXRlbSI6NjIsInRlbXBsYXRlIjozLCJ0ZW1wbGF0ZV92ZXJzaW9uIjo2LCJyZXBvcnQiOjMsImFwcHJvdmVkX3ZlcnNpb24iOjgsImFwcHJvdmVkX2hhc2giOiJlZDRmMWIwYTRmMTJhZGQ1ZjBjMTllYTk1NTlmOTZjNGQxY2QwMmY2YmI4MTUzZGM5OWQzZTRhOGU0Y2VjZTFiIiwiZmluYWxfcmV2aXNpb24iOjcsImZpbmFsX3N0YXR1cyI6InJlb3BlbmVkIiwiZXJyb3JzIjpbXSwiaHR0cCI6W119"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "17bd4b6f0bc07c34a4ad-6be32fb9f9774e0b1a93",
+          "file": "reports-real.spec.ts",
+          "line": 9,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "valuation-batches-real.spec.ts",
+      "file": "valuation-batches-real.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ORG_ADMIN selects between pages, previews and applies common/individual valuations with persisted results and protected XLSX",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-real",
+              "projectName": "chromium-real",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13588,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T14:02:35.632Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "synthetic-fixture",
+                      "contentType": "application/json",
+                      "body": "eyJwcm9qZWN0SWQiOjE1LCJjb21tb25PcGVyYXRpb24iOjEsImluZGl2aWR1YWxPcGVyYXRpb24iOjIsImV4cG9ydEpvYiI6MywidXJsIjoiaHR0cDovLzEyNy4wLjAuMTozMzM1MC9hcHAvcHJvamVjdHMvMTUvaW52ZW50b3J5LWl0ZW1zIn0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a18444cb48e8ec1500d6-b3f434c6924b5a317a03",
+          "file": "valuation-batches-real.spec.ts",
+          "line": 12,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T13:58:37.421Z",
+    "duration": 252855.204,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "lint",
+    "status": 0,
+    "seconds": 5,
+    "log": "frontend-lint.log"
+  },
+  {
+    "name": "types",
+    "status": 0,
+    "seconds": 29,
+    "log": "frontend-types.log"
+  },
+  {
+    "name": "build",
+    "status": 0,
+    "seconds": 30,
+    "log": "frontend-build.log"
+  },
+  {
+    "name": "tests",
+    "status": 0,
+    "seconds": 186,
+    "log": "frontend-tests.log"
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-11-03T01:51:28.917Z",
+  "classification": "APTO COM RESSALVAS",
+  "checksExitZero": [
+    "unit",
+    "sqlite",
+    "mysql",
+    "frontend",
+    "build",
+    "lint",
+    "browser"
+  ],
+  "tests": {
+    "unit": {
+      "passed": 442,
+      "failed": 0,
+      "skipped": 0
+    },
+    "sqlite": {
+      "passed": 308,
+      "failed": 0,
+      "skipped": 4
+    },
+    "mysql": {
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend": {
+      "passed": 319,
+      "failed": 0,
+      "skipped": 0
+    },
+    "chromium": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "localUsersPreserved": 3,
+  "migrationsApplied": 35,
+  "migrationsPending": 0,
+  "priorFrontendTimeoutRetained": true,
+  "realEmailDeliveryValidated": false,
+  "commitPushDeployProductionActions": false
+}

@@ -1,0 +1,39 @@
+[
+  {
+    "name": "related-http",
+    "command": [
+      "node",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\smoke-related.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 18.33
+  },
+  {
+    "name": "schema-final",
+    "command": [
+      "node",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\inspect-schema.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 16.026
+  },
+  {
+    "name": "snapshot-final",
+    "command": [
+      "node",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\save-database.cjs",
+      "final"
+    ],
+    "exit_code": 0,
+    "seconds": 1.32
+  },
+  {
+    "name": "runtime-final",
+    "command": [
+      "node",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-1-integridade-2026-10-28\\capture-runtime.cjs"
+    ],
+    "exit_code": 0,
+    "seconds": 1.093
+  }
+]

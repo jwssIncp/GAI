@@ -6,5 +6,9 @@ export interface PasswordResetEmailPayload {
 }
 
 export interface EmailSender {
+  sendInvitationEmail?(payload: {
+    to: string;
+    activationUrl: string;
+  }): Promise<void>;
   sendPasswordResetEmail(payload: PasswordResetEmailPayload): Promise<void>;
 }

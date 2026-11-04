@@ -259,11 +259,12 @@ describe('AssignUserRoleUseCase', () => {
       assignedAt: now,
     };
     assignments.findActiveAssignment.mockResolvedValue(existing);
+    assignments.assign.mockResolvedValue(existing);
 
     const result = await useCase.execute(5, { role_id: 3 }, platformActor);
 
     expect(result.assignment_id).toBe(4);
-    expect(assignments.assign).not.toHaveBeenCalled();
+    expect(assignments.assign).toHaveBeenCalled();
   });
 
   it('throws NotFound when user does not exist', async () => {

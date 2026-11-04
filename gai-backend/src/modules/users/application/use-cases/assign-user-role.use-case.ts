@@ -92,18 +92,12 @@ export class AssignUserRoleUseCase {
       throw error;
     }
 
-    const existing = await this.assignments.findActiveAssignment(
-      userId,
-      dto.role_id,
-    );
-    if (existing) {
-      return RoleAssignmentResponseDto.fromAssignedRole(existing);
-    }
-
+    // Idempotency and authoritative scope checks run under the same DB lock.
     const saved = await this.assignments.assign({
       userId,
       roleId: dto.role_id,
       assignedBy: actor.id,
+      actor,
     });
 
     this.logger.info({

@@ -1,10 +1,15 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import {
+  STORAGE_SIGNER,
+  type StorageSigner,
+} from '../../../../common/storage/storage-signer.port';
+import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
 } from '../../../projects/domain/ports/project.repository.port';
 import { InventoryItemImageAuditOperation } from '../../domain/enums/inventory-item-image-audit-operation.enum';
+import { InventoryItemImageStatus } from '../../domain/enums/inventory-item-image-status.enum';
 import {
   INVENTORY_ITEM_IMAGE_REPOSITORY,
   type InventoryItemImageRepository,
@@ -27,6 +32,7 @@ export class ConfirmInventoryItemImageUploadUseCase {
     private readonly getImage: GetInventoryItemImageUseCase,
     private readonly scope: InventoryItemImageScopeService,
     private readonly logger: PinoLogger,
+    @Inject(STORAGE_SIGNER) private readonly storage: StorageSigner,
   ) {
     this.logger.setContext(ConfirmInventoryItemImageUploadUseCase.name);
   }
@@ -54,11 +60,27 @@ export class ConfirmInventoryItemImageUploadUseCase {
       projectId,
       itemId,
     });
+    if (image.status !== InventoryItemImageStatus.PENDING_UPLOAD)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: 'Only pending upload images can be confirmed',
+      });
+    const props = image.toProps();
+    const verified = await this.storage.verifyUpload({
+      bucket: image.bucket,
+      path: image.path,
+      mimeType: image.mimeType,
+      sizeBytes: Number(props.sizeBytes),
+      checksum: props.checksum,
+      createdAt: props.createdAt,
+      expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      assertion: { sizeBytes: dto.size_bytes, checksum: dto.checksum },
+    });
     let changes: Record<string, { before: unknown; after: unknown }>;
     try {
       changes = image.confirmUpload(actor.id, {
-        checksum: this.scope.cleanText(dto.checksum),
-        sizeBytes: dto.size_bytes,
+        checksum: verified.checksum,
+        sizeBytes: verified.sizeBytes,
       });
     } catch (error) {
       throw new ConflictException({

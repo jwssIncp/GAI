@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { ProjectSummaryService } from '../../../../src/modules/project-dashboard/application/services/project-summary.service';
 import { ProjectStatus } from '../../../../src/modules/projects/domain/enums/project-status.enum';
 import { UserRole } from '../../../../src/modules/auth/domain/enums/user.enums';
+import { PermissionScope } from '../../../../src/modules/users/domain/enums/permission-scope.enum';
 
 const project = {
   id: 1,
@@ -116,6 +117,15 @@ function makeService(projectResult: typeof project | null = project) {
     summaries,
     scope as never,
     logger as never,
+    {
+      resolveForUser: jest.fn(),
+      findScopesByKeys: jest.fn().mockResolvedValue(
+        new Map([
+          ['payments:read', PermissionScope.ORGANIZATION],
+          ['expenses:read', PermissionScope.ORGANIZATION],
+        ]),
+      ),
+    },
   );
   return { service, projects, summaries, scope };
 }

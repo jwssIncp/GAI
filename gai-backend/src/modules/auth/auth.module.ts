@@ -1,3 +1,4 @@
+import { CredentialTransactionsService } from './application/services/credential-transactions.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
@@ -62,6 +63,7 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [AuthController],
   providers: [
+    CredentialTransactionsService,
     LoginUseCase,
     LogoutUseCase,
     GetCurrentUserUseCase,
@@ -100,6 +102,7 @@ import { ConfigService } from '@nestjs/config';
     },
   ],
   exports: [
+    CredentialTransactionsService,
     SessionAuthGuard,
     RolesGuard,
     PermissionsGuard,

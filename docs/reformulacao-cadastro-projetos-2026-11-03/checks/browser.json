@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "--config",
+    "playwright.projects.config.ts"
+  ],
+  "cwd": "gai-frontend",
+  "started_at": "2026-11-03T10:19:49.941Z",
+  "duration_seconds": 129.572,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\browser.log"
+}

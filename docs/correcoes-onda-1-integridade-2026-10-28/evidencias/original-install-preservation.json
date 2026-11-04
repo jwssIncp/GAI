@@ -1,0 +1,570 @@
+{
+  "captured_at": "2026-10-29T06:53:58.277Z",
+  "scope": "Original root node_modules direct package versions; validation installs are separate",
+  "projects": {
+    "gai-backend": [
+      {
+        "name": "@aws-sdk/client-s3",
+        "before": "3.1069.0",
+        "after": "3.1069.0",
+        "same": true
+      },
+      {
+        "name": "@aws-sdk/client-ses",
+        "before": "3.1069.0",
+        "after": "3.1069.0",
+        "same": true
+      },
+      {
+        "name": "@aws-sdk/s3-request-presigner",
+        "before": "3.1069.0",
+        "after": "3.1069.0",
+        "same": true
+      },
+      {
+        "name": "@eslint/eslintrc",
+        "before": "3.3.5",
+        "after": "3.3.5",
+        "same": true
+      },
+      {
+        "name": "@eslint/js",
+        "before": "9.39.4",
+        "after": "9.39.4",
+        "same": true
+      },
+      {
+        "name": "@nestjs/cli",
+        "before": "11.0.23",
+        "after": "11.0.23",
+        "same": true
+      },
+      {
+        "name": "@nestjs/common",
+        "before": "11.1.27",
+        "after": "11.1.27",
+        "same": true
+      },
+      {
+        "name": "@nestjs/config",
+        "before": "4.0.4",
+        "after": "4.0.4",
+        "same": true
+      },
+      {
+        "name": "@nestjs/core",
+        "before": "11.1.27",
+        "after": "11.1.27",
+        "same": true
+      },
+      {
+        "name": "@nestjs/platform-express",
+        "before": "11.1.27",
+        "after": "11.1.27",
+        "same": true
+      },
+      {
+        "name": "@nestjs/schematics",
+        "before": "11.1.0",
+        "after": "11.1.0",
+        "same": true
+      },
+      {
+        "name": "@nestjs/swagger",
+        "before": "11.4.4",
+        "after": "11.4.4",
+        "same": true
+      },
+      {
+        "name": "@nestjs/testing",
+        "before": "11.1.27",
+        "after": "11.1.27",
+        "same": true
+      },
+      {
+        "name": "@nestjs/throttler",
+        "before": "6.5.0",
+        "after": "6.5.0",
+        "same": true
+      },
+      {
+        "name": "@nestjs/typeorm",
+        "before": "11.0.1",
+        "after": "11.0.1",
+        "same": true
+      },
+      {
+        "name": "@types/express",
+        "before": "5.0.6",
+        "after": "5.0.6",
+        "same": true
+      },
+      {
+        "name": "@types/jest",
+        "before": "30.0.0",
+        "after": "30.0.0",
+        "same": true
+      },
+      {
+        "name": "@types/node",
+        "before": "24.13.2",
+        "after": "24.13.2",
+        "same": true
+      },
+      {
+        "name": "@types/pdfmake",
+        "before": "0.2.12",
+        "after": "0.2.12",
+        "same": true
+      },
+      {
+        "name": "@types/supertest",
+        "before": "7.2.0",
+        "after": "7.2.0",
+        "same": true
+      },
+      {
+        "name": "@types/uuid",
+        "before": "10.0.0",
+        "after": "10.0.0",
+        "same": true
+      },
+      {
+        "name": "argon2",
+        "before": "0.44.0",
+        "after": "0.44.0",
+        "same": true
+      },
+      {
+        "name": "class-transformer",
+        "before": "0.5.1",
+        "after": "0.5.1",
+        "same": true
+      },
+      {
+        "name": "class-validator",
+        "before": "0.15.1",
+        "after": "0.15.1",
+        "same": true
+      },
+      {
+        "name": "docx",
+        "before": "9.15.0",
+        "after": "9.15.0",
+        "same": true
+      },
+      {
+        "name": "dotenv",
+        "before": "16.6.1",
+        "after": "16.6.1",
+        "same": true
+      },
+      {
+        "name": "eslint-config-prettier",
+        "before": "10.1.8",
+        "after": "10.1.8",
+        "same": true
+      },
+      {
+        "name": "eslint-plugin-prettier",
+        "before": "5.5.6",
+        "after": "5.5.6",
+        "same": true
+      },
+      {
+        "name": "eslint",
+        "before": "9.39.4",
+        "after": "9.39.4",
+        "same": true
+      },
+      {
+        "name": "fflate",
+        "before": "0.8.3",
+        "after": "0.8.3",
+        "same": true
+      },
+      {
+        "name": "globals",
+        "before": "17.6.0",
+        "after": "17.6.0",
+        "same": true
+      },
+      {
+        "name": "jest",
+        "before": "30.4.2",
+        "after": "30.4.2",
+        "same": true
+      },
+      {
+        "name": "mysql2",
+        "before": "3.22.5",
+        "after": "3.22.5",
+        "same": true
+      },
+      {
+        "name": "nestjs-pino",
+        "before": "4.6.1",
+        "after": "4.6.1",
+        "same": true
+      },
+      {
+        "name": "pdf-lib",
+        "before": "1.17.1",
+        "after": "1.17.1",
+        "same": true
+      },
+      {
+        "name": "pdfjs-dist",
+        "before": "5.4.296",
+        "after": "5.4.296",
+        "same": true
+      },
+      {
+        "name": "pdfmake",
+        "before": "0.2.23",
+        "after": "0.2.23",
+        "same": true
+      },
+      {
+        "name": "pino-http",
+        "before": "11.0.0",
+        "after": "11.0.0",
+        "same": true
+      },
+      {
+        "name": "pino-pretty",
+        "before": "13.1.3",
+        "after": "13.1.3",
+        "same": true
+      },
+      {
+        "name": "prettier",
+        "before": "3.8.4",
+        "after": "3.8.4",
+        "same": true
+      },
+      {
+        "name": "reflect-metadata",
+        "before": "0.2.2",
+        "after": "0.2.2",
+        "same": true
+      },
+      {
+        "name": "rxjs",
+        "before": "7.8.2",
+        "after": "7.8.2",
+        "same": true
+      },
+      {
+        "name": "source-map-support",
+        "before": "0.5.21",
+        "after": "0.5.21",
+        "same": true
+      },
+      {
+        "name": "sqlite3",
+        "before": "5.1.7",
+        "after": "5.1.7",
+        "same": true
+      },
+      {
+        "name": "supertest",
+        "before": "7.2.2",
+        "after": "7.2.2",
+        "same": true
+      },
+      {
+        "name": "ts-jest",
+        "before": "29.4.11",
+        "after": "29.4.11",
+        "same": true
+      },
+      {
+        "name": "ts-loader",
+        "before": "9.6.0",
+        "after": "9.6.0",
+        "same": true
+      },
+      {
+        "name": "ts-node",
+        "before": "10.9.2",
+        "after": "10.9.2",
+        "same": true
+      },
+      {
+        "name": "tsconfig-paths",
+        "before": "4.2.0",
+        "after": "4.2.0",
+        "same": true
+      },
+      {
+        "name": "typeorm",
+        "before": "0.3.30",
+        "after": "0.3.30",
+        "same": true
+      },
+      {
+        "name": "typescript-eslint",
+        "before": "8.61.1",
+        "after": "8.61.1",
+        "same": true
+      },
+      {
+        "name": "typescript",
+        "before": "5.9.3",
+        "after": "5.9.3",
+        "same": true
+      },
+      {
+        "name": "uuid",
+        "before": "11.1.1",
+        "after": "11.1.1",
+        "same": true
+      },
+      {
+        "name": "xlsx",
+        "before": "0.18.5",
+        "after": "0.18.5",
+        "same": true
+      }
+    ],
+    "gai-frontend": [
+      {
+        "name": "@eslint/js",
+        "before": "9.39.4",
+        "after": "9.39.4",
+        "same": true
+      },
+      {
+        "name": "@hookform/resolvers",
+        "before": "3.10.0",
+        "after": "3.10.0",
+        "same": true
+      },
+      {
+        "name": "@playwright/test",
+        "before": "1.61.1",
+        "after": "1.61.1",
+        "same": true
+      },
+      {
+        "name": "@radix-ui/react-dialog",
+        "before": "1.1.19",
+        "after": "1.1.19",
+        "same": true
+      },
+      {
+        "name": "@radix-ui/react-dropdown-menu",
+        "before": "2.1.20",
+        "after": "2.1.20",
+        "same": true
+      },
+      {
+        "name": "@radix-ui/react-popover",
+        "before": "1.1.19",
+        "after": "1.1.19",
+        "same": true
+      },
+      {
+        "name": "@radix-ui/react-slot",
+        "before": "1.3.0",
+        "after": "1.3.0",
+        "same": true
+      },
+      {
+        "name": "@tanstack/react-query",
+        "before": "5.101.2",
+        "after": "5.101.2",
+        "same": true
+      },
+      {
+        "name": "@testing-library/jest-dom",
+        "before": "6.9.1",
+        "after": "6.9.1",
+        "same": true
+      },
+      {
+        "name": "@testing-library/react",
+        "before": "16.3.2",
+        "after": "16.3.2",
+        "same": true
+      },
+      {
+        "name": "@testing-library/user-event",
+        "before": "14.6.1",
+        "after": "14.6.1",
+        "same": true
+      },
+      {
+        "name": "@types/node",
+        "before": "24.13.6",
+        "after": "24.13.6",
+        "same": true
+      },
+      {
+        "name": "@types/react-dom",
+        "before": "19.2.3",
+        "after": "19.2.3",
+        "same": true
+      },
+      {
+        "name": "@types/react",
+        "before": "19.2.17",
+        "after": "19.2.17",
+        "same": true
+      },
+      {
+        "name": "@vitejs/plugin-react",
+        "before": "4.7.0",
+        "after": "4.7.0",
+        "same": true
+      },
+      {
+        "name": "autoprefixer",
+        "before": "10.5.2",
+        "after": "10.5.2",
+        "same": true
+      },
+      {
+        "name": "axios",
+        "before": "1.18.1",
+        "after": "1.18.1",
+        "same": true
+      },
+      {
+        "name": "class-variance-authority",
+        "before": "0.7.1",
+        "after": "0.7.1",
+        "same": true
+      },
+      {
+        "name": "clsx",
+        "before": "2.1.1",
+        "after": "2.1.1",
+        "same": true
+      },
+      {
+        "name": "docx-preview",
+        "before": "0.3.7",
+        "after": "0.3.7",
+        "same": true
+      },
+      {
+        "name": "eslint-plugin-react-hooks",
+        "before": "5.2.0",
+        "after": "5.2.0",
+        "same": true
+      },
+      {
+        "name": "eslint-plugin-react-refresh",
+        "before": "0.4.26",
+        "after": "0.4.26",
+        "same": true
+      },
+      {
+        "name": "eslint",
+        "before": "9.39.4",
+        "after": "9.39.4",
+        "same": true
+      },
+      {
+        "name": "globals",
+        "before": "15.15.0",
+        "after": "15.15.0",
+        "same": true
+      },
+      {
+        "name": "jsdom",
+        "before": "25.0.1",
+        "after": "25.0.1",
+        "same": true
+      },
+      {
+        "name": "lucide-react",
+        "before": "0.468.0",
+        "after": "0.468.0",
+        "same": true
+      },
+      {
+        "name": "postcss",
+        "before": "8.5.16",
+        "after": "8.5.16",
+        "same": true
+      },
+      {
+        "name": "react-dom",
+        "before": "19.2.7",
+        "after": "19.2.7",
+        "same": true
+      },
+      {
+        "name": "react-hook-form",
+        "before": "7.81.0",
+        "after": "7.81.0",
+        "same": true
+      },
+      {
+        "name": "react-router-dom",
+        "before": "7.18.1",
+        "after": "7.18.1",
+        "same": true
+      },
+      {
+        "name": "react",
+        "before": "19.2.7",
+        "after": "19.2.7",
+        "same": true
+      },
+      {
+        "name": "recharts",
+        "before": "2.15.4",
+        "after": "2.15.4",
+        "same": true
+      },
+      {
+        "name": "tailwind-merge",
+        "before": "2.6.1",
+        "after": "2.6.1",
+        "same": true
+      },
+      {
+        "name": "tailwindcss",
+        "before": "3.4.19",
+        "after": "3.4.19",
+        "same": true
+      },
+      {
+        "name": "typescript-eslint",
+        "before": "8.63.0",
+        "after": "8.63.0",
+        "same": true
+      },
+      {
+        "name": "typescript",
+        "before": "5.9.3",
+        "after": "5.9.3",
+        "same": true
+      },
+      {
+        "name": "vite",
+        "before": "6.4.3",
+        "after": "6.4.3",
+        "same": true
+      },
+      {
+        "name": "vitest",
+        "before": "2.1.9",
+        "after": "2.1.9",
+        "same": true
+      },
+      {
+        "name": "zod",
+        "before": "3.25.76",
+        "after": "3.25.76",
+        "same": true
+      }
+    ]
+  },
+  "mismatches": [],
+  "note": "This compares version metadata, not byte hashes of every preexisting dependency file."
+}

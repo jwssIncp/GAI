@@ -1,0 +1,17 @@
+{
+  "executedAt": "2026-11-03T01:48:42.012Z",
+  "results": [
+    {
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.users.config.ts"
+      ],
+      "cwd": "gai-frontend",
+      "exitCode": 0,
+      "durationMs": 265921
+    }
+  ]
+}

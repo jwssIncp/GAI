@@ -1,3 +1,4 @@
+import { fixturePasswords } from '../../fixtures/passwords';
 import { INestApplication } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import request from 'supertest';
@@ -26,7 +27,7 @@ describe('Auth - Organization gate (e2e)', () => {
   it('blocks login when organization is inactive', async () => {
     await request(app.getHttpServer())
       .post('/api/v1/auth/login')
-      .send({ identifier: 'test.user', password: 'Test@123456' })
+      .send({ identifier: 'test.user', password: fixturePasswords.user })
       .expect(401);
   });
 });

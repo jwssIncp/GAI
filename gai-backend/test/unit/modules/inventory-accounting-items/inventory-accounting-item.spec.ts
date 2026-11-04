@@ -36,6 +36,27 @@ function makeItem(
 }
 
 describe('InventoryAccountingItem domain', () => {
+  it('preserves omitted patch fields and explicitly clears nullable series only with null', () => {
+    const item = new InventoryAccountingItem({
+      ...makeItem().toProps(),
+      serialNumber: 'SN100',
+    });
+    const changes = item.updateFields({
+      description: 'Notebook revisado',
+      serialNumber: undefined,
+      plate: undefined,
+    });
+    expect(changes).not.toHaveProperty('serial_number');
+    expect(item.toProps()).toMatchObject({
+      serialNumber: 'SN100',
+      plate: 'ABC1234',
+      description: 'Notebook revisado',
+    });
+    expect(item.updateFields({ serialNumber: null })).toHaveProperty(
+      'serial_number',
+      { before: 'SN100', after: null },
+    );
+  });
   it('rejects invalid decimal strings', () => {
     expect(
       () =>

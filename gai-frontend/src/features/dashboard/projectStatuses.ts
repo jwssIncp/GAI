@@ -1,0 +1,1 @@
+export const projectStatuses: Record<string, string> = { draft: 'Rascunho', active: 'Em aberto (ativo)', paused: 'Pausado', inactive: 'Inativo', finished: 'Concluído', cancelled: 'Cancelado', archived: 'Arquivado' };

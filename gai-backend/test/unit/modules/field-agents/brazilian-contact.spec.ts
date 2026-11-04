@@ -45,9 +45,13 @@ describe('Brazilian field-agent contact validation', () => {
   );
 
   it('does not turn unrelated database failures into conflicts', () => {
-    const error = new QueryFailedError('SELECT 1', [], {
-      code: 'ER_LOCK_WAIT_TIMEOUT',
-    });
+    const error = new QueryFailedError(
+      'SELECT 1',
+      [],
+      Object.assign(new Error('Timeout'), {
+        code: 'ER_LOCK_WAIT_TIMEOUT',
+      }),
+    );
     expect(duplicateFieldFromDatabase(error)).toBeNull();
     expect(isActiveAssignmentDuplicate(error)).toBe(false);
   });

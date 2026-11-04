@@ -1,0 +1,347 @@
+{
+  "verified_at": "2026-10-28T15:57:21.400Z",
+  "database": {
+    "environment": "local",
+    "host": "localhost",
+    "db": "gai",
+    "hostname": "f10269ba8da4",
+    "port": 3306,
+    "version": "8.0.46",
+    "migration_count": 30,
+    "last_migration": "CreateManagerialDre1793800000001",
+    "permissions": [
+      {
+        "key": "dre:adjust",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "dre:classify",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "dre:configure",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "dre:export",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "dre:periods",
+        "scope": "ORGANIZATION"
+      },
+      {
+        "key": "dre:read",
+        "scope": "ORGANIZATION"
+      }
+    ],
+    "custom_role_permissions": [
+      "users:read"
+    ],
+    "export": {
+      "id": 16,
+      "status": "finished",
+      "checksum": "d37a370f2c32ffff8aff9f4c588959bb4c11779d0a8fb15d0e58df1c2a825083",
+      "permissions": [
+        "dre:read",
+        "dre:export",
+        "receivables:read",
+        "expenses:read",
+        "payments:read"
+      ]
+    }
+  },
+  "backend_health": {
+    "status": "ok"
+  },
+  "frontend_status": 200,
+  "synthetic": {
+    "project": 38,
+    "company": 20,
+    "receivable": 7,
+    "entryId": 3,
+    "account": 4,
+    "revision": 2,
+    "month": "2026-01",
+    "issued_on": "2026-10-01",
+    "amount": "80.01",
+    "errors": [],
+    "http": []
+  },
+  "recognition": {
+    "id": 3,
+    "organization_id": 1,
+    "project_id": 38,
+    "revision": 2,
+    "allocations": [
+      {
+        "month": "2026-01",
+        "amount": "80.01",
+        "account": {
+          "id": 4,
+          "code": "SYN.1793202553002",
+          "name": "SINTETICO DRE 1793202553002",
+          "path": [
+            "SYN.1793202553002 SINTETICO DRE 1793202553002"
+          ],
+          "group": "revenue",
+          "revision": 1
+        }
+      }
+    ],
+    "version_hashes": [
+      {
+        "revision": 2,
+        "hash": "2dab473d0bb5a16c80ac067dbc50a18d3040839092bd71975b59c588cd09a830",
+        "reason": "SINTETICO ajuste documental de escopo reconhecido"
+      },
+      {
+        "revision": 1,
+        "hash": "a6b5a1430037d1d91c3475e99080f0da591400a88259e0de0b39e3051954ee90",
+        "reason": "Competencia documental janeiro, emissao e caixa em outubro"
+      }
+    ]
+  },
+  "report": {
+    "engine_version": "managerial-accrual-v1",
+    "complete": false,
+    "totals": [
+      {
+        "currency": "BRL",
+        "lines": [
+          {
+            "key": "revenue",
+            "label": "Receita bruta",
+            "groups": [
+              "revenue"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          },
+          {
+            "key": "deductions",
+            "label": "Deduções da receita",
+            "groups": [
+              "deductions"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "net_revenue",
+            "label": "Receita líquida",
+            "groups": [
+              "revenue",
+              "deductions"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          },
+          {
+            "key": "direct_cost",
+            "label": "Custos dos serviços",
+            "groups": [
+              "direct_cost"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "gross_profit",
+            "label": "Lucro bruto gerencial",
+            "groups": [
+              "revenue",
+              "deductions",
+              "direct_cost"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          },
+          {
+            "key": "operating_expense",
+            "label": "Despesas operacionais",
+            "groups": [
+              "operating_expense"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "operating_result",
+            "label": "Resultado operacional",
+            "groups": [
+              "revenue",
+              "deductions",
+              "direct_cost",
+              "operating_expense"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          },
+          {
+            "key": "financial_income",
+            "label": "Receitas financeiras",
+            "groups": [
+              "financial_income"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "financial_expense",
+            "label": "Despesas financeiras",
+            "groups": [
+              "financial_expense"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "financial_result",
+            "label": "Resultado financeiro",
+            "groups": [
+              "financial_income",
+              "financial_expense"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "before_tax",
+            "label": "Resultado gerencial antes de tributos sobre lucro",
+            "groups": [
+              "revenue",
+              "deductions",
+              "direct_cost",
+              "operating_expense",
+              "financial_income",
+              "financial_expense"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          },
+          {
+            "key": "income_tax",
+            "label": "Tributos sobre lucro reconhecidos",
+            "groups": [
+              "income_tax"
+            ],
+            "known_amount": "0.00",
+            "amount": null,
+            "complete": false,
+            "entry_ids": []
+          },
+          {
+            "key": "after_tax",
+            "label": "Resultado gerencial após tributos reconhecidos",
+            "groups": [
+              "revenue",
+              "deductions",
+              "direct_cost",
+              "operating_expense",
+              "financial_income",
+              "financial_expense",
+              "income_tax"
+            ],
+            "known_amount": "80.01",
+            "amount": null,
+            "complete": false,
+            "entry_ids": [
+              3
+            ]
+          }
+        ],
+        "gross_margin": null,
+        "operating_margin": null,
+        "known_gross_margin": "100.00",
+        "known_operating_margin": "100.00",
+        "complete": false,
+        "unclassified_amount": "0.00"
+      }
+    ],
+    "pending_sources": [
+      {
+        "kind": "receivable",
+        "id": 7,
+        "key": "receivable:7",
+        "project_id": 38,
+        "amount": "100.01",
+        "currency": "BRL",
+        "eligible": true,
+        "description": "SINTETICO DRE 1793202553002",
+        "hint_date": "2026-10-01",
+        "hash": "e002035f1bf84de2e36a2a1a56655124a156a114b387517d75c4ff030dcb3362",
+        "remaining_amount": "20.00"
+      }
+    ],
+    "warnings": [
+      "DRE gerencial por competência explícita; não é demonstração contábil oficial.",
+      "Valores apurados parciais não são lucro definitivo. Ausência de cobertura não equivale a zero.",
+      "Datas financeiras são referências documentais; não atribuem competência automaticamente.",
+      "Fontes sem reconhecimento: competência desconhecida, apresentadas fora dos resultados independentemente do período consultado."
+    ]
+  },
+  "period": {
+    "month": "2024-11",
+    "closed": false,
+    "revision": 2,
+    "hash": "ae869b8a8cfe13e9541d99282d7141f4e2231423033b9bf61d5e9113b89dc0dc",
+    "history": [
+      {
+        "id": 12,
+        "operation": "period-reopen:2024-11",
+        "reason": "SINTETICO reabertura apos homologacao para manter periodo aberto"
+      },
+      {
+        "id": 11,
+        "operation": "period-close:2024-11",
+        "reason": "SINTETICO teste de fechamento parcial e reabertura imediata"
+      }
+    ]
+  },
+  "workbook": {
+    "sheets": [
+      "DRE Gerencial",
+      "Comparativo mensal",
+      "Lançamentos",
+      "Não classificados",
+      "Fontes sem competência",
+      "Cobertura e regras"
+    ],
+    "lines": 13,
+    "pending_rows": 1
+  },
+  "note": "Somente dados SINTETICO adicionados em desenvolvimento. Sem producao, commit, push ou deploy."
+}

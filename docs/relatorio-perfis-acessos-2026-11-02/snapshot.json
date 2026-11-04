@@ -1,0 +1,1753 @@
+{
+  "inspectedAt": "2026-11-02T18:05:54.575Z",
+  "environment": "local",
+  "database": "gai",
+  "host": "localhost",
+  "organizations": [
+    {
+      "id": 1,
+      "legal_name": "GAI Test Organization",
+      "trade_name": "GAI Test",
+      "status": "ACTIVE"
+    },
+    {
+      "id": 2,
+      "legal_name": "SINTETICO Outra Organizacao 1793117419454",
+      "trade_name": null,
+      "status": "ACTIVE"
+    }
+  ],
+  "roles": [
+    {
+      "id": 1,
+      "key": "PLATFORM_ADMIN",
+      "type": "SYSTEM",
+      "organization_id": null,
+      "name": "Platform Administrator",
+      "description": "Full platform access",
+      "is_active": 1
+    },
+    {
+      "id": 2,
+      "key": "ORG_ADMIN",
+      "type": "SYSTEM",
+      "organization_id": null,
+      "name": "Organization Administrator",
+      "description": "Full organization access",
+      "is_active": 1
+    },
+    {
+      "id": 3,
+      "key": null,
+      "type": "ORGANIZATION",
+      "organization_id": 1,
+      "name": "Operador",
+      "description": "Basic operator role",
+      "is_active": 1
+    }
+  ],
+  "permissions": [
+    {
+      "id": 1,
+      "key": "organizations:read",
+      "resource": "organizations",
+      "action": "read",
+      "scope": "PLATFORM",
+      "description": "Listar e consultar organizations"
+    },
+    {
+      "id": 2,
+      "key": "organizations:write",
+      "resource": "organizations",
+      "action": "write",
+      "scope": "PLATFORM",
+      "description": "Criar e atualizar organizations"
+    },
+    {
+      "id": 133,
+      "key": "asset-valuations:batch-create",
+      "resource": "asset-valuations",
+      "action": "batch-create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar avaliações patrimoniais em lote"
+    },
+    {
+      "id": 119,
+      "key": "asset-valuations:create",
+      "resource": "asset-valuations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar avaliacao manual"
+    },
+    {
+      "id": 120,
+      "key": "asset-valuations:read",
+      "resource": "asset-valuations",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar historico de avaliacoes"
+    },
+    {
+      "id": 7,
+      "key": "assets:read",
+      "resource": "assets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Reservado — leitura de ativos (módulo futuro)"
+    },
+    {
+      "id": 8,
+      "key": "assets:write",
+      "resource": "assets",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Reservado — escrita de ativos (módulo futuro)"
+    },
+    {
+      "id": 131,
+      "key": "assisted-reconciliation:generate",
+      "resource": "assisted-reconciliation",
+      "action": "generate",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: generate"
+    },
+    {
+      "id": 130,
+      "key": "assisted-reconciliation:read",
+      "resource": "assisted-reconciliation",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: read"
+    },
+    {
+      "id": 132,
+      "key": "assisted-reconciliation:review",
+      "resource": "assisted-reconciliation",
+      "action": "review",
+      "scope": "ORGANIZATION",
+      "description": "Conciliação assistida: review"
+    },
+    {
+      "id": 142,
+      "key": "budgets:approve",
+      "resource": "budgets",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: approve"
+    },
+    {
+      "id": 141,
+      "key": "budgets:configure-prices",
+      "resource": "budgets",
+      "action": "configure-prices",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: configure-prices"
+    },
+    {
+      "id": 140,
+      "key": "budgets:edit",
+      "resource": "budgets",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: edit"
+    },
+    {
+      "id": 160,
+      "key": "budgets:export",
+      "resource": "budgets",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Documentos profissionais: budgets:export"
+    },
+    {
+      "id": 139,
+      "key": "budgets:read",
+      "resource": "budgets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Orçamentos: read"
+    },
+    {
+      "id": 147,
+      "key": "cash-flow:read",
+      "resource": "cash-flow",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: read"
+    },
+    {
+      "id": 78,
+      "key": "catalog-assets:create",
+      "resource": "catalog-assets",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar ativos do catalogo da organization"
+    },
+    {
+      "id": 81,
+      "key": "catalog-assets:deactivate",
+      "resource": "catalog-assets",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar ativos do catalogo da organization"
+    },
+    {
+      "id": 82,
+      "key": "catalog-assets:reactivate",
+      "resource": "catalog-assets",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar ativos do catalogo da organization"
+    },
+    {
+      "id": 79,
+      "key": "catalog-assets:read",
+      "resource": "catalog-assets",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar ativos do catalogo da organization"
+    },
+    {
+      "id": 80,
+      "key": "catalog-assets:update",
+      "resource": "catalog-assets",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar ativos do catalogo da organization"
+    },
+    {
+      "id": 138,
+      "key": "commercial-indicators:read",
+      "resource": "commercial-indicators",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: read"
+    },
+    {
+      "id": 83,
+      "key": "companies:create",
+      "resource": "companies",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar companies da organization"
+    },
+    {
+      "id": 86,
+      "key": "companies:deactivate",
+      "resource": "companies",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar companies"
+    },
+    {
+      "id": 87,
+      "key": "companies:reactivate",
+      "resource": "companies",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar companies"
+    },
+    {
+      "id": 84,
+      "key": "companies:read",
+      "resource": "companies",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar companies"
+    },
+    {
+      "id": 85,
+      "key": "companies:update",
+      "resource": "companies",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar companies"
+    },
+    {
+      "id": 88,
+      "key": "company-units:create",
+      "resource": "company-units",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar unidades de companies"
+    },
+    {
+      "id": 91,
+      "key": "company-units:deactivate",
+      "resource": "company-units",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar unidades de companies"
+    },
+    {
+      "id": 92,
+      "key": "company-units:reactivate",
+      "resource": "company-units",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar unidades de companies"
+    },
+    {
+      "id": 89,
+      "key": "company-units:read",
+      "resource": "company-units",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar unidades de companies"
+    },
+    {
+      "id": 90,
+      "key": "company-units:update",
+      "resource": "company-units",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar unidades de companies"
+    },
+    {
+      "id": 118,
+      "key": "consolidations:create",
+      "resource": "consolidations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Consolidar evidencias de conciliacao"
+    },
+    {
+      "id": 136,
+      "key": "contracts:amend",
+      "resource": "contracts",
+      "action": "amend",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: amend"
+    },
+    {
+      "id": 137,
+      "key": "contracts:archive",
+      "resource": "contracts",
+      "action": "archive",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: archive"
+    },
+    {
+      "id": 135,
+      "key": "contracts:edit",
+      "resource": "contracts",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: edit"
+    },
+    {
+      "id": 134,
+      "key": "contracts:read",
+      "resource": "contracts",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Gestão contratual: read"
+    },
+    {
+      "id": 161,
+      "key": "documents:templates",
+      "resource": "documents",
+      "action": "templates",
+      "scope": "ORGANIZATION",
+      "description": "Documentos profissionais: documents:templates"
+    },
+    {
+      "id": 152,
+      "key": "dre:adjust",
+      "resource": "dre",
+      "action": "adjust",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: adjust"
+    },
+    {
+      "id": 151,
+      "key": "dre:classify",
+      "resource": "dre",
+      "action": "classify",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: classify"
+    },
+    {
+      "id": 150,
+      "key": "dre:configure",
+      "resource": "dre",
+      "action": "configure",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: configure"
+    },
+    {
+      "id": 154,
+      "key": "dre:export",
+      "resource": "dre",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: export"
+    },
+    {
+      "id": 153,
+      "key": "dre:periods",
+      "resource": "dre",
+      "action": "periods",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: periods"
+    },
+    {
+      "id": 149,
+      "key": "dre:read",
+      "resource": "dre",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "DRE gerencial: read"
+    },
+    {
+      "id": 108,
+      "key": "expense-accountabilities:close",
+      "resource": "expense-accountabilities",
+      "action": "close",
+      "scope": "ORGANIZATION",
+      "description": "Fechar prestacoes de contas"
+    },
+    {
+      "id": 105,
+      "key": "expense-accountabilities:create",
+      "resource": "expense-accountabilities",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Abrir prestacoes de contas"
+    },
+    {
+      "id": 106,
+      "key": "expense-accountabilities:read",
+      "resource": "expense-accountabilities",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar prestacoes de contas"
+    },
+    {
+      "id": 107,
+      "key": "expense-accountabilities:update",
+      "resource": "expense-accountabilities",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Vincular despesas a prestacoes"
+    },
+    {
+      "id": 109,
+      "key": "expense-installments:create",
+      "resource": "expense-installments",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Gerar parcelas de despesas"
+    },
+    {
+      "id": 110,
+      "key": "expense-installments:read",
+      "resource": "expense-installments",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar parcelas de despesas"
+    },
+    {
+      "id": 60,
+      "key": "expenses:approve",
+      "resource": "expenses",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Aprovar despesas"
+    },
+    {
+      "id": 63,
+      "key": "expenses:cancel",
+      "resource": "expenses",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar despesas"
+    },
+    {
+      "id": 57,
+      "key": "expenses:create",
+      "resource": "expenses",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar despesas"
+    },
+    {
+      "id": 65,
+      "key": "expenses:download-attachment",
+      "resource": "expenses",
+      "action": "download-attachment",
+      "scope": "ORGANIZATION",
+      "description": "Baixar comprovantes de despesas"
+    },
+    {
+      "id": 62,
+      "key": "expenses:mark-as-paid",
+      "resource": "expenses",
+      "action": "mark-as-paid",
+      "scope": "ORGANIZATION",
+      "description": "Marcar despesas como pagas"
+    },
+    {
+      "id": 58,
+      "key": "expenses:read",
+      "resource": "expenses",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar despesas"
+    },
+    {
+      "id": 61,
+      "key": "expenses:reject",
+      "resource": "expenses",
+      "action": "reject",
+      "scope": "ORGANIZATION",
+      "description": "Rejeitar despesas"
+    },
+    {
+      "id": 59,
+      "key": "expenses:update",
+      "resource": "expenses",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar despesas"
+    },
+    {
+      "id": 64,
+      "key": "expenses:upload-attachment",
+      "resource": "expenses",
+      "action": "upload-attachment",
+      "scope": "ORGANIZATION",
+      "description": "Criar e confirmar comprovantes de despesas"
+    },
+    {
+      "id": 125,
+      "key": "export-jobs:cancel",
+      "resource": "export-jobs",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar exportacoes de projects"
+    },
+    {
+      "id": 122,
+      "key": "export-jobs:create",
+      "resource": "export-jobs",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Solicitar exportacoes de projects"
+    },
+    {
+      "id": 124,
+      "key": "export-jobs:download",
+      "resource": "export-jobs",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Baixar exportacoes de projects"
+    },
+    {
+      "id": 123,
+      "key": "export-jobs:read",
+      "resource": "export-jobs",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar exportacoes de projects"
+    },
+    {
+      "id": 126,
+      "key": "export-jobs:retry",
+      "resource": "export-jobs",
+      "action": "retry",
+      "scope": "ORGANIZATION",
+      "description": "Repetir exportacoes de projects"
+    },
+    {
+      "id": 102,
+      "key": "field-agents:block",
+      "resource": "field-agents",
+      "action": "block",
+      "scope": "ORGANIZATION",
+      "description": "Bloquear inventariantes da organization"
+    },
+    {
+      "id": 17,
+      "key": "field-agents:create",
+      "resource": "field-agents",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar inventariantes da organization"
+    },
+    {
+      "id": 20,
+      "key": "field-agents:deactivate",
+      "resource": "field-agents",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar inventariantes da organization"
+    },
+    {
+      "id": 104,
+      "key": "field-agents:delete",
+      "resource": "field-agents",
+      "action": "delete",
+      "scope": "ORGANIZATION",
+      "description": "Excluir inventariantes logicamente"
+    },
+    {
+      "id": 21,
+      "key": "field-agents:reactivate",
+      "resource": "field-agents",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar inventariantes da organization"
+    },
+    {
+      "id": 18,
+      "key": "field-agents:read",
+      "resource": "field-agents",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar inventariantes da organization"
+    },
+    {
+      "id": 103,
+      "key": "field-agents:unblock",
+      "resource": "field-agents",
+      "action": "unblock",
+      "scope": "ORGANIZATION",
+      "description": "Desbloquear inventariantes da organization"
+    },
+    {
+      "id": 19,
+      "key": "field-agents:update",
+      "resource": "field-agents",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar inventariantes da organization"
+    },
+    {
+      "id": 129,
+      "key": "field-coordination:coordinate",
+      "resource": "field-coordination",
+      "action": "coordinate",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: coordinate"
+    },
+    {
+      "id": 128,
+      "key": "field-coordination:edit",
+      "resource": "field-coordination",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: edit"
+    },
+    {
+      "id": 127,
+      "key": "field-coordination:read",
+      "resource": "field-coordination",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Coordenação de campo: read"
+    },
+    {
+      "id": 148,
+      "key": "finance:export",
+      "resource": "finance",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: export"
+    },
+    {
+      "id": 74,
+      "key": "import-errors:read",
+      "resource": "import-errors",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar erros de importacao"
+    },
+    {
+      "id": 75,
+      "key": "import-files:create",
+      "resource": "import-files",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar e confirmar arquivos de importacao"
+    },
+    {
+      "id": 77,
+      "key": "import-files:download",
+      "resource": "import-files",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Baixar arquivos de importacao"
+    },
+    {
+      "id": 76,
+      "key": "import-files:read",
+      "resource": "import-files",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar arquivos de importacao"
+    },
+    {
+      "id": 71,
+      "key": "import-payloads:create",
+      "resource": "import-payloads",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Receber payloads de importacao"
+    },
+    {
+      "id": 72,
+      "key": "import-payloads:read",
+      "resource": "import-payloads",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar payloads de importacao"
+    },
+    {
+      "id": 73,
+      "key": "import-payloads:reprocess",
+      "resource": "import-payloads",
+      "action": "reprocess",
+      "scope": "ORGANIZATION",
+      "description": "Reprocessar payloads com falha"
+    },
+    {
+      "id": 69,
+      "key": "import-sessions:cancel",
+      "resource": "import-sessions",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar sessoes de importacao"
+    },
+    {
+      "id": 66,
+      "key": "import-sessions:create",
+      "resource": "import-sessions",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar sessoes de importacao"
+    },
+    {
+      "id": 68,
+      "key": "import-sessions:finish",
+      "resource": "import-sessions",
+      "action": "finish",
+      "scope": "ORGANIZATION",
+      "description": "Finalizar sessoes de importacao"
+    },
+    {
+      "id": 67,
+      "key": "import-sessions:read",
+      "resource": "import-sessions",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar sessoes de importacao"
+    },
+    {
+      "id": 70,
+      "key": "import-sessions:retry",
+      "resource": "import-sessions",
+      "action": "retry",
+      "scope": "ORGANIZATION",
+      "description": "Reprocessar sessoes com falha"
+    },
+    {
+      "id": 36,
+      "key": "inventory-accounting-items:create",
+      "resource": "inventory-accounting-items",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar itens da base contabil da organization"
+    },
+    {
+      "id": 39,
+      "key": "inventory-accounting-items:deactivate",
+      "resource": "inventory-accounting-items",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar itens da base contabil da organization"
+    },
+    {
+      "id": 42,
+      "key": "inventory-accounting-items:export-errors",
+      "resource": "inventory-accounting-items",
+      "action": "export-errors",
+      "scope": "ORGANIZATION",
+      "description": "Consultar relatorios de erro da importacao contabil"
+    },
+    {
+      "id": 41,
+      "key": "inventory-accounting-items:import",
+      "resource": "inventory-accounting-items",
+      "action": "import",
+      "scope": "ORGANIZATION",
+      "description": "Importar planilhas da base contabil da organization"
+    },
+    {
+      "id": 40,
+      "key": "inventory-accounting-items:reactivate",
+      "resource": "inventory-accounting-items",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar itens da base contabil da organization"
+    },
+    {
+      "id": 37,
+      "key": "inventory-accounting-items:read",
+      "resource": "inventory-accounting-items",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar itens da base contabil da organization"
+    },
+    {
+      "id": 38,
+      "key": "inventory-accounting-items:update",
+      "resource": "inventory-accounting-items",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar itens da base contabil da organization"
+    },
+    {
+      "id": 31,
+      "key": "inventory-item-images:create",
+      "resource": "inventory-item-images",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar URLs de upload de imagens dos itens inventariados"
+    },
+    {
+      "id": 35,
+      "key": "inventory-item-images:download",
+      "resource": "inventory-item-images",
+      "action": "download",
+      "scope": "ORGANIZATION",
+      "description": "Gerar URLs de download de imagens dos itens inventariados"
+    },
+    {
+      "id": 32,
+      "key": "inventory-item-images:read",
+      "resource": "inventory-item-images",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar imagens dos itens inventariados"
+    },
+    {
+      "id": 34,
+      "key": "inventory-item-images:remove",
+      "resource": "inventory-item-images",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover logicamente imagens dos itens inventariados"
+    },
+    {
+      "id": 33,
+      "key": "inventory-item-images:update",
+      "resource": "inventory-item-images",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Confirmar upload de imagens dos itens inventariados"
+    },
+    {
+      "id": 26,
+      "key": "inventory-items:create",
+      "resource": "inventory-items",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar itens inventariados da organization"
+    },
+    {
+      "id": 29,
+      "key": "inventory-items:deactivate",
+      "resource": "inventory-items",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar itens inventariados da organization"
+    },
+    {
+      "id": 30,
+      "key": "inventory-items:reactivate",
+      "resource": "inventory-items",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar itens inventariados da organization"
+    },
+    {
+      "id": 27,
+      "key": "inventory-items:read",
+      "resource": "inventory-items",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar itens inventariados da organization"
+    },
+    {
+      "id": 28,
+      "key": "inventory-items:update",
+      "resource": "inventory-items",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar itens inventariados da organization"
+    },
+    {
+      "id": 115,
+      "key": "inventory-observations:create",
+      "resource": "inventory-observations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Registrar observacoes de campo"
+    },
+    {
+      "id": 48,
+      "key": "inventory-pending-issues:cancel",
+      "resource": "inventory-pending-issues",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar pendencias patrimoniais da organization"
+    },
+    {
+      "id": 43,
+      "key": "inventory-pending-issues:create",
+      "resource": "inventory-pending-issues",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar pendencias patrimoniais da organization"
+    },
+    {
+      "id": 49,
+      "key": "inventory-pending-issues:generate",
+      "resource": "inventory-pending-issues",
+      "action": "generate",
+      "scope": "ORGANIZATION",
+      "description": "Gerar pendencias patrimoniais automaticamente"
+    },
+    {
+      "id": 47,
+      "key": "inventory-pending-issues:ignore",
+      "resource": "inventory-pending-issues",
+      "action": "ignore",
+      "scope": "ORGANIZATION",
+      "description": "Ignorar pendencias patrimoniais da organization"
+    },
+    {
+      "id": 44,
+      "key": "inventory-pending-issues:read",
+      "resource": "inventory-pending-issues",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar pendencias patrimoniais da organization"
+    },
+    {
+      "id": 46,
+      "key": "inventory-pending-issues:resolve",
+      "resource": "inventory-pending-issues",
+      "action": "resolve",
+      "scope": "ORGANIZATION",
+      "description": "Resolver pendencias patrimoniais da organization"
+    },
+    {
+      "id": 45,
+      "key": "inventory-pending-issues:update",
+      "resource": "inventory-pending-issues",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar pendencias patrimoniais da organization"
+    },
+    {
+      "id": 114,
+      "key": "inventory-rounds:reinventory",
+      "resource": "inventory-rounds",
+      "action": "reinventory",
+      "scope": "ORGANIZATION",
+      "description": "Solicitar reinventario preservando historico"
+    },
+    {
+      "id": 111,
+      "key": "inventory-sessions:create",
+      "resource": "inventory-sessions",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar sessoes de inventario"
+    },
+    {
+      "id": 112,
+      "key": "inventory-sessions:read",
+      "resource": "inventory-sessions",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar sessoes e historico de inventario"
+    },
+    {
+      "id": 113,
+      "key": "inventory-sessions:update",
+      "resource": "inventory-sessions",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Iniciar e finalizar sessoes e rodadas"
+    },
+    {
+      "id": 5,
+      "key": "org_roles:read",
+      "resource": "org_roles",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar papéis customizados da organization"
+    },
+    {
+      "id": 6,
+      "key": "org_roles:write",
+      "resource": "org_roles",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Gerenciar papéis customizados da organization"
+    },
+    {
+      "id": 53,
+      "key": "payments:approve",
+      "resource": "payments",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Aprovar pagamentos"
+    },
+    {
+      "id": 55,
+      "key": "payments:cancel",
+      "resource": "payments",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar pagamentos"
+    },
+    {
+      "id": 50,
+      "key": "payments:create",
+      "resource": "payments",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar pagamentos de inventariantes"
+    },
+    {
+      "id": 56,
+      "key": "payments:export",
+      "resource": "payments",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Exportar pagamentos"
+    },
+    {
+      "id": 54,
+      "key": "payments:mark-as-paid",
+      "resource": "payments",
+      "action": "mark-as-paid",
+      "scope": "ORGANIZATION",
+      "description": "Marcar pagamentos como pagos"
+    },
+    {
+      "id": 51,
+      "key": "payments:read",
+      "resource": "payments",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar pagamentos"
+    },
+    {
+      "id": 52,
+      "key": "payments:update",
+      "resource": "payments",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar pagamentos"
+    },
+    {
+      "id": 121,
+      "key": "plate-history:read",
+      "resource": "plate-history",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar historico e fontes de placas"
+    },
+    {
+      "id": 22,
+      "key": "project-field-agents:assign",
+      "resource": "project-field-agents",
+      "action": "assign",
+      "scope": "ORGANIZATION",
+      "description": "Vincular inventariantes a projects"
+    },
+    {
+      "id": 23,
+      "key": "project-field-agents:read",
+      "resource": "project-field-agents",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar inventariantes de projects"
+    },
+    {
+      "id": 25,
+      "key": "project-field-agents:remove",
+      "resource": "project-field-agents",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover logicamente inventariantes de projects"
+    },
+    {
+      "id": 24,
+      "key": "project-field-agents:update",
+      "resource": "project-field-agents",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar vinculos de inventariantes em projects"
+    },
+    {
+      "id": 98,
+      "key": "project-preparation:approve",
+      "resource": "project-preparation",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Aprovar e reabrir preparação de projetos"
+    },
+    {
+      "id": 97,
+      "key": "project-preparation:edit",
+      "resource": "project-preparation",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Gerenciar modelos e respostas de preparação"
+    },
+    {
+      "id": 96,
+      "key": "project-preparation:read",
+      "resource": "project-preparation",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar preparação, modelos e comunicação"
+    },
+    {
+      "id": 93,
+      "key": "project-units:assign",
+      "resource": "project-units",
+      "action": "assign",
+      "scope": "ORGANIZATION",
+      "description": "Vincular unidades a projects"
+    },
+    {
+      "id": 94,
+      "key": "project-units:read",
+      "resource": "project-units",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar unidades de projects"
+    },
+    {
+      "id": 95,
+      "key": "project-units:remove",
+      "resource": "project-units",
+      "action": "remove",
+      "scope": "ORGANIZATION",
+      "description": "Remover unidades de projects"
+    },
+    {
+      "id": 99,
+      "key": "projects:activate",
+      "resource": "projects",
+      "action": "activate",
+      "scope": "ORGANIZATION",
+      "description": "Ativar projects da organization"
+    },
+    {
+      "id": 16,
+      "key": "projects:archive",
+      "resource": "projects",
+      "action": "archive",
+      "scope": "ORGANIZATION",
+      "description": "Arquivar projects da organization"
+    },
+    {
+      "id": 15,
+      "key": "projects:cancel",
+      "resource": "projects",
+      "action": "cancel",
+      "scope": "ORGANIZATION",
+      "description": "Cancelar projects da organization"
+    },
+    {
+      "id": 9,
+      "key": "projects:create",
+      "resource": "projects",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Criar projects da organization"
+    },
+    {
+      "id": 12,
+      "key": "projects:deactivate",
+      "resource": "projects",
+      "action": "deactivate",
+      "scope": "ORGANIZATION",
+      "description": "Desativar projects da organization"
+    },
+    {
+      "id": 14,
+      "key": "projects:finish",
+      "resource": "projects",
+      "action": "finish",
+      "scope": "ORGANIZATION",
+      "description": "Finalizar projects da organization"
+    },
+    {
+      "id": 100,
+      "key": "projects:pause",
+      "resource": "projects",
+      "action": "pause",
+      "scope": "ORGANIZATION",
+      "description": "Pausar projects da organization"
+    },
+    {
+      "id": 13,
+      "key": "projects:reactivate",
+      "resource": "projects",
+      "action": "reactivate",
+      "scope": "ORGANIZATION",
+      "description": "Reativar projects da organization"
+    },
+    {
+      "id": 10,
+      "key": "projects:read",
+      "resource": "projects",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar projects da organization"
+    },
+    {
+      "id": 101,
+      "key": "projects:resume",
+      "resource": "projects",
+      "action": "resume",
+      "scope": "ORGANIZATION",
+      "description": "Retomar projects da organization"
+    },
+    {
+      "id": 11,
+      "key": "projects:update",
+      "resource": "projects",
+      "action": "update",
+      "scope": "ORGANIZATION",
+      "description": "Atualizar projects da organization"
+    },
+    {
+      "id": 144,
+      "key": "receivables:edit",
+      "resource": "receivables",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: edit"
+    },
+    {
+      "id": 143,
+      "key": "receivables:read",
+      "resource": "receivables",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: read"
+    },
+    {
+      "id": 145,
+      "key": "receivables:receive",
+      "resource": "receivables",
+      "action": "receive",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: receive"
+    },
+    {
+      "id": 146,
+      "key": "receivables:reverse",
+      "resource": "receivables",
+      "action": "reverse",
+      "scope": "ORGANIZATION",
+      "description": "Financeiro: reverse"
+    },
+    {
+      "id": 116,
+      "key": "reconciliations:create",
+      "resource": "reconciliations",
+      "action": "create",
+      "scope": "ORGANIZATION",
+      "description": "Executar conciliacao fisico-contabil"
+    },
+    {
+      "id": 117,
+      "key": "reconciliations:read",
+      "resource": "reconciliations",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Consultar conciliacoes"
+    },
+    {
+      "id": 158,
+      "key": "technical-reports:approve",
+      "resource": "technical-reports",
+      "action": "approve",
+      "scope": "ORGANIZATION",
+      "description": "Laudos técnicos: approve"
+    },
+    {
+      "id": 156,
+      "key": "technical-reports:edit",
+      "resource": "technical-reports",
+      "action": "edit",
+      "scope": "ORGANIZATION",
+      "description": "Laudos técnicos: edit"
+    },
+    {
+      "id": 159,
+      "key": "technical-reports:export",
+      "resource": "technical-reports",
+      "action": "export",
+      "scope": "ORGANIZATION",
+      "description": "Laudos técnicos: export"
+    },
+    {
+      "id": 155,
+      "key": "technical-reports:read",
+      "resource": "technical-reports",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Laudos técnicos: read"
+    },
+    {
+      "id": 157,
+      "key": "technical-reports:templates",
+      "resource": "technical-reports",
+      "action": "templates",
+      "scope": "ORGANIZATION",
+      "description": "Laudos técnicos: templates"
+    },
+    {
+      "id": 3,
+      "key": "users:read",
+      "resource": "users",
+      "action": "read",
+      "scope": "ORGANIZATION",
+      "description": "Listar e consultar usuários da organization"
+    },
+    {
+      "id": 4,
+      "key": "users:write",
+      "resource": "users",
+      "action": "write",
+      "scope": "ORGANIZATION",
+      "description": "Criar e atualizar usuários da organization"
+    }
+  ],
+  "rolePermissions": [
+    {
+      "role_id": 3,
+      "permission_id": 3
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "organization_id": null,
+      "login": "platform.admin",
+      "status": "ACTIVE",
+      "locked_until": null
+    },
+    {
+      "id": 2,
+      "organization_id": 1,
+      "login": "org.admin",
+      "status": "ACTIVE",
+      "locked_until": null
+    },
+    {
+      "id": 3,
+      "organization_id": 1,
+      "login": "test.user",
+      "status": "ACTIVE",
+      "locked_until": null
+    }
+  ],
+  "assignments": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "role_id": 1,
+      "is_active": 1,
+      "assigned_at": "2026-07-13T15:33:18.470Z",
+      "revoked_at": null
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "role_id": 2,
+      "is_active": 1,
+      "assigned_at": "2026-07-13T15:33:18.616Z",
+      "revoked_at": null
+    },
+    {
+      "id": 3,
+      "user_id": 3,
+      "role_id": 3,
+      "is_active": 1,
+      "assigned_at": "2026-07-13T15:33:18.771Z",
+      "revoked_at": null
+    }
+  ],
+  "effectiveUsers": [
+    {
+      "id": 1,
+      "login": "platform.admin",
+      "organizationId": null,
+      "status": "ACTIVE",
+      "eligibleRoleIds": [
+        1
+      ],
+      "permissionKeys": [
+        "asset-valuations:batch-create",
+        "asset-valuations:create",
+        "asset-valuations:read",
+        "assets:read",
+        "assets:write",
+        "assisted-reconciliation:generate",
+        "assisted-reconciliation:read",
+        "assisted-reconciliation:review",
+        "budgets:approve",
+        "budgets:configure-prices",
+        "budgets:edit",
+        "budgets:export",
+        "budgets:read",
+        "cash-flow:read",
+        "catalog-assets:create",
+        "catalog-assets:deactivate",
+        "catalog-assets:reactivate",
+        "catalog-assets:read",
+        "catalog-assets:update",
+        "commercial-indicators:read",
+        "companies:create",
+        "companies:deactivate",
+        "companies:reactivate",
+        "companies:read",
+        "companies:update",
+        "company-units:create",
+        "company-units:deactivate",
+        "company-units:reactivate",
+        "company-units:read",
+        "company-units:update",
+        "consolidations:create",
+        "contracts:amend",
+        "contracts:archive",
+        "contracts:edit",
+        "contracts:read",
+        "documents:templates",
+        "dre:adjust",
+        "dre:classify",
+        "dre:configure",
+        "dre:export",
+        "dre:periods",
+        "dre:read",
+        "expense-accountabilities:close",
+        "expense-accountabilities:create",
+        "expense-accountabilities:read",
+        "expense-accountabilities:update",
+        "expense-installments:create",
+        "expense-installments:read",
+        "expenses:approve",
+        "expenses:cancel",
+        "expenses:create",
+        "expenses:download-attachment",
+        "expenses:mark-as-paid",
+        "expenses:read",
+        "expenses:reject",
+        "expenses:update",
+        "expenses:upload-attachment",
+        "export-jobs:cancel",
+        "export-jobs:create",
+        "export-jobs:download",
+        "export-jobs:read",
+        "export-jobs:retry",
+        "field-agents:block",
+        "field-agents:create",
+        "field-agents:deactivate",
+        "field-agents:delete",
+        "field-agents:reactivate",
+        "field-agents:read",
+        "field-agents:unblock",
+        "field-agents:update",
+        "field-coordination:coordinate",
+        "field-coordination:edit",
+        "field-coordination:read",
+        "finance:export",
+        "import-errors:read",
+        "import-files:create",
+        "import-files:download",
+        "import-files:read",
+        "import-payloads:create",
+        "import-payloads:read",
+        "import-payloads:reprocess",
+        "import-sessions:cancel",
+        "import-sessions:create",
+        "import-sessions:finish",
+        "import-sessions:read",
+        "import-sessions:retry",
+        "inventory-accounting-items:create",
+        "inventory-accounting-items:deactivate",
+        "inventory-accounting-items:export-errors",
+        "inventory-accounting-items:import",
+        "inventory-accounting-items:reactivate",
+        "inventory-accounting-items:read",
+        "inventory-accounting-items:update",
+        "inventory-item-images:create",
+        "inventory-item-images:download",
+        "inventory-item-images:read",
+        "inventory-item-images:remove",
+        "inventory-item-images:update",
+        "inventory-items:create",
+        "inventory-items:deactivate",
+        "inventory-items:reactivate",
+        "inventory-items:read",
+        "inventory-items:update",
+        "inventory-observations:create",
+        "inventory-pending-issues:cancel",
+        "inventory-pending-issues:create",
+        "inventory-pending-issues:generate",
+        "inventory-pending-issues:ignore",
+        "inventory-pending-issues:read",
+        "inventory-pending-issues:resolve",
+        "inventory-pending-issues:update",
+        "inventory-rounds:reinventory",
+        "inventory-sessions:create",
+        "inventory-sessions:read",
+        "inventory-sessions:update",
+        "org_roles:read",
+        "org_roles:write",
+        "organizations:read",
+        "organizations:write",
+        "payments:approve",
+        "payments:cancel",
+        "payments:create",
+        "payments:export",
+        "payments:mark-as-paid",
+        "payments:read",
+        "payments:update",
+        "plate-history:read",
+        "project-field-agents:assign",
+        "project-field-agents:read",
+        "project-field-agents:remove",
+        "project-field-agents:update",
+        "project-preparation:approve",
+        "project-preparation:edit",
+        "project-preparation:read",
+        "project-units:assign",
+        "project-units:read",
+        "project-units:remove",
+        "projects:activate",
+        "projects:archive",
+        "projects:cancel",
+        "projects:create",
+        "projects:deactivate",
+        "projects:finish",
+        "projects:pause",
+        "projects:reactivate",
+        "projects:read",
+        "projects:resume",
+        "projects:update",
+        "receivables:edit",
+        "receivables:read",
+        "receivables:receive",
+        "receivables:reverse",
+        "reconciliations:create",
+        "reconciliations:read",
+        "technical-reports:approve",
+        "technical-reports:edit",
+        "technical-reports:export",
+        "technical-reports:read",
+        "technical-reports:templates",
+        "users:read",
+        "users:write"
+      ],
+      "lockedUntil": null
+    },
+    {
+      "id": 2,
+      "login": "org.admin",
+      "organizationId": 1,
+      "status": "ACTIVE",
+      "eligibleRoleIds": [
+        2
+      ],
+      "permissionKeys": [
+        "asset-valuations:batch-create",
+        "asset-valuations:create",
+        "asset-valuations:read",
+        "assets:read",
+        "assets:write",
+        "assisted-reconciliation:generate",
+        "assisted-reconciliation:read",
+        "assisted-reconciliation:review",
+        "budgets:approve",
+        "budgets:configure-prices",
+        "budgets:edit",
+        "budgets:export",
+        "budgets:read",
+        "cash-flow:read",
+        "catalog-assets:create",
+        "catalog-assets:deactivate",
+        "catalog-assets:reactivate",
+        "catalog-assets:read",
+        "catalog-assets:update",
+        "commercial-indicators:read",
+        "companies:create",
+        "companies:deactivate",
+        "companies:reactivate",
+        "companies:read",
+        "companies:update",
+        "company-units:create",
+        "company-units:deactivate",
+        "company-units:reactivate",
+        "company-units:read",
+        "company-units:update",
+        "consolidations:create",
+        "contracts:amend",
+        "contracts:archive",
+        "contracts:edit",
+        "contracts:read",
+        "documents:templates",
+        "dre:adjust",
+        "dre:classify",
+        "dre:configure",
+        "dre:export",
+        "dre:periods",
+        "dre:read",
+        "expense-accountabilities:close",
+        "expense-accountabilities:create",
+        "expense-accountabilities:read",
+        "expense-accountabilities:update",
+        "expense-installments:create",
+        "expense-installments:read",
+        "expenses:approve",
+        "expenses:cancel",
+        "expenses:create",
+        "expenses:download-attachment",
+        "expenses:mark-as-paid",
+        "expenses:read",
+        "expenses:reject",
+        "expenses:update",
+        "expenses:upload-attachment",
+        "export-jobs:cancel",
+        "export-jobs:create",
+        "export-jobs:download",
+        "export-jobs:read",
+        "export-jobs:retry",
+        "field-agents:block",
+        "field-agents:create",
+        "field-agents:deactivate",
+        "field-agents:delete",
+        "field-agents:reactivate",
+        "field-agents:read",
+        "field-agents:unblock",
+        "field-agents:update",
+        "field-coordination:coordinate",
+        "field-coordination:edit",
+        "field-coordination:read",
+        "finance:export",
+        "import-errors:read",
+        "import-files:create",
+        "import-files:download",
+        "import-files:read",
+        "import-payloads:create",
+        "import-payloads:read",
+        "import-payloads:reprocess",
+        "import-sessions:cancel",
+        "import-sessions:create",
+        "import-sessions:finish",
+        "import-sessions:read",
+        "import-sessions:retry",
+        "inventory-accounting-items:create",
+        "inventory-accounting-items:deactivate",
+        "inventory-accounting-items:export-errors",
+        "inventory-accounting-items:import",
+        "inventory-accounting-items:reactivate",
+        "inventory-accounting-items:read",
+        "inventory-accounting-items:update",
+        "inventory-item-images:create",
+        "inventory-item-images:download",
+        "inventory-item-images:read",
+        "inventory-item-images:remove",
+        "inventory-item-images:update",
+        "inventory-items:create",
+        "inventory-items:deactivate",
+        "inventory-items:reactivate",
+        "inventory-items:read",
+        "inventory-items:update",
+        "inventory-observations:create",
+        "inventory-pending-issues:cancel",
+        "inventory-pending-issues:create",
+        "inventory-pending-issues:generate",
+        "inventory-pending-issues:ignore",
+        "inventory-pending-issues:read",
+        "inventory-pending-issues:resolve",
+        "inventory-pending-issues:update",
+        "inventory-rounds:reinventory",
+        "inventory-sessions:create",
+        "inventory-sessions:read",
+        "inventory-sessions:update",
+        "org_roles:read",
+        "org_roles:write",
+        "payments:approve",
+        "payments:cancel",
+        "payments:create",
+        "payments:export",
+        "payments:mark-as-paid",
+        "payments:read",
+        "payments:update",
+        "plate-history:read",
+        "project-field-agents:assign",
+        "project-field-agents:read",
+        "project-field-agents:remove",
+        "project-field-agents:update",
+        "project-preparation:approve",
+        "project-preparation:edit",
+        "project-preparation:read",
+        "project-units:assign",
+        "project-units:read",
+        "project-units:remove",
+        "projects:activate",
+        "projects:archive",
+        "projects:cancel",
+        "projects:create",
+        "projects:deactivate",
+        "projects:finish",
+        "projects:pause",
+        "projects:reactivate",
+        "projects:read",
+        "projects:resume",
+        "projects:update",
+        "receivables:edit",
+        "receivables:read",
+        "receivables:receive",
+        "receivables:reverse",
+        "reconciliations:create",
+        "reconciliations:read",
+        "technical-reports:approve",
+        "technical-reports:edit",
+        "technical-reports:export",
+        "technical-reports:read",
+        "technical-reports:templates",
+        "users:read",
+        "users:write"
+      ],
+      "lockedUntil": null
+    },
+    {
+      "id": 3,
+      "login": "test.user",
+      "organizationId": 1,
+      "status": "ACTIVE",
+      "eligibleRoleIds": [
+        3
+      ],
+      "permissionKeys": [
+        "users:read"
+      ],
+      "lockedUntil": null
+    }
+  ]
+}

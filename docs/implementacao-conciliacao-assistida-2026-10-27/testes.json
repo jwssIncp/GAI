@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-27",
+  "environment": "Local development only; synthetic fixtures; no production access",
+  "backend": {
+    "status": "passed",
+    "tests": 51,
+    "suites": 9,
+    "durationSeconds": 58.529,
+    "database": "MySQL 8 disposable; 127.0.0.1:33317/gai_validation_disposable; tmpfs; all migrations applied",
+    "scope": [
+      "test/integration/assisted-reconciliation",
+      "test/unit/modules/assisted-reconciliation",
+      "test/unit/modules/inventory-accounting-items",
+      "test/unit/modules/inventory-operations",
+      "test/integration/inventory-operations",
+      "test/integration/inventory-accounting-items",
+      "test/unit/modules/auth/permissions-negative.spec.ts"
+    ],
+    "log": ".local/assisted-final-all.log",
+    "patchRegression": "Reproduced failure before correction: omitted undefined series recorded as change; corrected and verified through unit and HTTP/MySQL tests."
+  },
+  "frontend": {
+    "status": "passed",
+    "tests": 205,
+    "files": 32,
+    "durationSeconds": 62.84,
+    "log": ".local/assisted-frontend-full.log",
+    "targetedNavigationAndPanel": { "status": "passed", "tests": 14, "files": 3 }
+  },
+  "playwright": {
+    "status": "passed",
+    "tests": 1,
+    "durationSeconds": 16.8,
+    "browser": "Chromium",
+    "account": "ORG_ADMIN synthetic local test",
+    "apiMocks": false,
+    "flow": ["login", "synthetic project/agent/item/session/observation", "real XLSX import with explicit series", "generate", "compare different plates with matching series", "approve with reason", "refresh", "persisted history", "items navigation and browser back", "mobile reload", "API persistence verification"],
+    "screenshots": ".local/assisted-playwright/",
+    "scope": "e2e/assisted-reconciliation-real.spec.ts",
+    "limitation": "Health checked before login. Real APIs are chained after auth restore; content-based assertions allow 15 seconds on local stack. No fixed sleeps.",
+    "syntheticUrl": "http://localhost:5173/app/projects/12/inventory/sessions/5",
+    "httpErrors": 0,
+    "javascriptErrors": 0
+  },
+  "typescript": { "backend": "passed", "frontend": "passed" },
+  "build": { "backend": "passed", "frontend": "passed", "warning": "Existing Vite bundle >500 kB" },
+  "lint": { "changedBackendFiles": "passed", "changedFrontendFiles": "passed", "globalBackend": "Not claimed; pre-existing issues documented in earlier reports" },
+  "restrictions": { "commit": false, "push": false, "deploy": false, "productionMigration": false, "productionData": false }
+}

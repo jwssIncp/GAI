@@ -1,0 +1,12 @@
+{
+  "date":"2026-10-27",
+  "environment":"Local development and disposable MySQL; synthetic data only",
+  "backend":{"status":"passed","tests":59,"suites":7,"durationSeconds":124.516,"log":".local/valuation-mysql-tests.log","disposableDatabase":"127.0.0.1:33317/gai_validation_disposable; MySQL 8; tmpfs"},
+  "backendConfirmation":{"status":"passed","tests":25,"suites":2,"durationSeconds":23.954,"overlapsMainSuite":true,"log":".local/valuation-mysql-confirmation.log"},
+  "frontend":{"status":"passed","tests":211,"files":34,"durationSeconds":69.63,"log":".local/valuation-frontend-full.log"},
+  "playwright":{"status":"passed","tests":1,"durationSeconds":26.4,"browser":"Chromium","role":"ORG_ADMIN","apiMocks":false,"createdSyntheticItems":23,"commonOperation":6,"individualOperation":7,"projectId":16,"exportJob":11,"exportRows":4,"httpErrors":0,"javascriptErrors":0,"screenshots":".local/valuation-playwright/","checks":["selection between pages","no writes at preview","common and individualized values","civil date displayed correctly","explicit confirmation","refresh persistence","individual history drawer","authenticated XLSX download and content","desktop/mobile navigation","master values preserved"]},
+  "typescript":{"backend":"passed","frontend":"passed"},
+  "build":{"backend":"passed","frontend":"passed","warning":"Existing Vite chunk above 500 kB"},
+  "lint":{"changedBackendFiles":"passed","changedFrontendFiles":"passed","globalBackend":"Not claimed; pre-existing issues documented in prior reports"},
+  "restrictions":{"productionAccess":false,"productionMigration":false,"commit":false,"push":false,"deploy":false}
+}

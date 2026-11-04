@@ -1,0 +1,10 @@
+{
+  "workflow_yaml_parsed": true,
+  "integration_job": true,
+  "mysql_port": 33337,
+  "s3_port": 33318,
+  "s3_image": "minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+  "vendor_copied_before_ci": true,
+  "remote_ci_executed": false,
+  "docker_image_built": false
+}

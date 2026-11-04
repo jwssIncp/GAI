@@ -1,3 +1,4 @@
+import { CIVIL_DATE_TRANSFORMER } from '../../../../common/persistence/civil-date.transformer';
 import {
   Column,
   CreateDateColumn,
@@ -197,7 +198,11 @@ export class InventoryObservationEvidenceEntity {
   @Column({ name: 'storage_provider', type: 'varchar', length: 30 })
   storageProvider!: string;
   @Column({ type: 'varchar', length: 255 }) bucket!: string;
-  @Column({ name: 'storage_key', type: 'varchar', length: 1024 })
+  @Column({
+    name: 'storage_key',
+    type: 'varchar',
+    length: 1024,
+  })
   storageKey!: string;
   @Column({ name: 'original_name', type: 'varchar', length: 255 })
   originalName!: string;
@@ -320,7 +325,8 @@ export class InventoryConsolidationEntity {
   inventoryItemId!: number | null;
   @Column({ type: 'varchar', length: 20 }) decision!: ConsolidationDecision;
   @Column({ type: 'text', nullable: true }) notes!: string | null;
-  @Column({ type: 'json' }) evidenceSnapshot!: JsonObject;
+  @Column({ name: 'evidence_snapshot', type: 'json' })
+  evidenceSnapshot!: JsonObject;
   @Column({ name: 'decided_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   decidedById!: number | null;
   @Column({ name: 'decided_at', type: 'datetime', precision: 3 })
@@ -328,8 +334,15 @@ export class InventoryConsolidationEntity {
 }
 
 @Entity('asset_valuations')
+@Index(
+  'uq_asset_valuation_batch_item',
+  ['batchOperationId', 'inventoryItemId'],
+  { unique: true },
+)
 @Index('idx_asset_valuations_item_date', ['inventoryItemId', 'valuationDate'])
 export class AssetValuationEntity {
+  @Column({ name: 'batch_operation_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  batchOperationId!: number | null;
   @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN) id!: number;
   @Column({ name: 'organization_id', ...FOREIGN_KEY_COLUMN })
   organizationId!: number;
@@ -353,7 +366,12 @@ export class AssetValuationEntity {
     nullable: true,
   })
   usedValue!: string | null;
-  @Column({ name: 'valuation_date', type: 'date' }) valuationDate!: Date;
+  @Column({
+    name: 'valuation_date',
+    type: 'date',
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  valuationDate!: Date | string;
   @Column({ type: 'text', nullable: true }) notes!: string | null;
   @Column({ name: 'responsible_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   responsibleById!: number | null;

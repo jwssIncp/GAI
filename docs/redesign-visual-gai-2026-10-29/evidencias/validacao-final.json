@@ -1,0 +1,209 @@
+{
+  "date": "2026-10-29",
+  "backend": {
+    "total": 683,
+    "passed": 683,
+    "failed": 0,
+    "skipped": 0
+  },
+  "mysql": {
+    "total": 325,
+    "passed": 325,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "total": 273,
+    "passed": 273,
+    "failed": 0,
+    "skipped": 0
+  },
+  "visual": {
+    "total": 23,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "cases": [
+      {
+        "title": "visual after light 1366",
+        "status": "passed"
+      },
+      {
+        "title": "visual after dark 1366",
+        "status": "passed"
+      },
+      {
+        "title": "visual after light 390",
+        "status": "passed"
+      },
+      {
+        "title": "visual after dark 390",
+        "status": "passed"
+      },
+      {
+        "title": "runtime evidence directory",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 360",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 360",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 390",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 390",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 768",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 768",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 1024",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 1024",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 1366",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 1366",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules light 1920",
+        "status": "passed"
+      },
+      {
+        "title": "responsive modules dark 1920",
+        "status": "passed"
+      },
+      {
+        "title": "theme persistence, system changes, portal menu, profile and keyboard skip link",
+        "status": "passed"
+      },
+      {
+        "title": "semantic contrast in both themes",
+        "status": "passed"
+      },
+      {
+        "title": "real project creation, filters, pagination, ordering, confirmation and export",
+        "status": "passed"
+      },
+      {
+        "title": "invalid reset token is explained with the real API",
+        "status": "passed"
+      },
+      {
+        "title": "preparation context and project financial view survive refresh and history",
+        "status": "passed"
+      },
+      {
+        "title": "touch phones and tablets keep UF targets and portal navigation usable",
+        "status": "passed"
+      }
+    ]
+  },
+  "flows": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "cases": [
+      {
+        "title": "ORG_ADMIN reviews and persists assisted reconciliation while retaining project navigation",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN publishes explicit prices, builds a standalone budget, compares scenarios and approves an immutable proposal",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN manages contracts/amendments, refreshes history and exports filtered commercial overview",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN generates and downloads approved PDF/DOCX and commercial versions",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN creates a versioned field model, assigns and approves a task, completes/reopens field and retains workspace navigation",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN preserves context, history and tenant boundaries at 1440px",
+        "status": "passed"
+      },
+      {
+        "title": "restricted reader preserves context, history and tenant boundaries at 1440px",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN preserves context, history and tenant boundaries at 390px",
+        "status": "passed"
+      },
+      {
+        "title": "restricted reader preserves context, history and tenant boundaries at 390px",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN continuously navigates real project pages, history, deep links, mobile and tenant boundaries",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN operates installments, partial/full receipts, reversal, cash, export and refresh",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN creates model, drafts, validates, approves and preserves historical report",
+        "status": "passed"
+      },
+      {
+        "title": "ORG_ADMIN selects between pages, previews and applies common/individual valuations with persisted results and protected XLSX",
+        "status": "passed"
+      }
+    ]
+  },
+  "navigationRecheck": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "cases": [
+      {
+        "title": "theme persistence, system changes, portal menu, profile and keyboard skip link",
+        "status": "passed"
+      },
+      {
+        "title": "semantic contrast in both themes",
+        "status": "passed"
+      },
+      {
+        "title": "preparation context and project financial view survive refresh and history",
+        "status": "passed"
+      },
+      {
+        "title": "touch phones and tablets keep UF targets and portal navigation usable",
+        "status": "passed"
+      }
+    ]
+  }
+}

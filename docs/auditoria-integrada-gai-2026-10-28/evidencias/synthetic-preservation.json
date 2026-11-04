@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-10-28T21:46:21.546Z",
+  "targets": [
+    "gai-audit-20261028-mysql-fast",
+    "gai-audit-20261028-s3"
+  ],
+  "mysql": {
+    "exit_code": 0,
+    "file": "dados-sinteticos.sql",
+    "bytes": 754184,
+    "sha256": "45ae3bc32dd55fd990046b06572fce07fe8f817f731932774f7e347449abde73"
+  },
+  "storage": {
+    "exit_code": 0,
+    "directory": "storage-sintetico"
+  }
+}

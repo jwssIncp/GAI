@@ -1,0 +1,22 @@
+{
+  "target": "127.0.0.1:33327",
+  "environment": [
+    {
+      "version": "8.0.46",
+      "isolation_level": "REPEATABLE-READ",
+      "flush_at_commit": 2,
+      "sync_binlog": 0,
+      "database_name": "gai_validation_disposable"
+    }
+  ],
+  "migrations": [
+    {
+      "applied": 32
+    }
+  ],
+  "tables": [
+    {
+      "tables_count": 102
+    }
+  ]
+}

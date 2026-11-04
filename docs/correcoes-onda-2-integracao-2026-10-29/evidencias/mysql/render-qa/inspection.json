@@ -1,0 +1,20 @@
+[
+  {
+    "file": "volume-2500.docx",
+    "sha256": "85f33f8b103dfa28af6774287f86a590b8f5b1d74b320fcb051d539b59bffe56",
+    "zip_crc": true,
+    "xml_and_relationships_valid": true,
+    "native_rows_in_order": 2500,
+    "page_fields": true,
+    "word_pagination_certified": false
+  },
+  {
+    "file": "volume-2500.pdf",
+    "sha256": "54bcf71b2016c7296feee2708a73a82c4ef445eaacf89c4e0b1359d006948e76",
+    "pages": 135,
+    "all_pages_rendered": true,
+    "all_2500_row_markers_present": true,
+    "outside_margin_characters": 0,
+    "visual_review": "pending"
+  }
+]

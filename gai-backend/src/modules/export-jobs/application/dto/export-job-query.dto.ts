@@ -1,7 +1,7 @@
+import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
-  IsDateString,
   IsEnum,
   IsInt,
   IsOptional,
@@ -56,12 +56,12 @@ export class ExportJobListQueryDto {
   requested_by_id?: number;
 
   @ApiPropertyOptional({ format: 'date' })
-  @IsDateString()
+  @IsCivilDate()
   @IsOptional()
   date_from?: string;
 
   @ApiPropertyOptional({ format: 'date' })
-  @IsDateString()
+  @IsCivilDate()
   @IsOptional()
   date_to?: string;
 

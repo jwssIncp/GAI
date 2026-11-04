@@ -1,0 +1,68 @@
+{
+  "executedAt": "2026-11-03T01:26:26.062Z",
+  "target": "localhost:3306/gai",
+  "pendingBefore": [],
+  "migration": "ReformUserLifecycle1794100000002",
+  "appliedMigrations": 35,
+  "preserved": {
+    "users": {
+      "rows": 3,
+      "allExistingValuesUnchanged": true
+    },
+    "organizations": {
+      "rows": 2,
+      "allExistingValuesUnchanged": true
+    },
+    "roles": {
+      "rows": 4,
+      "allExistingValuesUnchanged": true
+    },
+    "permissions": {
+      "rows": 161,
+      "allExistingValuesUnchanged": true
+    },
+    "role_permissions": {
+      "rows": 1,
+      "allExistingValuesUnchanged": true
+    },
+    "user_role_assignments": {
+      "rows": 3,
+      "allExistingValuesUnchanged": true
+    }
+  },
+  "users": [
+    {
+      "id": 1,
+      "login": "platform.admin",
+      "status": "ACTIVE",
+      "organization_id": null,
+      "full_name": null,
+      "phone": null,
+      "job_title": null,
+      "must_change_password": 0,
+      "auth_version": 0
+    },
+    {
+      "id": 2,
+      "login": "org.admin",
+      "status": "ACTIVE",
+      "organization_id": 1,
+      "full_name": null,
+      "phone": null,
+      "job_title": null,
+      "must_change_password": 0,
+      "auth_version": 0
+    },
+    {
+      "id": 3,
+      "login": "test.user",
+      "status": "ACTIVE",
+      "organization_id": 1,
+      "full_name": null,
+      "phone": null,
+      "job_title": null,
+      "must_change_password": 0,
+      "auth_version": 0
+    }
+  ]
+}

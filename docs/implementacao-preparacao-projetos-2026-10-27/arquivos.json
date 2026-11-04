@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-27",
+  "sourceFilesCount": 25,
+  "baseline": {
+    "file": ".local/project-preparation-20261027/baseline-status.txt",
+    "sha256": "cef724448fdeddcff0db4f7888c85e1bb2e6bd3c7d3ffa09eb4b507a8a322705"
+  },
+  "note": "Explicit source/test scope for this implementation. Existing dirty changes in shared files were preserved. Generated dist/cache/dependency changes are not counted as authored sources.",
+  "files": [
+    {
+      "path": "gai-backend/src/app.module.ts",
+      "bytes": 11395,
+      "sha256": "386ed1c50470f57ee0575208f2178aa7bda3a0d3761739d7b026b358b33382f1"
+    },
+    {
+      "path": "gai-backend/src/common/swagger/error-code.enum.ts",
+      "bytes": 2234,
+      "sha256": "3dad1d8927042d82b9b6593440c72edfead40b6bb3648c91ec51371a1612c25d"
+    },
+    {
+      "path": "gai-backend/src/migrations/1793100000001-create-project-preparation.ts",
+      "bytes": 6849,
+      "sha256": "2a916231416aacc07328db30dc965b2aed4174f9e94c785a00d73c0f01cbeb47"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/domain/preparation.policy.ts",
+      "bytes": 10094,
+      "sha256": "49cbe858d820f3f7744b0ba99aedd759478d8c3b9ea7bb9c09f2f97c390294bf"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/domain/preparation.types.ts",
+      "bytes": 1961,
+      "sha256": "8d007c37e3fd8d6fab9ccb760073455e4187836cb8b10ec42f8afda33786bf2f"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/preparation.controller.ts",
+      "bytes": 9398,
+      "sha256": "ba88e3f01e991978b5e6149bb4981a6228158aed2686f8b3bb542d7a2be5b2b8"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/preparation.dto.ts",
+      "bytes": 5098,
+      "sha256": "6a87ef2d73df532ba16ac9c39ecb1f6297fdd1ab92e51ba1753a545ad073d2f6"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/preparation.entity.ts",
+      "bytes": 5544,
+      "sha256": "eb31149b6f527624c8d30508dd59814692b8a46d3d1f73d0b41a0adffa127a2e"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/preparation.repository.ts",
+      "bytes": 1591,
+      "sha256": "a1316fea1c3f47f60dcb479579fa95ede3dd01a1463bd840de7f3cc460b17172"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/preparation.service.ts",
+      "bytes": 29759,
+      "sha256": "26aeb16892b5990b590bc40d3f3702c3611d91650963c7669e8b44e52e902fa5"
+    },
+    {
+      "path": "gai-backend/src/modules/project-preparation/project-preparation.module.ts",
+      "bytes": 796,
+      "sha256": "cc0f700b6a5d4d6c498d58aee54d3f92f9c7dafd0a747628a921d3d4010ecb74"
+    },
+    {
+      "path": "gai-backend/src/scripts/seed/permissions.seed.ts",
+      "bytes": 21268,
+      "sha256": "c352ddf9f3bb636167fd890429afca01379362226761ae2d07e3bd6cddb94e78"
+    },
+    {
+      "path": "gai-backend/test/integration/project-preparation/project-preparation.e2e-spec.ts",
+      "bytes": 26149,
+      "sha256": "4bdfb8e565b93537af00fd07c4953c0e4fa554af0adc60256ba1b7514672d695"
+    },
+    {
+      "path": "gai-backend/test/integration/test-app.helper.ts",
+      "bytes": 22170,
+      "sha256": "a34297337a1f8aa0e3186793c1eae4220e119b20a4b5e3df33ffade58c1c53f8"
+    },
+    {
+      "path": "gai-backend/test/integration/users/org-roles.e2e-spec.ts",
+      "bytes": 2636,
+      "sha256": "25b751edf753ecc311a842cbe644500d7be74cc08f1976f7c4e743ede756065f"
+    },
+    {
+      "path": "gai-backend/test/unit/modules/project-preparation/preparation.policy.spec.ts",
+      "bytes": 5369,
+      "sha256": "4b7568eb7e230cbd937673d9d235ceae24e965af974ff072d4f7af070bd89823"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/PreparationForms.tsx",
+      "bytes": 17326,
+      "sha256": "51c8e88e34680d8924e3d437b4a668020a41d0afa8d30f56e45d08c3722060b3"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.test.tsx",
+      "bytes": 14981,
+      "sha256": "93728135f50b95e06544b0d41aeab88269636e50ffe104b3c52a57901a2efa0f"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/ProjectPreparationPage.tsx",
+      "bytes": 28000,
+      "sha256": "370cf9d64878bf3bc85fc4d63fdd833b430f291b26edd0b92998a956f487f161"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/TemplateManager.tsx",
+      "bytes": 24882,
+      "sha256": "4a801d0857354884a5e9be552f47c8bc212b34c1e64f9fdd0db30797ef895ec9"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/preparationQueries.ts",
+      "bytes": 5365,
+      "sha256": "d83098df1241e8972f3647c3d0907c95821f3a4febd03abbe8b18d8d151c03ed"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/preparationTypes.ts",
+      "bytes": 4077,
+      "sha256": "ae6cbfa735673676a429667dbc5f408977f63409b0cb9d6bbb6bce6e123f589c"
+    },
+    {
+      "path": "gai-frontend/src/features/project-preparation/referenceTemplates.ts",
+      "bytes": 5440,
+      "sha256": "c1fc42ada014f3ecb375c4014cc15caa3b718234ee9a6ccb2837e41dca022638"
+    },
+    {
+      "path": "gai-frontend/src/features/projects/ProjectSummaryPage.tsx",
+      "bytes": 28825,
+      "sha256": "4ab1f9f9befdfc0d7603b08227da4f5e375c464547a295b839b49ae1218592e6"
+    },
+    {
+      "path": "gai-frontend/src/router/router.tsx",
+      "bytes": 7172,
+      "sha256": "e94167668bbcd75067b345b9246b603f2cda964eb86ac1945a082ed54eed89f6"
+    }
+  ],
+  "documentsAdded": [
+    "docs/implementacao-preparacao-projetos-2026-10-27/README.md",
+    "docs/implementacao-preparacao-projetos-2026-10-27/arquivos.json",
+    "docs/implementacao-preparacao-projetos-2026-10-27/testes.json",
+    "docs/implementacao-preparacao-projetos-2026-10-27/referencias.json"
+  ]
+}

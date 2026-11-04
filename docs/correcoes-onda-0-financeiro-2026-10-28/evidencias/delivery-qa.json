@@ -1,0 +1,55 @@
+{
+  "scripts": [
+    {
+      "file": "checks.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "finish.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "probe.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "race-original.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "run.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "save-database.cjs",
+      "exit_code": 0
+    },
+    {
+      "file": "smoke-related.cjs",
+      "exit_code": 0
+    }
+  ],
+  "broken_or_changed_records": [],
+  "dumps": [
+    {
+      "file": "baseline-synthetic.sql",
+      "bytes": 279135,
+      "sha256": "185d188e906f19fda4b37ecfe4b652d27798b7742f7d4f47226b1b0fc8faa540"
+    },
+    {
+      "file": "final-synthetic.sql",
+      "bytes": 614516,
+      "sha256": "96a53a46e7971baf5609c449af0d060c16db92dc432b6129ecdcf30621875e51"
+    },
+    {
+      "file": "regression-synthetic.sql",
+      "bytes": 212154,
+      "sha256": "18678525967338a769652fd710d64b1299d5c67c55e8428403058577224bda22"
+    },
+    {
+      "file": "related-synthetic.sql",
+      "bytes": 622979,
+      "sha256": "e94c87633b9099e7791722bdb5a384d88e5d6e3695ea5068bca08c7b72dc8258"
+    }
+  ]
+}

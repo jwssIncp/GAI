@@ -1,0 +1,8 @@
+[
+  {
+    "name": "e2e",
+    "status": 0,
+    "seconds": 126,
+    "log": "browser-e2e.log"
+  }
+]

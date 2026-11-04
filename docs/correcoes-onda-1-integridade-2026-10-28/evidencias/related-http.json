@@ -1,0 +1,748 @@
+{
+  "passed": true,
+  "project": 1,
+  "payment": 1,
+  "expense": 1,
+  "accountability": 1,
+  "results": [
+    {
+      "method": "POST",
+      "url": "/projects/1/payments/1/approve",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "state": null,
+        "start_date": "2026-10-28",
+        "end_date": "2026-10-28",
+        "payment_date": null,
+        "days": 1,
+        "daily_rate": "33.33",
+        "additional_amount": "0.00",
+        "daily_total": "33.33",
+        "discount_amount": "0.00",
+        "final_amount": "33.33",
+        "status": "approved",
+        "notes": null,
+        "metadata": null,
+        "created_at": "2026-10-29T07:04:29.809Z",
+        "updated_at": "2026-10-29T07:04:29.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/payments/1/mark-as-paid",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "state": null,
+        "start_date": "2026-10-28",
+        "end_date": "2026-10-28",
+        "payment_date": "2026-10-29",
+        "days": 1,
+        "daily_rate": "33.33",
+        "additional_amount": "0.00",
+        "daily_total": "33.33",
+        "discount_amount": "0.00",
+        "final_amount": "33.33",
+        "status": "paid",
+        "notes": null,
+        "metadata": null,
+        "created_at": "2026-10-29T07:04:29.809Z",
+        "updated_at": "2026-10-29T07:04:29.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expenses",
+      "status": 201,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "description": "SINTETICO regressao prestacao",
+        "reason": null,
+        "expense_date": "2026-10-28",
+        "amount": "25.50",
+        "status": "pending",
+        "metadata": null,
+        "created_at": "2026-10-29T07:04:29.991Z",
+        "updated_at": "2026-10-29T07:04:29.991Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expenses/1/approve",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "description": "SINTETICO regressao prestacao",
+        "reason": null,
+        "expense_date": "2026-10-28",
+        "amount": "25.50",
+        "status": "approved",
+        "metadata": null,
+        "created_at": "2026-10-29T07:04:29.991Z",
+        "updated_at": "2026-10-29T07:04:30.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expenses/1/installments/generate",
+      "status": 201,
+      "body": [
+        {
+          "id": 1,
+          "expense_id": 1,
+          "installment_number": 1,
+          "installment_count": 3,
+          "due_date": "2026-11-30",
+          "amount": "8.50",
+          "origin": null,
+          "created_at": "2026-10-29T07:04:30.160Z"
+        },
+        {
+          "id": 2,
+          "expense_id": 1,
+          "installment_number": 2,
+          "installment_count": 3,
+          "due_date": "2026-12-31",
+          "amount": "8.50",
+          "origin": null,
+          "created_at": "2026-10-29T07:04:30.164Z"
+        },
+        {
+          "id": 3,
+          "expense_id": 1,
+          "installment_number": 3,
+          "installment_count": 3,
+          "due_date": "2027-01-31",
+          "amount": "8.50",
+          "origin": null,
+          "created_at": "2026-10-29T07:04:30.168Z"
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expense-accountabilities",
+      "status": 201,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "period_start": "2026-10-01T00:00:00.000Z",
+        "period_end": "2026-10-31T00:00:00.000Z",
+        "status": "open",
+        "total_amount": "0.00",
+        "notes": "SINTETICO ONDA1",
+        "responsible_by_id": 2,
+        "closed_by_id": null,
+        "closed_at": null,
+        "expense_ids": [],
+        "created_at": "2026-10-29T07:04:30.283Z",
+        "updated_at": "2026-10-29T07:04:30.283Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expense-accountabilities/1/expenses",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "period_start": "2026-10-01",
+        "period_end": "2026-10-31",
+        "status": "open",
+        "total_amount": "0.00",
+        "notes": "SINTETICO ONDA1",
+        "responsible_by_id": 2,
+        "closed_by_id": null,
+        "closed_at": null,
+        "expense_ids": [
+          1
+        ],
+        "created_at": "2026-10-29T07:04:30.283Z",
+        "updated_at": "2026-10-29T07:04:30.283Z"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expense-accountabilities/1/close",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "period_start": "2026-10-01",
+        "period_end": "2026-10-31",
+        "status": "closed",
+        "total_amount": "25.50",
+        "notes": "SINTETICO ONDA1",
+        "responsible_by_id": 2,
+        "closed_by_id": 2,
+        "closed_at": "2026-10-29T07:04:30.395Z",
+        "expense_ids": [
+          1
+        ],
+        "created_at": "2026-10-29T07:04:30.283Z",
+        "updated_at": "2026-10-29T07:04:30.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/projects/1/expense-accountabilities/1",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "period_start": "2026-10-01",
+        "period_end": "2026-10-31",
+        "status": "closed",
+        "total_amount": "25.50",
+        "notes": "SINTETICO ONDA1",
+        "responsible_by_id": 2,
+        "closed_by_id": 2,
+        "closed_at": "2026-10-29T07:04:30.395Z",
+        "expense_ids": [
+          1
+        ],
+        "created_at": "2026-10-29T07:04:30.283Z",
+        "updated_at": "2026-10-29T07:04:30.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/finance/cash-flow?project_id=1&direction=out",
+      "status": 200,
+      "body": {
+        "filters": {
+          "project_id": 1,
+          "direction": "out",
+          "page": 1,
+          "page_size": 20
+        },
+        "as_of": "2026-10-29T07:04:30.516Z",
+        "complete": false,
+        "limitations": [
+          "Fluxo parcial de movimentos conhecidos; não representa saldo bancário nem DRE.",
+          "Moeda das saídas legadas não informada: valores separados em UNSPECIFIED, sem conversão ou compensação com BRL/USD/EUR.",
+          "Despesas registradas sem vencimento não entram no previsto; prestações de contas não são somadas novamente.",
+          "Parcelas de despesas não têm baixa individual: a baixa integral da despesa remove sua agenda prevista."
+        ],
+        "undated_expenses": 0,
+        "undated_payments": 0,
+        "definitions": {
+          "period": "Limites inclusivos: previsto por vencimento, realizado por data efetiva; estornos negativos na data do estorno.",
+          "overdue": "Saldo positivo com vencimento anterior ao dia UTC atual; cancelados excluídos.",
+          "projected_net": "Entradas realizadas - saídas realizadas + entradas abertas previstas - saídas abertas previstas; por moeda, sem saldo inicial.",
+          "status": "Status do recebível no momento da consulta; nas saídas, paid ou open."
+        },
+        "totals": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "25.50",
+            "actual_in": "0.00",
+            "actual_out": "33.33",
+            "overdue": "0.00",
+            "actual_net": "-33.33",
+            "projected_net": "-58.83"
+          }
+        ],
+        "monthly": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "0.00",
+            "actual_in": "0.00",
+            "actual_out": "33.33",
+            "overdue": "0.00",
+            "month": "2026-10",
+            "actual_net": "-33.33",
+            "projected_net": "-33.33"
+          },
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "8.50",
+            "actual_in": "0.00",
+            "actual_out": "0.00",
+            "overdue": "0.00",
+            "month": "2026-11",
+            "actual_net": "0.00",
+            "projected_net": "-8.50"
+          },
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "8.50",
+            "actual_in": "0.00",
+            "actual_out": "0.00",
+            "overdue": "0.00",
+            "month": "2026-12",
+            "actual_net": "0.00",
+            "projected_net": "-8.50"
+          },
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "8.50",
+            "actual_in": "0.00",
+            "actual_out": "0.00",
+            "overdue": "0.00",
+            "month": "2027-01",
+            "actual_net": "0.00",
+            "projected_net": "-8.50"
+          }
+        ],
+        "by_client": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "25.50",
+            "actual_in": "0.00",
+            "actual_out": "33.33",
+            "overdue": "0.00",
+            "company_id": 1,
+            "actual_net": "-33.33",
+            "projected_net": "-58.83"
+          }
+        ],
+        "by_project": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "25.50",
+            "actual_in": "0.00",
+            "actual_out": "33.33",
+            "overdue": "0.00",
+            "project_id": 1,
+            "actual_net": "-33.33",
+            "projected_net": "-58.83"
+          }
+        ],
+        "movements": [
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "Pagamento de inventariante #1",
+            "status": "paid",
+            "source": "field_agent_payment",
+            "source_id": 1,
+            "amount": "33.33",
+            "view": "actual",
+            "on": "2026-10-29",
+            "overdue": false
+          },
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "SINTETICO regressao prestacao",
+            "status": "open",
+            "source": "expense_installment",
+            "source_id": 1,
+            "view": "expected",
+            "on": "2026-11-30",
+            "amount": "8.50",
+            "overdue": false
+          },
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "SINTETICO regressao prestacao",
+            "status": "open",
+            "source": "expense_installment",
+            "source_id": 2,
+            "view": "expected",
+            "on": "2026-12-31",
+            "amount": "8.50",
+            "overdue": false
+          },
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "SINTETICO regressao prestacao",
+            "status": "open",
+            "source": "expense_installment",
+            "source_id": 3,
+            "view": "expected",
+            "on": "2027-01-31",
+            "amount": "8.50",
+            "overdue": false
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "url": "/projects/1/expenses/1/mark-as-paid",
+      "status": 200,
+      "body": {
+        "id": 1,
+        "organization_id": 1,
+        "project_id": 1,
+        "field_agent_id": 1,
+        "description": "SINTETICO regressao prestacao",
+        "reason": null,
+        "expense_date": "2026-10-28",
+        "amount": "25.50",
+        "status": "paid",
+        "metadata": null,
+        "created_at": "2026-10-29T07:04:29.991Z",
+        "updated_at": "2026-10-29T07:04:30.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/finance/cash-flow?project_id=1&direction=out",
+      "status": 200,
+      "body": {
+        "filters": {
+          "project_id": 1,
+          "direction": "out",
+          "page": 1,
+          "page_size": 20
+        },
+        "as_of": "2026-10-29T07:04:30.619Z",
+        "complete": false,
+        "limitations": [
+          "Fluxo parcial de movimentos conhecidos; não representa saldo bancário nem DRE.",
+          "Moeda das saídas legadas não informada: valores separados em UNSPECIFIED, sem conversão ou compensação com BRL/USD/EUR.",
+          "Despesas registradas sem vencimento não entram no previsto; prestações de contas não são somadas novamente.",
+          "Parcelas de despesas não têm baixa individual: a baixa integral da despesa remove sua agenda prevista."
+        ],
+        "undated_expenses": 0,
+        "undated_payments": 0,
+        "definitions": {
+          "period": "Limites inclusivos: previsto por vencimento, realizado por data efetiva; estornos negativos na data do estorno.",
+          "overdue": "Saldo positivo com vencimento anterior ao dia UTC atual; cancelados excluídos.",
+          "projected_net": "Entradas realizadas - saídas realizadas + entradas abertas previstas - saídas abertas previstas; por moeda, sem saldo inicial.",
+          "status": "Status do recebível no momento da consulta; nas saídas, paid ou open."
+        },
+        "totals": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "0.00",
+            "actual_in": "0.00",
+            "actual_out": "58.83",
+            "overdue": "0.00",
+            "actual_net": "-58.83",
+            "projected_net": "-58.83"
+          }
+        ],
+        "monthly": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "0.00",
+            "actual_in": "0.00",
+            "actual_out": "58.83",
+            "overdue": "0.00",
+            "month": "2026-10",
+            "actual_net": "-58.83",
+            "projected_net": "-58.83"
+          }
+        ],
+        "by_client": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "0.00",
+            "actual_in": "0.00",
+            "actual_out": "58.83",
+            "overdue": "0.00",
+            "company_id": 1,
+            "actual_net": "-58.83",
+            "projected_net": "-58.83"
+          }
+        ],
+        "by_project": [
+          {
+            "currency": "UNSPECIFIED",
+            "expected_in": "0.00",
+            "expected_out": "0.00",
+            "actual_in": "0.00",
+            "actual_out": "58.83",
+            "overdue": "0.00",
+            "project_id": 1,
+            "actual_net": "-58.83",
+            "projected_net": "-58.83"
+          }
+        ],
+        "movements": [
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "SINTETICO regressao prestacao",
+            "status": "paid",
+            "source": "expense",
+            "source_id": 1,
+            "view": "actual",
+            "on": "2026-10-29",
+            "amount": "25.50",
+            "overdue": false
+          },
+          {
+            "company_id": 1,
+            "project_id": 1,
+            "contract_id": null,
+            "currency": "UNSPECIFIED",
+            "direction": "out",
+            "receivable_id": null,
+            "installment_id": null,
+            "description": "Pagamento de inventariante #1",
+            "status": "paid",
+            "source": "field_agent_payment",
+            "source_id": 1,
+            "amount": "33.33",
+            "view": "actual",
+            "on": "2026-10-29",
+            "overdue": false
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/projects/1/summary?include_financial=true",
+      "status": 200,
+      "body": {
+        "project": {
+          "id": 1,
+          "name": "SINTETICO ONDA1 1793257469558",
+          "status": "draft",
+          "organization_id": 1,
+          "start_date": null,
+          "end_date": null,
+          "created_at": "2026-10-29T07:04:29.603Z"
+        },
+        "inventory": {
+          "total_items": 0,
+          "evaluated_items": 0,
+          "pending_items": 0,
+          "divergent_items": 0,
+          "not_found_items": 0,
+          "duplicated_items": 0,
+          "removed_items": 0,
+          "inactive_items": 0,
+          "progress_percentage": 0,
+          "inventoried_items": 0,
+          "observation_progress_percentage": 0,
+          "inventory_sessions": 0,
+          "inventory_rounds": 0,
+          "reinventory_rounds": 0,
+          "observations": 0
+        },
+        "images": {
+          "total_images": 0,
+          "uploaded_images": 0,
+          "pending_upload_images": 0,
+          "removed_images": 0
+        },
+        "accounting": {
+          "total_accounting_items": 0,
+          "matched_accounting_items": 0,
+          "divergent_accounting_items": 0,
+          "not_found_accounting_items": 0,
+          "ignored_accounting_items": 0,
+          "latest_reconciliation_run": null,
+          "reconciled_items": 0,
+          "physical_surplus_items": 0,
+          "accounting_surplus_items": 0,
+          "duplicate_items": 0,
+          "consolidated_items": 0
+        },
+        "pending_issues": {
+          "total_pending_issues": 0,
+          "open_pending_issues": 0,
+          "in_review_pending_issues": 0,
+          "resolved_pending_issues": 0,
+          "ignored_pending_issues": 0,
+          "cancelled_pending_issues": 0,
+          "critical_pending_issues": 0,
+          "high_pending_issues": 0,
+          "medium_pending_issues": 0,
+          "low_pending_issues": 0
+        },
+        "field_agents": {
+          "total_field_agents": 1,
+          "active_field_agents": 1,
+          "inactive_field_agents": 0,
+          "finished_field_agents": 0
+        },
+        "financial": {
+          "total_payments": 1,
+          "pending_payments": 0,
+          "approved_payments": 0,
+          "paid_payments": 1,
+          "cancelled_payments": 0,
+          "total_payment_amount": "33.33",
+          "total_expenses": 1,
+          "pending_expenses": 0,
+          "approved_expenses": 0,
+          "paid_expenses": 1,
+          "rejected_expenses": 0,
+          "cancelled_expenses": 0,
+          "total_expense_amount": "25.50",
+          "financial_total_amount": "58.83",
+          "open_accountabilities": 0,
+          "closed_accountabilities": 1,
+          "closed_accountabilities_amount": "25.50"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/projects/1/payments/summary",
+      "status": 200,
+      "body": {
+        "total_pending": "0.00",
+        "total_approved": "0.00",
+        "total_paid": "33.33",
+        "total_cancelled": "0.00",
+        "total_count": 1
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/organization-overview?company_id=1",
+      "status": 200,
+      "body": {
+        "total_projects": 1,
+        "open_projects": 0,
+        "open_percentage": 0,
+        "total_contract_value": null,
+        "average_contract_value": null,
+        "open_contract_value": null,
+        "contracted_items": null,
+        "statuses": [
+          {
+            "status": "draft",
+            "total": 1
+          }
+        ],
+        "timeline": [
+          {
+            "period": "2026-10",
+            "total": 1
+          }
+        ],
+        "geography": [],
+        "unlocated_projects": 1,
+        "projects": [
+          {
+            "id": 1,
+            "name": "SINTETICO ONDA1 1793257469558",
+            "status": "draft",
+            "created_at": "2026-10-29T07:04:29.603Z"
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "url": "/organization-overview/projects?company_id=1&sort=id&direction=DESC&page_size=100",
+      "status": 200,
+      "body": {
+        "total": 1,
+        "page": 1,
+        "page_size": 100,
+        "items": [
+          {
+            "id": 1,
+            "name": "SINTETICO ONDA1 1793257469558",
+            "status": "draft",
+            "company": "Empresa Teste",
+            "created_at": "2026-10-29T07:04:29.603Z",
+            "addresses": 0,
+            "states": null
+          }
+        ]
+      }
+    }
+  ],
+  "audits": [
+    {
+      "id": 2,
+      "organization_id": 1,
+      "project_id": 1,
+      "accountability_id": 1,
+      "expense_id": null,
+      "operation": "CREATE",
+      "performed_by": 2,
+      "changes": {
+        "status": "open"
+      },
+      "created_at": "2026-10-29T07:04:30.290Z"
+    },
+    {
+      "id": 3,
+      "organization_id": 1,
+      "project_id": 1,
+      "accountability_id": 1,
+      "expense_id": 1,
+      "operation": "ADD_EXPENSE",
+      "performed_by": 2,
+      "changes": {
+        "amount": "25.50"
+      },
+      "created_at": "2026-10-29T07:04:30.345Z"
+    },
+    {
+      "id": 4,
+      "organization_id": 1,
+      "project_id": 1,
+      "accountability_id": 1,
+      "expense_id": null,
+      "operation": "CLOSE",
+      "performed_by": 2,
+      "changes": {
+        "total_amount": "25.50",
+        "expense_count": 1
+      },
+      "created_at": "2026-10-29T07:04:30.403Z"
+    }
+  ]
+}

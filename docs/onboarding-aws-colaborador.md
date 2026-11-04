@@ -126,9 +126,9 @@ npm ci && npm run dev
 
 | Login | Senha (padrão seed) |
 |---|---|
-| `platform.admin` | `Admin@123456` |
-| `org.admin` | `Admin@123456` |
-| `test.user` | `Test@123456` |
+| `platform.admin` | `<runtime-credential-required>` |
+| `org.admin` | `<runtime-credential-required>` |
+| `test.user` | `<runtime-credential-required>` |
 
 ---
 

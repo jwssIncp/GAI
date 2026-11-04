@@ -337,9 +337,33 @@ describe('Inventory operations and accountabilities (e2e)', () => {
           inventory_item_id: item.body.id,
           observed_plate: 'ABC002',
           observation_result: 'divergent',
+          captured_at: '2026-03-31T23:59:59-03:00',
         },
       ],
     };
+    for (const captured_at of [
+      '2026-02-30T12:00:00Z',
+      '2026-03-31T23:59:59',
+      '',
+    ]) {
+      await request(app.getHttpServer())
+        .post(
+          `/api/v1/projects/${project.body.id}/import-sessions/${importSession.body.id}/payloads`,
+        )
+        .set(auth())
+        .send({
+          ...payload,
+          items: [{ ...payload.items[0], captured_at }],
+        })
+        .expect(400);
+    }
+    await request(app.getHttpServer())
+      .get(
+        `/api/v1/projects/${project.body.id}/inventory-sessions/${operationSession.body.id}/observations`,
+      )
+      .set(auth())
+      .expect(200)
+      .expect((response) => expect(response.body.total_items).toBe(0));
     await request(app.getHttpServer())
       .post(
         `/api/v1/projects/${project.body.id}/import-sessions/${importSession.body.id}/payloads`,
@@ -364,7 +388,12 @@ describe('Inventory operations and accountabilities (e2e)', () => {
       )
       .set(auth())
       .expect(200)
-      .expect((response) => expect(response.body.total_items).toBe(1));
+      .expect((response) => {
+        expect(response.body.total_items).toBe(1);
+        expect(response.body.items[0].captured_at).toBe(
+          '2026-04-01T02:59:59.000Z',
+        );
+      });
     await request(app.getHttpServer())
       .get(
         `/api/v1/projects/${project.body.id}/inventory-items/${item.body.id}/plate-history`,

@@ -6,6 +6,7 @@ import { InventoryAccountingItemScopeService } from './inventory-accounting-item
 export interface ParsedAccountingRow {
   rowNumber: number;
   data: {
+    serialNumber?: string | null;
     plate: string | null;
     description: string | null;
     accountingAccountDescription: string | null;
@@ -33,7 +34,7 @@ export class AccountingImportParserService {
     const workbook = XLSX.read(buffer, {
       type: 'buffer',
       cellDates: true,
-      raw: false,
+      raw: true,
     });
     const firstSheetName = workbook.SheetNames[0];
     if (!firstSheetName) {
@@ -61,6 +62,12 @@ export class AccountingImportParserService {
     );
     const statusValue = this.scope.cleanText(this.pick(normalized, ['status']));
     const status = this.parseStatus(statusValue, errors);
+    const serial =
+      this.scope.cleanText(
+        this.pick(normalized, ['serial_number', 'numero_serie']),
+      ) ?? null;
+    if (serial && serial.length > 100)
+      errors.push('serial_number must have at most 100 characters');
 
     if (
       date === null &&
@@ -77,6 +84,8 @@ export class AccountingImportParserService {
     }
 
     const consumed = new Set([
+      'serial_number',
+      'numero_serie',
       'placa',
       'description',
       'descricao_01',
@@ -100,6 +109,11 @@ export class AccountingImportParserService {
     return {
       rowNumber,
       data: {
+        serialNumber: ['serial_number', 'numero_serie'].some(
+          (key) => key in normalized,
+        )
+          ? serial
+          : undefined,
         plate:
           this.scope.normalizePlate(
             this.pick(normalized, ['placa', 'plate']),

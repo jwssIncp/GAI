@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -40,6 +41,8 @@ import { AssignUserRoleUseCase } from '../application/use-cases/assign-user-role
 import { ListUserRoleAssignmentsUseCase } from '../application/use-cases/list-user-role-assignments.use-case';
 import { RevokeUserRoleAssignmentUseCase } from '../application/use-cases/revoke-user-role-assignment.use-case';
 import type { ActorContext } from '../application/services/user-scope.service';
+import { AccessProfilesService } from '../application/services/access-profiles.service';
+import { ReplaceUserRolesDto } from '../application/dto/replace-user-roles.dto';
 
 interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
@@ -55,7 +58,19 @@ export class UserRoleAssignmentsController {
     private readonly assignRole: AssignUserRoleUseCase,
     private readonly listAssignments: ListUserRoleAssignmentsUseCase,
     private readonly revokeAssignment: RevokeUserRoleAssignmentUseCase,
+    private readonly profiles: AccessProfilesService,
   ) {}
+
+  @Put()
+  @RequirePermissions('users:write')
+  @ApiOperation({ summary: 'Substituir atomicamente os perfis do usuário' })
+  replace(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() dto: ReplaceUserRolesDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.profiles.replace(userId, dto.role_ids, this.toActor(req));
+  }
 
   @Get()
   @RequirePermissions('users:read')

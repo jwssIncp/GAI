@@ -6,8 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserRole } from '../../domain/enums/user.enums';
-import { PermissionScope } from '../../../users/domain/enums/permission-scope.enum';
+import { hasAllPermissions } from '../../application/services/permission-access';
 import {
   PERMISSION_RESOLVER,
   type PermissionResolver,
@@ -46,25 +45,11 @@ export class PermissionsGuard implements CanActivate {
       });
     }
 
-    if (user.systemRoles.includes(UserRole.PLATFORM_ADMIN)) {
-      return true;
-    }
-
-    if (user.systemRoles.includes(UserRole.ORG_ADMIN)) {
-      const scopes =
-        await this.permissionResolver.findScopesByKeys(requiredPermissions);
-      const requiresPlatform = requiredPermissions.some(
-        (key) => scopes.get(key) === PermissionScope.PLATFORM,
-      );
-      if (!requiresPlatform) {
-        return true;
-      }
-    }
-
-    const grantedKeys = new Set(
-      user.permissions.map((permission) => permission.key),
+    const allowed = await hasAllPermissions(
+      user,
+      requiredPermissions,
+      this.permissionResolver,
     );
-    const allowed = requiredPermissions.every((key) => grantedKeys.has(key));
     if (!allowed) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',

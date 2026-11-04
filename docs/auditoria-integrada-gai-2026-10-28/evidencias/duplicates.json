@@ -1,0 +1,138 @@
+[
+  [
+    {
+      "file": "gai-backend/src/modules/companies/application/services/company-scope.service.ts",
+      "line": 34,
+      "name": "resolveOrganizationFilter",
+      "body_chars": 402
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/application/services/inventory-item-scope.service.ts",
+      "line": 33,
+      "name": "resolveOrganizationFilter",
+      "body_chars": 402
+    },
+    {
+      "file": "gai-backend/src/modules/projects/application/services/project-scope.service.ts",
+      "line": 38,
+      "name": "resolveOrganizationFilter",
+      "body_chars": 402
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/companies/application/services/company-scope.service.ts",
+      "line": 12,
+      "name": "resolveOrganizationForCreate",
+      "body_chars": 368
+    },
+    {
+      "file": "gai-backend/src/modules/projects/application/services/project-scope.service.ts",
+      "line": 13,
+      "name": "resolveOrganizationForCreate",
+      "body_chars": 368
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/users/application/use-cases/create-org-role.use-case.ts",
+      "line": 122,
+      "name": "assertValidPermissions",
+      "body_chars": 338
+    },
+    {
+      "file": "gai-backend/src/modules/users/application/use-cases/update-org-role.use-case.ts",
+      "line": 133,
+      "name": "assertValidPermissions",
+      "body_chars": 338
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/inventory-pending-issues/application/services/inventory-pending-issues.service.ts",
+      "line": 445,
+      "name": "getProject",
+      "body_chars": 282
+    },
+    {
+      "file": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+      "line": 636,
+      "name": "getProject",
+      "body_chars": 282
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/managerial-dre/dre.controller.ts",
+      "line": 170,
+      "name": "download",
+      "body_chars": 260
+    },
+    {
+      "file": "gai-backend/src/modules/receivables/receivable.controller.ts",
+      "line": 126,
+      "name": "download",
+      "body_chars": 260
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/inventory-accounting-items/application/services/inventory-accounting-item-scope.service.ts",
+      "line": 17,
+      "name": "assertCanAccessOrganization",
+      "body_chars": 198
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-item-images/application/services/inventory-item-image-scope.service.ts",
+      "line": 26,
+      "name": "assertCanAccessOrganization",
+      "body_chars": 198
+    },
+    {
+      "file": "gai-backend/src/modules/inventory-items/application/services/inventory-item-scope.service.ts",
+      "line": 17,
+      "name": "assertCanAccessOrganization",
+      "body_chars": 198
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/catalog-assets/domain/entities/catalog-asset.ts",
+      "line": 166,
+      "name": "applyChange",
+      "body_chars": 192
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/domain/entities/field-agent.ts",
+      "line": 161,
+      "name": "applyChange",
+      "body_chars": 192
+    },
+    {
+      "file": "gai-backend/src/modules/field-agents/domain/entities/project-field-agent.ts",
+      "line": 119,
+      "name": "applyChange",
+      "body_chars": 192
+    },
+    {
+      "file": "gai-backend/src/modules/projects/domain/entities/project.ts",
+      "line": 231,
+      "name": "applyChange",
+      "body_chars": 192
+    }
+  ],
+  [
+    {
+      "file": "gai-backend/src/modules/companies/application/services/company-scope.service.ts",
+      "line": 59,
+      "name": "assertCanAccessOrganization",
+      "body_chars": 191
+    },
+    {
+      "file": "gai-backend/src/modules/projects/application/services/project-scope.service.ts",
+      "line": 66,
+      "name": "assertCanAccessProject",
+      "body_chars": 191
+    }
+  ]
+]

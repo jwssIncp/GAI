@@ -20,9 +20,14 @@ import { InventoryItemForm } from './InventoryItemForm';
 import { inventoryItemStatuses } from './inventoryItemSchemas';
 import { useChangeInventoryItemStatus, useCreateInventoryItem, useProjectInventoryItems, useUpdateInventoryItem } from './inventoryItemsQueries';
 import type { InventoryItem, InventoryItemStatus } from '@/types/api';
+import { ValuationBatchPanel,type BatchSelectionState } from './ValuationBatchPanel';
 
 export function ProjectInventoryItemsPage() {
   const projectId = Number(useParams().projectId);
+  return <InventoryItemsWorkspace key={projectId} projectId={projectId}/>;
+}
+function InventoryItemsWorkspace({projectId}:{projectId:number}) {
+  const [selection,setSelection]=useState<BatchSelectionState>({contract:{kind:'ids',ids:[]},ids:[]});
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<InventoryItemStatus | ''>('');
@@ -51,6 +56,7 @@ export function ProjectInventoryItemsPage() {
   const data = query.data ? normalizePage(query.data) : null;
 
   const columns: Column<InventoryItem>[] = [
+    ...(hasPermission('asset-valuations:batch-create')&&hasPermission('asset-valuations:create')&&hasPermission('asset-valuations:read')?[{header:'Selecionar',cell:(item:InventoryItem)=><input type="checkbox" aria-label={`Selecionar item ${item.id}`} checked={selection.ids.includes(item.id)} onChange={()=>{const ids=selection.ids.includes(item.id)?selection.ids.filter(id=>id!==item.id):[...selection.ids,item.id];setSelection({ids,contract:{kind:'ids',ids}});}}/>}]:[]),
     { header: 'Sequencia', cell: (item) => item.sequence ?? '-' },
     { header: 'Placa antiga', cell: (item) => item.old_plate ?? '-' },
     { header: 'Placa nova', cell: (item) => item.new_plate ?? '-' },
@@ -106,6 +112,7 @@ export function ProjectInventoryItemsPage() {
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={newPlate} onChange={(event) => { setNewPlate(event.target.value); setPage(1); }} placeholder="Placa nova" />
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descricao" />
       </FilterPanel>
+      <PermissionGate permissions={['asset-valuations:read','inventory-items:read']}><ValuationBatchPanel projectId={projectId} selection={selection} currentItems={data?.items??[]} filters={{search:params.search,status:params.status,old_plate:params.old_plate,new_plate:params.new_plate,description:params.description}} onSelection={setSelection} onViewItem={setViewingId}/></PermissionGate>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
         <>
           <DataTable columns={columns} items={data.items} getKey={(item) => item.id} />

@@ -1,0 +1,12 @@
+# Riscos e limites restantes
+
+1. **Produção não liberada.** GAI-007 é preparação de configuração; AWS, RDS efetivo, IAM/CORS/ALB, imagem publicada, carga e restore não foram homologados.
+2. **DOCX:** ZIP/XML e conteúdo integral são verificados; paginação em Word/renderizador real permanece pendente por ausência de LibreOffice no runtime selecionado. Não se converteu OOXML em HTML ou imagem para encobrir a limitação.
+3. **Capacidade:** fontes/snapshot/renderização têm limites explícitos. A extração não é ilimitada; excesso aborta integralmente. RSS medido no Jest inclui o processo compartilhado. Sob execução concorrente de compilações/testes, a geração PDF atingiu o timeout e foi recusada sem artefato; a reexecução documental isolada passou. Em 5.000 itens o snapshot é completo, mas a geração recusou DOCX (falha do worker) e PDF (timeout) com 503, sem artefato parcial. A causa interna do erro genérico do worker não foi diagnosticada. Não há fila distribuída ou teste de carga por múltiplas tasks.
+4. **Retenção:** blobs documentais continuam no banco sem nova política de expiração; crescimento e recuperação precisam de decisão operacional. Não foram apagados arquivos históricos.
+5. **Cobertura funcional:** desktop/mobile e ORG_ADMIN/leitor são cobertos nos percursos registrados. Não certificam todos os navegadores, perfis, filtros e modais. Sessão em outra aba não é presumida.
+6. **Pendências anteriores:** permanecem os riscos financeiros/de negócio, timestamps históricos ambíguos, demais diferenças de schema e dependências descritos na Onda 1. Lockfiles e pacotes não foram alterados nesta onda; não foi feita nova SCA para transformar as contagens anteriores em afirmação atual.
+7. **Sem vínculos inventados:** orçamento não cria contrato/projeto/recebível automaticamente. Recebíveis manuais, laudos, contratos e orçamentos dos testes são vinculados explicitamente pelas APIs sintéticas; cálculos e dados históricos não foram reparados.
+8. **Harness legado:** a primeira rodada do navegador encontrou chamadas hardcoded a `localhost:3000`, rejeitadas com 401, sem criação de projetos nessas chamadas. Elas foram corrigidas para o proxy isolado, e o runner passou a recusar esse alvo. A tentativa e as demais falhas de preparação ficam preservadas, sem contá-las como validação aprovada.
+
+As correções das Ondas 0 e 1 são preservadas por hashes de suas entregas, migrations e lockfiles, comparação das instalações originais e reexecução das regressões. Os resultados finais, sem somar reexecuções, estão em [testes.md](testes.md).

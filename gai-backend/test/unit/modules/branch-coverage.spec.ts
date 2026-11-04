@@ -6,11 +6,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PinoLogger } from 'nestjs-pino';
 import { HttpExceptionFilter } from '../../../src/common/filters/http-exception.filter';
-import { LoginUseCase } from '../../../src/modules/auth/application/use-cases/login.use-case';
-import { RequestPasswordResetUseCase } from '../../../src/modules/auth/application/use-cases/request-password-reset.use-case';
 import { RolesGuard } from '../../../src/modules/auth/presentation/guards/roles.guard';
 import { SessionAuthGuard } from '../../../src/modules/auth/presentation/guards/session-auth.guard';
 import { User } from '../../../src/modules/auth/domain/entities/user';
@@ -21,7 +17,6 @@ import { ListOrganizationsUseCase } from '../../../src/modules/organizations/app
 import { UpdateOrganizationUseCase } from '../../../src/modules/organizations/application/use-cases/update-organization.use-case';
 import { Organization } from '../../../src/modules/organizations/domain/entities/organization';
 import { OrganizationStatus } from '../../../src/modules/organizations/domain/enums/organization-status.enum';
-import { ConfirmPasswordResetUseCase } from '../../../src/modules/auth/application/use-cases/confirm-password-reset.use-case';
 import { DeactivateOrganizationUseCase } from '../../../src/modules/organizations/application/use-cases/deactivate-organization.use-case';
 import { DevAdminGuard } from '../../../src/modules/auth/presentation/guards/dev-admin.guard';
 import { Cnpj } from '../../../src/modules/organizations/domain/value-objects/cnpj';
@@ -61,121 +56,6 @@ describe('Branch coverage boosters', () => {
     extractSystemRoles: jest.fn().mockReturnValue([]),
     resolvePrimaryRole: jest.fn().mockReturnValue(null),
   } as never;
-
-  const makeLoginUseCase = (overrides: Record<string, unknown> = {}) => {
-    const users = {
-      findByLoginOrEmail: jest.fn(),
-      save: jest.fn().mockImplementation(async (u: User) => u),
-      ...overrides.users,
-    };
-    const sessions = {
-      create: jest.fn().mockResolvedValue({}),
-      ...overrides.sessions,
-    };
-    const hasher = {
-      verify: jest.fn().mockResolvedValue(false),
-      hash: jest.fn(),
-      ...overrides.hasher,
-    };
-    const orgGate = {
-      isActive: jest.fn().mockResolvedValue(true),
-      ...overrides.orgGate,
-    };
-    const audit = { save: jest.fn(), ...overrides.audit };
-    const configService = {
-      get: (_key: string, fallback?: unknown) => fallback,
-    } as ConfigService;
-    const logger = {
-      setContext: jest.fn(),
-      info: jest.fn(),
-    } as unknown as PinoLogger;
-
-    return {
-      useCase: new LoginUseCase(
-        users as never,
-        sessions as never,
-        hasher as never,
-        orgGate as never,
-        audit as never,
-        mockAssignments,
-        mockPermissionResolver,
-        configService,
-        logger,
-      ),
-      users,
-      hasher,
-      orgGate,
-    };
-  };
-
-  it('LoginUseCase handles unknown, inactive, locked and inactive org users', async () => {
-    const unknown = makeLoginUseCase();
-    unknown.users.findByLoginOrEmail.mockResolvedValue(null);
-    await expect(
-      unknown.useCase.execute(
-        { identifier: 'x', password: 'Password1!' },
-        null,
-      ),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-
-    const locked = makeLoginUseCase();
-    locked.users.findByLoginOrEmail.mockResolvedValue(
-      makeUser({ lockedUntil: new Date(now.getTime() + 60_000) }),
-    );
-    await expect(
-      locked.useCase.execute(
-        { identifier: 'user', password: 'Password1!' },
-        null,
-      ),
-    ).rejects.toMatchObject({ status: HttpStatus.LOCKED });
-
-    const inactive = makeLoginUseCase();
-    inactive.users.findByLoginOrEmail.mockResolvedValue(
-      makeUser({ status: UserStatus.INACTIVE }),
-    );
-    await expect(
-      inactive.useCase.execute(
-        { identifier: 'user', password: 'Password1!' },
-        null,
-      ),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-
-    const inactiveOrg = makeLoginUseCase();
-    inactiveOrg.users.findByLoginOrEmail.mockResolvedValue(makeUser());
-    inactiveOrg.orgGate.isActive.mockResolvedValue(false);
-    await expect(
-      inactiveOrg.useCase.execute(
-        { identifier: 'user', password: 'Password1!' },
-        null,
-      ),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-  });
-
-  it('RequestPasswordResetUseCase sends email when user exists', async () => {
-    const users = { findByEmail: jest.fn().mockResolvedValue(makeUser()) };
-    const tokens = {
-      invalidateAllForUser: jest.fn(),
-      create: jest.fn(),
-    };
-    const emailSender = { sendPasswordResetEmail: jest.fn() };
-    const audit = { save: jest.fn() };
-    const configService = { get: () => 1 } as unknown as ConfigService;
-    const logger = {
-      setContext: jest.fn(),
-      info: jest.fn(),
-    } as unknown as PinoLogger;
-    const useCase = new RequestPasswordResetUseCase(
-      users as never,
-      tokens as never,
-      emailSender,
-      audit,
-      configService,
-      logger,
-    );
-
-    await useCase.execute({ email: 'user@test.com' }, '127.0.0.1');
-    expect(emailSender.sendPasswordResetEmail).toHaveBeenCalled();
-  });
 
   it('HttpExceptionFilter maps common HTTP statuses', () => {
     const filter = new HttpExceptionFilter();
@@ -352,53 +232,6 @@ describe('Branch coverage boosters', () => {
         updatedAt: now,
       }),
     );
-  });
-
-  it('LoginUseCase succeeds for organization user when org is active', async () => {
-    const { useCase, users, hasher } = makeLoginUseCase();
-    users.findByLoginOrEmail.mockResolvedValue(makeUser());
-    hasher.verify.mockResolvedValue(true);
-    const result = await useCase.execute(
-      { identifier: 'user', password: 'Password1!' },
-      '127.0.0.1',
-    );
-    expect(result.user.organization_id).toBe(1);
-  });
-
-  it('ConfirmPasswordResetUseCase updates password for valid token', async () => {
-    const user = makeUser();
-    const tokens = {
-      findValidByHash: jest.fn().mockResolvedValue({
-        id: 1,
-        userId: user.id,
-      }),
-      markUsed: jest.fn(),
-    };
-    const users = {
-      findById: jest.fn().mockResolvedValue(user),
-      save: jest.fn().mockImplementation(async (u: User) => u),
-    };
-    const hasher = { hash: jest.fn().mockResolvedValue('new-hash') };
-    const sessions = { revokeAllForUser: jest.fn() };
-    const audit = { save: jest.fn() };
-    const logger = {
-      setContext: jest.fn(),
-      info: jest.fn(),
-    } as unknown as PinoLogger;
-    const useCase = new ConfirmPasswordResetUseCase(
-      tokens as never,
-      users as never,
-      hasher as never,
-      sessions as never,
-      audit,
-      logger,
-    );
-
-    const result = await useCase.execute(
-      { token: 'raw-token-value', new_password: 'NewPass@123456' },
-      null,
-    );
-    expect(result.message).toContain('successfully');
   });
 
   it('DeactivateOrganizationUseCase returns conflict when already inactive', async () => {

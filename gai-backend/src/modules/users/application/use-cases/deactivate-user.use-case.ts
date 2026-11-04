@@ -78,10 +78,6 @@ export class DeactivateUserUseCase {
     }
 
     const revokedAt = new Date();
-    const sessionsRevoked = await this.sessions.revokeAllForUser(
-      user.id,
-      revokedAt,
-    );
     const previousStatus = user.status;
     user.deactivate();
 
@@ -93,6 +89,10 @@ export class DeactivateUserUseCase {
         status: { before: previousStatus, after: UserStatus.INACTIVE },
       },
     });
+    const sessionsRevoked = await this.sessions.revokeAllForUser(
+      user.id,
+      revokedAt,
+    );
 
     this.logger.info({
       operation: 'DEACTIVATE_USER',

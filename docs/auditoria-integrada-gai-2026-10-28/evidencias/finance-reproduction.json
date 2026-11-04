@@ -1,0 +1,35 @@
+{
+  "environment": "SQLite :memory:, HTTP Nest real, no API mocks",
+  "case": "101 distinct payments of 1.00",
+  "expected": {
+    "total_count": 101,
+    "total_pending": "101.00"
+  },
+  "actual": {
+    "total_pending": "100.00",
+    "total_approved": "0.00",
+    "total_paid": "0.00",
+    "total_cancelled": "0.00",
+    "total_count": 101
+  },
+  "confirmed": true,
+  "invalid_civil_date": {
+    "input": "2026-02-30",
+    "actual": {
+      "id": 1,
+      "organization_id": 1,
+      "project_id": 1,
+      "field_agent_id": null,
+      "description": "SINTETICO data civil inexistente",
+      "reason": null,
+      "expense_date": "2026-03-02",
+      "amount": "1.00",
+      "status": "pending",
+      "metadata": null,
+      "created_at": "2026-10-28T21:18:40.080Z",
+      "updated_at": "2026-10-28T21:18:40.080Z"
+    },
+    "expected_status": 400,
+    "actual_status": 201
+  }
+}

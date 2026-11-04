@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-11-03T01:48:54.330Z",
+  "credentialRotationFinal": {
+    "command": "node test/run-tests.cjs sqlite --runTestsByPath test/integration/users/user-lifecycle.e2e-spec.ts",
+    "cwd": "gai-backend",
+    "exitCode": 0,
+    "passed": 34,
+    "skipped": 3,
+    "failed": 0
+  },
+  "apiTypesLint": {
+    "command": "node node_modules/eslint/bin/eslint.js src/api/endpoints.ts src/types/api.ts",
+    "cwd": "gai-frontend",
+    "exitCode": 0
+  },
+  "localMigrations": {
+    "applied": 35,
+    "pending": 0
+  },
+  "disposableMysqlCleanup": {
+    "container": "gai-users-validation",
+    "stopExitCode": 0,
+    "autoRemove": true,
+    "persistentLocalDatabaseUntouched": true
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "inspectedAt": "2026-11-03T19:15:26.665Z",
+  "scope": "Directed inspection of known local seed password values in relevant paths and locally reachable Git history. Secret values are intentionally omitted.",
+  "files": [
+    "docs/onboarding-aws-colaborador.md",
+    "gai-backend/specs/001-user-auth/contracts/auth-api.yaml",
+    "gai-backend/specs/003-users-roles-permissions/quickstart.md",
+    "gai-backend/src/modules/auth/application/dto/login.dto.ts",
+    "gai-backend/test/integration/auth/login.e2e-spec.ts",
+    "gai-backend/test/integration/auth/organization-gate.e2e-spec.ts",
+    "gai-backend/test/integration/auth/session-invalidation.e2e-spec.ts",
+    "gai-backend/test/integration/test-app.helper.ts",
+    "gai-frontend/e2e/app.spec.ts"
+  ],
+  "commits": [
+    "d80a8b164709176f11ea4addc6078e0e90a22291",
+    "88aee2de16b84cda5d5f7081185db91d53ded487",
+    "a74358c1efb23247176e5c10f683cfae7c661623",
+    "aadf2b16783d59551a972dda455c0855bebd561f",
+    "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+    "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+    "9e0d282f3854df6cc3be09d8c37dbfaccfe84b90",
+    "271d3f5c85ff9e3f53f31bb2988f25d3306b9e50",
+    "41532a5dfc3cda2d4e97604b9885792c35015b6f",
+    "bdfbdb46b904908c5a2a8a3f3919fa936b75e246"
+  ],
+  "occurrences": [
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "d80a8b164709176f11ea4addc6078e0e90a22291",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "d80a8b164709176f11ea4addc6078e0e90a22291",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "88aee2de16b84cda5d5f7081185db91d53ded487",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "88aee2de16b84cda5d5f7081185db91d53ded487",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "a74358c1efb23247176e5c10f683cfae7c661623",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "a74358c1efb23247176e5c10f683cfae7c661623",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "aadf2b16783d59551a972dda455c0855bebd561f",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "docs/onboarding-aws-colaborador.md",
+      "commit": "aadf2b16783d59551a972dda455c0855bebd561f",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/specs/001-user-auth/contracts/auth-api.yaml",
+      "commit": "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/specs/001-user-auth/contracts/auth-api.yaml",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/specs/003-users-roles-permissions/quickstart.md",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/specs/003-users-roles-permissions/quickstart.md",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/src/modules/auth/application/dto/login.dto.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/auth/login.e2e-spec.ts",
+      "commit": "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/auth/login.e2e-spec.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/auth/organization-gate.e2e-spec.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/auth/session-invalidation.e2e-spec.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "9e0d282f3854df6cc3be09d8c37dbfaccfe84b90",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "9e0d282f3854df6cc3be09d8c37dbfaccfe84b90",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "271d3f5c85ff9e3f53f31bb2988f25d3306b9e50",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "271d3f5c85ff9e3f53f31bb2988f25d3306b9e50",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-backend/test/integration/test-app.helper.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_TEST_USER_PASSWORD"
+    },
+    {
+      "p": "gai-frontend/e2e/app.spec.ts",
+      "commit": "41532a5dfc3cda2d4e97604b9885792c35015b6f",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-frontend/e2e/app.spec.ts",
+      "commit": "271d3f5c85ff9e3f53f31bb2988f25d3306b9e50",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-frontend/e2e/app.spec.ts",
+      "commit": "bdfbdb46b904908c5a2a8a3f3919fa936b75e246",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-frontend/e2e/app.spec.ts",
+      "commit": "324220ecef6ac7cabf377f31ba3e6e466ad64e5d",
+      "key": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "p": "gai-frontend/e2e/app.spec.ts",
+      "commit": "c8747a65080fb7c2eca038eee12cc03bac2a4cf7",
+      "key": "SEED_ADMIN_PASSWORD"
+    }
+  ]
+}

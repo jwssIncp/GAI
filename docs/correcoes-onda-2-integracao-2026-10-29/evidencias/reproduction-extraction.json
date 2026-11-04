@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-29T09:43:40.926Z",
+  "rows": 1001,
+  "status": 400,
+  "body": {
+    "code": "TECHNICAL_REPORT_INVALID",
+    "message": "Fonte excede 1.000 registros. Selecione outro recorte documental; não há truncamento silencioso."
+  }
+}

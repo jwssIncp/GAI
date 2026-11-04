@@ -1,0 +1,22 @@
+[
+  {
+    "file": "laudo-aprovado.docx",
+    "sha256": "eebd9ee1b69942fb78e8f5611f931ba783fda6d1c6899cfc3f7f970e9c86ac5b",
+    "xml_valid": true,
+    "zip_crc_valid": true,
+    "relationships_valid": true,
+    "native_tables": 3,
+    "native_paragraphs": 485,
+    "page_fields": true
+  },
+  {
+    "file": "proposta-aprovada.docx",
+    "sha256": "d6d2929cffbfe54018650427cd009480a250bba582bb6854abbc74bcba26df14",
+    "xml_valid": true,
+    "zip_crc_valid": true,
+    "relationships_valid": true,
+    "native_tables": 2,
+    "native_paragraphs": 44,
+    "page_fields": true
+  }
+]

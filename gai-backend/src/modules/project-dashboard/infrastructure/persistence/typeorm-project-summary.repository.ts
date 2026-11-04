@@ -775,6 +775,9 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
     if (!value) {
       return null;
     }
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
     if (typeof value === 'string' || typeof value === 'number') {
       return new Date(value).toISOString();
     }

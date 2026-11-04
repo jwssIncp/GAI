@@ -1,0 +1,16 @@
+{
+  "required_files": 14,
+  "missing": [],
+  "capabilities": 98,
+  "unique_ids": 98,
+  "counts": {
+    "IMPLEMENTADA": 42,
+    "PARCIAL": 27,
+    "INCOMPATÍVEL POR DECISÃO": 10,
+    "NÃO VERIFICADA": 7,
+    "AUSENTE": 12
+  },
+  "checked_source_files": 1080,
+  "changed_sources": [],
+  "broken_links": []
+}

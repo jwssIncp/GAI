@@ -1,0 +1,110 @@
+[
+  {
+    "count": 0,
+    "extracted": 0,
+    "hash": "706cdbfa876bb1fada93cce1ffb52d5b9dd26e892ad5ab1eb3e12505015330d7",
+    "snapshot_bytes": 1215,
+    "milliseconds": 216.5489000000016,
+    "rss_before": 278614016,
+    "rss_after": 279990272,
+    "heap_before": 163628496,
+    "heap_after": 166575416
+  },
+  {
+    "count": 1,
+    "extracted": 1,
+    "hash": "d4b329740caf42cc35a06bc5192c2e868ba90939823bff860630da76e5075cc7",
+    "snapshot_bytes": 1390,
+    "milliseconds": 219.07900000000154,
+    "rss_before": 280649728,
+    "rss_after": 281063424,
+    "heap_before": 166524632,
+    "heap_after": 167900048
+  },
+  {
+    "count": 999,
+    "extracted": 999,
+    "hash": "3cded24fb34088c644088bb4bb76bad1485e157405e6bf89f2f8fc41c4f479ea",
+    "snapshot_bytes": 183718,
+    "milliseconds": 1119.6598999999987,
+    "rss_before": 287313920,
+    "rss_after": 305225728,
+    "heap_before": 166062728,
+    "heap_after": 180314504
+  },
+  {
+    "count": 1000,
+    "extracted": 1000,
+    "hash": "8e6ddc2c54ef13b7416d35e79116a5aaec18da37bc0ac8a4a35413e6af6e83f8",
+    "snapshot_bytes": 186115,
+    "milliseconds": 1061.6630000000005,
+    "rss_before": 308154368,
+    "rss_after": 316329984,
+    "heap_before": 179395400,
+    "heap_after": 184375144
+  },
+  {
+    "count": 1001,
+    "extracted": 1001,
+    "hash": "d2c51683fbf3794e6a4a5a84dbbd0c68012ce56c97cea27c85ed134e1a313996",
+    "snapshot_bytes": 186301,
+    "milliseconds": 1013.2609999999986,
+    "rss_before": 315760640,
+    "rss_after": 319930368,
+    "heap_before": 182576416,
+    "heap_after": 180471200
+  },
+  {
+    "count": 2500,
+    "extracted": 2500,
+    "hash": "e941aa54e34dbef3e896122c79ddf4ec7568d41103def15395213c0379778dc0",
+    "snapshot_bytes": 465115,
+    "milliseconds": 2793.6564,
+    "rss_before": 339611648,
+    "rss_after": 358707200,
+    "heap_before": 184893944,
+    "heap_after": 201145160
+  },
+  {
+    "count": 5000,
+    "extracted": 5000,
+    "hash": "a068917119601955e3666f15146982b081afff124469a22a2ae53fb0cca82af0",
+    "snapshot_bytes": 931119,
+    "milliseconds": 5923.0478,
+    "rss_before": 356261888,
+    "rss_after": 456425472,
+    "heap_before": 205781008,
+    "heap_after": 270415888
+  },
+  {
+    "oversized": true,
+    "status": 413,
+    "code": "TECHNICAL_REPORT_SOURCE_LIMIT",
+    "atomic": true
+  },
+  {
+    "family": "valuation",
+    "historical_rows": 2500,
+    "selected_rows": 1,
+    "last_id": 2500,
+    "references": 2500,
+    "hash": "7afa3c186503b644800563b2b3eeff7e82539024e374847af72423f3c1678ecb"
+  },
+  {
+    "count": 2500,
+    "format": "docx",
+    "status": 201,
+    "bytes": 58346,
+    "milliseconds": 4263.5947000000015,
+    "snapshot_hash": "d886cbbf5ab3118e84ffbd3902074073e425d74626a0ffb1a3a402293b3034af"
+  },
+  {
+    "count": 2500,
+    "format": "pdf",
+    "status": 201,
+    "bytes": 545367,
+    "pages": 135,
+    "milliseconds": 23705.468600000007,
+    "snapshot_hash": "d886cbbf5ab3118e84ffbd3902074073e425d74626a0ffb1a3a402293b3034af"
+  }
+]

@@ -5,6 +5,37 @@
 **/coverage/
 *.tsbuildinfo
 
+# Local validation outputs (keep source, reports and final screenshots)
+**/.cache/
+**/.vite/
+**/npm-cache/
+**/_cacache/
+**/playwright-report/
+**/playwright-artifacts/
+**/test-results/
+**/trace.zip
+docs/**/evidencias/baseline/
+docs/**/evidencias/antes/
+docs/**/evidencias/attempts/
+docs/**/evidencias/build-*/
+docs/**/evidencias/backend-build/
+docs/**/evidencias/frontend-build/
+docs/**/evidencias/backend-lint/
+docs/**/evidencias/backend-typescript/
+docs/**/baseline/
+docs/**/checks/**/artifacts/
+docs/**/evidencias/*synthetic.sql
+docs/**/evidencias/dados-sinteticos.sql
+docs/**/evidencias/reports-read.txt
+docs/**/evidencias/*eslint*.json
+docs/**/evidencias/*coverage*.json
+docs/**/evidencias/*.bin
+# Authentication screenshots and raw status captures are local audit artifacts.
+docs/**/login-*.png
+gai-frontend/*login*.png
+docs/**/evidencias/git-status*.json
+docs/**/evidencias/git-*.txt
+
 # Terraform
 **/.terraform/
 **/*.tfstate
@@ -30,6 +61,8 @@ terraform.rc
 .idea/
 .vscode/
 *.log
+*.stderr
+*.jsonl
 *.tmp
 *.swp
 Thumbs.db

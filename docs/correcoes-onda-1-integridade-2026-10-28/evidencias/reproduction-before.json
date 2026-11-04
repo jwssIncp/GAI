@@ -1,0 +1,51 @@
+{
+  "target": "127.0.0.1:33337/gai_validation_disposable",
+  "node_timezone": "America/Sao_Paulo",
+  "invalid_civil": {
+    "id": 1,
+    "organization_id": 1,
+    "project_id": 1,
+    "field_agent_id": null,
+    "description": "SINTETICO data impossivel",
+    "reason": null,
+    "expense_date": "2026-03-02",
+    "amount": "1.00",
+    "status": "pending",
+    "metadata": null,
+    "created_at": "2026-10-28T23:56:35.940Z",
+    "updated_at": "2026-10-28T23:56:35.940Z"
+  },
+  "payment": {
+    "id": 1,
+    "organization_id": 1,
+    "project_id": 1,
+    "field_agent_id": 1,
+    "state": null,
+    "start_date": "2026-10-28",
+    "end_date": "2026-10-28",
+    "payment_date": "2026-10-28",
+    "days": 1,
+    "daily_rate": "1.00",
+    "additional_amount": "0.00",
+    "daily_total": "1.00",
+    "discount_amount": "0.00",
+    "final_amount": "1.00",
+    "status": "paid",
+    "notes": null,
+    "metadata": null,
+    "created_at": "2026-10-28T23:56:35.768Z",
+    "updated_at": "2026-10-29T02:56:35.000Z"
+  },
+  "sql": [
+    {
+      "paid_raw": "2026-10-28 20:56:35.893000",
+      "updated_raw": "2026-10-28 23:56:35.000000",
+      "utc_now": "2026-10-28 23:56:35.958000",
+      "session_timezone": "SYSTEM"
+    }
+  ],
+  "metadata": {
+    "success": false,
+    "error": "Table 'gai_validation_disposable.typeorm_metadata' doesn't exist"
+  }
+}

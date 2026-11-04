@@ -1,0 +1,11 @@
+{
+  "name": "save-browser-final",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-2-integracao-2026-10-29\\save-database.cjs",
+    "browser-final",
+    "navigation"
+  ],
+  "exit_code": 0,
+  "seconds": 1.088
+}

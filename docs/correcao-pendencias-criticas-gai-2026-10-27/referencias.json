@@ -1,0 +1,76 @@
+{
+  "date": "2026-10-27",
+  "auditFiles": [
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/anexo-gai.md",
+      "sha256": "68aeb302b77b014f95fa458b3ac86809f53d7ab0e0eefa8d2034783d70a3dbaf",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/anexo-legado.md",
+      "sha256": "0a36dd663a6a3c1fdc60ae3b6339b6ab44c23673ce2437b960763232d68c2ed3",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/inventario-funcional.md",
+      "sha256": "4f54fbf652782e4609a765675679e27109fd74cff506fe4f57758735956cc2d2",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/manifesto-arquivos.csv",
+      "sha256": "2727721e70c85b63ba539ebb425900e5ee79ce7b87d3e3f0a76c4007a9b7e3de",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.csv",
+      "sha256": "5c969c7d3749bd1850c94818ad16c0958126c0f1b11856ff6ba4105e255d36cc",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.json",
+      "sha256": "51e4bd68589cc54aa9f177de8ca3f2f38b8fbbc4e2ed598ef5cad07fcd0ac252",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/matriz-comparativa.md",
+      "sha256": "65dc4ee29f6fbcaea36120d653d60aadbeaf8bb798b5bcdfe3a663748106f381",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/README.md",
+      "sha256": "35681e393fe42e2d9c166d02ab8f74f3bd6a0c858873a278de99b51cac554f83",
+      "unchangedFromValidation": true
+    },
+    {
+      "file": "docs/auditoria-legado-gai-2026-10-27/verificacao.json",
+      "sha256": "7ce023df6fa44e1ef3a03b4079f2fe1a5d913222fb7a0e13d73bad907f611085",
+      "unchangedFromValidation": true
+    }
+  ],
+  "priorValidationFiles": [
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/arquivos.json",
+      "sha256": "e288519243483c3a1dddb5a62481a13bb671916157a5fd358377cd1eeed31d03"
+    },
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/migrations.json",
+      "sha256": "bcf1e67fed4cf579ede7ceb236bd665b41c417250ce97dcbd793cc6edfa43c40"
+    },
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/README.md",
+      "sha256": "81cdedf3d579883ccdad6b7635a3cd1a43c7e819fa3453a3d62b377f879a3145"
+    },
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/referencias.json",
+      "sha256": "99e50db7ba95f1e0a3f22d698c5017af6ed64d5f8479cc473ba304928b8afa51"
+    },
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/storage-config.json",
+      "sha256": "a145a08dd8838f94a76a164b1879ba13418c26eb57f78acdb7fd58e37ce570ba"
+    },
+    {
+      "file": "docs/validacao-tecnica-gai-2026-10-27/testes.json",
+      "sha256": "4292f45c714f24b5890c79f801b488fe8b063b63d8b5aab6bb15543911fcb0a1"
+    }
+  ]
+}

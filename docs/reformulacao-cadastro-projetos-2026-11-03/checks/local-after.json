@@ -1,0 +1,2301 @@
+{
+  "captured_at": "2026-11-03T10:10:10.041Z",
+  "tables": {
+    "projects": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "company_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "description",
+          "COLUMN_TYPE": "text",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "draft"
+        },
+        {
+          "COLUMN_NAME": "start_date",
+          "COLUMN_TYPE": "date",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "end_date",
+          "COLUMN_TYPE": "date",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "finished_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "settings",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "metadata",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "updated_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "deleted_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "code",
+          "COLUMN_TYPE": "varchar(40)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "project_type",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "responsible_user_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "planning_responsible_user_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "planning_notes",
+          "COLUMN_TYPE": "text",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "projects",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 44,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 0,
+          "Key_name": "uq_field_project_scope",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 44,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 0,
+          "Key_name": "uq_field_project_scope",
+          "Seq_in_index": 2,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 44,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 0,
+          "Key_name": "uq_projects_organization_code",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 0,
+          "Key_name": "uq_projects_organization_code",
+          "Seq_in_index": 2,
+          "Column_name": "code",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_organization_status",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_organization_status",
+          "Seq_in_index": 2,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 3,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_name",
+          "Seq_in_index": 1,
+          "Column_name": "name",
+          "Collation": "A",
+          "Cardinality": 44,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_created_by_id",
+          "Seq_in_index": 1,
+          "Column_name": "created_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_updated_by_id",
+          "Seq_in_index": 1,
+          "Column_name": "updated_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_company_id",
+          "Seq_in_index": 1,
+          "Column_name": "company_id",
+          "Collation": "A",
+          "Cardinality": 23,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_organization_type",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_organization_type",
+          "Seq_in_index": 2,
+          "Column_name": "project_type",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_responsible",
+          "Seq_in_index": 1,
+          "Column_name": "responsible_user_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "projects",
+          "Non_unique": 1,
+          "Key_name": "idx_projects_planning_responsible",
+          "Seq_in_index": 1,
+          "Column_name": "planning_responsible_user_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 44,
+      "sha256": "2730d8f793baa55a59438fc4cf4bb97dbbafddc2c8baf76bb07e39641162f270"
+    },
+    "project_audit_logs": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "project_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "operation",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "performed_by",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "changes",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "project_audit_logs",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 42,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_audit_logs",
+          "Non_unique": 1,
+          "Key_name": "idx_project_audit_project_created",
+          "Seq_in_index": 1,
+          "Column_name": "project_id",
+          "Collation": "A",
+          "Cardinality": 42,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_audit_logs",
+          "Non_unique": 1,
+          "Key_name": "idx_project_audit_project_created",
+          "Seq_in_index": 2,
+          "Column_name": "created_at",
+          "Collation": "A",
+          "Cardinality": 42,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_audit_logs",
+          "Non_unique": 1,
+          "Key_name": "idx_project_audit_organization_id",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_audit_logs",
+          "Non_unique": 1,
+          "Key_name": "fk_project_audit_performed_by",
+          "Seq_in_index": 1,
+          "Column_name": "performed_by",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 44,
+      "sha256": "48bc52796ad8e0247a354e138cd1fd6f2066c7eda64cfcb4dc442875c7a61094"
+    },
+    "project_units": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "project_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "company_unit_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "deleted_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "project_units",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 4,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 0,
+          "Key_name": "uq_project_units_project_unit",
+          "Seq_in_index": 1,
+          "Column_name": "project_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 0,
+          "Key_name": "uq_project_units_project_unit",
+          "Seq_in_index": 2,
+          "Column_name": "company_unit_id",
+          "Collation": "A",
+          "Cardinality": 4,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_organization_project",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_organization_project",
+          "Seq_in_index": 2,
+          "Column_name": "project_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_organization_unit",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_organization_unit",
+          "Seq_in_index": 2,
+          "Column_name": "company_unit_id",
+          "Collation": "A",
+          "Cardinality": 4,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "fk_project_units_company_unit",
+          "Seq_in_index": 1,
+          "Column_name": "company_unit_id",
+          "Collation": "A",
+          "Cardinality": 4,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_project_deleted",
+          "Seq_in_index": 1,
+          "Column_name": "project_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_units",
+          "Non_unique": 1,
+          "Key_name": "idx_project_units_project_deleted",
+          "Seq_in_index": 2,
+          "Column_name": "deleted_at",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 4,
+      "sha256": "2ff5f2001884bf699655216bd1166c8542403c9d88c90fbb524e7a16038cbdd2"
+    },
+    "project_field_agents": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "project_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "field_agent_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "role",
+          "COLUMN_TYPE": "varchar(100)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "active"
+        },
+        {
+          "COLUMN_NAME": "start_date",
+          "COLUMN_TYPE": "date",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "end_date",
+          "COLUMN_TYPE": "date",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "notes",
+          "COLUMN_TYPE": "text",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "active_assignment_key",
+          "COLUMN_TYPE": "varchar(64)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 0,
+          "Key_name": "uq_project_field_agents_active_key",
+          "Seq_in_index": 1,
+          "Column_name": "active_assignment_key",
+          "Collation": "A",
+          "Cardinality": 7,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 1,
+          "Key_name": "idx_project_field_agents_project_status",
+          "Seq_in_index": 1,
+          "Column_name": "project_id",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 1,
+          "Key_name": "idx_project_field_agents_project_status",
+          "Seq_in_index": 2,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 7,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 1,
+          "Key_name": "idx_project_field_agents_agent_status",
+          "Seq_in_index": 1,
+          "Column_name": "field_agent_id",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 1,
+          "Key_name": "idx_project_field_agents_agent_status",
+          "Seq_in_index": 2,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "project_field_agents",
+          "Non_unique": 1,
+          "Key_name": "idx_project_field_agents_organization_id",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 10,
+      "sha256": "d767f39802e62ce8d91b11a6b9ed1523cc570555bae1de11f35673c95faaf53c"
+    },
+    "companies": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "corporate_name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "document",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "state_registration",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "municipal_registration",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "email",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "phone",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "zipcode",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "address",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "number",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "complement",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "district",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "city",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "state",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "country",
+          "COLUMN_TYPE": "varchar(80)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": "BR"
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "active"
+        },
+        {
+          "COLUMN_NAME": "metadata",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "updated_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "deleted_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "companies",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 26,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 0,
+          "Key_name": "idx_companies_organization_document",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 0,
+          "Key_name": "idx_companies_organization_document",
+          "Seq_in_index": 2,
+          "Column_name": "document",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_organization_status",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_organization_status",
+          "Seq_in_index": 2,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_organization_city_state",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_organization_city_state",
+          "Seq_in_index": 2,
+          "Column_name": "city",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_organization_city_state",
+          "Seq_in_index": 3,
+          "Column_name": "state",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "idx_companies_name",
+          "Seq_in_index": 1,
+          "Column_name": "name",
+          "Collation": "A",
+          "Cardinality": 26,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "fk_companies_created_by",
+          "Seq_in_index": 1,
+          "Column_name": "created_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "companies",
+          "Non_unique": 1,
+          "Key_name": "fk_companies_updated_by",
+          "Seq_in_index": 1,
+          "Column_name": "updated_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 26,
+      "sha256": "92dbbdda02d8b692c3577598f2a78dc0090638cfd45a207feffbaf88341e7904"
+    },
+    "company_units": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "company_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "code",
+          "COLUMN_TYPE": "varchar(80)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "zipcode",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "address",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "number",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "complement",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "district",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "city",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "state",
+          "COLUMN_TYPE": "varchar(50)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "country",
+          "COLUMN_TYPE": "varchar(80)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": "BR"
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "active"
+        },
+        {
+          "COLUMN_NAME": "metadata",
+          "COLUMN_TYPE": "json",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "updated_by_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "deleted_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "company_units",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_status",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_status",
+          "Seq_in_index": 2,
+          "Column_name": "company_id",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_status",
+          "Seq_in_index": 3,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_code",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_code",
+          "Seq_in_index": 2,
+          "Column_name": "company_id",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_company_code",
+          "Seq_in_index": 3,
+          "Column_name": "code",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_city_state",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_city_state",
+          "Seq_in_index": 2,
+          "Column_name": "city",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_organization_city_state",
+          "Seq_in_index": 3,
+          "Column_name": "state",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "idx_company_units_name",
+          "Seq_in_index": 1,
+          "Column_name": "name",
+          "Collation": "A",
+          "Cardinality": 8,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "fk_company_units_company",
+          "Seq_in_index": 1,
+          "Column_name": "company_id",
+          "Collation": "A",
+          "Cardinality": 5,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "fk_company_units_created_by",
+          "Seq_in_index": 1,
+          "Column_name": "created_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "company_units",
+          "Non_unique": 1,
+          "Key_name": "fk_company_units_updated_by",
+          "Seq_in_index": 1,
+          "Column_name": "updated_by_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 8,
+      "sha256": "64f8fbcbf38291b813985458d61171af7879e5dd7a72e88956822d8e704d3590"
+    },
+    "organizations": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "legal_name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "trade_name",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "cnpj",
+          "COLUMN_TYPE": "char(14)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "contact_email",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "contact_phone",
+          "COLUMN_TYPE": "varchar(20)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "enum('ACTIVE','INACTIVE')",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "ACTIVE"
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "organizations",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "organizations",
+          "Non_unique": 0,
+          "Key_name": "uk_organizations_cnpj",
+          "Seq_in_index": 1,
+          "Column_name": "cnpj",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "organizations",
+          "Non_unique": 1,
+          "Key_name": "idx_organizations_status",
+          "Seq_in_index": 1,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "organizations",
+          "Non_unique": 1,
+          "Key_name": "idx_organizations_legal_name",
+          "Seq_in_index": 1,
+          "Column_name": "legal_name",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 2,
+      "sha256": "ac7479c415aa9ea36db141937666d5b303be725fd36464a017f0d53604202c95"
+    },
+    "users": {
+      "columns": [
+        {
+          "COLUMN_NAME": "id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "organization_id",
+          "COLUMN_TYPE": "bigint unsigned",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "login",
+          "COLUMN_TYPE": "varchar(100)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "email",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "password_hash",
+          "COLUMN_TYPE": "varchar(255)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "status",
+          "COLUMN_TYPE": "enum('ACTIVE','INACTIVE','LOCKED','BLOCKED','PENDING_ACTIVATION')",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "ACTIVE"
+        },
+        {
+          "COLUMN_NAME": "failed_login_attempts",
+          "COLUMN_TYPE": "int",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "0"
+        },
+        {
+          "COLUMN_NAME": "locked_until",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "password_changed_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "created_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "updated_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "CURRENT_TIMESTAMP(3)"
+        },
+        {
+          "COLUMN_NAME": "full_name",
+          "COLUMN_TYPE": "varchar(160)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "phone",
+          "COLUMN_TYPE": "varchar(30)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "job_title",
+          "COLUMN_TYPE": "varchar(120)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "last_login_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "temporary_password_expires_at",
+          "COLUMN_TYPE": "datetime(3)",
+          "IS_NULLABLE": "YES",
+          "COLUMN_DEFAULT": null
+        },
+        {
+          "COLUMN_NAME": "must_change_password",
+          "COLUMN_TYPE": "tinyint(1)",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "0"
+        },
+        {
+          "COLUMN_NAME": "auth_version",
+          "COLUMN_TYPE": "int",
+          "IS_NULLABLE": "NO",
+          "COLUMN_DEFAULT": "0"
+        }
+      ],
+      "indexes": [
+        {
+          "Table": "users",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 3,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "users",
+          "Non_unique": 0,
+          "Key_name": "uk_users_login",
+          "Seq_in_index": 1,
+          "Column_name": "login",
+          "Collation": "A",
+          "Cardinality": 3,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "users",
+          "Non_unique": 0,
+          "Key_name": "uk_users_email",
+          "Seq_in_index": 1,
+          "Column_name": "email",
+          "Collation": "A",
+          "Cardinality": 3,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "users",
+          "Non_unique": 1,
+          "Key_name": "idx_users_organization_id",
+          "Seq_in_index": 1,
+          "Column_name": "organization_id",
+          "Collation": "A",
+          "Cardinality": 2,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "users",
+          "Non_unique": 1,
+          "Key_name": "idx_users_status",
+          "Seq_in_index": 1,
+          "Column_name": "status",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        },
+        {
+          "Table": "users",
+          "Non_unique": 1,
+          "Key_name": "idx_users_full_name",
+          "Seq_in_index": 1,
+          "Column_name": "full_name",
+          "Collation": "A",
+          "Cardinality": 1,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": "",
+          "Visible": "YES",
+          "Expression": null
+        }
+      ],
+      "rows": 3,
+      "sha256": "4465f1bc1d49e43dcd791979924c1db99f5021d87481406179227ea672d312fd"
+    }
+  },
+  "foreign_keys": [
+    {
+      "TABLE_NAME": "accounting_import_batches",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "asset_valuation_batches",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "asset_valuations",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "assisted_reconciliation_runs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "budgets",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "dre_entries",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "expense_accountabilities",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "expense_accountability_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "expense_accountability_items",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "expense_installments",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "expenses",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "export_job_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "export_jobs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "field_agent_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "field_agent_payments",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "field_checklists",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "field_checklists",
+      "COLUMN_NAME": "organization_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "organization_id"
+    },
+    {
+      "TABLE_NAME": "field_commands",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "field_commands",
+      "COLUMN_NAME": "organization_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "organization_id"
+    },
+    {
+      "TABLE_NAME": "import_sessions",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_accounting_item_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_accounting_items",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_consolidations",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_item_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_items",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_observation_evidence",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_observations",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_operation_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_pending_issue_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_pending_issues",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_plate_history",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_reconciliations",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_rounds",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "inventory_sessions",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_contracts",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_field_agents",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_preparations",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_unit_audit_logs",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "project_units",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "company_id",
+      "REFERENCED_TABLE_NAME": "companies",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "created_by_id",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "organization_id",
+      "REFERENCED_TABLE_NAME": "organizations",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "planning_responsible_user_id",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "responsible_user_id",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "projects",
+      "COLUMN_NAME": "updated_by_id",
+      "REFERENCED_TABLE_NAME": "users",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "receivables",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    },
+    {
+      "TABLE_NAME": "technical_reports",
+      "COLUMN_NAME": "project_id",
+      "REFERENCED_TABLE_NAME": "projects",
+      "REFERENCED_COLUMN_NAME": "id"
+    }
+  ],
+  "statuses": [
+    {
+      "status": "active",
+      "total": 1
+    },
+    {
+      "status": "draft",
+      "total": 43
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "gai-backend-lint",
+  "command": [
+    "node",
+    "node_modules/eslint/bin/eslint.js",
+    "{src,apps,libs,test}/**/*.ts",
+    "--format",
+    "json",
+    "--output-file",
+    "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\redesign-visual-gai-2026-10-29\\evidencias\\backend-eslint.json"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-backend",
+  "exit_code": 0,
+  "seconds": 106.691
+}

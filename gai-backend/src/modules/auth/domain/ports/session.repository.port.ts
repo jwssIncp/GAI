@@ -2,6 +2,7 @@ import { User } from '../entities/user';
 
 export interface SessionRecord {
   id: string;
+  authVersion?: number;
   userId: number;
   organizationId: number | null;
   expiresAt: Date;

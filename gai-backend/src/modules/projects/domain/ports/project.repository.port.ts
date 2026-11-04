@@ -1,3 +1,4 @@
+import { ProjectType } from '../enums/project-type.enum';
 import { Project } from '../entities/project';
 import { ProjectAuditOperation } from '../enums/project-audit-operation.enum';
 import { ProjectStatus } from '../enums/project-status.enum';
@@ -10,6 +11,9 @@ export interface ListProjectsParams {
   companyId?: number;
   status?: ProjectStatus;
   search?: string;
+  projectType?: ProjectType;
+  sortBy?: 'name' | 'code' | 'start_date' | 'end_date' | 'created_at';
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface ProjectAuditEntry {
@@ -38,6 +42,11 @@ export type ProjectStatusTransitionResult =
 
 export interface ProjectEditableFields {
   name?: string;
+  code?: string | null;
+  projectType?: ProjectType | null;
+  responsibleUserId?: number | null;
+  planningResponsibleUserId?: number | null;
+  planningNotes?: string | null;
   description?: string | null;
   startDate?: Date | null;
   endDate?: Date | null;
@@ -56,9 +65,11 @@ export const PROJECT_REPOSITORY = Symbol('PROJECT_REPOSITORY');
 
 export interface ProjectRepository {
   findById(id: number): Promise<Project | null>;
-  list(
-    params: ListProjectsParams,
-  ): Promise<{ items: Project[]; total: number }>;
+  list(params: ListProjectsParams): Promise<{
+    items: Project[];
+    total: number;
+    counts?: Partial<Record<ProjectStatus, number>>;
+  }>;
   saveWithAudit(project: Project, audit: ProjectAuditEntry): Promise<Project>;
   updateFieldsWithAudit(params: {
     id: number;

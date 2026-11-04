@@ -34,6 +34,12 @@ resource "aws_db_parameter_group" "main" {
     name  = "collation_server"
     value = "utf8mb4_unicode_ci"
   }
+
+  # Private mediumblob artifacts are limited to 10 MiB by the application.
+  parameter {
+    name  = "max_allowed_packet"
+    value = "33554432"
+  }
 }
 
 resource "aws_db_instance" "main" {

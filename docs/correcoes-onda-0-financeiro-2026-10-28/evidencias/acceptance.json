@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-10-28T23:43:49.631Z",
+  "integrity": {
+    "passed": 12,
+    "failed": 0
+  },
+  "concurrency": {
+    "acceptance_races": 124,
+    "with_innodb_barrier": 109,
+    "replay_original": 15,
+    "stress": 100,
+    "incoherent": 0
+  },
+  "unit": {
+    "passed": 376,
+    "failed": 0
+  },
+  "frontend": {
+    "passed": 247,
+    "failed": 0
+  },
+  "full_integration_command": {
+    "passed": 283,
+    "failed": 3,
+    "skipped": 7,
+    "total": 293
+  },
+  "integration_combined_without_duplicate": {
+    "passed": 284,
+    "failed": 2,
+    "skipped": 7,
+    "total": 293
+  },
+  "failures": [
+    {
+      "file": "gai-backend\\test\\integration\\technical-validation\\security-storage.e2e-spec.ts",
+      "name": "Technical validation: negative authorization, contracts and storage requires every content read for dre_xlsx including backups",
+      "status": "failed"
+    },
+    {
+      "file": "gai-backend\\test\\integration\\technical-validation\\security-storage.e2e-spec.ts",
+      "name": "Technical validation: negative authorization, contracts and storage requires every content read for finance_xlsx including backups",
+      "status": "failed"
+    }
+  ],
+  "backend_checks": [
+    {
+      "name": "typescript",
+      "exit_code": 0,
+      "seconds": 21.372,
+      "command": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ]
+    },
+    {
+      "name": "build",
+      "exit_code": 0,
+      "seconds": 29.943,
+      "command": [
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build",
+        "--path",
+        "../docs/correcoes-onda-0-financeiro-2026-10-28/tsconfig.wave0.json"
+      ]
+    },
+    {
+      "name": "lint-changed",
+      "exit_code": 0,
+      "seconds": 21.72,
+      "command": [
+        "node_modules/eslint/bin/eslint.js",
+        "src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+        "src/modules/payments-expenses/domain/entities/field-agent-payment.ts",
+        "src/modules/payments-expenses/domain/entities/payment-state-conflict.ts",
+        "src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts",
+        "src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts",
+        "test/integration/test-app.helper.ts",
+        "test/integration/payments-expenses/payment-integrity.mysql.e2e-spec.ts",
+        "test/unit/modules/payments-expenses/payments-expenses.spec.ts",
+        "--format",
+        "json",
+        "--output-file",
+        "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\eslint-changed.json"
+      ]
+    }
+  ],
+  "related_http": {
+    "passed": true,
+    "asserted_calls": 16,
+    "project": 16,
+    "accountability": 2
+  },
+  "final_checks": [
+    {
+      "name": "typescript",
+      "exit_code": 0,
+      "seconds": 22.844,
+      "command": [
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ]
+    },
+    {
+      "name": "lint-changed",
+      "exit_code": 0,
+      "seconds": 18.968,
+      "command": [
+        "node_modules/eslint/bin/eslint.js",
+        "src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+        "src/modules/payments-expenses/domain/entities/field-agent-payment.ts",
+        "src/modules/payments-expenses/domain/entities/payment-state-conflict.ts",
+        "src/modules/payments-expenses/domain/ports/payments-expenses.repository.port.ts",
+        "src/modules/payments-expenses/infrastructure/persistence/typeorm-payments-expenses.repository.ts",
+        "test/integration/test-app.helper.ts",
+        "test/integration/payments-expenses/payment-integrity.mysql.e2e-spec.ts",
+        "test/unit/modules/payments-expenses/payments-expenses.spec.ts",
+        "--format",
+        "json",
+        "--output-file",
+        "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\correcoes-onda-0-financeiro-2026-10-28\\evidencias\\eslint-changed.json"
+      ]
+    }
+  ]
+}

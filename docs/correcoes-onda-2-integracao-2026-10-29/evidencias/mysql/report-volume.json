@@ -1,0 +1,153 @@
+[
+  {
+    "count": 0,
+    "extracted": 0,
+    "hash": "f15bc28598c83384fa7eb4c5e0d5ed0a7b03c27f6752d9502dda95c0ddd6f7b3",
+    "snapshot_bytes": 1215,
+    "milliseconds": 208.59409999998752,
+    "rss_before": 499986432,
+    "rss_after": 503840768,
+    "heap_before": 272018880,
+    "heap_after": 279700856
+  },
+  {
+    "count": 1,
+    "extracted": 1,
+    "hash": "b03be07172350edd5178b4ba763fc16dd4da12cadd66f3e582ba0381a85d3a04",
+    "snapshot_bytes": 1390,
+    "milliseconds": 205.9676000000327,
+    "rss_before": 506904576,
+    "rss_after": 513843200,
+    "heap_before": 282467352,
+    "heap_after": 289550816
+  },
+  {
+    "count": 999,
+    "extracted": 999,
+    "hash": "9af6a628bfbb773742110faad1e170ec1fac93ee367de17c74d2d08a014d004f",
+    "snapshot_bytes": 183718,
+    "milliseconds": 1314.8216000000248,
+    "rss_before": 529977344,
+    "rss_after": 536834048,
+    "heap_before": 269850840,
+    "heap_after": 309856352
+  },
+  {
+    "count": 1000,
+    "extracted": 1000,
+    "hash": "369e897bd6eb8aff6a105fdeb2392ff5be20ae5b54931ae6dd80b92b7d848e6b",
+    "snapshot_bytes": 186115,
+    "milliseconds": 1498.045999999973,
+    "rss_before": 527585280,
+    "rss_after": 536084480,
+    "heap_before": 278537128,
+    "heap_after": 307808632
+  },
+  {
+    "count": 1001,
+    "extracted": 1001,
+    "hash": "8a584b70c10f8ff3285e2eff769ced64e47d510f521c5daf657bea3947a14f8d",
+    "snapshot_bytes": 186301,
+    "milliseconds": 1356.4764000000432,
+    "rss_before": 529403904,
+    "rss_after": 535363584,
+    "heap_before": 276511896,
+    "heap_after": 289876152
+  },
+  {
+    "count": 2500,
+    "extracted": 2500,
+    "hash": "7b319d904c12f96186cbba41960dea3b9d252ed5e899acbbc42437aa804d0620",
+    "snapshot_bytes": 465115,
+    "milliseconds": 2905.682199999981,
+    "rss_before": 532516864,
+    "rss_after": 538660864,
+    "heap_before": 292100240,
+    "heap_after": 301407232
+  },
+  {
+    "count": 5000,
+    "extracted": 5000,
+    "hash": "1da6fe67dc531b2e3cd2bb6463dee1f880c1c95e385a0b038bb81e3f1a3626b0",
+    "snapshot_bytes": 931119,
+    "milliseconds": 6392.673299999966,
+    "rss_before": 535175168,
+    "rss_after": 561807360,
+    "heap_before": 306448432,
+    "heap_after": 341746096
+  },
+  {
+    "oversized": true,
+    "status": 413,
+    "code": "TECHNICAL_REPORT_SOURCE_LIMIT",
+    "atomic": true
+  },
+  {
+    "family": "valuation",
+    "historical_rows": 2500,
+    "selected_rows": 1,
+    "last_id": 2500,
+    "references": 2500,
+    "hash": "abbfe9c314d283b4e65fa7b6834eea03c5023baf3991fea8c3f24b9057a5e0e5"
+  },
+  {
+    "family": "units",
+    "count": 1001,
+    "references": 1001,
+    "hash": "1b86d0476bedeba4e95ad193d181b0c53f5b800fd136bff42cbc0370fe24c355",
+    "milliseconds": 377.5219999999972,
+    "rss_after": 566902784,
+    "heap_after": 309175208
+  },
+  {
+    "family": "accounting",
+    "count": 1001,
+    "references": 1001,
+    "hash": "d3c1a4d3294b6d3f8c11516cb01dc1a265940c27d0b309fd286330ac1e78b563",
+    "milliseconds": 546.3771000000415,
+    "rss_after": 572366848,
+    "heap_after": 343466232
+  },
+  {
+    "family": "issues",
+    "count": 1001,
+    "references": 1001,
+    "hash": "60a2968563da5db2065cf5d80a4b747cf6e7c8153a0f8b51bddbeeee33fab552",
+    "milliseconds": 394.63930000003893,
+    "rss_after": 571609088,
+    "heap_after": 317303672
+  },
+  {
+    "family": "observations",
+    "count": 1001,
+    "references": 1002,
+    "hash": "7b98cf108932e9288456068966eb599133839d1216e0de96a6d3a50d9e3c61ae",
+    "milliseconds": 364.9679999999935,
+    "rss_after": 575041536,
+    "heap_after": 347573600
+  },
+  {
+    "family": "reconciliation",
+    "count": 1001,
+    "references": 2003,
+    "hash": "76268d2a0bf3ebd8664916120a8bf7d55d5330f6a106b60f13a2d47522bb7746",
+    "milliseconds": 546.2614000000758,
+    "rss_after": 572821504,
+    "heap_after": 325620072
+  },
+  {
+    "count": 2500,
+    "format": "docx",
+    "status": 201,
+    "bytes": 58359,
+    "milliseconds": 3702.5142000000924,
+    "snapshot_hash": "5cc04b21ec4df903df1780b2214d02fb3e6e5e50ae83e3f4557cd8a278ad9c06"
+  },
+  {
+    "count": 2500,
+    "format": "pdf",
+    "status": 503,
+    "message": "Tempo limite de geração excedido.",
+    "milliseconds": 30315.295299999998
+  }
+]

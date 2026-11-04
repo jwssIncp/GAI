@@ -5,6 +5,7 @@ import type {
   Company,
   CompanyUnit,
   CreateCompanyRequest,
+  UpdateCompanyRequest,
   CreateFieldAgentRequest,
   CreateExpenseAttachmentUploadRequest,
   CreateInventoryItemImageUploadRequest,
@@ -94,6 +95,7 @@ import type {
   InventoryEvidenceUploadUrlResponse,
   InventoryObservation,
   InventoryReconciliation,
+  InventoryReconciliationRun,
   InventoryRound,
   InventoryRoundKind,
   InventoryRoundStatus,
@@ -106,6 +108,8 @@ import type {
 } from '@/types/api';
 
 export const authApi = {
+  activate: (token: string, new_password: string) => api.post<{ message: string }>('/auth/activation/confirm', { token, new_password }).then(r => r.data),
+  changePassword: (current_password: string, new_password: string) => api.post<{ message: string }>('/auth/password/change', { current_password, new_password }).then(r => r.data),
   login: (payload: LoginRequest) => api.post<LoginResponse>('/auth/login', payload).then((r) => r.data),
   logout: () => api.post<void>('/auth/logout').then((r) => r.data),
   me: () => api.get<CurrentUser>('/auth/me').then((r) => r.data),
@@ -124,31 +128,40 @@ export const organizationsApi = {
 };
 
 export const usersApi = {
-  list: (params: PageParams & { role?: string }) => api.get<MetaPaginated<User>>('/users', { params }).then((r) => r.data),
+  options: () => api.get<{ invitation_available: boolean; password_min_length: number; password_max_length: number; temporary_password_ttl_hours?: number }>('/users/form-options').then(r => r.data),
+  resetPassword: (id: number, password: string) => api.post<{ message: string }>(`/users/${id}/password-reset`, { password }).then(r => r.data),
+  resendInvitation: (id: number) => api.post<{ invitation_delivery: string }>(`/users/${id}/invitation/resend`).then(r => r.data),
+  block: (id: number) => api.post<User>(`/users/${id}/block`).then(r => r.data),
+  unblock: (id: number) => api.post<User>(`/users/${id}/unblock`).then(r => r.data),
+  list: (params: PageParams & { role?: string; role_id?: number; scope?: 'PLATFORM' | 'ORGANIZATION'; sort_by?: string; sort_order?: string }) => api.get<MetaPaginated<User>>('/users', { params }).then((r) => r.data),
   create: (payload: CreateUserRequest) => api.post<User>('/users', payload).then((r) => r.data),
   get: (id: number) => api.get<User>(`/users/${id}`).then((r) => r.data),
-  update: (id: number, payload: Partial<CreateUserRequest>) => api.patch<User>(`/users/${id}`, payload).then((r) => r.data),
+  update: (id: number, payload: import('@/types/api').UpdateUserRequest) => api.patch<User>(`/users/${id}`, payload).then((r) => r.data),
   deactivate: (id: number) => api.post<User>(`/users/${id}/deactivate`).then((r) => r.data),
   activate: (id: number) => api.post<User>(`/users/${id}/activate`).then((r) => r.data),
-  assignments: (userId: number) => api.get(`/users/${userId}/role-assignments`).then((r) => r.data),
+  assignments: (userId: number) => api.get<import('@/types/api').RoleAssignment[]>(`/users/${userId}/role-assignments`).then((r) => r.data),
   assignRole: (userId: number, role_id: number) => api.post(`/users/${userId}/role-assignments`, { role_id }).then((r) => r.data),
   revokeRole: (userId: number, assignmentId: number) => api.delete(`/users/${userId}/role-assignments/${assignmentId}`),
+  replaceRoles: (userId: number, role_ids: number[]) => api.put(`/users/${userId}/role-assignments`, { role_ids }).then((r) => r.data),
 };
 
 export const rbacApi = {
-  permissions: () => api.get<Permission[]>('/permissions').then((r) => r.data),
+  profiles: (organizationId?: number) => api.get<import('@/types/api').AccessProfile[]>('/access-profiles', { params: { organization_id: organizationId } }).then((r) => r.data),
+  permissions: () => api.get<Permission[]>('/permissions', { params: { scope: 'ORGANIZATION' } }).then((r) => r.data),
   roles: (organizationId: number) => api.get<OrgRole[]>(`/organizations/${organizationId}/roles`).then((r) => r.data),
   createRole: (organizationId: number, payload: { name: string; description?: string; permission_ids: number[] }) =>
     api.post<OrgRole>(`/organizations/${organizationId}/roles`, payload).then((r) => r.data),
   updateRole: (organizationId: number, roleId: number, payload: { name?: string; description?: string; permission_ids?: number[]; is_active?: boolean }) =>
     api.patch<OrgRole>(`/organizations/${organizationId}/roles/${roleId}`, payload).then((r) => r.data),
+  deleteRole: (organizationId: number, roleId: number) => api.delete(`/organizations/${organizationId}/roles/${roleId}`),
+  getRole: (organizationId: number, roleId: number) => api.get<OrgRole>(`/organizations/${organizationId}/roles/${roleId}`).then((r) => r.data),
 };
 
 export const companiesApi = {
   list: (params: PageParams & { document?: string; city?: string; state?: string }) => api.get<PaginatedItems<Company>>('/companies', { params }).then((r) => r.data),
   create: (payload: CreateCompanyRequest) => api.post<Company>('/companies', payload).then((r) => r.data),
   get: (id: number) => api.get<Company>(`/companies/${id}`).then((r) => r.data),
-  update: (id: number, payload: Partial<CreateCompanyRequest>) => api.patch<Company>(`/companies/${id}`, payload).then((r) => r.data),
+  update: (id: number, payload: UpdateCompanyRequest) => api.patch<Company>(`/companies/${id}`, payload).then((r) => r.data),
   deactivate: (id: number) => api.post<Company>(`/companies/${id}/deactivate`).then((r) => r.data),
   reactivate: (id: number) => api.post<Company>(`/companies/${id}/reactivate`).then((r) => r.data),
 };
@@ -182,33 +195,87 @@ export const exportJobsApi = {
 };
 
 export const projectsApi = {
-  list: (params: PageParams) => api.get<PaginatedItems<Project>>('/projects', { params }).then((r) => r.data),
-  create: (payload: CreateProjectRequest) => api.post<Project>('/projects', payload).then((r) => r.data),
+  options: (
+    purpose: "create" | "edit" | "filter",
+    params: {
+      organization_id?: number;
+      resource?: "companies" | "users";
+      search?: string;
+      page?: number;
+      page_size?: number;
+      selected_id?: number;
+    },
+  ) =>
+    api
+      .get<
+        import("@/types/api").ProjectOptionPage
+      >(`/projects/${purpose === "create" ? "creation-options" : purpose === "edit" ? "edit-options" : "company-options"}`, { params })
+      .then((r) => r.data),
+  history: (id: number, page = 1) =>
+    api
+      .get<
+        PaginatedItems<import("@/types/api").ProjectHistoryEntry>
+      >(`/projects/${id}/history`, { params: { page, page_size: 20 } })
+      .then((r) => r.data),
+  list: (params: PageParams) =>
+    api
+      .get<
+        PaginatedItems<Project> & {
+          status_counts?: Partial<
+            Record<import("@/types/api").ProjectStatus, number>
+          >;
+        }
+      >("/projects", { params })
+      .then((r) => r.data),
+  create: (payload: CreateProjectRequest) =>
+    api.post<Project>("/projects", payload).then((r) => r.data),
   get: (id: number) => api.get<Project>(`/projects/${id}`).then((r) => r.data),
-  update: (id: number, payload: UpdateProjectRequest) => api.patch<Project>(`/projects/${id}`, payload).then((r) => r.data),
-  activate: (id: number) => api.post<Project>(`/projects/${id}/activate`).then((r) => r.data),
-  pause: (id: number) => api.post<Project>(`/projects/${id}/pause`).then((r) => r.data),
-  resume: (id: number) => api.post<Project>(`/projects/${id}/resume`).then((r) => r.data),
-  deactivate: (id: number) => api.post<Project>(`/projects/${id}/deactivate`).then((r) => r.data),
-  reactivate: (id: number) => api.post<Project>(`/projects/${id}/reactivate`).then((r) => r.data),
-  finish: (id: number) => api.post<Project>(`/projects/${id}/finish`).then((r) => r.data),
-  cancel: (id: number) => api.post<Project>(`/projects/${id}/cancel`).then((r) => r.data),
-  archive: (id: number) => api.post<Project>(`/projects/${id}/archive`).then((r) => r.data),
+  update: (id: number, payload: UpdateProjectRequest) =>
+    api.patch<Project>(`/projects/${id}`, payload).then((r) => r.data),
+  activate: (id: number) =>
+    api.post<Project>(`/projects/${id}/activate`).then((r) => r.data),
+  pause: (id: number) =>
+    api.post<Project>(`/projects/${id}/pause`).then((r) => r.data),
+  resume: (id: number) =>
+    api.post<Project>(`/projects/${id}/resume`).then((r) => r.data),
+  deactivate: (id: number) =>
+    api.post<Project>(`/projects/${id}/deactivate`).then((r) => r.data),
+  reactivate: (id: number) =>
+    api.post<Project>(`/projects/${id}/reactivate`).then((r) => r.data),
+  finish: (id: number) =>
+    api.post<Project>(`/projects/${id}/finish`).then((r) => r.data),
+  cancel: (id: number) =>
+    api.post<Project>(`/projects/${id}/cancel`).then((r) => r.data),
+  archive: (id: number) =>
+    api.post<Project>(`/projects/${id}/archive`).then((r) => r.data),
   summary: (projectId: number) =>
     api
       .get<ProjectSummary>(`/projects/${projectId}/summary`, {
-        params: { include_financial: true, include_imports: true, include_exports: true, include_recent_activity: true },
+        params: {
+          include_financial: true,
+          include_imports: true,
+          include_exports: true,
+          include_recent_activity: true,
+        },
       })
       .then((r) => r.data),
   dashboard: (projectId: number) =>
     api
       .get<ProjectSummary>(`/projects/${projectId}/dashboard`, {
-        params: { include_financial: true, include_imports: true, include_exports: true, include_recent_activity: true },
+        params: {
+          include_financial: true,
+          include_imports: true,
+          include_exports: true,
+          include_recent_activity: true,
+        },
       })
       .then((r) => r.data),
   dashboardAnalytics: (projectId: number, params: ProjectDashboardParams) =>
     api
-      .get<ProjectDashboardAnalytics>(`/projects/${projectId}/dashboard/analytics`, { params })
+      .get<ProjectDashboardAnalytics>(
+        `/projects/${projectId}/dashboard/analytics`,
+        { params },
+      )
       .then((r) => r.data),
 };
 
@@ -459,7 +526,7 @@ export const inventoryOperationsApi = {
   evidenceDownloadUrl: (projectId: number, sessionId: number, roundId: number, observationId: number, evidenceId: number) =>
     api.post<InventoryEvidenceDownloadUrlResponse>(`/projects/${projectId}/inventory-sessions/${sessionId}/rounds/${roundId}/observations/${observationId}/evidence/${evidenceId}/download-url`).then((r) => r.data),
   reconcile: (projectId: number, sessionId: number) =>
-    api.post<InventoryReconciliation[]>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
+    api.post<InventoryReconciliationRun>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`).then((r) => r.data),
   listReconciliations: (projectId: number, sessionId: number, params: PageParams & { run_number?: number; status?: ReconciliationStatus | '' }) =>
     api.get<PaginatedItems<InventoryReconciliation>>(`/projects/${projectId}/inventory-sessions/${sessionId}/reconciliations`, { params }).then((r) => r.data),
   consolidate: (projectId: number, sessionId: number, id: number, payload: { decision: ConsolidationDecision; notes?: string | null }) =>

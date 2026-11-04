@@ -3,6 +3,7 @@ import { InventoryAccountingItemStatus } from '../enums/inventory-accounting-ite
 export type JsonRecord = Record<string, unknown>;
 
 export interface InventoryAccountingItemProps {
+  serialNumber?: string | null;
   id: number;
   organizationId: number;
   projectId: number;
@@ -59,6 +60,7 @@ export class InventoryAccountingItem {
       Pick<
         InventoryAccountingItemProps,
         | 'plate'
+        | 'serialNumber'
         | 'description'
         | 'accountingAccountDescription'
         | 'location'
@@ -84,7 +86,10 @@ export class InventoryAccountingItem {
     const changes: Record<string, { before: unknown; after: unknown }> = {};
     for (const [propKey, columnKey] of Object.entries(this.columnMap())) {
       const key = propKey as keyof InventoryAccountingItemProps;
-      if (!(key in fields)) {
+      if (
+        !(key in fields) ||
+        fields[key as keyof typeof fields] === undefined
+      ) {
         continue;
       }
       const next = fields[key as keyof typeof fields];
@@ -137,6 +142,7 @@ export class InventoryAccountingItem {
   private columnMap(): Record<string, string> {
     return {
       plate: 'plate',
+      serialNumber: 'serial_number',
       description: 'description',
       accountingAccountDescription: 'accounting_account_description',
       location: 'location',

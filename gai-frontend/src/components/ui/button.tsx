@@ -12,19 +12,19 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'border border-primary/30 bg-premium-gradient text-primary-foreground shadow-glow hover:brightness-105 hover:saturate-110',
+  primary: 'border border-primary/30 bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover',
   secondary: 'border border-border/80 bg-card text-foreground shadow-panel hover:border-primary/45 hover:bg-primary-subtle',
   ghost: 'border border-transparent text-foreground hover:border-border/60 hover:bg-muted/75',
   danger: 'border border-destructive/20 bg-destructive text-destructive-foreground shadow-[0_12px_30px_-16px_hsl(var(--destructive)/0.7)] hover:brightness-110',
-  outline: 'border border-brand-teal/45 bg-transparent text-brand-teal hover:border-primary hover:bg-primary-subtle hover:text-brand-ink dark:text-primary',
-  soft: 'border border-primary/10 bg-primary-subtle text-primary hover:border-primary/20 hover:bg-primary/10',
+  outline: 'border border-primary-text/45 bg-transparent text-primary-text hover:border-primary-text hover:bg-primary-subtle',
+  soft: 'border border-primary/10 bg-primary-subtle text-primary-text hover:border-primary/20 hover:bg-primary/10',
 };
 
 const sizes: Record<Size, string> = {
-  default: 'h-10 px-4',
-  sm: 'h-8 rounded-md px-3 text-xs',
+  default: 'min-h-11 px-4 py-2',
+  sm: 'min-h-9 rounded-md px-3 py-1.5 text-xs',
   lg: 'h-12 px-5 text-[0.9375rem]',
-  icon: 'size-10 px-0',
+  icon: 'size-11 px-0',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

@@ -1,0 +1,11 @@
+{
+  "name": "gai-backend-build",
+  "command": [
+    "node",
+    "node_modules/@nestjs/cli/bin/nest.js",
+    "build"
+  ],
+  "cwd": "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\.local\\redesign-20261029\\workspace\\gai-backend",
+  "exit_code": 0,
+  "seconds": 110.838
+}

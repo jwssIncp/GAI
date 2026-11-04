@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "node_modules/vite/bin/vite.js",
+    "build"
+  ],
+  "cwd": "gai-frontend",
+  "started_at": "2026-11-03T10:12:21.515Z",
+  "duration_seconds": 34.933,
+  "exit_code": 0,
+  "log": "docs\\reformulacao-cadastro-projetos-2026-11-03\\checks\\bundle-frontend.log"
+}

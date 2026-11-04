@@ -1,3 +1,5 @@
+import { ProjectRegistrationService } from '../application/services/project-registration.service';
+import { ProjectOptionsQueryDto } from '../application/dto/project-options-query.dto';
 import {
   Body,
   Controller,
@@ -59,6 +61,7 @@ interface AuthenticatedRequest extends Request {
 export class ProjectsController {
   constructor(
     private readonly createProject: CreateProjectUseCase,
+    private readonly registration: ProjectRegistrationService,
     private readonly listProjects: ListProjectsUseCase,
     private readonly getProject: GetProjectUseCase,
     private readonly updateProject: UpdateProjectUseCase,
@@ -96,6 +99,46 @@ export class ProjectsController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.listProjects.execute(query, this.toActor(req));
+  }
+
+  @Get('creation-options')
+  @RequirePermissions('projects:create')
+  @ApiOperation({
+    summary: 'Minimal scoped company/user labels for project creation',
+  })
+  creationOptions(
+    @Query() query: ProjectOptionsQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.registration.options(query, this.toActor(req));
+  }
+
+  @Get('edit-options')
+  @RequirePermissions('projects:update')
+  editOptions(
+    @Query() query: ProjectOptionsQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.registration.options(query, this.toActor(req));
+  }
+
+  @Get('company-options')
+  @RequirePermissions('projects:read')
+  companyOptions(
+    @Query() query: ProjectOptionsQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.registration.options(query, this.toActor(req), true);
+  }
+
+  @Get(':id/history')
+  @RequirePermissions('projects:read')
+  history(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: ProjectOptionsQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.registration.history(id, query, this.toActor(req));
   }
 
   @Get(':id')

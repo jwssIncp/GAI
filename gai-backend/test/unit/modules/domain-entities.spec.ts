@@ -116,7 +116,10 @@ describe('GetCurrentUserUseCase', () => {
     const useCase = new GetCurrentUserUseCase(
       users as never,
       assignments as never,
-      { resolveForUser: jest.fn().mockResolvedValue([]) },
+      {
+        resolveForUser: jest.fn().mockResolvedValue([]),
+        findScopesByKeys: jest.fn().mockResolvedValue(new Map()),
+      },
     );
     const result = await useCase.execute(1);
     expect(result.login).toBe('admin');

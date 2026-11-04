@@ -1,0 +1,77 @@
+[
+  {
+    "name": "frontend-tests",
+    "start": "2026-10-28T19:45:46.226Z",
+    "seconds": 102.162,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\frontend-vitest.json"
+    ]
+  },
+  {
+    "name": "frontend-typescript",
+    "start": "2026-10-28T19:47:28.394Z",
+    "seconds": 25.745,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.app.json",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "--pretty",
+      "false"
+    ]
+  },
+  {
+    "name": "frontend-node-typescript",
+    "start": "2026-10-28T19:47:54.159Z",
+    "seconds": 3.48,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "tsconfig.node.json",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "--pretty",
+      "false"
+    ]
+  },
+  {
+    "name": "frontend-build",
+    "start": "2026-10-28T19:47:57.640Z",
+    "seconds": 27.123,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/vite/bin/vite.js",
+      "build",
+      "--outDir",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\build-frontend"
+    ]
+  },
+  {
+    "name": "frontend-lint",
+    "start": "2026-10-28T19:48:24.764Z",
+    "seconds": 13.561,
+    "exit_code": 0,
+    "command": [
+      "node",
+      "node_modules/eslint/bin/eslint.js",
+      ".",
+      "--format",
+      "json",
+      "--output-file",
+      "C:\\Users\\Jonathan\\Documents\\GAI\\GAI\\docs\\auditoria-integrada-gai-2026-10-28\\evidencias\\frontend-eslint.json"
+    ]
+  }
+]

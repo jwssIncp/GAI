@@ -56,6 +56,8 @@ export class CreateInventoryItemImageDownloadUrlUseCase {
       path: image.path,
       mimeType: image.mimeType,
       expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
+      sizeBytes: Number(image.toProps().sizeBytes),
+      checksum: image.toProps().checksum,
     });
 
     await this.repository.audit({

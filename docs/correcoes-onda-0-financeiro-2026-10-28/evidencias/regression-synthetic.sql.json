@@ -1,0 +1,7 @@
+{
+  "file": "regression-synthetic.sql",
+  "target": "gai-wave0-20261028-mysql:33327/gai_validation_disposable",
+  "bytes": 212154,
+  "sha256": "18678525967338a769652fd710d64b1299d5c67c55e8428403058577224bda22",
+  "created_at": "2026-10-28T23:36:03.805Z"
+}

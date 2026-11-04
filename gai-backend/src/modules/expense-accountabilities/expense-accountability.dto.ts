@@ -1,6 +1,6 @@
+import { IsCivilDate } from '../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -15,8 +15,8 @@ import { ExpenseAccountabilityStatus } from './expense-accountability.entity';
 
 export class CreateExpenseAccountabilityDto {
   @ApiProperty({ type: 'integer' }) @IsInt() @Min(1) field_agent_id!: number;
-  @ApiProperty({ format: 'date' }) @IsDateString() period_start!: string;
-  @ApiProperty({ format: 'date' }) @IsDateString() period_end!: string;
+  @ApiProperty({ format: 'date' }) @IsCivilDate() period_start!: string;
+  @ApiProperty({ format: 'date' }) @IsCivilDate() period_end!: string;
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -32,7 +32,7 @@ export class GenerateExpenseInstallmentsDto {
   @Min(1)
   @Max(120)
   count!: number;
-  @ApiProperty({ format: 'date' }) @IsDateString() first_due_date!: string;
+  @ApiProperty({ format: 'date' }) @IsCivilDate() first_due_date!: string;
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -76,12 +76,12 @@ export class ExpenseAccountabilityListQueryDto {
 
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   period_start?: string;
 
   @ApiPropertyOptional({ format: 'date' })
   @IsOptional()
-  @IsDateString()
+  @IsCivilDate()
   period_end?: string;
 }
 

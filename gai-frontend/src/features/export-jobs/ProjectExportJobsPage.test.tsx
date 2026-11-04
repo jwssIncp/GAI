@@ -7,6 +7,8 @@ import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import type { CurrentUser, ExportJob } from '@/types/api';
 import { ProjectExportJobsPage } from './ProjectExportJobsPage';
 
+const BrowserURL = URL;
+
 const mocks = vi.hoisted(() => ({
   list: vi.fn(), create: vi.fn(), cancel: vi.fn(), retry: vi.fn(),
   downloadUrl: vi.fn(), download: vi.fn(),
@@ -46,6 +48,7 @@ const permissionKeys = [
   'export-jobs:download',
   'export-jobs:cancel',
   'export-jobs:retry',
+  'projects:read', 'inventory-items:read', 'inventory-accounting-items:read', 'inventory-pending-issues:read', 'payments:read', 'expenses:read',
 ];
 const user: CurrentUser = {
   id: 1,
@@ -61,10 +64,10 @@ function page(items: ExportJob[]) {
   return { items, page: 1, page_size: 20, total_items: items.length, total_pages: items.length ? 1 : 0 };
 }
 
-function renderPage(initialEntry = '/app/projects/10/export-jobs') {
+function renderPage(initialEntry = '/app/projects/10/export-jobs', currentUser = user) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = {
-    user,
+    user: currentUser,
     accessToken: 'token',
     expiresAt: '2099-01-01T00:00:00.000Z',
     bootstrapping: false,
@@ -97,10 +100,9 @@ describe('ProjectExportJobsPage', () => {
       requires_authentication: true,
     });
     mocks.download.mockResolvedValue(new Blob(['xlsx']));
-    vi.stubGlobal('URL', {
-      ...URL,
-      createObjectURL: vi.fn(() => 'blob:export'),
-      revokeObjectURL: vi.fn(),
+    vi.stubGlobal('URL', class extends BrowserURL {
+      static createObjectURL = vi.fn(() => 'blob:export');
+      static revokeObjectURL = vi.fn();
     });
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
   });
@@ -126,7 +128,7 @@ describe('ProjectExportJobsPage', () => {
     renderPage();
     await screen.findByText('inventario.xlsx');
     await userEvent.click(screen.getByRole('button', { name: 'Nova exportacao' }));
-    await userEvent.selectOptions(screen.getByLabelText('Tipo de exportacao'), 'project_backup_xlsx');
+    await userEvent.selectOptions(await screen.findByLabelText('Tipo de exportacao'), 'project_backup_xlsx');
     await userEvent.click(screen.getByRole('button', { name: 'Solicitar exportacao' }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(10, 'project_backup_xlsx'));
   });
@@ -153,4 +155,17 @@ describe('ProjectExportJobsPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.retry).toHaveBeenCalledWith(10, failed.id));
   });
+  it('preserva jobs existentes mas oculta download financeiro e tipos sem leitura', async () => {
+    mocks.list.mockResolvedValue(page([{ ...baseJob, type: 'expenses_xlsx' }]));
+    const limited = { ...user, permissions: user.permissions!.filter(p => p.key.startsWith('export-jobs:') || p.key === 'inventory-items:read') };
+    renderPage('/app/projects/10/export-jobs?new=1', limited);
+    expect(await screen.findByText('inventario.xlsx')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Baixar' })).not.toBeInTheDocument();
+    const select = screen.getByLabelText('Tipo de exportacao');
+    expect(select.querySelector('option[value="inventory_items_xlsx"]')).not.toBeNull();
+    expect(select.querySelector('option[value="expenses_xlsx"]')).toBeNull();
+    expect(select.querySelector('option[value="payments_xlsx"]')).toBeNull();
+    expect(select.querySelector('option[value="project_backup_xlsx"]')).toBeNull();
+  });
+
 });
