@@ -17,6 +17,7 @@ import { JsonRecord } from '../../domain/entities/project';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
 
 @Entity('projects')
+@Index('uq_field_project_scope', ['id', 'organizationId'], { unique: true })
 @Index('uq_projects_organization_code', ['organizationId', 'code'], {
   unique: true,
 })

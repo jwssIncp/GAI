@@ -280,9 +280,16 @@ export const projectsApi = {
 };
 
 export const fieldAgentsApi = {
+  context: () => api.get<{ organization_id: number; organization_name: string }>('/field-agents/context').then(r => r.data),
+  userOptions: (params: { page: number; page_size: number; search?: string; current_agent_id?: number }) => api.get<import('@/types/api').PaginatedItems<import('@/types/api').FieldAgentAccount>>('/field-agents/user-options', { params }).then(r => r.data),
+  projects: (id: number, params: { page: number; page_size: number }) => api.get<import('@/types/api').PaginatedItems<import('@/types/api').FieldAgentProject>>('/field-agents/' + id + '/projects', { params }).then(r => r.data),
+  history: (id: number, params: { page: number; page_size: number }) => api.get<import('@/types/api').PaginatedItems<import('@/types/api').FieldAgentHistory>>('/field-agents/' + id + '/history', { params }).then(r => r.data),
+  restore: (id: number) => api.post<FieldAgent>('/field-agents/' + id + '/restore').then(r => r.data),
+  invite: (id: number, payload: { login: string; email: string }) => api.post<{ invitation_delivery: 'SENT' | 'FAILED' | 'DEVELOPMENT' }>('/field-agents/' + id + '/invite', payload).then(r => r.data),
+  resendInvitation: (id: number) => api.post<{ invitation_delivery: 'SENT' | 'FAILED' | 'DEVELOPMENT' }>('/field-agents/' + id + '/resend-invitation').then(r => r.data),
   list: (params: FieldAgentListParams) => api.get<PaginatedItems<FieldAgent>>('/field-agents', { params }).then((r) => r.data),
   create: (payload: CreateFieldAgentRequest) => api.post<FieldAgent>('/field-agents', payload).then((r) => r.data),
-  get: (id: number) => api.get<FieldAgent>(`/field-agents/${id}`).then((r) => r.data),
+  get: (id: number) => api.get<FieldAgent>(`/field-agents/${id}/record`).then((r) => r.data),
   update: (id: number, payload: UpdateFieldAgentRequest) => api.patch<FieldAgent>(`/field-agents/${id}`, payload).then((r) => r.data),
   deactivate: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/deactivate`).then((r) => r.data),
   reactivate: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/reactivate`).then((r) => r.data),

@@ -3,6 +3,7 @@ import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { PermissionActor } from '../../../auth/application/services/permission-access';
 
 export interface ProjectActorContext extends PermissionActor {
+  allowedProjectIds?: number[];
   id: number;
   systemRoles: UserRole[];
   organizationId: number | null;

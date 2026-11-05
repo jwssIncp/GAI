@@ -12,6 +12,7 @@ export function isPlatformAdmin(user: CurrentUser | null) {
 
 export function hasPermission(user: CurrentUser | null, permission: string) {
   if (!user) return false;
+  if (isPlatformAdmin(user) && (permission.startsWith('field-agents:') || permission.startsWith('project-field-agents:'))) return false;
   if (user.permissions !== undefined) {
     return user.permissions.some((grant) => grant.key === permission);
   }

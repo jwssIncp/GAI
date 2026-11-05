@@ -436,6 +436,70 @@ describe('Field coordination real HTTP persistence, scope and concurrency', () =
       ).status,
     ).toBe(400);
   });
+  it.each([
+    'inactive',
+    'blocked',
+    'deleted',
+    'inactive_link',
+    'finished_link',
+    'unstarted',
+    'expired',
+  ])(
+    'does not assign new tasks to an ineligible field agent: %s',
+    async (state) => {
+      const row = await create(),
+        task = await taskOf(row.id);
+      const agent = await ds.getRepository(FieldAgentEntity).save({
+        organizationId: 1,
+        name: 'SINTETICO Elegibilidade',
+        status: FieldAgentStatus.ACTIVE,
+      });
+      const link = await ds.getRepository(ProjectFieldAgentEntity).save({
+        organizationId: 1,
+        projectId: project,
+        fieldAgentId: agent.id,
+        status: ProjectFieldAgentStatus.ACTIVE,
+      });
+      if (state === 'inactive')
+        await ds
+          .getRepository(FieldAgentEntity)
+          .update(agent.id, { status: FieldAgentStatus.INACTIVE });
+      if (state === 'blocked')
+        await ds
+          .getRepository(FieldAgentEntity)
+          .update(agent.id, { status: FieldAgentStatus.BLOCKED });
+      if (state === 'deleted')
+        await ds.getRepository(FieldAgentEntity).softDelete(agent.id);
+      if (state === 'inactive_link')
+        await ds
+          .getRepository(ProjectFieldAgentEntity)
+          .update(link.id, { status: ProjectFieldAgentStatus.INACTIVE });
+      if (state === 'finished_link')
+        await ds
+          .getRepository(ProjectFieldAgentEntity)
+          .update(link.id, { status: ProjectFieldAgentStatus.FINISHED });
+      if (state === 'unstarted')
+        await ds
+          .getRepository(ProjectFieldAgentEntity)
+          .update(link.id, { startDate: new Date('2099-01-01T00:00:00Z') });
+      if (state === 'expired')
+        await ds
+          .getRepository(ProjectFieldAgentEntity)
+          .update(link.id, { endDate: new Date('2000-01-01T00:00:00Z') });
+      expect(
+        (await save(row.id, task.id, 1, { field_agent_id: agent.id })).status,
+      ).toBe(400);
+      expect(
+        (await ds.getRepository(FieldTask).findOneByOrFail({ id: task.id }))
+          .fieldAgentId,
+      ).toBeNull();
+      expect(
+        await ds
+          .getRepository(ProjectFieldAgentEntity)
+          .countBy({ id: link.id }),
+      ).toBe(1);
+    },
+  );
   it('links real pending issues without changing them and rechecks their current status before completion', async () => {
     const row = await create(),
       task = await taskOf(row.id);

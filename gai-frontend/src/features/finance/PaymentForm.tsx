@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import { FieldAgentSelect } from '@/features/field-agents/FieldAgentSelect';
 import { DateInput, MoneyInput } from '@/components/base/Inputs';
 import { FormField } from '@/components/base/FormField';
 import { Button } from '@/components/ui/button';
@@ -27,10 +28,7 @@ export function PaymentForm({ initial, fieldAgents, busy, onSubmit }: { initial?
   return (
     <form className="grid gap-4" onSubmit={form.handleSubmit((values) => onSubmit(paymentFormSchema.parse(values)))}>
       <FormField label="Inventariante" error={form.formState.errors.field_agent_id?.message}>
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('field_agent_id')}>
-          <option value="">Selecione</option>
-          {fieldAgents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
-        </select>
+        <Controller control={form.control} name="field_agent_id" render={({ field }) => <FieldAgentSelect value={field.value ?? ''} onChange={field.onChange} selectedLabel={fieldAgents.find(agent => String(agent.id) === field.value)?.name} />} />
       </FormField>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Inicio" error={form.formState.errors.start_date?.message}><DateInput {...form.register('start_date')} /></FormField>

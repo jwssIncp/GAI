@@ -1,4 +1,6 @@
 export enum FieldAgentAuditOperation {
+  RESTORE = 'RESTORE',
+  INVITE_USER = 'INVITE_USER',
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DEACTIVATE = 'DEACTIVATE',

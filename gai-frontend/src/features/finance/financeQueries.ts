@@ -22,7 +22,7 @@ export const financeKeys = {
 };
 
 export function useFinanceFieldAgents() {
-  return useQuery({ queryKey: ['field-agents', 'finance-select'], queryFn: () => fieldAgentsApi.list({ page: 1, page_size: 100, status: 'active' }) });
+  return useQuery({ queryKey: ['field-agents', 'finance-select'], queryFn: () => fieldAgentsApi.list({ page: 1, page_size: 20, status: 'active' }) });
 }
 
 export function usePayments(projectId: number, params: PageParams & { field_agent_id?: number; status?: PaymentStatus | string; state?: string; start_date?: string; end_date?: string; payment_date?: string }) {

@@ -1,7 +1,12 @@
 import { fieldToday } from './field.policy';
+import {
+  assertOperationalActor,
+  requireOperationalAssignment,
+} from '../field-agents/application/services/operational-eligibility';
 import { createHash } from 'crypto';
 import {
   ForbiddenException,
+  ConflictException,
   HttpException,
   Inject,
   Injectable,
@@ -92,7 +97,12 @@ export class FieldService {
     mutate = false,
     manager = this.db.manager,
   ) {
-    const row = await manager.findOneBy(ProjectEntity, { id });
+    const row = await manager.getRepository(ProjectEntity).findOne({
+      where: { id },
+      ...(mutate && manager.connection.options.type === 'mysql'
+        ? { lock: { mode: 'pessimistic_write' as const } }
+        : {}),
+    });
     if (!row) this.missing();
     this.scope.assertCanAccessProject(actor, row.organizationId);
     if (
@@ -320,6 +330,7 @@ export class FieldService {
     const project = await this.project(projectId, actor);
     const org = project.organizationId;
     if (query.kind === 'field_agent') {
+      assertOperationalActor(actor);
       const builder = this.db
         .getRepository(FieldAgentEntity)
         .createQueryBuilder('agent')
@@ -598,30 +609,20 @@ export class FieldService {
     )
       invalid('Usuário responsável deve estar ativo na organização');
     if (task.fieldAgentId) {
-      const agent = await manager.findOneBy(FieldAgentEntity, {
-        id: task.fieldAgentId,
-        organizationId: row.organizationId,
-        status: FieldAgentStatus.ACTIVE,
-      });
-      const link = await manager.findOneBy(ProjectFieldAgentEntity, {
-        fieldAgentId: task.fieldAgentId,
-        projectId: row.projectId,
-        organizationId: row.organizationId,
-        status: ProjectFieldAgentStatus.ACTIVE,
-      });
-      if (!agent || !link)
-        invalid('Inventariante precisa estar ativo e vinculado ao projeto');
-      const date = (value: unknown) =>
-        value instanceof Date
-          ? value.toISOString().slice(0, 10)
-          : typeof value === 'string'
-            ? value
-            : null;
-      const start = date(link.startDate),
-        end = date(link.endDate),
-        today = fieldToday();
-      if ((start && start > today) || (end && end < today))
-        invalid('Vínculo do inventariante fora do período válido');
+      assertOperationalActor(actor);
+      try {
+        await requireOperationalAssignment(
+          manager,
+          row.organizationId,
+          row.projectId,
+          task.fieldAgentId,
+        );
+      } catch (error) {
+        // Preserve this module's existing validation HTTP contract while sharing
+        // the eligibility rule and its transaction locks with inventory.
+        if (error instanceof ConflictException) invalid(error.message);
+        throw error;
+      }
     }
     if (task.linkedIssueId) {
       if (linkChanged)

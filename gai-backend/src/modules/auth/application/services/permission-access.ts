@@ -14,6 +14,15 @@ export async function hasAllPermissions(
   keys: string[],
   resolver: PermissionResolver,
 ): Promise<boolean> {
+  if (
+    actor.systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
+    keys.some(
+      (key) =>
+        key.startsWith('field-agents:') ||
+        key.startsWith('project-field-agents:'),
+    )
+  )
+    return false;
   const scopes = await resolver.findScopesByKeys(keys);
   if (
     keys.some(

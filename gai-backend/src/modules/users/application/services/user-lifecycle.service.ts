@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
-import { DataSource, IsNull, QueryFailedError } from 'typeorm';
+import { DataSource, EntityManager, IsNull, QueryFailedError } from 'typeorm';
 import {
   CredentialTransactionsService,
   lockUser,
@@ -41,6 +41,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserResponseDto } from '../dto/user-response.dto';
 import { ActorContext, UserScopeService } from './user-scope.service';
+import { FieldAgentEntity } from '../../../field-agents/infrastructure/persistence/field-agent.entity';
 
 @Injectable()
 export class UserLifecycleService {
@@ -69,7 +70,11 @@ export class UserLifecycleService {
     };
   }
 
-  async create(dto: CreateUserDto, actor: ActorContext) {
+  async create(
+    dto: CreateUserDto,
+    actor: ActorContext,
+    onCreated?: (manager: EntityManager, user: UserEntity) => Promise<void>,
+  ) {
     this.scope.assertCanManageUsers(actor);
     const organizationId = this.scope.resolveOrganizationIdForCreate(
       actor,
@@ -140,6 +145,7 @@ export class UserLifecycleService {
             activation_method: { before: null, after: dto.activation_method },
           },
         });
+        if (onCreated) await onCreated(manager, saved);
         return saved;
       }),
     );
@@ -168,6 +174,21 @@ export class UserLifecycleService {
           dto.organization_id !== user.organizationId
         ) {
           this.scope.assertCanChangeUserOrganization(actor);
+          const incompatible = await manager
+            .getRepository(FieldAgentEntity)
+            .createQueryBuilder('agent')
+            .withDeleted()
+            .where(
+              'agent.user_id = :userId AND agent.organization_id <> :organizationId',
+              { userId: id, organizationId: dto.organization_id ?? -1 },
+            )
+            .getExists();
+          if (incompatible)
+            throw new ConflictException({
+              code: 'USER_LINKED_TO_FIELD_AGENT',
+              message:
+                'Desassocie previamente a conta dos inventariantes da organização anterior, inclusive cadastros excluídos, antes de transferi-la.',
+            });
           await assertActiveAccessOrganization(manager, dto.organization_id);
           await assertAdministratorSurvives(manager, user, []);
           if (!dto.role_ids)

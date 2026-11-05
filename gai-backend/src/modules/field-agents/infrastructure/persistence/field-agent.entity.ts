@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ForeignKey,
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,12 +14,45 @@ import {
 } from '../../../../common/persistence/entity-id.columns';
 import { JsonRecord } from '../../domain/entities/field-agent';
 import { FieldAgentStatus } from '../../domain/enums/field-agent-status.enum';
+import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
+import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
 
 @Entity('field_agents')
+@ForeignKey(() => OrganizationEntity, ['organizationId'], ['id'], {
+  name: 'fk_field_agents_organization',
+})
+@ForeignKey(() => UserEntity, ['userId'], ['id'], {
+  name: 'fk_field_agents_user',
+})
+@ForeignKey(
+  () => UserEntity,
+  ['userId', 'organizationId'],
+  ['id', 'organizationId'],
+  { name: 'fk_field_agents_user_scope' },
+)
+@Index('uq_field_agents_scope', ['id', 'organizationId'], { unique: true })
 @Index('idx_field_agents_organization_status', ['organizationId', 'status'])
 @Index('idx_field_agents_user_id', ['userId'])
 @Index('idx_field_agents_name', ['name'])
+@Index('uq_field_agents_org_email', ['organizationId', 'email'], {
+  unique: true,
+})
+@Index('uq_field_agents_org_document', ['organizationId', 'document'], {
+  unique: true,
+})
+@Index('uq_field_agents_live_user', ['liveUserId'], { unique: true })
 export class FieldAgentEntity {
+  @Column({
+    name: 'live_user_id',
+    ...FOREIGN_KEY_COLUMN,
+    nullable: true,
+    select: false,
+    insert: false,
+    update: false,
+    generatedType: 'STORED',
+    asExpression: 'CASE WHEN deleted_at IS NULL THEN user_id ELSE NULL END',
+  })
+  liveUserId!: number | null;
   @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN)
   id!: number;
 

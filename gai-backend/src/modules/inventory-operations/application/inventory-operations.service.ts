@@ -1,5 +1,9 @@
 import { randomUUID } from 'crypto';
 import {
+  assertOperationalActor,
+  requireOperationalAssignment,
+} from '../../field-agents/application/services/operational-eligibility';
+import {
   InventoryReconciliationResponseDto,
   InventoryReconciliationRunResponseDto,
 } from './inventory-reconciliation-response.dto';
@@ -439,6 +443,7 @@ export class InventoryOperationsService {
     dto: CreateInventoryObservationDto,
     actor: InventoryOperationActor,
   ) {
+    assertOperationalActor(actor);
     const project = await this.getProject(projectId, actor, true);
     const item = await this.requireItem(projectId, dto.inventory_item_id);
     if (dto.idempotency_key) {
@@ -507,6 +512,13 @@ export class InventoryOperationsService {
     );
     try {
       return await this.dataSource.transaction(async (manager) => {
+        await requireOperationalAssignment(
+          manager,
+          project.organizationId,
+          projectId,
+          dto.field_agent_id,
+          actor,
+        );
         const observation = await manager
           .getRepository(InventoryObservationEntity)
           .save({

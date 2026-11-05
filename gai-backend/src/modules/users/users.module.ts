@@ -4,12 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import { OrganizationEntity } from '../organizations/infrastructure/persistence/organization.entity';
 import { AuthModule } from '../auth/auth.module';
-import { ActivateUserUseCase } from './application/use-cases/activate-user.use-case';
 import { AssignUserRoleUseCase } from './application/use-cases/assign-user-role.use-case';
 import { CreateOrgRoleUseCase } from './application/use-cases/create-org-role.use-case';
 import { CreateUserUseCase } from './application/use-cases/create-user.use-case';
 import { DeactivateOrgRoleUseCase } from './application/use-cases/deactivate-org-role.use-case';
-import { DeactivateUserUseCase } from './application/use-cases/deactivate-user.use-case';
 import { GetOrgRoleUseCase } from './application/use-cases/get-org-role.use-case';
 import { GetUserUseCase } from './application/use-cases/get-user.use-case';
 import { ListOrgRolesUseCase } from './application/use-cases/list-org-roles.use-case';
@@ -68,8 +66,6 @@ import { AccessProfilesService } from './application/services/access-profiles.se
     GetUserUseCase,
     ListUsersUseCase,
     UpdateUserUseCase,
-    DeactivateUserUseCase,
-    ActivateUserUseCase,
     AssignUserRoleUseCase,
     ListUserRoleAssignmentsUseCase,
     RevokeUserRoleAssignmentUseCase,
@@ -93,6 +89,7 @@ import { AccessProfilesService } from './application/services/access-profiles.se
     },
   ],
   exports: [
+    UserLifecycleService,
     USER_MANAGEMENT_REPOSITORY,
     ORG_ROLE_REPOSITORY,
     PERMISSION_REPOSITORY,

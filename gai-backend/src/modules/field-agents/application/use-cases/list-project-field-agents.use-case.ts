@@ -47,7 +47,9 @@ export class ListProjectFieldAgentsUseCase {
       page,
       pageSize,
       projectId,
+      organizationId: project.organizationId,
       status: query.status,
+      search: query.search,
     });
 
     return {

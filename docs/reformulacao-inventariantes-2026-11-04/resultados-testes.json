@@ -1,0 +1,263 @@
+{
+  "verified_at": "2026-11-05T09:38:29.689Z",
+  "checks": [
+    {
+      "name": "backend-unit",
+      "folder": "gai-backend",
+      "args": [
+        "unit"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "unit"
+      ],
+      "suites": 64,
+      "passed": 479
+    },
+    {
+      "name": "sqlite-regression-final",
+      "folder": "gai-backend",
+      "args": [
+        "sqlite",
+        "--runTestsByPath",
+        "test/integration/field-agents/field-agents.e2e-spec.ts",
+        "test/integration/field-coordination/field.e2e-spec.ts",
+        "test/integration/inventory-operations/inventory-operations.e2e-spec.ts",
+        "test/integration/users/user-lifecycle.e2e-spec.ts",
+        "test/integration/auth/password-change.e2e-spec.ts",
+        "test/integration/auth/password-reset.e2e-spec.ts",
+        "test/integration/projects/project-registration.e2e-spec.ts",
+        "test/integration/payments-expenses/payments-expenses.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "sqlite",
+        "--runTestsByPath",
+        "test/integration/field-agents/field-agents.e2e-spec.ts",
+        "test/integration/field-coordination/field.e2e-spec.ts",
+        "test/integration/inventory-operations/inventory-operations.e2e-spec.ts",
+        "test/integration/users/user-lifecycle.e2e-spec.ts",
+        "test/integration/auth/password-change.e2e-spec.ts",
+        "test/integration/auth/password-reset.e2e-spec.ts",
+        "test/integration/projects/project-registration.e2e-spec.ts",
+        "test/integration/payments-expenses/payments-expenses.e2e-spec.ts"
+      ],
+      "suites": 8,
+      "passed": 113,
+      "skipped": 3,
+      "reason": "Tests conditional on MySQL engine; executed in mysql-users."
+    },
+    {
+      "name": "mysql-complete",
+      "folder": "gai-backend",
+      "args": [
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/field-agents/field-agent-reform.e2e-spec.ts",
+        "test/integration/field-coordination/field.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/field-agents/field-agent-reform.e2e-spec.ts",
+        "test/integration/field-coordination/field.e2e-spec.ts"
+      ],
+      "suites": 2,
+      "passed": 40
+    },
+    {
+      "name": "mysql-users",
+      "folder": "gai-backend",
+      "args": [
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/users/user-lifecycle.e2e-spec.ts"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "test/run-tests.cjs",
+        "mysql",
+        "--runTestsByPath",
+        "test/integration/users/user-lifecycle.e2e-spec.ts"
+      ],
+      "suites": 1,
+      "passed": 37
+    },
+    {
+      "name": "frontend-complete",
+      "folder": "gai-frontend",
+      "args": [
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "--no-cache",
+        "--maxWorkers=2",
+        "--minWorkers=1"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "--no-cache",
+        "--maxWorkers=2",
+        "--minWorkers=1"
+      ],
+      "files": 60,
+      "passed": 369
+    },
+    {
+      "name": "frontend-field-final",
+      "folder": "gai-frontend",
+      "args": [
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "--no-cache",
+        "--maxWorkers=2",
+        "--minWorkers=1",
+        "src/features/field-agents",
+        "src/features/auth/permissions.test.ts",
+        "src/features/finance/ProjectFinancePage.test.tsx"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "vitest.config.ts",
+        "--no-cache",
+        "--maxWorkers=2",
+        "--minWorkers=1",
+        "src/features/field-agents",
+        "src/features/auth/permissions.test.ts",
+        "src/features/finance/ProjectFinancePage.test.tsx"
+      ],
+      "files": 5,
+      "passed": 57,
+      "overlaps": "frontend-complete"
+    },
+    {
+      "name": "browser",
+      "folder": "gai-frontend",
+      "args": [
+        "test",
+        "--config",
+        "playwright.field-agents.config.ts"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "--config",
+        "playwright.field-agents.config.ts"
+      ],
+      "passed": 8,
+      "scope": "Chromium; intercepted synthetic API; six viewport/theme combinations, platform denial, invitation UI."
+    },
+    {
+      "name": "types-backend-final",
+      "folder": "gai-backend",
+      "args": [
+        "--noEmit"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ]
+    },
+    {
+      "name": "types-frontend",
+      "folder": "gai-frontend",
+      "args": [
+        "--noEmit",
+        "-p",
+        "tsconfig.app.json",
+        "--incremental",
+        "false"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "tsconfig.app.json",
+        "--incremental",
+        "false"
+      ]
+    },
+    {
+      "name": "lint-backend-complete",
+      "folder": "gai-backend",
+      "args": [
+        "{src,apps,libs,test}/**/*.ts"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "{src,apps,libs,test}/**/*.ts"
+      ]
+    },
+    {
+      "name": "lint-frontend",
+      "folder": "gai-frontend",
+      "args": [
+        "."
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "."
+      ]
+    },
+    {
+      "name": "build-backend",
+      "folder": "gai-backend",
+      "args": [
+        "build"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/@nestjs/cli/bin/nest.js",
+        "build"
+      ]
+    },
+    {
+      "name": "build-frontend",
+      "folder": "gai-frontend",
+      "args": [
+        "build"
+      ],
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vite/bin/vite.js",
+        "build"
+      ]
+    }
+  ],
+  "notes": [
+    "Counts overlap across reruns.",
+    "MySQL target: exclusive disposable schema at 127.0.0.1:33337; application database was not migrated.",
+    "Full integration suite for every module, real email delivery and WCAG audit were not executed.",
+    "Recharts emits existing width/height warnings under jsdom; frontend exit code is zero."
+  ]
+}

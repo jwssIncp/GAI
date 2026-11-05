@@ -37,6 +37,8 @@ export class ListFieldAgentsUseCase {
       organizationId,
       status: query.status,
       search: query.search,
+      deleted: query.deletion === 'deleted',
+      excludeProjectId: query.exclude_project_id,
     });
 
     return {

@@ -98,6 +98,10 @@ export class CreateFieldAgentUseCase {
         changes: {
           organization_id: { before: null, after: organizationId },
           name: { before: null, after: fieldAgent.name },
+          email: { before: null, after: fieldAgent.email },
+          phone: { before: null, after: fieldAgent.phone },
+          document: { before: null, after: fieldAgent.document },
+          user_id: { before: null, after: fieldAgent.userId },
           status: { before: null, after: fieldAgent.status },
         },
       });

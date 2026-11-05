@@ -476,6 +476,8 @@ export type ProjectSummary = {
 
 export type FieldAgentStatus = 'active' | 'inactive' | 'blocked';
 export type FieldAgentListParams = PageParams & {
+  deletion?: 'current' | 'deleted';
+  exclude_project_id?: number;
   status?: FieldAgentStatus;
   search?: string;
 };
@@ -585,6 +587,8 @@ export type ProjectDashboardAnalytics = {
   timezone: string;
 };
 export type FieldAgent = {
+  organization_name?: string;
+  linked_user?: FieldAgentAccount | null;
   id: number;
   organization_id: number;
   user_id?: number | null;
@@ -609,6 +613,9 @@ export type CreateFieldAgentRequest = {
 };
 
 export type UpdateFieldAgentRequest = Partial<CreateFieldAgentRequest>;
+export type FieldAgentAccount = { id: number; full_name: string | null; login: string; email: string; status: UserStatus };
+export type FieldAgentProject = { id: number; project_id: number; project_name: string; role: string | null; status: ProjectFieldAgentStatus; start_date: string | null; end_date: string | null };
+export type FieldAgentHistory = { id: number; operation: string; created_at: string; performed_by_name: string; changes: Record<string, { before: unknown; after: unknown }> };
 
 export type ProjectFieldAgentStatus = 'active' | 'inactive' | 'finished';
 export type ProjectFieldAgent = {

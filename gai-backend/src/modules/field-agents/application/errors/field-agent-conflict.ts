@@ -22,7 +22,7 @@ export function fieldAgentConflict(
   const label = field === 'email' ? 'e-mail' : 'CPF/CNPJ';
   return new ConflictException({
     code: 'CONFLICT',
-    message: `Já existe um inventariante com este ${label}.`,
+    message: `Já existe um inventariante com este ${label}, inclusive entre excluídos. Consulte os cadastros excluídos e restaure o original quando adequado.`,
     details: [{ field, message: `${label} já cadastrado` }],
   });
 }
