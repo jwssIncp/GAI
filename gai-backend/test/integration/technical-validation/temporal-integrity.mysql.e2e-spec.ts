@@ -179,17 +179,25 @@ describe('Civil dates and UTC instants (real MySQL)', () => {
       await post(`/projects/${p.id}/field-agents`, {
         field_agent_id: agent,
         start_date: '2024-02-29',
-        end_date: '2024-03-01',
+        // Active assignments must include today; keep the leap-day boundary
+        // without making this persistence test depend on an expired period.
+        end_date: '9999-12-31',
       }).expect(201)
     ).body;
     expect(link.start_date).toBe('2024-02-29');
-    expect(link.end_date).toBe('2024-03-01');
+    expect(link.end_date).toBe('9999-12-31');
     const [raw] = await ds.query(
       'SELECT start_date,end_date FROM projects WHERE id=?',
       [p.id],
     );
     expect(raw.start_date).toBe('2024-02-29');
     expect(raw.end_date).toBe('2024-03-01');
+    const [rawLink] = await ds.query(
+      'SELECT start_date,end_date FROM project_field_agents WHERE id=?',
+      [link.id],
+    );
+    expect(rawLink.start_date).toBe('2024-02-29');
+    expect(rawLink.end_date).toBe('9999-12-31');
   });
   it('forces all pooled sessions to UTC under a non-UTC server and four Node zones', async () => {
     const [{ zone }] = await ds.query('SELECT @@global.time_zone zone');
