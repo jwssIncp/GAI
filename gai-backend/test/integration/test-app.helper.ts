@@ -470,6 +470,24 @@ export async function seedTestData(app: INestApplication): Promise<void> {
     }),
   );
 
+  // SQLite synchronizes entities without running the migration that seeds
+  // ORG_USER. Keep the fixture catalog consistent with MySQL, without grants.
+  // Seed it after the operator to preserve existing fixture role IDs.
+  if (!(await roleRepo.findOneBy({ key: 'ORG_USER' }))) {
+    await roleRepo.save(
+      roleRepo.create({
+        key: 'ORG_USER',
+        type: RoleType.SYSTEM,
+        organizationId: null,
+        name: 'Organization User',
+        description: 'Organization user without implicit grants',
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      }),
+    );
+  }
+
   await rolePermRepo.save([
     rolePermRepo.create({
       roleId: operatorRole.id,
