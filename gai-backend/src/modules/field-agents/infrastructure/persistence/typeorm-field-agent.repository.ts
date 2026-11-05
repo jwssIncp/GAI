@@ -4,6 +4,7 @@ import { EntityManager, Not, Repository } from 'typeorm';
 import { fieldAgentAuditChanges } from '../../application/services/field-agent-audit';
 import { lockAccessAdministration } from '../../../users/infrastructure/persistence/access-administration-lock';
 import { lockUser } from '../../../auth/application/services/credential-transactions.service';
+import { identityTransaction } from '../../../auth/infrastructure/persistence/identity-transaction';
 import { RoleEntity } from '../../../users/infrastructure/persistence/role.entity';
 import { UserRoleAssignmentEntity } from '../../../users/infrastructure/persistence/user-role-assignment.entity';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
@@ -192,7 +193,8 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     fieldAgent: FieldAgent,
     audit: FieldAgentAuditEntry,
   ): Promise<FieldAgent> {
-    return this.fieldAgentRepo.manager.transaction(async (manager) => {
+    const db = this.fieldAgentRepo.manager.connection;
+    return identityTransaction(db, async (manager) => {
       // Same access/user locks as organization transfer; no cross-tenant link can
       // be created between its preflight and commit.
       await lockAccessAdministration(manager);
