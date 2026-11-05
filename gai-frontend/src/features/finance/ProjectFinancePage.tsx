@@ -1,3 +1,4 @@
+import { FieldAgentSelect } from '@/features/field-agents/FieldAgentSelect';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle2, CreditCard, Eye, FileText, Pencil, Plus, Receipt, XCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -283,10 +284,7 @@ function ExpensesTab({ projectId, fieldAgents }: { projectId: number; fieldAgent
 
 function AgentSelect({ value, onChange, agents }: { value: string; onChange: (value: string) => void; agents: Array<{ id: number; name: string }> }) {
   return (
-    <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={value} onChange={(event) => onChange(event.target.value)} aria-label="Filtrar por inventariante">
-      <option value="">Todos inventariantes</option>
-      {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
-    </select>
+    <FieldAgentSelect value={value} onChange={onChange} selectedLabel={agents.find(agent => String(agent.id) === value)?.name} allStatuses ariaLabel="Filtrar por inventariante" />
   );
 }
 

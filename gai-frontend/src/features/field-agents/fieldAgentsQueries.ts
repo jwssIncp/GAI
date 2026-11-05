@@ -37,7 +37,7 @@ export function useUpdateFieldAgent() {
   });
 }
 
-export function useChangeFieldAgentStatus(action: 'deactivate' | 'reactivate' | 'block' | 'unblock') {
+export function useChangeFieldAgentStatus(action: 'deactivate' | 'reactivate' | 'block' | 'unblock' | 'restore') {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => fieldAgentsApi[action](id),

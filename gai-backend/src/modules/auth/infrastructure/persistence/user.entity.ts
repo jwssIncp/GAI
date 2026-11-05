@@ -13,6 +13,7 @@ import {
 import { UserStatus } from '../../domain/enums/user.enums';
 
 @Entity('users')
+@Index('uq_users_field_scope', ['id', 'organizationId'], { unique: true })
 @Index('idx_users_organization_id', ['organizationId'])
 @Index('idx_users_status', ['status'])
 export class UserEntity {

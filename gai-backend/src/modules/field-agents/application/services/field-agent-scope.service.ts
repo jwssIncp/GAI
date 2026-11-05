@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
+import { assertOperationalActor } from './operational-eligibility';
 
 export interface FieldAgentActorContext {
   id: number;
@@ -10,6 +11,7 @@ export interface FieldAgentActorContext {
 @Injectable()
 export class FieldAgentScopeService {
   resolveOrganizationForCreate(actor: FieldAgentActorContext): number {
+    assertOperationalActor(actor);
     if (actor.organizationId === null) {
       throw this.forbidden();
     }
@@ -20,6 +22,7 @@ export class FieldAgentScopeService {
     actor: FieldAgentActorContext,
     requestedOrganizationId?: number,
   ): number | undefined {
+    assertOperationalActor(actor);
     if (actor.organizationId === null) {
       throw this.forbidden();
     }
@@ -36,6 +39,7 @@ export class FieldAgentScopeService {
     actor: FieldAgentActorContext,
     organizationId: number,
   ): void {
+    assertOperationalActor(actor);
     if (actor.organizationId !== organizationId) {
       throw this.forbidden();
     }

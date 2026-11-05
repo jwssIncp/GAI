@@ -70,6 +70,7 @@ export class UpdateProjectFieldAgentDto {
 }
 
 export class ListProjectFieldAgentsQueryDto {
+  @IsOptional() @IsString() @MaxLength(255) search?: string;
   @ApiPropertyOptional({ minimum: 1, default: 1 })
   @IsOptional()
   @Type(() => Number)

@@ -74,6 +74,13 @@ export class TypeOrmProjectRepository implements ProjectRepository {
     counts?: Partial<Record<ProjectStatus, number>>;
   }> {
     const qb = this.withLabels(this.projectRepo);
+    if (params.allowedProjectIds) {
+      if (params.allowedProjectIds.length)
+        qb.andWhere('project.id IN (:...allowedProjectIds)', {
+          allowedProjectIds: params.allowedProjectIds,
+        });
+      else qb.andWhere('1=0');
+    }
 
     if (params.organizationId) {
       qb.andWhere('project.organizationId = :organizationId', {

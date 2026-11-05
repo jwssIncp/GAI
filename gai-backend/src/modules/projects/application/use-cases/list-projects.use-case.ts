@@ -36,6 +36,7 @@ export class ListProjectsUseCase {
       page,
       pageSize,
       organizationId,
+      allowedProjectIds: actor.allowedProjectIds,
       companyId: query.company_id,
       status: query.status,
       search: query.search,

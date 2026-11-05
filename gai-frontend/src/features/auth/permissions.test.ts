@@ -22,6 +22,8 @@ describe('permissions', () => {
     const user: CurrentUser = { ...baseUser, role_assignments: [{ assignment_id: 1, role_id: 1, role_key: 'PLATFORM_ADMIN', role_name: 'Platform', role_type: 'SYSTEM', organization_id: null, assigned_at: '2026-01-01' }] };
     expect(isPlatformAdmin(user)).toBe(true);
     expect(hasPermission(user, 'companies:read')).toBe(true);
+    expect(hasPermission(user, 'field-agents:read')).toBe(false);
+    expect(hasPermission(user, 'project-field-agents:assign')).toBe(false);
   });
 
   it('mapeia ORG_ADMIN para users e org roles', () => {

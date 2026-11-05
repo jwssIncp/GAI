@@ -5,6 +5,7 @@ import { ProjectStatus } from '../enums/project-status.enum';
 import { ProjectStatusAction } from '../services/project-status-transition.policy';
 
 export interface ListProjectsParams {
+  allowedProjectIds?: number[];
   page: number;
   pageSize: number;
   organizationId?: number;

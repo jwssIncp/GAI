@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import { FieldAgentSelect } from '@/features/field-agents/FieldAgentSelect';
 import { DateInput, MoneyInput } from '@/components/base/Inputs';
 import { FormField } from '@/components/base/FormField';
 import { Button } from '@/components/ui/button';
@@ -30,10 +31,7 @@ export function ExpenseForm({ initial, fieldAgents, busy, onSubmit }: { initial?
         <FormField label="Valor" error={form.formState.errors.amount?.message}><MoneyInput {...form.register('amount')} /></FormField>
       </div>
       <FormField label="Inventariante">
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('field_agent_id')}>
-          <option value="">Sem vinculo direto</option>
-          {fieldAgents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
-        </select>
+        <Controller control={form.control} name="field_agent_id" render={({ field }) => <FieldAgentSelect value={field.value ?? ''} onChange={field.onChange} selectedLabel={fieldAgents.find(agent => String(agent.id) === field.value)?.name} />} />
       </FormField>
       <FormField label="Motivo">
         <textarea className="min-h-24 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('reason')} />

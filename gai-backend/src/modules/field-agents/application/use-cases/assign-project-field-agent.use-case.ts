@@ -125,6 +125,10 @@ export class AssignProjectFieldAgentUseCase {
           changes: {
             field_agent_id: { before: null, after: assignment.fieldAgentId },
             project_id: { before: null, after: assignment.projectId },
+            role: { before: null, after: assignment.role },
+            start_date: { before: null, after: assignment.startDate },
+            end_date: { before: null, after: assignment.endDate },
+            notes: { before: null, after: assignment.notes },
             status: { before: null, after: assignment.status },
           },
         },

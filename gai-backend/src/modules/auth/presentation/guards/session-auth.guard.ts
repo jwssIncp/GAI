@@ -5,7 +5,11 @@ import {
   Inject,
   Injectable,
   UnauthorizedException,
+  Optional,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { FieldAgentEntity } from '../../../field-agents/infrastructure/persistence/field-agent.entity';
+import { operationalDay } from '../../../field-agents/application/services/operational-eligibility';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { RoleAuthorizationService } from '../../application/services/role-authorization.service';
@@ -34,6 +38,7 @@ import {
 } from '../../../users/domain/ports/user-role-assignment.repository.port';
 
 export interface AuthenticatedUser {
+  allowedProjectIds?: number[];
   id: number;
   systemRoles: UserRole[];
   primaryRole: UserRole | null;
@@ -62,6 +67,7 @@ export class SessionAuthGuard implements CanActivate {
     private readonly configService: ConfigService,
     @Inject(ORGANIZATION_GATE)
     private readonly organizationGate: OrganizationGate,
+    @Optional() private readonly db?: DataSource,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -149,6 +155,58 @@ export class SessionAuthGuard implements CanActivate {
     const roleAssignments = await this.assignments.findActiveByUserId(user.id);
     const systemRoles = this.roleAuth.extractSystemRoles(roleAssignments);
     const permissions = await this.permissionResolver.resolveForUser(user.id);
+    let allowedProjectIds: number[] | undefined;
+    if (
+      !systemRoles.includes(UserRole.ORG_ADMIN) &&
+      !systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
+      roleAssignments.some((role) =>
+        role.roleKey?.startsWith('FIELD_AGENT_ORG_'),
+      )
+    ) {
+      if (!this.db)
+        throw new ForbiddenException({
+          code: 'FORBIDDEN',
+          message: 'Não foi possível verificar os projetos autorizados.',
+        });
+      const links = await this.db
+        .getRepository(FieldAgentEntity)
+        .createQueryBuilder('agent')
+        .innerJoin(
+          'project_field_agents',
+          'link',
+          'link.field_agent_id=agent.id AND link.organization_id=agent.organization_id',
+        )
+        .innerJoin(
+          'projects',
+          'project',
+          'project.id=link.project_id AND project.organization_id=agent.organization_id AND project.deleted_at IS NULL',
+        )
+        .where(
+          'agent.userId=:userId AND agent.organizationId=:org AND agent.status=:active AND link.status=:active',
+          { userId: user.id, org: user.organizationId, active: 'active' },
+        )
+        .andWhere(
+          '(link.start_date IS NULL OR link.start_date<=:today) AND (link.end_date IS NULL OR link.end_date>=:today)',
+          { today: operationalDay() },
+        )
+        .select('link.project_id', 'id')
+        .getRawMany<{ id: number }>();
+      allowedProjectIds = links.map((link) => Number(link.id));
+      const projectId = endpoint.match(
+        /^\/api\/v1\/projects\/(\d+)(?:\/|$)/,
+      )?.[1];
+      if (
+        !endpoint.startsWith('/api/v1/auth/') &&
+        !(endpoint === '/api/v1/projects' && request.method === 'GET') &&
+        (!projectId || !allowedProjectIds.includes(Number(projectId)))
+      ) {
+        throw new ForbiddenException({
+          code: 'FORBIDDEN',
+          message:
+            'Sua conta de campo só acessa projetos com vínculo ativo e vigente.',
+        });
+      }
+    }
 
     request.user = {
       id: user.id,
@@ -158,6 +216,7 @@ export class SessionAuthGuard implements CanActivate {
       sessionId: session.id,
       roleAssignments,
       permissions,
+      allowedProjectIds,
     };
 
     return true;

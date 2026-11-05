@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ForeignKey,
   Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -12,8 +13,32 @@ import {
   PRIMARY_KEY_COLUMN,
 } from '../../../../common/persistence/entity-id.columns';
 import { ProjectFieldAgentStatus } from '../../domain/enums/project-field-agent-status.enum';
+import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
+import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
+import { FieldAgentEntity } from './field-agent.entity';
 
 @Entity('project_field_agents')
+@ForeignKey(() => OrganizationEntity, ['organizationId'], ['id'], {
+  name: 'fk_project_field_agents_organization',
+})
+@ForeignKey(() => ProjectEntity, ['projectId'], ['id'], {
+  name: 'fk_project_field_agents_project',
+})
+@ForeignKey(() => FieldAgentEntity, ['fieldAgentId'], ['id'], {
+  name: 'fk_project_field_agents_field_agent',
+})
+@ForeignKey(
+  () => ProjectEntity,
+  ['projectId', 'organizationId'],
+  ['id', 'organizationId'],
+  { name: 'fk_project_field_agents_project_scope' },
+)
+@ForeignKey(
+  () => FieldAgentEntity,
+  ['fieldAgentId', 'organizationId'],
+  ['id', 'organizationId'],
+  { name: 'fk_project_field_agents_agent_scope' },
+)
 @Index('idx_project_field_agents_project_status', ['projectId', 'status'])
 @Index('idx_project_field_agents_agent_status', ['fieldAgentId', 'status'])
 @Index('uq_project_field_agents_active_key', ['activeAssignmentKey'], {

@@ -357,6 +357,7 @@ export class ProjectsController {
   private toActor(req: AuthenticatedRequest): ProjectActorContext {
     return {
       id: req.user!.id,
+      allowedProjectIds: req.user!.allowedProjectIds,
       systemRoles: req.user!.systemRoles,
       organizationId: req.user!.organizationId,
     };

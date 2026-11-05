@@ -1,0 +1,72 @@
+{
+  "verified_at": "2026-11-05T09:38:47.865Z",
+  "mode": "READ ONLY; full row digests compared with pre-implementation snapshot",
+  "tables": {
+    "field_agents": {
+      "before_count": 10,
+      "after_count": 10,
+      "identical": true
+    },
+    "project_field_agents": {
+      "before_count": 10,
+      "after_count": 10,
+      "identical": true
+    },
+    "field_agent_audit_logs": {
+      "before_count": 12,
+      "after_count": 12,
+      "identical": true
+    },
+    "users": {
+      "before_count": 3,
+      "after_count": 3,
+      "identical": true
+    },
+    "user_role_assignments": {
+      "before_count": 3,
+      "after_count": 3,
+      "identical": true
+    },
+    "roles": {
+      "before_count": 4,
+      "after_count": 4,
+      "identical": true
+    },
+    "role_permissions": {
+      "before_count": 1,
+      "after_count": 1,
+      "identical": true
+    },
+    "inventory_observations": {
+      "before_count": 5,
+      "after_count": 5,
+      "identical": true
+    },
+    "field_tasks": {
+      "before_count": 2,
+      "after_count": 2,
+      "identical": true
+    },
+    "field_agent_payments": {
+      "before_count": 7,
+      "after_count": 7,
+      "identical": true
+    },
+    "expenses": {
+      "before_count": 8,
+      "after_count": 8,
+      "identical": true
+    },
+    "expense_accountabilities": {
+      "before_count": 0,
+      "after_count": 0,
+      "identical": true
+    },
+    "migrations": {
+      "before_count": 36,
+      "after_count": 36,
+      "identical": true
+    }
+  },
+  "all_identical": true
+}

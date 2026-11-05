@@ -1,12 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Not, Repository } from 'typeorm';
+import { fieldAgentAuditChanges } from '../../application/services/field-agent-audit';
+import { lockAccessAdministration } from '../../../users/infrastructure/persistence/access-administration-lock';
+import { lockUser } from '../../../auth/application/services/credential-transactions.service';
+import { RoleEntity } from '../../../users/infrastructure/persistence/role.entity';
+import { UserRoleAssignmentEntity } from '../../../users/infrastructure/persistence/user-role-assignment.entity';
+import { UserRole } from '../../../auth/domain/enums/user.enums';
+import {
+  assertAssignmentPeriod,
+  requireOperationalAgent,
+} from '../../application/services/operational-eligibility';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
 import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
 import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
 import { ProjectStatusBlocksFieldAgentOperationError } from '../../application/errors/project-status-blocks-operation';
 import { FieldAgent } from '../../domain/entities/field-agent';
 import { ProjectFieldAgent } from '../../domain/entities/project-field-agent';
+import { FieldAgentAuditOperation } from '../../domain/enums/field-agent-audit-operation.enum';
 import { ProjectFieldAgentStatus } from '../../domain/enums/project-field-agent-status.enum';
 import {
   FieldAgentAuditEntry,
@@ -74,6 +85,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     if (
       values.email &&
       (await this.fieldAgentRepo.exists({
+        withDeleted: true,
         where: { organizationId, email: values.email, ...(id ? { id } : {}) },
       }))
     )
@@ -81,6 +93,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     if (
       values.document &&
       (await this.fieldAgentRepo.exists({
+        withDeleted: true,
         where: {
           organizationId,
           document: values.document,
@@ -106,13 +119,24 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
       qb.andWhere('fieldAgent.status = :status', { status: params.status });
     }
     if (params.search) {
+      const digits = params.search.replace(/\D/g, '');
       qb.andWhere(
-        '(LOWER(fieldAgent.name) LIKE :term OR LOWER(fieldAgent.email) LIKE :term OR LOWER(fieldAgent.document) LIKE :term)',
-        { term: `%${params.search.toLowerCase()}%` },
+        "(LOWER(fieldAgent.name) LIKE :term OR LOWER(fieldAgent.email) LIKE :term OR fieldAgent.document LIKE :term OR fieldAgent.phone LIKE :term OR (:digits <> '' AND (fieldAgent.document LIKE :numeric OR fieldAgent.phone LIKE :numeric)))",
+        {
+          term: `%${params.search.toLowerCase()}%`,
+          digits,
+          numeric: `%${digits}%`,
+        },
       );
     }
-
-    qb.orderBy('fieldAgent.createdAt', 'DESC');
+    if (params.deleted)
+      qb.withDeleted().andWhere('fieldAgent.deletedAt IS NOT NULL');
+    if (params.excludeProjectId)
+      qb.andWhere(
+        'NOT EXISTS (SELECT 1 FROM project_field_agents link WHERE link.field_agent_id=fieldAgent.id AND link.project_id=:excludeProjectId AND link.organization_id=fieldAgent.organization_id AND link.status=:active)',
+        { excludeProjectId: params.excludeProjectId, active: 'active' },
+      );
+    qb.orderBy('fieldAgent.name', 'ASC').addOrderBy('fieldAgent.id', 'ASC');
     qb.skip((params.page - 1) * params.pageSize);
     qb.take(params.pageSize);
 
@@ -126,14 +150,34 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
   async listAssignments(
     params: ListProjectFieldAgentsParams,
   ): Promise<{ items: ProjectFieldAgent[]; total: number }> {
-    const qb = this.assignmentRepo.createQueryBuilder('assignment');
+    const qb = this.assignmentRepo
+      .createQueryBuilder('assignment')
+      .withDeleted();
+    if (params.organizationId)
+      qb.andWhere('assignment.organizationId = :organizationId', {
+        organizationId: params.organizationId,
+      });
+    if (params.search) {
+      qb.innerJoin(
+        FieldAgentEntity,
+        'agent',
+        'agent.id=assignment.fieldAgentId',
+      );
+      qb.andWhere(
+        '(LOWER(agent.name) LIKE :search OR LOWER(agent.email) LIKE :search)',
+        { search: `%${params.search.toLowerCase()}%` },
+      );
+    }
     qb.andWhere('assignment.projectId = :projectId', {
       projectId: params.projectId,
     });
     if (params.status) {
       qb.andWhere('assignment.status = :status', { status: params.status });
     }
-    qb.orderBy('assignment.createdAt', 'DESC');
+    qb.orderBy('assignment.createdAt', 'DESC').addOrderBy(
+      'assignment.id',
+      'DESC',
+    );
     qb.skip((params.page - 1) * params.pageSize);
     qb.take(params.pageSize);
 
@@ -149,9 +193,98 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     audit: FieldAgentAuditEntry,
   ): Promise<FieldAgent> {
     return this.fieldAgentRepo.manager.transaction(async (manager) => {
+      // Same access/user locks as organization transfer; no cross-tenant link can
+      // be created between its preflight and commit.
+      await lockAccessAdministration(manager);
+      if (fieldAgent.userId !== null) {
+        const user = await lockUser(manager, fieldAgent.userId);
+        const platform =
+          user &&
+          (await manager
+            .getRepository(UserRoleAssignmentEntity)
+            .createQueryBuilder('a')
+            .innerJoin(RoleEntity, 'r', 'r.id=a.roleId')
+            .where(
+              'a.userId=:id AND a.isActive=:active AND a.revokedAt IS NULL AND r.key=:key AND r.isActive=:active',
+              { id: user.id, active: true, key: UserRole.PLATFORM_ADMIN },
+            )
+            .getExists());
+        if (
+          !user ||
+          user.organizationId !== fieldAgent.organizationId ||
+          platform
+        )
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message:
+              'Selecione uma conta da mesma organização, sem perfil de plataforma.',
+          });
+        const duplicate = await manager.getRepository(FieldAgentEntity).exists({
+          where: {
+            userId: user.id,
+            ...(fieldAgent.id ? { id: Not(fieldAgent.id) } : {}),
+          },
+        });
+        if (duplicate)
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message:
+              'Esta conta já está associada a outro inventariante não excluído.',
+          });
+      }
       const repo = manager.getRepository(FieldAgentEntity);
       const auditRepo = manager.getRepository(FieldAgentAuditLogEntity);
-      const saved = await repo.save(this.toFieldAgentEntity(fieldAgent));
+      let entity = this.toFieldAgentEntity(fieldAgent);
+      if (fieldAgent.id > 0) {
+        const current = await repo.findOne({
+          where: {
+            id: fieldAgent.id,
+            organizationId: fieldAgent.organizationId,
+          },
+          withDeleted: true,
+          ...(manager.connection.options.type === 'mysql'
+            ? { lock: { mode: 'pessimistic_write' as const } }
+            : {}),
+        });
+        if (
+          !current ||
+          (current.deletedAt &&
+            audit.operation !== FieldAgentAuditOperation.RESTORE)
+        )
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message: 'O cadastro mudou. Atualize a página.',
+          });
+        const keys: Record<string, keyof FieldAgentEntity> = {
+          user_id: 'userId',
+          deleted_at: 'deletedAt',
+        };
+        for (const [key, change] of Object.entries(audit.changes)) {
+          const property = keys[key] ?? (key as keyof FieldAgentEntity);
+          if (
+            JSON.stringify(current[property]) !== JSON.stringify(change.before)
+          )
+            throw new ConflictException({
+              code: 'CONCURRENT_MODIFICATION',
+              message:
+                'O cadastro foi alterado por outro operador. Atualize a página.',
+            });
+        }
+        // Preserve unrelated concurrent fields rather than saving a stale row.
+        entity = Object.assign(
+          current,
+          Object.fromEntries(
+            Object.keys(audit.changes).map((key) => {
+              const property = keys[key] ?? key;
+              return [
+                property,
+                (entity as unknown as Record<string, unknown>)[property],
+              ];
+            }),
+          ),
+        );
+      }
+      const saved = await repo.save(entity);
 
       await auditRepo.save({
         organizationId: audit.organizationId,
@@ -160,7 +293,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         projectId: audit.projectId ?? null,
         operation: audit.operation,
         performedBy: audit.performedBy,
-        changes: audit.changes,
+        changes: fieldAgentAuditChanges(audit.changes),
       });
 
       return this.toFieldAgentDomain(saved);
@@ -179,6 +312,24 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
       );
       const repo = manager.getRepository(ProjectFieldAgentEntity);
       const auditRepo = manager.getRepository(FieldAgentAuditLogEntity);
+      const current = await repo.findOne({
+        where: {
+          id: assignment.id,
+          organizationId: assignment.organizationId,
+          projectId: assignment.projectId,
+        },
+        ...(manager.connection.options.type === 'mysql'
+          ? { lock: { mode: 'pessimistic_write' as const } }
+          : {}),
+      });
+      if (
+        !current ||
+        current.updatedAt.getTime() !== assignment.toProps().updatedAt.getTime()
+      )
+        throw new ConflictException({
+          code: 'CONCURRENT_MODIFICATION',
+          message: 'O vínculo mudou. Atualize a página.',
+        });
       const saved = await repo.save(this.toAssignmentEntity(assignment));
 
       await auditRepo.save({
@@ -188,7 +339,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         projectId: audit.projectId ?? saved.projectId,
         operation: audit.operation,
         performedBy: audit.performedBy,
-        changes: audit.changes,
+        changes: fieldAgentAuditChanges(audit.changes),
       });
 
       return this.toAssignmentDomain(saved);
@@ -206,18 +357,12 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         assignment.projectId,
       );
       if (assignment.status === ProjectFieldAgentStatus.ACTIVE) {
-        const fieldAgentRepo = manager.getRepository(FieldAgentEntity);
-        const lock =
-          manager.connection.options.type === 'mysql'
-            ? { mode: 'pessimistic_write' as const }
-            : undefined;
-        await fieldAgentRepo.findOne({
-          where: {
-            id: assignment.fieldAgentId,
-            organizationId: assignment.organizationId,
-          },
-          ...(lock ? { lock } : {}),
-        });
+        await requireOperationalAgent(
+          manager,
+          assignment.organizationId,
+          assignment.fieldAgentId,
+        );
+        assertAssignmentPeriod(assignment.startDate, assignment.endDate);
         const assignmentRepo = manager.getRepository(ProjectFieldAgentEntity);
         const duplicate = await assignmentRepo.count({
           where: {
@@ -233,6 +378,27 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
 
       const repo = manager.getRepository(ProjectFieldAgentEntity);
       const auditRepo = manager.getRepository(FieldAgentAuditLogEntity);
+      if (assignment.id) {
+        const current = await repo.findOne({
+          where: {
+            id: assignment.id,
+            organizationId: assignment.organizationId,
+            projectId: assignment.projectId,
+          },
+          ...(manager.connection.options.type === 'mysql'
+            ? { lock: { mode: 'pessimistic_write' as const } }
+            : {}),
+        });
+        if (
+          !current ||
+          current.updatedAt.getTime() !==
+            assignment.toProps().updatedAt.getTime()
+        )
+          throw new ConflictException({
+            code: 'CONCURRENT_MODIFICATION',
+            message: 'O vínculo mudou. Atualize a página.',
+          });
+      }
       const saved = await repo.save(this.toAssignmentEntity(assignment));
       await auditRepo.save({
         organizationId: audit.organizationId,
@@ -241,7 +407,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         projectId: audit.projectId ?? saved.projectId,
         operation: audit.operation,
         performedBy: audit.performedBy,
-        changes: audit.changes,
+        changes: fieldAgentAuditChanges(audit.changes),
       });
       return this.toAssignmentDomain(saved);
     });

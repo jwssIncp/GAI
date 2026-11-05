@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { UsersModule } from '../users/users.module';
+import { FieldAgentManagementService } from './application/services/field-agent-management.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
@@ -25,6 +27,7 @@ import { ProjectFieldAgentsController } from './presentation/project-field-agent
 
 @Module({
   imports: [
+    UsersModule,
     TypeOrmModule.forFeature([
       FieldAgentEntity,
       ProjectFieldAgentEntity,
@@ -37,6 +40,7 @@ import { ProjectFieldAgentsController } from './presentation/project-field-agent
   ],
   controllers: [FieldAgentsController, ProjectFieldAgentsController],
   providers: [
+    FieldAgentManagementService,
     FieldAgentScopeService,
     CreateFieldAgentUseCase,
     DeleteFieldAgentUseCase,

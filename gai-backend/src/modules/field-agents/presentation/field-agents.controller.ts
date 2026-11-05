@@ -48,6 +48,12 @@ import { ListFieldAgentsUseCase } from '../application/use-cases/list-field-agen
 import { UpdateFieldAgentStatusUseCase } from '../application/use-cases/update-field-agent-status.use-case';
 import { UpdateFieldAgentUseCase } from '../application/use-cases/update-field-agent.use-case';
 import { FieldAgentActorContext } from '../application/services/field-agent-scope.service';
+import { FieldAgentManagementService } from '../application/services/field-agent-management.service';
+import {
+  FieldAgentPageDto,
+  FieldAgentUserOptionsDto,
+  InviteFieldAgentUserDto,
+} from '../application/dto/field-agent-management.dto';
 
 interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser;
@@ -59,6 +65,7 @@ interface AuthenticatedRequest extends Request {
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class FieldAgentsController {
   constructor(
+    private readonly management: FieldAgentManagementService,
     private readonly createFieldAgent: CreateFieldAgentUseCase,
     private readonly deleteFieldAgent: DeleteFieldAgentUseCase,
     private readonly listFieldAgents: ListFieldAgentsUseCase,
@@ -66,6 +73,81 @@ export class FieldAgentsController {
     private readonly updateFieldAgent: UpdateFieldAgentUseCase,
     private readonly updateFieldAgentStatus: UpdateFieldAgentStatusUseCase,
   ) {}
+
+  @Get('context')
+  @RequirePermissions('field-agents:read')
+  context(@Req() req: AuthenticatedRequest) {
+    return this.management.context(this.toActor(req));
+  }
+
+  @Get('user-options')
+  @RequirePermissions('field-agents:read', 'users:read')
+  userOptions(
+    @Query() query: FieldAgentUserOptionsDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.userOptions(query, this.toActor(req));
+  }
+
+  @Get(':id/projects')
+  @RequirePermissions('field-agents:read', 'project-field-agents:read')
+  projects(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: FieldAgentPageDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.projects(id, query, this.toActor(req));
+  }
+
+  @Get(':id/record')
+  @RequirePermissions('field-agents:read')
+  historicalRecord(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.detail(id, this.toActor(req), true);
+  }
+
+  @Get(':id/history')
+  @RequirePermissions('field-agents:read')
+  history(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: FieldAgentPageDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.history(id, query, this.toActor(req));
+  }
+
+  @Post(':id/restore')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:reactivate')
+  restore(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.restore(id, this.toActor(req));
+  }
+
+  @Post(':id/invite')
+  @HttpCode(201)
+  @RequirePermissions('field-agents:update', 'users:write')
+  invite(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: InviteFieldAgentUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.invite(id, dto, this.toActor(req));
+  }
+
+  @Post(':id/resend-invitation')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:update', 'users:write')
+  resend(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.resend(id, this.toActor(req));
+  }
 
   @Post()
   @HttpCode(201)
@@ -113,7 +195,8 @@ export class FieldAgentsController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.getFieldAgent.execute(id, this.toActor(req));
+    await this.getFieldAgent.execute(id, this.toActor(req));
+    return this.management.detail(id, this.toActor(req));
   }
 
   @Patch(':id')

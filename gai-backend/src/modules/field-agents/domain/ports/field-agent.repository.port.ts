@@ -10,13 +10,17 @@ export interface ListFieldAgentsParams {
   organizationId?: number;
   status?: FieldAgentStatus;
   search?: string;
+  deleted?: boolean;
+  excludeProjectId?: number;
 }
 
 export interface ListProjectFieldAgentsParams {
+  organizationId?: number;
   page: number;
   pageSize: number;
   projectId: number;
   status?: ProjectFieldAgentStatus;
+  search?: string;
 }
 
 export interface FieldAgentAuditEntry {
