@@ -955,8 +955,8 @@ export type ExpenseAttachmentDownloadUrlResponse = {
 
 export type ImportSessionType = 'mobile_sync' | 'inventory_items_import' | 'accounting_items_import' | 'images_import' | 'raw_backup_import' | 'incremental_sync' | 'physical_observations_import';
 export type ImportSessionSource = 'mobile_app' | 'web_admin' | 'api_client' | 'system' | 'migration';
-export type ImportSessionStatus = 'open' | 'receiving' | 'processing' | 'finished' | 'failed' | 'cancelled' | 'expired';
-export type ImportPayloadStatus = 'received' | 'processing' | 'processed' | 'failed' | 'duplicated' | 'ignored';
+export type ImportSessionStatus = 'open' | 'receiving' | 'processing' | 'finished' | 'finished_with_errors' | 'failed' | 'cancelled' | 'expired';
+export type ImportPayloadStatus = 'received' | 'processing' | 'processed' | 'partially_processed' | 'failed' | 'duplicated' | 'ignored';
 export type ImportFileType = 'raw_payload' | 'raw_backup' | 'image' | 'other';
 export type ImportFileStatus = 'pending_upload' | 'uploaded' | 'processed' | 'failed' | 'removed';
 
