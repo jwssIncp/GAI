@@ -42,8 +42,19 @@ resource "aws_lb_listener" "http" {
   port              = 80
   protocol          = "HTTP"
 
+  # With origin enforcement only the listener rule (origin_protection.tf)
+  # forwards; anything without the CloudFront secret header gets 403.
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.backend.arn
+    type             = var.alb_enforce_origin_header ? "fixed-response" : "forward"
+    target_group_arn = var.alb_enforce_origin_header ? null : aws_lb_target_group.backend.arn
+
+    dynamic "fixed_response" {
+      for_each = var.alb_enforce_origin_header ? [1] : []
+      content {
+        content_type = "application/json"
+        message_body = jsonencode({ code = "FORBIDDEN", message = "Direct origin access is not allowed" })
+        status_code  = "403"
+      }
+    }
   }
 }

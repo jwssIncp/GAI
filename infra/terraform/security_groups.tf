@@ -9,6 +9,9 @@ resource "aws_security_group" "alb" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "alb_http_from_cloudfront" {
+  # Closed in step 2 of the HTTPS rollout (alb_https.tf).
+  count = var.alb_http_origin_enabled ? 1 : 0
+
   security_group_id = aws_security_group.alb.id
   description       = "HTTP from CloudFront"
   ip_protocol       = "tcp"

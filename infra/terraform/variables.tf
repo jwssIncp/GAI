@@ -74,7 +74,35 @@ variable "db_multi_az" {
 
 variable "db_backup_retention_days" {
   type    = number
-  default = 1
+  default = 7
+
+  validation {
+    condition     = var.db_backup_retention_days >= 7 || (var.environment != "production" && var.db_backup_retention_days >= 1)
+    error_message = "Automated RDS backups are mandatory (>= 1 day) and production keeps at least 7 days."
+  }
+}
+
+variable "alb_enforce_origin_header" {
+  type        = bool
+  description = "ALB forwards only requests carrying the CloudFront secret header (origin_protection.tf). Enable only after CloudFront already sends it."
+  default     = false
+}
+
+variable "origin_verify_active_slot" {
+  type        = string
+  description = "Origin secret slot CloudFront sends (a|b); the ALB accepts both. Rotation: replace the inactive slot, then switch (origin_protection.tf)."
+  default     = "a"
+
+  validation {
+    condition     = contains(["a", "b"], var.origin_verify_active_slot)
+    error_message = "origin_verify_active_slot must be \"a\" or \"b\"."
+  }
+}
+
+variable "mobile_retention_schedule_enabled" {
+  type        = bool
+  description = "Daily EventBridge Scheduler run of mobile:retention --apply (scheduler.tf). Enable after the first deploy registered the -release task definition."
+  default     = false
 }
 
 variable "db_username" {
@@ -171,6 +199,28 @@ variable "hosted_zone_id" {
   type        = string
   description = "Route53 hosted zone ID when domain_name is set"
   default     = ""
+}
+
+variable "api_origin_domain_name" {
+  type        = string
+  description = "Optional hostname for TLS between CloudFront and the ALB (e.g. api-origin.exemplo.com, in hosted_zone_id). Empty keeps the HTTP origin."
+  default     = ""
+
+  validation {
+    condition     = var.api_origin_domain_name == "" || var.hosted_zone_id != ""
+    error_message = "api_origin_domain_name requires hosted_zone_id (DNS validation and alias record)."
+  }
+}
+
+variable "alb_http_origin_enabled" {
+  type        = bool
+  description = "Keep ALB port 80 open to CloudFront. Set false only after the HTTPS origin is live (alb_https.tf)."
+  default     = true
+
+  validation {
+    condition     = var.alb_http_origin_enabled || var.api_origin_domain_name != ""
+    error_message = "Port 80 can only be closed when api_origin_domain_name enables the HTTPS origin."
+  }
 }
 
 variable "alert_email" {

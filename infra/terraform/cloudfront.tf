@@ -58,13 +58,22 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   origin {
-    domain_name = aws_lb.main.dns_name
+    # HTTPS to the ALB needs a hostname covered by the regional certificate
+    # (alb_https.tf); the ALB DNS name cannot hold an ACM certificate.
+    domain_name = local.api_origin_https ? var.api_origin_domain_name : aws_lb.main.dns_name
     origin_id   = "alb-api"
+
+    # Secret origin header (origin_protection.tf); enforced by the ALB when
+    # alb_enforce_origin_header = true.
+    custom_header {
+      name  = local.origin_verify_header
+      value = local.origin_verify_active
+    }
 
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "http-only"
+      origin_protocol_policy = local.api_origin_https ? "https-only" : "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
@@ -86,6 +95,11 @@ resource "aws_cloudfront_distribution" "main" {
     min_ttl     = 0
     default_ttl = 3600
     max_ttl     = 86400
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.spa_rewrite.arn
+    }
   }
 
   ordered_cache_behavior {
@@ -99,19 +113,9 @@ resource "aws_cloudfront_distribution" "main" {
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
   }
 
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
+  # No custom_error_response: it applies to every behavior, including /api/*,
+  # and turned API 403/404 into 200 + index.html. SPA fallback is done by the
+  # spa_rewrite function on the default behavior only.
 
   restrictions {
     geo_restriction {
@@ -130,7 +134,15 @@ resource "aws_cloudfront_distribution" "main" {
     Name = local.name_prefix
   }
 
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener.http, aws_lb_listener.https]
+}
+
+resource "aws_cloudfront_function" "spa_rewrite" {
+  name    = "${local.name_prefix}-spa-rewrite"
+  runtime = "cloudfront-js-2.0"
+  comment = "SPA fallback to /index.html for client routes (default behavior only)"
+  publish = true
+  code    = file("${path.module}/functions/spa-rewrite.js")
 }
 
 data "aws_cloudfront_cache_policy" "caching_disabled" {

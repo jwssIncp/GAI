@@ -100,6 +100,7 @@ resource "aws_ssm_parameter" "deploy" {
     frontend-bucket            = aws_s3_bucket.frontend.bucket
     assets-bucket              = aws_s3_bucket.assets.bucket
     cloudfront-distribution-id = aws_cloudfront_distribution.main.id
+    rds-instance-id            = aws_db_instance.main.identifier
   }
 
   name  = "${local.ssm_prefix}/deploy/${each.key}"
