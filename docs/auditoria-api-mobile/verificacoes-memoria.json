@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-09",
+  "mode": "Node + ts-node transpileOnly; codigo real com repositorios em memoria; sem HTTP, MySQL ou S3",
+  "tests": [
+    {
+      "name": "ID externo textual preservado e numero rejeitado",
+      "result": "PASS"
+    },
+    {
+      "name": "DTO de item permite status removed",
+      "result": "PASS"
+    },
+    {
+      "name": "Replay com conteudo diferente aceito sem checksum",
+      "result": "PASS"
+    },
+    {
+      "name": "Imagens importadas apenas referenciadas em metadata",
+      "result": "PASS"
+    },
+    {
+      "name": "Payload com falha termina processed e sessao finished",
+      "result": "PASS"
+    },
+    {
+      "name": "Perfil personalizado nao recebe filtro de projetos",
+      "result": "PASS"
+    }
+  ]
+}

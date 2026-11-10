@@ -1,0 +1,1219 @@
+openapi: 3.1.0
+info:
+  title: GAI — API Mobile (aplicativo Investor)
+  version: 1.0.0-rc.2
+  summary: 'Contrato das rotas mobile implementadas no backend GAI, para a migração do app Investor (Laravel → GAI).'
+  description: |
+    Revisão da especificação da Onda 4 (`docs/onda-4-homologacao-mobile/openapi.yaml`), conferida em 10/11/2026 (revisão 2, URL oficial na AWS)
+    contra controllers, DTOs, services e guards de `gai-backend/src/modules/mobile`. Os caminhos e métodos são
+    idênticos aos da Onda 4, que o teste `openapi-contract.e2e-spec.ts` compara com o roteador real nos dois sentidos.
+    Esta revisão corrige e detalha formatos de resposta, códigos de erro, limites e exemplos.
+
+    **Estado:** release candidate. Implementado e testado localmente (SQLite, MySQL 8 e S3 compatível).
+    A validação na AWS (homologação e produção) **ainda não foi feita**. Valores de exemplo são fictícios.
+
+    **Ambiente.** Produção (AWS/CloudFront, sem domínio próprio): `https://d1kanjou9wgm7q.cloudfront.net/api/v1`. A API usa o mesmo endereço do frontend,
+    no prefixo `/api/v1`. Health check: `GET /health`. Rotas autenticadas sem token retornam 401 JSON. Por causa do
+    fallback da SPA no CloudFront, uma rota inexistente ou com método errado pode responder 200 `text/html`: trate como erro.
+    Em 10/11/2026, as rotas `/mobile/*` ainda caíam nesse fallback, porque o módulo mobile ainda não tinha sido implantado.
+
+    **Autenticação.** Access token opaco (UUID, não é JWT) em `Authorization: Bearer <access_token>`.
+    Vale 15 min e **não** é renovado pelo uso. Renove com `POST /mobile/auth/refresh` (refresh token de uso único,
+    rotativo, validade de 14 dias desde a última rotação, limitada pela sessão absoluta de 30 dias).
+
+    **Autorização.** Toda rota com Bearer exige usuário ativo, organização ativa, inventariante vinculado **ativo**
+    e, nas rotas `/mobile/projects/{projectId}/...`, vínculo ativo e vigente com o projeto. A organização vem
+    sempre da sessão; IDs enviados pelo app nunca são prova de autorização. As permissões de cada operação estão
+    em `x-permissions` (todas exigidas). O perfil padrão de inventariante tem as de itens, fotos e reconciliação;
+    **despesas exigem permissões financeiras concedidas explicitamente** (`expenses:*`).
+
+    **Erros.** Corpo `{ code, message, details? }`. `message` é texto, ou lista de textos nos erros de validação de
+    campos (400 `VALIDATION_ERROR`). Decida pelo HTTP status + `code`, nunca pela mensagem.
+    Campo desconhecido no corpo ou na query gera 400. Limite global: 100 requisições/min por IP (configurável).
+servers:
+  - url: https://d1kanjou9wgm7q.cloudfront.net/api/v1
+    description: 'Produção (AWS/CloudFront). Endereço oficial enquanto não houver domínio próprio.'
+  - url: http://localhost:3000/api/v1
+    description: 'Desenvolvimento local (somente quem roda o backend na própria máquina).'
+security:
+  - bearerAuth: []
+tags:
+  - name: Sessão
+  - name: Itens
+  - name: Fotos
+  - name: Placas
+  - name: Despesas
+  - name: Reconciliação
+
+paths:
+  /mobile/auth/login:
+    post:
+      tags: [Sessão]
+      operationId: mobileLogin
+      summary: 'Login do aplicativo'
+      security: []
+      description: |
+        Limite 10/min por IP. 5 senhas erradas seguidas bloqueiam a conta por 30 min (423 `ACCOUNT_LOCKED`).
+        Credenciais inválidas ou conta indisponível: 401 `UNAUTHORIZED` (mensagem genérica, sem distinguir o motivo).
+        Conta sem inventariante ativo vinculado: 403 `MOBILE_ACCESS_DENIED` (nenhuma sessão é criada).
+        Se `user.must_change_password` vier `true`, o app deve abrir a troca de senha antes de qualquer outra chamada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MobileLoginRequest' }
+            example: { identifier: tecnico.campo, password: '<senha>', device_label: Galaxy A14 }
+      responses:
+        '200': { $ref: '#/components/responses/Tokens' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '423': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /mobile/auth/refresh:
+    post:
+      tags: [Sessão]
+      operationId: mobileRefresh
+      summary: 'Renovar a sessão (rotação do refresh token)'
+      security: []
+      description: |
+        Refresh token de uso único. O 200 traz um par novo e revoga o access token anterior. Limite 30/min por IP.
+        - 409 `REFRESH_TOKEN_ALREADY_ROTATED`: o mesmo token foi usado há menos de 30 s (requisição duplicada). Use o par recebido na outra resposta; se perdido, faça login.
+        - 401 `REFRESH_TOKEN_REUSED`: reuso após 30 s; a sessão inteira foi revogada (possível roubo). Novo login.
+        - 401 `SESSION_EXPIRED`, `SESSION_REVOKED` ou `INVALID_REFRESH_TOKEN`: novo login.
+        - 403 `MOBILE_ACCESS_DENIED`: inventariante bloqueado ou inativo.
+        - 423 `ACCOUNT_LOCKED`: conta bloqueada temporariamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshTokenRequest' }
+            example: { refresh_token: gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl }
+      responses:
+        '200': { $ref: '#/components/responses/Tokens' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '423': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /mobile/auth/logout:
+    post:
+      tags: [Sessão]
+      operationId: mobileLogout
+      summary: 'Encerrar a sessão do aparelho (idempotente)'
+      security: []
+      description: 'Revoga o refresh token e o access token da família. Responde 204 inclusive para token desconhecido ou já revogado. Limite 30/min por IP.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshTokenRequest' }
+      responses:
+        '204': { description: Sessão encerrada (também para token desconhecido). }
+        '400': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /auth/password/change:
+    post:
+      tags: [Sessão]
+      operationId: changePassword
+      summary: 'Trocar a senha (obrigatório quando `must_change_password` = true)'
+      description: |
+        Rota compartilhada com a web; usa o Bearer do app. Enquanto `must_change_password` for true, as rotas `/mobile/me`
+        e `/mobile/projects/...` respondem 403 `PASSWORD_CHANGE_REQUIRED`. A troca revoga **todas** as sessões do usuário:
+        apague os tokens e faça login de novo com a senha nova. Senha temporária vencida: 401 (peça nova senha ao administrador).
+        Limite 5/min.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [current_password, new_password]
+              properties:
+                current_password: { type: string, minLength: 1, maxLength: 256 }
+                new_password: { type: string, minLength: 8, maxLength: 128, description: 'Diferente da atual; espaços e frases são aceitos.' }
+            example: { current_password: '<senha temporária>', new_password: '<nova senha>' }
+      responses:
+        '200':
+          description: 'Senha alterada.'
+          content:
+            application/json:
+              schema: { type: object, properties: { message: { type: string } } }
+              example: { message: Senha alterada. Entre novamente para continuar. }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+  /mobile/me:
+    get:
+      tags: [Sessão]
+      operationId: mobileMe
+      summary: 'Usuário, inventariante, organização, projetos vigentes e permissões'
+      description: 'Substitui `user.projects` do login legado e o `GET /gai/projects`. Lista só projetos com vínculo ativo e vigente e status `draft`, `active` ou `paused`.'
+      responses:
+        '200':
+          description: 'Identidade operacional.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MobileMe' }
+              example:
+                user: { id: 29, full_name: João Pedro, login: tecnico.campo, email: tecnico@empresa.com, must_change_password: false }
+                organization: { id: 3, name: Empresa Exemplo }
+                field_agent: { id: 12, name: João Pedro, status: active }
+                projects:
+                  - id: 97
+                    name: TESTE 3 - 2026
+                    code: P-097
+                    status: active
+                    assignment: { id: 40, role: Técnico, start_date: '2026-10-01', end_date: null }
+                permissions: [projects:read, inventory-items:read, inventory-items:create, inventory-items:update, inventory-items:deactivate, inventory-item-images:read, inventory-item-images:create, inventory-item-images:update, inventory-item-images:download, inventory-item-images:remove, import-sessions:create, import-sessions:read, import-sessions:finish, import-files:create, import-payloads:create, import-errors:read]
+                session: { client_type: mobile, expires_at: '2026-11-10T13:15:00.000Z' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /mobile/projects/{projectId}/items:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      tags: [Itens]
+      operationId: listItems
+      summary: 'Listar itens do projeto (paginação por página, ordem por id)'
+      x-permissions: [inventory-items:read]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+        - { name: new_plate, in: query, description: Igualdade exata após normalização da placa., schema: { type: string, maxLength: 100 } }
+        - { name: old_plate, in: query, description: Busca em placa antiga e placa antiga 2 (igualdade após normalização)., schema: { type: string, maxLength: 100 } }
+        - { name: search, in: query, description: 'Contém, em descrição, placas e external_item_id.', schema: { type: string, maxLength: 100 } }
+        - { name: include_deleted, in: query, schema: { type: string, enum: ['true', 'false'], default: 'false' } }
+      responses:
+        '200':
+          description: 'Página de itens.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    properties:
+                      items: { type: array, items: { $ref: '#/components/schemas/Item' } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/items/sync:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      tags: [Itens]
+      operationId: syncItems
+      summary: 'Sincronização incremental por cursor'
+      x-permissions: [inventory-items:read]
+      description: |
+        Ordenado por (`version`, `id`). Inclui itens excluídos (`deleted: true`), itens sem `external_item_id` (criados pela
+        web ou legado — somente leitura no app) e alterações feitas pela web, pela importação e por fotos. Sem cursor:
+        desde o início. Salve `next_cursor` depois de processar cada página; repita enquanto `has_more = true`.
+        O cursor é opaco, vinculado ao projeto e pode ser reutilizado após falhas. Um item alterado durante a paginação
+        reaparece depois com versão maior. Cursor de outro projeto ou corrompido: 400 `INVALID_CURSOR` (recomece sem cursor).
+      parameters:
+        - { name: cursor, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 200 } }
+      responses:
+        '200':
+          description: 'Página de alterações.'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, next_cursor, has_more, server_time]
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Item' } }
+                  next_cursor: { type: string }
+                  has_more: { type: boolean }
+                  server_time: { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/items/{externalId}:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/ExternalId' }
+    get:
+      tags: [Itens]
+      operationId: getItem
+      summary: 'Consultar um item (inclusive excluído) com fotos ativas'
+      x-permissions: [inventory-items:read]
+      responses:
+        '200': { description: Item., content: { application/json: { schema: { $ref: '#/components/schemas/Item' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    put:
+      tags: [Itens]
+      operationId: upsertItem
+      summary: 'Criar ou atualizar (idempotente, com controle de versão)'
+      x-permissions: [inventory-items:create, inventory-items:update]
+      description: |
+        - Item inexistente: cria (201 `created`). Omita `base_version` (enviar um valor > 0 para item inexistente gera 404 `ITEM_NOT_FOUND`).
+        - Corpo sem diferença em relação ao servidor: 200 `unchanged`, mesmo sem `base_version` (reenvio seguro após timeout).
+        - Com diferença: exige `base_version` = `version` atual → 200 `updated`; caso contrário 409 `VERSION_CONFLICT` com o item atual em `details.item`.
+        - Item excluído: 409 `ITEM_DELETED` com o item em `details.item` (o app não reativa itens).
+        - Projeto fora de `draft`/`active`/`paused`: 409 `PROJECT_STATUS_BLOCKS_OPERATION`.
+        - Campo ausente mantém o valor; `null` limpa; texto vazio ou só espaços também limpa. `year` e valores não aceitam `""` (envie `null`).
+        - Placas: maiúsculas e só `[A-Z0-9]` (`"ab-12"` → `"AB12"`). Textos: espaços das pontas removidos.
+        - `extra_fields`: entradas com valor `null` ou vazio são descartadas; enviar o objeto substitui o conjunto inteiro.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ItemUpsert' }
+            examples:
+              criar:
+                value: { new_plate: '251', old_plate: '12345', unit_text: SEDE, address_text: 'Rua X, 100', location_text: RECEPÇÃO, description: CADEIRA GIRATÓRIA, year: 2019, used_value: '150.00', extra_fields: { Patrimônio: '123', Setor: TI } }
+              editar:
+                value: { base_version: 1843, location_text: SALA 2, old_plate_2: '998877' }
+      responses:
+        '201': { $ref: '#/components/responses/ItemWrite' }
+        '200': { $ref: '#/components/responses/ItemWrite' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+    delete:
+      tags: [Itens]
+      operationId: deleteItem
+      summary: 'Exclusão lógica idempotente'
+      x-permissions: [inventory-items:deactivate]
+      description: '200 `deleted` ou `already_deleted`. 404 `ITEM_NOT_FOUND` = o item nunca chegou ao servidor (trate como concluído). `base_version` é opcional; se enviado e diferente da versão atual, 409 `VERSION_CONFLICT`.'
+      parameters:
+        - { name: base_version, in: query, schema: { type: integer, minimum: 0 } }
+      responses:
+        '200': { $ref: '#/components/responses/ItemWrite' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /mobile/projects/{projectId}/items/{externalId}/images:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/ExternalId' }
+    get:
+      tags: [Fotos]
+      operationId: listItemImages
+      summary: 'Fotos do item com URL de visualização assinada (temporária)'
+      x-permissions: [inventory-item-images:read, inventory-item-images:download]
+      description: '`download_url` só para fotos `uploaded`; expira em `expires_in_seconds` (300 s por padrão). Não armazene a URL.'
+      parameters:
+        - { name: with_urls, in: query, schema: { type: string, enum: ['true', 'false'], default: 'true' } }
+      responses:
+        '200':
+          description: 'Fotos.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item_version: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      allOf:
+                        - { $ref: '#/components/schemas/ItemImage' }
+                        - type: object
+                          properties:
+                            download_url: { type: [string, 'null'], format: uri }
+                            expires_in_seconds: { type: [integer, 'null'] }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/items/{externalId}/images/upload-url:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/ExternalId' }
+    post:
+      tags: [Fotos]
+      operationId: requestItemImageUpload
+      summary: 'Passo 1 do upload de foto (URL pré-assinada)'
+      x-permissions: [inventory-item-images:create]
+      description: |
+        JPEG, PNG ou WEBP até 10 MiB (10.485.760 bytes); até 3 fotos ativas por item (409 `CONFLICT` ao exceder).
+        O item precisa existir no servidor (404 `ITEM_NOT_FOUND`) e não estar excluído (409 `ITEM_DELETED`).
+        Depois faça `PUT upload_url` com exatamente `upload_headers` e confirme dentro de `expires_in_seconds` (300 s).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UploadRequest' }
+            example: { original_name: foto_1.jpg, mime_type: image/jpeg, size_bytes: 214733 }
+      responses:
+        '201':
+          description: 'URL de upload.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  image: { $ref: '#/components/schemas/ItemImageRecord' }
+                  upload_url: { type: string, format: uri }
+                  upload_headers: { $ref: '#/components/schemas/UploadHeaders' }
+                  expires_in_seconds: { type: integer, examples: [300] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/items/{externalId}/images/{imageId}/confirm-upload:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/ExternalId' }
+      - { name: imageId, in: path, required: true, schema: { type: integer } }
+    post:
+      tags: [Fotos]
+      operationId: confirmItemImage
+      summary: 'Passo 3 do upload (verificação no servidor, idempotente)'
+      x-permissions: [inventory-item-images:update]
+      description: |
+        O servidor confere existência, tamanho, tipo, SHA-256 e assinatura do arquivo. Use `item_version` como nova `base_version`.
+        410 `STORAGE_UPLOAD_EXPIRED` = janela expirada (peça nova URL). 409 `STORAGE_SIZE_MISMATCH`, `STORAGE_MIME_MISMATCH`,
+        `STORAGE_CHECKSUM_MISMATCH` ou `STORAGE_CONTENT_MISMATCH` = arquivo diferente do declarado.
+        404 `STORAGE_OBJECT_NOT_FOUND` = o PUT não chegou ao storage. 503 `STORAGE_UNAVAILABLE` = repita com backoff.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmRequest' }
+            example: {}
+      responses:
+        '200':
+          description: 'Confirmada.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result: { type: string, enum: [confirmed, already_confirmed] }
+                  image: { $ref: '#/components/schemas/ItemImageRecord' }
+                  item_version: { type: integer }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/items/{externalId}/images/{imageId}:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/ExternalId' }
+      - { name: imageId, in: path, required: true, schema: { type: integer } }
+    delete:
+      tags: [Fotos]
+      operationId: removeItemImage
+      summary: 'Remover foto (idempotente)'
+      x-permissions: [inventory-item-images:remove]
+      responses:
+        '200':
+          description: 'Removida.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result: { type: string, enum: [removed, already_removed] }
+                  item_version: { type: integer }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /mobile/projects/{projectId}/plates/check:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      tags: [Placas]
+      operationId: checkPlate
+      summary: 'A placa já existe no projeto? (somente leitura)'
+      x-permissions: [inventory-items:read]
+      description: 'Considera apenas itens ativos (não excluídos). `kind=old` procura em placa antiga e placa antiga 2; `any` procura nas três. Retorna no máximo 20 itens. Placa sem letras ou números: 400 `VALIDATION_ERROR`.'
+      parameters:
+        - { name: plate, in: query, required: true, schema: { type: string, maxLength: 100 } }
+        - { name: kind, in: query, schema: { type: string, enum: [new, old, any], default: any } }
+        - { name: exclude_external_id, in: query, description: Item em edição (não conta como duplicata)., schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$' } }
+      responses:
+        '200':
+          description: 'Resultado.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plate: { type: string, description: Placa normalizada }
+                  kind: { type: string, enum: [new, old, any] }
+                  exists: { type: boolean }
+                  matches:
+                    type: array
+                    maxItems: 20
+                    items:
+                      allOf:
+                        - { $ref: '#/components/schemas/PlateItem' }
+                        - type: object
+                          properties:
+                            matched_fields: { type: array, items: { type: string, enum: [new_plate, old_plate, old_plate_2] } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/plates/report:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      tags: [Placas]
+      operationId: plateReport
+      summary: 'Pendências — placas faltantes e duplicadas (somente leitura)'
+      x-permissions: [inventory-items:read]
+      description: |
+        Considera todos os itens ativos do projeto, de todos os aparelhos e da web. Faltantes = números ausentes entre `from`
+        e `to` (padrão: menor e maior placa nova numérica). Placas não numéricas não entram nas faltantes. Faixa
+        invertida ou maior que 1.000.000: 400 `PLATE_RANGE_INVALID`.
+      parameters:
+        - { name: from, in: query, schema: { type: integer, minimum: 0 } }
+        - { name: to, in: query, schema: { type: integer, minimum: 0 } }
+      responses:
+        '200':
+          description: 'Relatório.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlateReport' }
+              example:
+                project_id: 97
+                generated_at: '2026-11-10T13:00:00.000Z'
+                totals: { items: 10, with_new_plate: 10, numeric_new_plates: 8, non_numeric_new_plates: 1 }
+                missing_new_plates: { from: 1, to: 12, count: 5, ranges: ['4', '6-8', '11'] }
+                duplicated_new_plates:
+                  - plate: '251'
+                    items:
+                      - { id: 5012, external_item_id: '1730736000123456', version: 1843, new_plate: '251', old_plate: '12345', old_plate_2: null, unit_text: SEDE, location_text: RECEPÇÃO, description: CADEIRA GIRATÓRIA, technician: { user_id: 29, name: João Pedro, field_agent_id: 12 }, created_at: '2026-10-28T13:00:00.000Z' }
+                      - { id: 5100, external_item_id: '1730736000999999', version: 1901, new_plate: '251', old_plate: null, old_plate_2: null, unit_text: SEDE, location_text: COPA, description: MESA, technician: { user_id: 31, name: Maria Souza, field_agent_id: 14 }, created_at: '2026-10-29T12:00:00.000Z' }
+                duplicated_old_plates: []
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /mobile/projects/{projectId}/expenses:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    post:
+      tags: [Despesas]
+      operationId: createExpense
+      summary: 'Registrar despesa do próprio inventariante (idempotente)'
+      x-permissions: [expenses:create]
+      description: |
+        201 `created`; 200 `existing` para o mesmo `client_expense_id` com os mesmos dados.
+        409 `IDEMPOTENCY_KEY_REUSED` (mesma chave, dados diferentes), `REQUEST_IN_PROGRESS` (a mesma despesa ainda está sendo
+        gravada; repita em instantes), `FIELD_AGENT_INELIGIBLE` (inventariante inativo) ou `CONFLICT` (repita).
+        O inventariante vem da sessão; `field_agent_id` no corpo gera 400. A despesa nasce `pending`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExpenseCreate' }
+            example: { client_expense_id: exp-1730736000123456, description: Combustível, reason: Deslocamento, expense_date: '2026-11-08', amount: '120.50' }
+      responses:
+        '201': { $ref: '#/components/responses/ExpenseWrite' }
+        '200': { $ref: '#/components/responses/ExpenseWrite' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+    get:
+      tags: [Despesas]
+      operationId: listExpenses
+      summary: 'Despesas do próprio inventariante neste projeto'
+      x-permissions: [expenses:read]
+      description: '`expenses:read` não faz parte do perfil padrão de campo nem aparece em `/mobile/me`; sem ela a rota responde 403.'
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        '200':
+          description: 'Página.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    properties:
+                      items: { type: array, items: { $ref: '#/components/schemas/Expense' } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/expenses/{expenseId}/attachments/upload-url:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { name: expenseId, in: path, required: true, schema: { type: integer } }
+    post:
+      tags: [Despesas]
+      operationId: requestExpenseAttachment
+      summary: 'URL pré-assinada para o comprovante (até 20 MiB)'
+      x-permissions: [expenses:upload-attachment]
+      description: |
+        Limite de 20 MiB (20.971.520 bytes) → acima disso, 400 `STORAGE_INVALID_SIZE`. Tipos aceitos pelo storage:
+        recomendados `image/jpeg`, `image/png`, `image/webp` ou `application/pdf` (outro tipo: 400 `STORAGE_UNSUPPORTED_MIME`).
+        Despesa de outro inventariante: 404 `NOT_FOUND`. Janela de upload: 300 s.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [original_name, mime_type, size_bytes]
+              properties:
+                original_name: { type: string }
+                mime_type: { type: string, examples: [image/jpeg] }
+                size_bytes: { type: integer, minimum: 1, maximum: 20971520 }
+                checksum: { type: [string, 'null'], description: SHA-256 em hexadecimal (opcional) }
+            example: { original_name: nota_combustivel.jpg, mime_type: image/jpeg, size_bytes: 183402 }
+      responses:
+        '201':
+          description: 'URL de upload.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attachment: { $ref: '#/components/schemas/ExpenseAttachment' }
+                  upload_url: { type: string, format: uri }
+                  upload_headers: { $ref: '#/components/schemas/UploadHeaders' }
+                  expires_in_seconds: { type: integer, examples: [300] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/expenses/{expenseId}/attachments/{attachmentId}/confirm-upload:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { name: expenseId, in: path, required: true, schema: { type: integer } }
+      - { name: attachmentId, in: path, required: true, schema: { type: integer } }
+    post:
+      tags: [Despesas]
+      operationId: confirmExpenseAttachment
+      summary: 'Confirmar o comprovante (idempotente)'
+      x-permissions: [expenses:upload-attachment]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                size_bytes: { type: [integer, 'null'], minimum: 1 }
+                checksum: { type: [string, 'null'] }
+            example: {}
+      responses:
+        '200':
+          description: 'Confirmado.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result: { type: string, enum: [confirmed, already_confirmed] }
+                  attachment: { $ref: '#/components/schemas/ExpenseAttachment' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+
+  /mobile/projects/{projectId}/import-sessions:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    post:
+      tags: [Reconciliação]
+      operationId: createImportSession
+      summary: 'Abrir sessão de reconciliação (expira em 7 dias)'
+      x-permissions: [import-sessions:create]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                unidade: { type: string, maxLength: 255 }
+                expected_payloads: { type: integer, minimum: 1, maximum: 1000 }
+                device_label: { type: string, maxLength: 100 }
+            example: { unidade: SEDE, expected_payloads: 3, device_label: Galaxy A14 }
+      responses:
+        '201': { description: Sessão criada (status `open`)., content: { application/json: { schema: { $ref: '#/components/schemas/ImportSessionStatus' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+    get:
+      tags: [Reconciliação]
+      operationId: getImportSession
+      summary: 'Situação e contadores da sessão'
+      x-permissions: [import-sessions:read]
+      description: 'Somente sessões abertas pela própria conta neste projeto (404 para as demais).'
+      responses:
+        '200': { description: Situação., content: { application/json: { schema: { $ref: '#/components/schemas/ImportSessionStatus' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}/files/upload-url:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+    post:
+      tags: [Reconciliação]
+      operationId: requestImportFile
+      summary: 'URL pré-assinada para foto (image) ou backup (raw_backup)'
+      x-permissions: [import-files:create]
+      description: |
+        `image`: JPEG/PNG/WEBP até 10 MiB, janela de 300 s.
+        `raw_backup`: `application/zip` (ou `application/json`) até 100 MiB (104.857.600 bytes), janela de 1800 s.
+        Tipo ou tamanho fora da regra: 400 `INVALID_IMPORT_FILE`. Sessão encerrada ou expirada: 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [type, original_name, mime_type, size_bytes]
+              properties:
+                type: { type: string, enum: [image, raw_backup] }
+                original_name: { type: string, minLength: 1, maxLength: 255 }
+                mime_type: { type: string, maxLength: 100 }
+                size_bytes: { type: integer, minimum: 1 }
+            examples:
+              foto: { value: { type: image, original_name: foto_1.jpg, mime_type: image/jpeg, size_bytes: 201544 } }
+              backup: { value: { type: raw_backup, original_name: backup-sessao.zip, mime_type: application/zip, size_bytes: 73400320 } }
+      responses:
+        '201':
+          description: 'URL de upload.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file_id: { type: integer }
+                  type: { type: string, enum: [image, raw_backup] }
+                  status: { type: string, examples: [pending_upload] }
+                  upload_url: { type: string, format: uri }
+                  upload_headers: { $ref: '#/components/schemas/UploadHeaders' }
+                  expires_in_seconds: { type: integer, examples: [300, 1800] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}/files/{fileId}/confirm-upload:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+      - { name: fileId, in: path, required: true, schema: { type: integer } }
+    post:
+      tags: [Reconciliação]
+      operationId: confirmImportFile
+      summary: 'Confirmar arquivo da sessão (verificação no servidor, idempotente)'
+      x-permissions: [import-files:create]
+      description: 'Arquivo já confirmado responde 200 com `status` `uploaded`. Mesmos erros de storage da confirmação de foto (409 `STORAGE_*_MISMATCH`, 410 `STORAGE_UPLOAD_EXPIRED`). Backup confirmado faz `backup_uploaded = true` na sessão.'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConfirmRequest' }
+            example: {}
+      responses:
+        '200':
+          description: 'Verificado.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file_id: { type: integer }
+                  type: { type: string }
+                  status: { type: string, enum: [uploaded, processed] }
+                  size_bytes: { type: integer }
+                  checksum: { type: [string, 'null'] }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '410': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}/payloads:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+    post:
+      tags: [Reconciliação]
+      operationId: sendImportPayload
+      summary: 'Enviar lote de itens (idempotente por número, chave e conteúdo)'
+      x-permissions: [import-payloads:create]
+      description: |
+        Até 1000 itens. Cada item é aplicado de forma isolada: falhas viram erros da linha, sem escrita parcial do item.
+        Reenviar o mesmo lote devolve o mesmo resultado; mesmo número/chave com conteúdo diferente: 409 `PAYLOAD_IDEMPOTENCY_CONFLICT`.
+        `images[].file_id` deve ser arquivo desta sessão (senão 400 `INVALID_IMAGE_FILE` no lote inteiro); imagem não confirmada
+        vira erro da linha. Itens excluídos não são alterados nem reativados. `null` limpa campos (mesma regra do PUT).
+        `base_version` não é aceito no lote (400). Sessão expirada: 409 `IMPORT_SESSION_EXPIRED`; encerrada: 409 `IMPORT_SESSION_TERMINAL`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportPayload' }
+      responses:
+        '201':
+          description: 'Lote processado.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payload_number: { type: integer }
+                  status: { type: string, enum: [processed, partially_processed, failed, processing] }
+                  items_count: { type: integer }
+                  created_count: { type: integer }
+                  updated_count: { type: integer }
+                  deleted_count: { type: integer }
+                  failed_count: { type: integer }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}/finish:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+    post:
+      tags: [Reconciliação]
+      operationId: finishImportSession
+      summary: 'Encerrar a sessão'
+      x-permissions: [import-sessions:finish]
+      description: |
+        Sem corpo (ou `{}`). Resultado em `status`: `finished`, `finished_with_errors` ou `failed`.
+        409 `CONFLICT` (faltam lotes esperados), `IMPORT_PAYLOAD_PROCESSING` (lote em processamento) ou
+        `IMPORT_SESSION_TERMINAL` / `IMPORT_SESSION_EXPIRED` (sessão já encerrada ou expirada).
+      responses:
+        '200': { description: Sessão encerrada., content: { application/json: { schema: { $ref: '#/components/schemas/ImportSessionStatus' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /mobile/projects/{projectId}/import-sessions/{uuid}/errors:
+    parameters:
+      - { $ref: '#/components/parameters/ProjectId' }
+      - { $ref: '#/components/parameters/SessionUuid' }
+    get:
+      tags: [Reconciliação]
+      operationId: listImportErrors
+      summary: 'Erros por linha da sessão (paginado)'
+      x-permissions: [import-errors:read]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: page_size, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 100 } }
+      responses:
+        '200':
+          description: 'Erros por linha.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Page'
+                  - type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            payload_number: { type: [integer, 'null'] }
+                            row_number: { type: [integer, 'null'] }
+                            item_id: { type: [string, 'null'], description: external_item_id do item com erro }
+                            error_code: { type: string }
+                            error_message: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Access token opaco (UUID) obtido em login/refresh. Não decodifique; use `access_token_expires_at`.'
+  parameters:
+    ProjectId: { name: projectId, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    ExternalId:
+      name: externalId
+      in: path
+      required: true
+      description: 'ID gerado no aparelho, sempre texto (ex. "1730736000123456"); zeros à esquerda preservados.'
+      schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$' }
+    SessionUuid: { name: uuid, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error:
+      description: 'Erro padronizado.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Tokens:
+      description: 'Novo par de tokens.'
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Tokens' }
+          example:
+            token_type: Bearer
+            access_token: 00000000-0000-4000-8000-000000000000
+            access_token_expires_at: '2026-11-10T13:15:00.000Z'
+            refresh_token: gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl
+            refresh_token_expires_at: '2026-11-24T13:00:00.000Z'
+            session_expires_at: '2026-12-10T13:00:00.000Z'
+            user: { id: 29, full_name: João Pedro, must_change_password: false }
+    ItemWrite:
+      description: 'Resultado da escrita.'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result: { type: string, enum: [created, updated, unchanged, deleted, already_deleted] }
+              item: { $ref: '#/components/schemas/Item' }
+    ExpenseWrite:
+      description: 'Despesa.'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result: { type: string, enum: [created, existing] }
+              expense: { $ref: '#/components/schemas/Expense' }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, examples: [VERSION_CONFLICT] }
+        message:
+          oneOf:
+            - { type: string }
+            - { type: array, items: { type: string }, description: Lista de violações (validação de campos). }
+        details: { description: 'Ex.: `{ item }` no 409 `VERSION_CONFLICT` e `ITEM_DELETED`.' }
+    Page:
+      type: object
+      properties:
+        page: { type: integer }
+        page_size: { type: integer }
+        total_items: { type: integer }
+        total_pages: { type: integer }
+    MobileLoginRequest:
+      type: object
+      additionalProperties: false
+      required: [identifier, password]
+      properties:
+        identifier: { type: string, minLength: 1, maxLength: 255, description: E-mail ou login }
+        password: { type: string, minLength: 8, maxLength: 256 }
+        device_label: { type: string, maxLength: 100, description: Rótulo informativo do aparelho }
+    RefreshTokenRequest:
+      type: object
+      additionalProperties: false
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, minLength: 47, maxLength: 47, pattern: '^gmr_[A-Za-z0-9_-]{43}$' }
+    Tokens:
+      type: object
+      properties:
+        token_type: { const: Bearer }
+        access_token: { type: string, format: uuid }
+        access_token_expires_at: { type: string, format: date-time }
+        refresh_token: { type: string }
+        refresh_token_expires_at: { type: string, format: date-time }
+        session_expires_at: { type: string, format: date-time, description: Limite absoluto; depois disso, novo login. }
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            full_name: { type: [string, 'null'] }
+            must_change_password: { type: boolean }
+    MobileMe:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id: { type: integer }
+            full_name: { type: [string, 'null'] }
+            login: { type: string }
+            email: { type: string }
+            must_change_password: { type: boolean }
+        organization: { type: object, properties: { id: { type: integer }, name: { type: string } } }
+        field_agent: { type: object, properties: { id: { type: integer }, name: { type: string }, status: { type: string } } }
+        projects:
+          type: array
+          description: 'Projetos com vínculo ativo e vigente, em status draft/active/paused.'
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              code: { type: [string, 'null'] }
+              status: { type: string, enum: [draft, active, paused] }
+              assignment:
+                type: object
+                properties:
+                  id: { type: integer }
+                  role: { type: [string, 'null'] }
+                  start_date: { type: [string, 'null'], format: date }
+                  end_date: { type: [string, 'null'], format: date }
+        permissions:
+          type: array
+          description: 'Permissões relevantes ao app que a conta possui (subconjunto do perfil). Use para mostrar/ocultar funções.'
+          items: { type: string }
+        session:
+          type: object
+          properties:
+            client_type: { type: string, examples: [mobile] }
+            expires_at: { type: string, format: date-time, description: Expiração do access token atual. }
+    ItemUpsert:
+      type: object
+      additionalProperties: false
+      properties:
+        base_version: { type: [integer, 'null'], minimum: 0, description: '`version` conhecida pelo aparelho; obrigatória para alterar.' }
+        sequence: { type: [string, 'null'], maxLength: 50 }
+        old_plate: { type: [string, 'null'], maxLength: 100 }
+        old_plate_2: { type: [string, 'null'], maxLength: 100, description: Legado placa_antiga_2 }
+        new_plate: { type: [string, 'null'], maxLength: 100 }
+        unit_text: { type: [string, 'null'], maxLength: 255 }
+        address_text: { type: [string, 'null'], maxLength: 2000 }
+        location_text: { type: [string, 'null'], maxLength: 2000 }
+        description: '{ type: [string, ''null''], maxLength: 4000 }'
+        brand: { type: [string, 'null'], maxLength: 100 }
+        model: { type: [string, 'null'], maxLength: 100 }
+        serial_number: { type: [string, 'null'], maxLength: 100 }
+        capacity: { type: [string, 'null'], maxLength: 100 }
+        year: { type: [integer, 'null'], minimum: 1900, maximum: 2100 }
+        notes: { type: [string, 'null'], maxLength: 4000 }
+        used_value: { type: [string, 'null'], pattern: '^\d{1,13}(\.\d{1,2})?$' }
+        new_value: { type: [string, 'null'], pattern: '^\d{1,13}(\.\d{1,2})?$' }
+        extra_fields:
+          type: [object, 'null']
+          maxProperties: 100
+          description: 'Nome ≤ 100 caracteres, valor ≤ 1000 caracteres.'
+          additionalProperties: { type: [string, 'null'], maxLength: 1000 }
+    Item:
+      type: object
+      properties:
+        id: { type: integer, description: ID interno do GAI (não use como chave local). }
+        external_item_id: { type: [string, 'null'], description: 'null = item da web/legado, somente leitura no app.' }
+        version: { type: integer, description: Use como base_version. }
+        sequence: { type: [string, 'null'] }
+        old_plate: { type: [string, 'null'] }
+        old_plate_2: { type: [string, 'null'] }
+        new_plate: { type: [string, 'null'] }
+        unit_text: { type: [string, 'null'] }
+        address_text: { type: [string, 'null'] }
+        location_text: { type: [string, 'null'] }
+        description: '{ type: [string, ''null''] }'
+        brand: { type: [string, 'null'] }
+        model: { type: [string, 'null'] }
+        serial_number: { type: [string, 'null'] }
+        capacity: { type: [string, 'null'] }
+        year: { type: [integer, 'null'] }
+        notes: { type: [string, 'null'] }
+        source: { type: [string, 'null'], examples: [mobile_app] }
+        used_value: { type: [string, 'null'], examples: ['150.00'] }
+        new_value: { type: [string, 'null'] }
+        extra_fields: { type: object, additionalProperties: { type: string }, description: 'Sempre objeto ({} quando vazio).' }
+        status: { type: string, enum: [pending, evaluated, divergent, not_found, duplicated, removed, inactive] }
+        deleted: { type: boolean }
+        created_by_id: { type: [integer, 'null'] }
+        updated_by_id: { type: [integer, 'null'] }
+        created_at: { type: [string, 'null'], format: date-time }
+        updated_at: { type: [string, 'null'], format: date-time }
+        deleted_at: { type: [string, 'null'], format: date-time }
+        images: { type: array, items: { $ref: '#/components/schemas/ItemImage' }, description: 'Fotos não removidas. Ausente nas respostas de escrita (PUT/DELETE) e em details.item.' }
+    ItemImage:
+      type: object
+      properties:
+        id: { type: integer }
+        status: { type: string, enum: [pending_upload, uploaded, removed] }
+        original_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        checksum: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    ItemImageRecord:
+      type: object
+      description: 'Registro completo da foto devolvido por upload-url e confirm-upload.'
+      properties:
+        id: { type: integer }
+        organization_id: { type: integer }
+        inventory_item_id: { type: integer }
+        storage_provider: { type: string }
+        original_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        checksum: { type: [string, 'null'] }
+        status: { type: string, enum: [pending_upload, uploaded, removed] }
+        uploaded_by_id: { type: [integer, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: [string, 'null'], format: date-time }
+    UploadRequest:
+      type: object
+      additionalProperties: false
+      required: [original_name, mime_type, size_bytes]
+      properties:
+        original_name: { type: string, maxLength: 255 }
+        mime_type: { type: string, enum: [image/jpeg, image/jpg, image/png, image/webp] }
+        size_bytes: { type: integer, minimum: 1, maximum: 10485760 }
+        checksum: { type: string, pattern: '^[a-f0-9]{64}$', description: SHA-256 opcional }
+    UploadHeaders:
+      type: object
+      description: 'Envie exatamente estes headers no PUT para o storage (a assinatura cobre Content-Type e Content-Length). Não envie Authorization.'
+      properties:
+        Content-Type: { type: string }
+        Content-Length: { type: string }
+    ConfirmRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        size_bytes: { type: integer, minimum: 1 }
+        checksum: { type: string, pattern: '^[a-f0-9]{64}$' }
+    PlateItem:
+      type: object
+      properties:
+        id: { type: integer }
+        external_item_id: { type: [string, 'null'] }
+        version: { type: integer }
+        new_plate: { type: [string, 'null'] }
+        old_plate: { type: [string, 'null'] }
+        old_plate_2: { type: [string, 'null'] }
+        unit_text: { type: [string, 'null'] }
+        location_text: { type: [string, 'null'] }
+        description: '{ type: [string, ''null''] }'
+        technician:
+          type: [object, 'null']
+          description: 'Quem criou o item (nome do inventariante ou do usuário).'
+          properties:
+            user_id: { type: integer }
+            name: { type: [string, 'null'] }
+            field_agent_id: { type: [integer, 'null'] }
+        created_at: { type: [string, 'null'], format: date-time }
+    PlateGroup:
+      type: object
+      properties:
+        plate: { type: string }
+        items: { type: array, items: { $ref: '#/components/schemas/PlateItem' } }
+    PlateReport:
+      type: object
+      properties:
+        project_id: { type: integer }
+        generated_at: { type: string, format: date-time }
+        totals:
+          type: object
+          properties:
+            items: { type: integer }
+            with_new_plate: { type: integer }
+            numeric_new_plates: { type: integer }
+            non_numeric_new_plates: { type: integer }
+        missing_new_plates:
+          type: object
+          properties:
+            from: { type: [integer, 'null'] }
+            to: { type: [integer, 'null'] }
+            count: { type: integer }
+            ranges: { type: array, items: { type: string }, examples: [['4', '6-8']] }
+        duplicated_new_plates: { type: array, items: { $ref: '#/components/schemas/PlateGroup' } }
+        duplicated_old_plates:
+          type: array
+          description: 'Considera placa antiga e placa antiga 2.'
+          items: { $ref: '#/components/schemas/PlateGroup' }
+    ExpenseCreate:
+      type: object
+      additionalProperties: false
+      required: [client_expense_id, description, expense_date, amount]
+      properties:
+        client_expense_id: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{7,99}$', description: 'Gerado no aparelho, 8 a 100 caracteres.' }
+        description: '{ type: string }'
+        reason: { type: [string, 'null'] }
+        expense_date: { type: string, format: date, description: YYYY-MM-DD (data civil válida) }
+        amount: { type: string, pattern: '^\d{1,13}(\.\d{1,2})?$', examples: ['120.50'] }
+        metadata: { type: [object, 'null'] }
+    Expense:
+      type: object
+      properties:
+        id: { type: integer }
+        organization_id: { type: integer }
+        project_id: { type: integer }
+        field_agent_id: { type: [integer, 'null'] }
+        description: '{ type: string }'
+        reason: { type: [string, 'null'] }
+        expense_date: { type: string, format: date }
+        amount: { type: string }
+        status: { type: string, enum: [pending, approved, rejected, paid, cancelled] }
+        metadata: { type: [object, 'null'] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ExpenseAttachment:
+      type: object
+      properties:
+        id: { type: integer }
+        organization_id: { type: integer }
+        expense_id: { type: integer }
+        original_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        checksum: { type: [string, 'null'] }
+        status: { type: string, enum: [pending_upload, uploaded, removed] }
+        created_at: { type: string, format: date-time }
+    ImportSessionStatus:
+      type: object
+      properties:
+        session_uuid: { type: string, format: uuid }
+        status: { type: string, enum: [open, receiving, processing, finished, finished_with_errors, failed, cancelled, expired] }
+        unidade: { type: [string, 'null'] }
+        expires_at: { type: [string, 'null'], format: date-time }
+        expected_payloads: { type: [integer, 'null'] }
+        received_payloads: { type: integer }
+        processed_payloads: { type: integer }
+        pending_payloads: { type: [integer, 'null'], description: 'expected_payloads − received_payloads (null sem expected_payloads).' }
+        payloads_with_errors: { type: integer }
+        total_items: { type: integer }
+        success_items: { type: integer, description: created + updated + deleted }
+        failed_items: { type: integer }
+        created_items: { type: integer }
+        updated_items: { type: integer }
+        deleted_items: { type: integer }
+        backup_uploaded: { type: boolean }
+        finished_at: { type: [string, 'null'], format: date-time }
+    ImportPayload:
+      type: object
+      additionalProperties: false
+      required: [payload_number, idempotency_key, items]
+      properties:
+        payload_number: { type: integer, minimum: 1 }
+        idempotency_key: { type: string, minLength: 8, maxLength: 128 }
+        items:
+          type: array
+          maxItems: 1000
+          description: 'Mesmos campos de `ItemUpsert`, **exceto** `base_version` (não aceito no lote; enviar gera 400).'
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ItemUpsert'
+              - type: object
+                required: [operation, external_item_id]
+                properties:
+                  operation: { type: string, enum: [upsert, delete] }
+                  external_item_id: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,99}$' }
+                  images:
+                    type: array
+                    maxItems: 50
+                    items: { type: object, required: [file_id], properties: { file_id: { type: integer, minimum: 1 } } }
