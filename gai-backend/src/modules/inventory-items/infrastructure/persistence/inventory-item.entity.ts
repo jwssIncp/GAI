@@ -22,7 +22,13 @@ import { InventoryItemStatus } from '../../domain/enums/inventory-item-status.en
 ])
 @Index('idx_inventory_items_old_plate', ['oldPlate'])
 @Index('idx_inventory_items_new_plate', ['newPlate'])
+@Index('idx_inventory_items_old_plate_2', ['oldPlate2'])
 @Index('idx_inventory_items_external_item_id', ['externalItemId'])
+// NULL external ids (legacy/web items without identifier) are not constrained.
+@Index('uq_inventory_items_project_external', ['projectId', 'externalItemId'], {
+  unique: true,
+})
+@Index('idx_inventory_items_project_sync', ['projectId', 'syncSeq', 'id'])
 export class InventoryItemEntity {
   @PrimaryGeneratedColumn(PRIMARY_KEY_COLUMN)
   id!: number;
@@ -49,6 +55,10 @@ export class InventoryItemEntity {
 
   @Column({ name: 'new_plate', type: 'varchar', length: 100, nullable: true })
   newPlate!: string | null;
+
+  /** Second old plate (legacy placa_antiga_2), normalized like the others. */
+  @Column({ name: 'old_plate_2', type: 'varchar', length: 100, nullable: true })
+  oldPlate2!: string | null;
 
   @Column({ name: 'unit_text', type: 'varchar', length: 255, nullable: true })
   unitText!: string | null;
@@ -131,4 +141,21 @@ export class InventoryItemEntity {
     nullable: true,
   })
   deletedAt!: Date | null;
+
+  /**
+   * Per-project change sequence, assigned by InventoryItemSyncSubscriber in the
+   * writing transaction (commit order). Rows created before Onda 2 keep 0.
+   * Mobile incremental sync pages on (sync_seq, id); it is also the item
+   * version used for optimistic conflict control.
+   */
+  @Column({
+    name: 'sync_seq',
+    ...FOREIGN_KEY_COLUMN,
+    default: 0,
+    transformer: {
+      to: (value?: number) => value,
+      from: (value: string | number | null) => Number(value ?? 0),
+    },
+  })
+  syncSeq!: number;
 }

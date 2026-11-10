@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 export const importSessionTypes = ['mobile_sync', 'inventory_items_import', 'accounting_items_import', 'images_import', 'raw_backup_import', 'incremental_sync', 'physical_observations_import'] as const;
 export const importSessionSources = ['mobile_app', 'web_admin', 'api_client', 'system', 'migration'] as const;
-export const importSessionStatuses = ['open', 'receiving', 'processing', 'finished', 'failed', 'cancelled', 'expired'] as const;
-export const importPayloadStatuses = ['received', 'processing', 'processed', 'failed', 'duplicated', 'ignored'] as const;
+export const importSessionStatuses = ['open', 'receiving', 'processing', 'finished', 'finished_with_errors', 'failed', 'cancelled', 'expired'] as const;
+export const importPayloadStatuses = ['received', 'processing', 'processed', 'partially_processed', 'failed', 'duplicated', 'ignored'] as const;
 export const importFileTypes = ['raw_payload', 'raw_backup', 'image', 'other'] as const;
 
 export const importSessionTypeLabels: Record<(typeof importSessionTypes)[number], string> = {
@@ -29,6 +29,7 @@ export const importSessionStatusLabels: Record<(typeof importSessionStatuses)[nu
   receiving: 'Recebendo',
   processing: 'Processando',
   finished: 'Finalizada',
+  finished_with_errors: 'Finalizada com erros',
   failed: 'Falhou',
   cancelled: 'Cancelada',
   expired: 'Expirada',

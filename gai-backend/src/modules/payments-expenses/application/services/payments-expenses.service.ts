@@ -2,10 +2,13 @@ import { randomUUID } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
+  HttpException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { PinoLogger } from 'nestjs-pino';
 import {
   STORAGE_SIGNER,
@@ -233,18 +236,18 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<ExpenseResponseDto> {
     const project = await this.getProject(projectId, actor, true);
-    if (dto.field_agent_id)
-      await this.assertFieldAgent(
-        project.organizationId,
-        projectId,
-        dto.field_agent_id,
-      );
+    const fieldAgentId = await this.resolveExpenseAgent(
+      project.organizationId,
+      projectId,
+      dto.field_agent_id ?? null,
+      actor,
+    );
     const now = new Date();
     const expense = new Expense({
       id: 0,
       organizationId: project.organizationId,
       projectId,
-      fieldAgentId: dto.field_agent_id ?? null,
+      fieldAgentId,
       description: this.scope.cleanText(dto.description) ?? dto.description,
       reason: this.scope.cleanText(dto.reason) ?? null,
       expenseDate: this.requiredDate(dto.expense_date, 'expense_date'),
@@ -316,21 +319,24 @@ export class PaymentsExpensesService {
   ): Promise<ExpenseResponseDto> {
     const expense = await this.findExpense(projectId, id, actor);
     await this.getProject(projectId, actor, true);
-    if (dto.field_agent_id)
-      await this.assertFieldAgent(
-        expense.organizationId,
-        projectId,
-        dto.field_agent_id,
-      );
-    const changes = expense.updateFields({
-      fieldAgentId: dto.field_agent_id ?? null,
-      description: this.scope.cleanText(dto.description) ?? dto.description,
-      reason: this.scope.cleanText(dto.reason) ?? null,
-      expenseDate: this.requiredDate(dto.expense_date, 'expense_date'),
-      amount: dto.amount,
-      metadata: dto.metadata ?? null,
-      updatedById: actor.id,
-    });
+    const fieldAgentId = await this.resolveExpenseAgent(
+      expense.organizationId,
+      projectId,
+      dto.field_agent_id ?? null,
+      actor,
+    );
+    const expenseDate = this.requiredDate(dto.expense_date, 'expense_date');
+    const changes = this.expenseRule(() =>
+      expense.updateFields({
+        fieldAgentId,
+        description: this.scope.cleanText(dto.description) ?? dto.description,
+        reason: this.scope.cleanText(dto.reason) ?? null,
+        expenseDate,
+        amount: dto.amount,
+        metadata: dto.metadata ?? null,
+        updatedById: actor.id,
+      }),
+    );
     const saved = await this.repo.saveExpenseWithAudit(expense, {
       organizationId: expense.organizationId,
       projectId,
@@ -379,6 +385,7 @@ export class PaymentsExpensesService {
   ): Promise<AttachmentUploadUrlResponseDto> {
     const expense = await this.findExpense(projectId, expenseId, actor);
     await this.getProject(projectId, actor, true);
+    this.scope.assertAttachmentSize(dto.size_bytes);
     const now = new Date();
     const attachment = new ExpenseAttachment({
       id: 0,
@@ -630,14 +637,15 @@ export class PaymentsExpensesService {
   ) {
     const expense = await this.findExpense(projectId, id, actor);
     await this.getProject(projectId, actor, true);
-    const changes =
+    const changes = this.expenseRule(() =>
       action === 'approve'
         ? expense.approve(actor.id, new Date())
         : action === 'reject'
           ? expense.reject(actor.id, new Date(), reason ?? '')
           : action === 'paid'
             ? expense.markAsPaid(actor.id, new Date())
-            : expense.cancel(actor.id);
+            : expense.cancel(actor.id),
+    );
     const operation =
       action === 'approve'
         ? PaymentExpenseAuditOperation.APPROVE_EXPENSE
@@ -672,16 +680,77 @@ export class PaymentsExpensesService {
     if (mutation) this.scope.assertProjectAllowsMutation(project);
     return project;
   }
+  /** Expense domain rules throw plain Error; expose them as 409, not 500. */
+  private expenseRule<T>(apply: () => T): T {
+    try {
+      return apply();
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new ConflictException({
+        code: 'EXPENSE_STATE_CONFLICT',
+        message:
+          error instanceof Error ? error.message : 'Invalid expense state',
+      });
+    }
+  }
+
+  /**
+   * An account linked to a field agent (non ORG_ADMIN) may only record its own
+   * expenses; the agent is derived from the session when omitted. The agent of
+   * a new or updated expense must be active and assigned to the project.
+   */
+  private async resolveExpenseAgent(
+    organizationId: number,
+    projectId: number,
+    requested: number | null,
+    actor: PaymentsExpensesActorContext,
+  ): Promise<number | null> {
+    let fieldAgentId = requested;
+    if (
+      !actor.systemRoles.includes(UserRole.ORG_ADMIN) &&
+      !actor.systemRoles.includes(UserRole.PLATFORM_ADMIN)
+    ) {
+      const own = await this.fieldAgents.findLinkedToUser(
+        actor.id,
+        organizationId,
+      );
+      if (own) {
+        if (requested && requested !== own.id)
+          throw new ForbiddenException({
+            code: 'FORBIDDEN',
+            message:
+              'Sua conta vinculada só pode registrar despesas da própria atuação.',
+          });
+        fieldAgentId = own.id;
+      }
+    }
+    if (fieldAgentId)
+      await this.assertFieldAgent(
+        organizationId,
+        projectId,
+        fieldAgentId,
+        true,
+      );
+    return fieldAgentId;
+  }
+
   private async assertFieldAgent(
     organizationId: number,
     projectId: number,
     fieldAgentId: number,
+    requireActive = false,
   ): Promise<void> {
     const agent = await this.fieldAgents.findById(fieldAgentId);
     if (!agent || agent.organizationId !== organizationId)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
         message: 'Invalid field_agent_id',
+      });
+    if (requireActive && !agent.isActive())
+      throw new ConflictException({
+        code: 'FIELD_AGENT_INELIGIBLE',
+        message:
+          'O inventariante precisa estar ativo para registrar novas despesas.',
       });
     if (
       !(await this.fieldAgents.hasActiveAssignment(

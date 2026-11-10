@@ -1,3 +1,4 @@
+import { identityTransaction } from '../../../auth/infrastructure/persistence/identity-transaction';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -108,6 +109,9 @@ export class TypeOrmImportSessionsRepository implements ImportSessionsRepository
       where: {
         organizationId: params.organizationId,
         importSessionId: params.importSessionId,
+        ...(params.status
+          ? { status: params.status as ImportPayloadEntity['status'] }
+          : {}),
       },
       order: { payloadNumber: 'ASC' },
       skip: (params.page - 1) * params.pageSize,
@@ -120,22 +124,27 @@ export class TypeOrmImportSessionsRepository implements ImportSessionsRepository
     payload: ImportPayloadEntity,
     audit: ImportAuditEntry,
   ): Promise<ImportPayloadEntity> {
-    return this.payloads.manager.transaction(async (manager) => {
-      const saved = await manager
-        .getRepository(ImportPayloadEntity)
-        .save(payload);
-      await manager.getRepository(ImportSessionAuditLogEntity).save({
-        organizationId: audit.organizationId,
-        projectId: audit.projectId,
-        importSessionId: audit.importSessionId,
-        importPayloadId: audit.importPayloadId ?? saved.id,
-        importFileId: audit.importFileId ?? null,
-        operation: audit.operation,
-        performedBy: audit.performedBy,
-        changes: audit.changes,
-      });
-      return saved;
-    });
+    // Same queue as payload processing (serialized on SQLite; plain
+    // transaction on MySQL).
+    return identityTransaction(
+      this.payloads.manager.connection,
+      async (manager) => {
+        const saved = await manager
+          .getRepository(ImportPayloadEntity)
+          .save(payload);
+        await manager.getRepository(ImportSessionAuditLogEntity).save({
+          organizationId: audit.organizationId,
+          projectId: audit.projectId,
+          importSessionId: audit.importSessionId,
+          importPayloadId: audit.importPayloadId ?? saved.id,
+          importFileId: audit.importFileId ?? null,
+          operation: audit.operation,
+          performedBy: audit.performedBy,
+          changes: audit.changes,
+        });
+        return saved;
+      },
+    );
   }
 
   async listErrors(

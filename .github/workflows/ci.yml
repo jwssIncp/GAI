@@ -27,7 +27,7 @@ jobs:
           cache: npm
           cache-dependency-path: gai-backend/package-lock.json
       - run: npm ci
-      - run: node --test ../.github/scripts/prepare-document-task.test.cjs ../.github/scripts/ci-s3.test.cjs ../scripts/runtime-credentials.test.cjs
+      - run: node --test ../.github/scripts/prepare-document-task.test.cjs ../.github/scripts/ci-s3.test.cjs ../.github/scripts/deploy-safety.test.cjs ../scripts/runtime-credentials.test.cjs
       - run: npm run lint
       - run: npm audit --audit-level=high || true
       - run: npm run test:cov
@@ -85,6 +85,11 @@ jobs:
         run: node ../.github/scripts/ci-s3.cjs start
       - run: npm run test:integration:mysql
         timeout-minutes: 40
+      - name: Release/retention MySQL lock
+        run: node --test scripts/with-db-lock.test.cjs
+        env:
+          GAI_TEST_MYSQL_DISPOSABLE: '1'
+        timeout-minutes: 5
       - run: npm run test:integration:s3
         timeout-minutes: 10
       - name: Diagnose isolated storage failure

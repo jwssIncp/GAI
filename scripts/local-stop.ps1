@@ -6,7 +6,9 @@ foreach ($name in @('frontend', 'backend')) {
   if (Test-Path $pidFile) {
     $serviceProcessId = [int](Get-Content $pidFile)
     $process = Get-CimInstance Win32_Process -Filter "ProcessId=$serviceProcessId" -ErrorAction SilentlyContinue
-    if ($process -and $process.Name -eq 'node.exe' -and $process.CommandLine -match 'node_modules[/\\](vite|@nestjs)') {
+    $compiledBackend = "$projectRoot/gai-backend/dist/src/main.js".Replace('\', '/')
+    $isCompiledBackend = $name -eq 'backend' -and $process -and $process.CommandLine -and $process.CommandLine.Replace('\', '/').Contains($compiledBackend)
+    if ($process -and $process.Name -eq 'node.exe' -and ($process.CommandLine -match 'node_modules[/\\](vite|@nestjs)' -or $isCompiledBackend)) {
       taskkill.exe /PID $serviceProcessId /T /F
     }
     Remove-Item -LiteralPath $pidFile

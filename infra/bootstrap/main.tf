@@ -63,6 +63,26 @@ resource "aws_s3_bucket_public_access_block" "tf_state" {
   restrict_public_buckets = true
 }
 
+# The state holds sensitive values (e.g. the CloudFront origin secret): deny
+# any access over plain HTTP. Additive; applied with the next bootstrap run.
+resource "aws_s3_bucket_policy" "tf_state_tls_only" {
+  bucket = aws_s3_bucket.tf_state.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.tf_state.arn, "${aws_s3_bucket.tf_state.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.tf_state]
+}
+
 resource "aws_dynamodb_table" "tf_lock" {
   name         = "gai-terraform-locks"
   billing_mode = "PAY_PER_REQUEST"

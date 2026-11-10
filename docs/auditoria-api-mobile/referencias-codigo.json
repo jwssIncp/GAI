@@ -1,0 +1,296 @@
+[
+  {
+    "id": "E01",
+    "title": "Prefixo, CORS e ValidationPipe",
+    "file": "gai-backend/src/main.ts",
+    "line": 13
+  },
+  {
+    "id": "E02",
+    "title": "Módulos, banco, throttler e logs",
+    "file": "gai-backend/src/app.module.ts",
+    "line": 124
+  },
+  {
+    "id": "E03",
+    "title": "Token opaco, touch e restrição de projeto por perfil",
+    "file": "gai-backend/src/modules/auth/presentation/guards/session-auth.guard.ts",
+    "line": 73
+  },
+  {
+    "id": "E04",
+    "title": "Resposta real de login",
+    "file": "gai-backend/src/modules/auth/application/use-cases/login.use-case.ts",
+    "line": 23
+  },
+  {
+    "id": "E05",
+    "title": "Credenciais, criação de sessão e expiração",
+    "file": "gai-backend/src/modules/auth/application/services/credential-transactions.service.ts",
+    "line": 89
+  },
+  {
+    "id": "E06",
+    "title": "Rotas de autenticação, sem refresh",
+    "file": "gai-backend/src/modules/auth/presentation/auth.controller.ts",
+    "line": 52
+  },
+  {
+    "id": "E07",
+    "title": "Permissões efetivas e bypass administrativo",
+    "file": "gai-backend/src/modules/auth/application/services/permission-access.ts",
+    "line": 12
+  },
+  {
+    "id": "E08",
+    "title": "Projetos autorizados e paginação",
+    "file": "gai-backend/src/modules/projects/application/use-cases/list-projects.use-case.ts",
+    "line": 24
+  },
+  {
+    "id": "E09",
+    "title": "Permissões do perfil de campo e convite",
+    "file": "gai-backend/src/modules/field-agents/application/services/field-agent-management.service.ts",
+    "line": 40
+  },
+  {
+    "id": "E10",
+    "title": "Inventariante ativo, período e autoria operacional",
+    "file": "gai-backend/src/modules/field-agents/application/services/operational-eligibility.ts",
+    "line": 78
+  },
+  {
+    "id": "E11",
+    "title": "Rotas de itens",
+    "file": "gai-backend/src/modules/inventory-items/presentation/inventory-items.controller.ts",
+    "line": 60
+  },
+  {
+    "id": "E12",
+    "title": "Criação persistente de item e auditoria",
+    "file": "gai-backend/src/modules/inventory-items/application/use-cases/create-inventory-item.use-case.ts",
+    "line": 39
+  },
+  {
+    "id": "E13",
+    "title": "Atualização de item e status no DTO genérico",
+    "file": "gai-backend/src/modules/inventory-items/application/use-cases/update-inventory-item.use-case.ts",
+    "line": 37
+  },
+  {
+    "id": "E14",
+    "title": "Domínio, desativação e campos atualizáveis",
+    "file": "gai-backend/src/modules/inventory-items/domain/entities/inventory-item.ts",
+    "line": 62
+  },
+  {
+    "id": "E15",
+    "title": "Consultas com excluídos e save com auditoria",
+    "file": "gai-backend/src/modules/inventory-items/infrastructure/persistence/typeorm-inventory-item.repository.ts",
+    "line": 29
+  },
+  {
+    "id": "E16",
+    "title": "Entidade de itens, campos e índices",
+    "file": "gai-backend/src/modules/inventory-items/infrastructure/persistence/inventory-item.entity.ts",
+    "line": 17
+  },
+  {
+    "id": "E17",
+    "title": "DTO de itens",
+    "file": "gai-backend/src/modules/inventory-items/application/dto/inventory-item-inputs.ts",
+    "line": 19
+  },
+  {
+    "id": "E18",
+    "title": "Rotas de importação",
+    "file": "gai-backend/src/modules/import-sessions/presentation/import-sessions.controller.ts",
+    "line": 64
+  },
+  {
+    "id": "E19",
+    "title": "Serviço de importação: criação/recepção",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 206
+  },
+  {
+    "id": "E20",
+    "title": "DTOs de importação",
+    "file": "gai-backend/src/modules/import-sessions/application/dto/import-sessions-inputs.ts",
+    "line": 263
+  },
+  {
+    "id": "E21",
+    "title": "Limites, normalização e autorização por organização",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-session-scope.service.ts",
+    "line": 17
+  },
+  {
+    "id": "E22",
+    "title": "Geração de pendências com escrita",
+    "file": "gai-backend/src/modules/inventory-pending-issues/application/services/inventory-pending-issues.service.ts",
+    "line": 222
+  },
+  {
+    "id": "E23",
+    "title": "Rotas de pendências",
+    "file": "gai-backend/src/modules/inventory-pending-issues/presentation/inventory-pending-issues.controller.ts",
+    "line": 51
+  },
+  {
+    "id": "E24",
+    "title": "DTOs de despesas e anexos",
+    "file": "gai-backend/src/modules/payments-expenses/application/dto/payments-expenses-inputs.ts",
+    "line": 67
+  },
+  {
+    "id": "E25",
+    "title": "Persistência de despesa e autoria",
+    "file": "gai-backend/src/modules/payments-expenses/application/services/payments-expenses.service.ts",
+    "line": 230
+  },
+  {
+    "id": "E26",
+    "title": "Rotas de financeiro",
+    "file": "gai-backend/src/modules/payments-expenses/presentation/payments-expenses.controller.ts",
+    "line": 61
+  },
+  {
+    "id": "E27",
+    "title": "Upload individual de imagens de item",
+    "file": "gai-backend/src/modules/inventory-item-images/application/use-cases/create-inventory-item-image-upload-url.use-case.ts",
+    "line": 55
+  },
+  {
+    "id": "E28",
+    "title": "S3 real: assinatura e inspeção",
+    "file": "gai-backend/src/common/storage/s3-storage-adapter.service.ts",
+    "line": 183
+  },
+  {
+    "id": "E29",
+    "title": "Confirmação de upload e checksum",
+    "file": "gai-backend/src/common/storage/storage-object.policy.ts",
+    "line": 20
+  },
+  {
+    "id": "E30",
+    "title": "Migration de identidade e FKs compostas",
+    "file": "gai-backend/src/migrations/1794300000001-harden-field-agent-identity.ts",
+    "line": 5
+  },
+  {
+    "id": "E31",
+    "title": "Registro de observação usa elegibilidade operacional",
+    "file": "gai-backend/src/modules/inventory-operations/application/inventory-operations.service.ts",
+    "line": 439
+  },
+  {
+    "id": "E32",
+    "title": "Filtro global de erros",
+    "file": "gai-backend/src/common/filters/http-exception.filter.ts",
+    "line": 15
+  },
+  {
+    "id": "E33",
+    "title": "IDs BIGINT no MySQL e number no código",
+    "file": "gai-backend/src/common/persistence/entity-id.columns.ts",
+    "line": 6
+  },
+  {
+    "id": "E34",
+    "title": "Respostas de importação e contadores",
+    "file": "gai-backend/src/modules/import-sessions/application/dto/import-sessions-response.dto.ts",
+    "line": 14
+  },
+  {
+    "id": "E35",
+    "title": "Processamento síncrono e falhas por linha",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 573
+  },
+  {
+    "id": "E36",
+    "title": "Upsert, remoção e atribuição de imagens",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 885
+  },
+  {
+    "id": "E37",
+    "title": "Idempotência e lookup com excluídos",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 994
+  },
+  {
+    "id": "E38",
+    "title": "Finalização da importação",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 288
+  },
+  {
+    "id": "E39",
+    "title": "Importação física valida vínculo mas não elegibilidade completa",
+    "file": "gai-backend/src/modules/import-sessions/application/services/import-sessions.service.ts",
+    "line": 697
+  },
+  {
+    "id": "E40",
+    "title": "Unidades corporativas e vínculo por projeto",
+    "file": "gai-backend/src/modules/companies/presentation/companies.controller.ts",
+    "line": 66
+  },
+  {
+    "id": "E41",
+    "title": "Sessões ativas, revogação e touch",
+    "file": "gai-backend/src/modules/auth/infrastructure/persistence/typeorm-session.repository.ts",
+    "line": 26
+  },
+  {
+    "id": "E42",
+    "title": "Consulta e rename de unidades",
+    "file": "gai-backend/src/modules/companies/application/services/companies.service.ts",
+    "line": 401
+  },
+  {
+    "id": "E43",
+    "title": "Restrições de identidade no repositório",
+    "file": "gai-backend/src/modules/field-agents/infrastructure/persistence/typeorm-field-agent.repository.ts",
+    "line": 192
+  },
+  {
+    "id": "E44",
+    "title": "Resposta de item",
+    "file": "gai-backend/src/modules/inventory-items/application/dto/inventory-item-response.dto.ts",
+    "line": 94
+  },
+  {
+    "id": "E45",
+    "title": "Query de itens: sem delta/cursor",
+    "file": "gai-backend/src/modules/inventory-items/application/dto/list-inventory-items-query.dto.ts",
+    "line": 6
+  },
+  {
+    "id": "E46",
+    "title": "Schema de importações",
+    "file": "gai-backend/src/migrations/1740600000001-create-import-sessions.ts",
+    "line": 6
+  },
+  {
+    "id": "E47",
+    "title": "Schema de itens sem unicidade externa composta",
+    "file": "gai-backend/src/migrations/1740000000001-create-inventory-items.ts",
+    "line": 6
+  },
+  {
+    "id": "E48",
+    "title": "CloudFront encaminha API sem cache",
+    "file": "infra/terraform/cloudfront.tf",
+    "line": 92
+  },
+  {
+    "id": "E50",
+    "title": "Bucket privado, versionamento e criptografia",
+    "file": "infra/terraform/s3.tf",
+    "line": 41
+  }
+]

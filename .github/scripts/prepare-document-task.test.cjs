@@ -63,6 +63,22 @@ test('backfills STORAGE_* when an older revision only has inventory image bucket
   }
 });
 
+test('keeps mobile storage limits, proxy hops and Swagger policy in every release', () => {
+  const envOf = (task) =>
+    Object.fromEntries(task.containerDefinitions[0].environment.map((i) => [i.name, i.value]));
+  const stale = fixture();
+  stale.containerDefinitions[0].environment.push({ name: 'STORAGE_MAX_SIZE_BYTES', value: '52428800' });
+  const homolog = envOf(prepareDocumentTask(stale, 'gai-backend', 'homolog'));
+  assert.equal(homolog.STORAGE_MAX_SIZE_BYTES, '104857600');
+  assert.equal(homolog.STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS, '1800');
+  assert.equal(homolog.TRUST_PROXY_HOPS, '2');
+  assert.equal(homolog.SWAGGER_ENABLED, 'true');
+  assert.equal(envOf(prepareDocumentTask(fixture(), 'gai-backend', 'production')).SWAGGER_ENABLED, 'false');
+  const explicit = fixture();
+  explicit.containerDefinitions[0].environment.push({ name: 'SWAGGER_ENABLED', value: 'false' });
+  assert.equal(envOf(prepareDocumentTask(explicit, 'gai-backend', 'homolog')).SWAGGER_ENABLED, 'false');
+});
+
 test('preserves higher valid resources and replaces stale document/storage modes', () => {
   const input = fixture();
   input.cpu = '2048';

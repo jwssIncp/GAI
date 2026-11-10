@@ -40,6 +40,10 @@ import { UserStatus } from '../../src/modules/auth/domain/enums/user.enums';
 import { AuthAuditLogEntity } from '../../src/modules/auth/infrastructure/persistence/auth-audit-log.entity';
 import { PasswordResetTokenEntity } from '../../src/modules/auth/infrastructure/persistence/password-reset-token.entity';
 import { SessionEntity } from '../../src/modules/auth/infrastructure/persistence/session.entity';
+import { MobileRefreshTokenEntity } from '../../src/modules/auth/infrastructure/persistence/mobile-refresh-token.entity';
+import { MobileModule } from '../../src/modules/mobile/mobile.module';
+import { MobileIdempotencyKeyEntity } from '../../src/modules/mobile/mobile-idempotency-key.entity';
+import { InventoryItemSyncCounterEntity } from '../../src/modules/inventory-items/infrastructure/persistence/inventory-item-sync-counter.entity';
 import { UserEntity } from '../../src/modules/auth/infrastructure/persistence/user.entity';
 import { Argon2PasswordHasher } from '../../src/modules/auth/infrastructure/security/argon2-password-hasher';
 import { CatalogAssetsModule } from '../../src/modules/catalog-assets/catalog-assets.module';
@@ -188,6 +192,9 @@ export async function createTestApp(
           OrganizationAuditLogEntity,
           UserEntity,
           SessionEntity,
+          MobileRefreshTokenEntity,
+          InventoryItemSyncCounterEntity,
+          MobileIdempotencyKeyEntity,
           PasswordResetTokenEntity,
           AuthAuditLogEntity,
           ProjectEntity,
@@ -268,6 +275,7 @@ export async function createTestApp(
       ExportJobsModule,
       CatalogAssetsModule,
       CompaniesModule,
+      MobileModule,
     ],
   })
     .overrideProvider(STORAGE_SIGNER)

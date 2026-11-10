@@ -37,12 +37,7 @@ import {
 } from './field-agent-scope.service';
 import { PermissionScope } from '../../../users/domain/enums/permission-scope.enum';
 
-const FIELD_ACCESS_PERMISSIONS = [
-  'projects:read',
-  'inventory-items:read',
-  'inventory-sessions:read',
-  'inventory-observations:create',
-];
+import { FIELD_ACCESS_PERMISSIONS } from '../../domain/field-access-permissions';
 
 @Injectable()
 export class FieldAgentManagementService {
@@ -378,8 +373,10 @@ export class FieldAgentManagementService {
         )
         .where('grant.roleId = :id', { id: role.id })
         .getMany();
+      // Roles created before Onda 0 hold a smaller subset; they stay valid (no
+      // automatic upgrade). Anything outside the least-privilege set is refused.
       if (
-        grants.length !== FIELD_ACCESS_PERMISSIONS.length ||
+        grants.length === 0 ||
         grants.some(
           (p) =>
             !FIELD_ACCESS_PERMISSIONS.includes(p.key) ||

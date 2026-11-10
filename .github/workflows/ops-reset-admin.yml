@@ -14,7 +14,8 @@ on:
         default: homolog
 
 concurrency:
-  group: ops-reset-admin-${{ inputs.environment }}
+  # Same group as deploy-app.yml: never concurrent with a release or another ops task.
+  group: gai-release-${{ inputs.environment }}
   cancel-in-progress: false
 
 permissions:

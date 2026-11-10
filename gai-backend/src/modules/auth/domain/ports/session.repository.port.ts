@@ -9,6 +9,8 @@ export interface SessionRecord {
   revokedAt: Date | null;
   createdAt: Date;
   lastActivityAt: Date;
+  clientType?: 'web' | 'mobile';
+  refreshFamilyId?: string | null;
 }
 
 export const SESSION_REPOSITORY = Symbol('SESSION_REPOSITORY');

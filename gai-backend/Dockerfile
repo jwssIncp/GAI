@@ -19,6 +19,8 @@ COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY scripts/data-source.prod.cjs ./scripts/data-source.prod.cjs
+# Release/retention mutual exclusion (MySQL named lock), see package.json.
+COPY scripts/with-db-lock.cjs ./scripts/with-db-lock.cjs
 COPY scripts/docker-entrypoint.prod.sh ./scripts/docker-entrypoint.prod.sh
 
 RUN chmod +x ./scripts/docker-entrypoint.prod.sh \

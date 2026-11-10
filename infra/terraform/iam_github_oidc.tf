@@ -130,6 +130,43 @@ resource "aws_iam_role_policy" "github_actions" {
           "cloudfront:GetDistribution"
         ]
         Resource = [aws_cloudfront_distribution.main.arn]
+      },
+      {
+        # Pre-release snapshot (deploy-app.yml): create/inspect only, on this
+        # instance and on snapshots with the pre-release prefix. No delete/restore.
+        Sid    = "PreReleaseSnapshot"
+        Effect = "Allow"
+        Action = [
+          "rds:CreateDBSnapshot",
+          "rds:AddTagsToResource",
+          "rds:DescribeDBSnapshots",
+          "rds:DescribeDBInstances"
+        ]
+        Resource = [
+          aws_db_instance.main.arn,
+          "arn:aws:rds:${var.aws_region}:${data.aws_caller_identity.current.account_id}:snapshot:${aws_db_instance.main.identifier}-pre-release-*"
+        ]
+      }
+    ]
+  })
+}
+
+# Snapshot retention (ops-rds-snapshots.yml), never in production: delete only
+# pre-release snapshots of this instance carrying Purpose=pre-release.
+resource "aws_iam_role_policy" "github_actions_snapshot_retention" {
+  count = var.environment == "production" ? 0 : 1
+  name  = "${local.name_prefix}-github-actions-snapshot-retention"
+  role  = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PreReleaseSnapshotRetention"
+        Effect    = "Allow"
+        Action    = ["rds:DeleteDBSnapshot"]
+        Resource  = ["arn:aws:rds:${var.aws_region}:${data.aws_caller_identity.current.account_id}:snapshot:${aws_db_instance.main.identifier}-pre-release-*"]
+        Condition = { StringEquals = { "aws:ResourceTag/Purpose" = "pre-release" } }
       }
     ]
   })

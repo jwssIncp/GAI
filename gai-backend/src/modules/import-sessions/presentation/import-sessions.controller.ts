@@ -364,6 +364,7 @@ export class ImportSessionsController {
       id: req.user!.id,
       systemRoles: req.user!.systemRoles,
       organizationId: req.user!.organizationId,
+      confined: req.user!.allowedProjectIds !== undefined,
     };
   }
 }

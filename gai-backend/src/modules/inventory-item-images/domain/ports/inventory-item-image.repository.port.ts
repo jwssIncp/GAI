@@ -25,7 +25,10 @@ export const INVENTORY_ITEM_IMAGE_REPOSITORY = Symbol(
 
 export interface InventoryItemImageRepository {
   findById(id: number): Promise<InventoryItemImage | null>;
-  countActiveByItem(inventoryItemId: number): Promise<number>;
+  countActiveByItem(
+    inventoryItemId: number,
+    pendingSince?: Date,
+  ): Promise<number>;
   list(
     params: ListInventoryItemImagesParams,
   ): Promise<{ items: InventoryItemImage[]; total: number }>;

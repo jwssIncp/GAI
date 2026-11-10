@@ -125,7 +125,11 @@ export class S3StorageAdapterService
       endpoint,
       forcePathStyle,
       maxBytes: positive('STORAGE_MAX_SIZE_BYTES', 100 * 1024 * 1024),
-      ttl: positive('STORAGE_PRESIGNED_URL_TTL_SECONDS', 3600),
+      // Upper bound for any signed URL. Defaults to the regular TTL (previous
+      // behaviour); a separate cap allows longer windows for large backups only.
+      ttl: process.env.STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS
+        ? positive('STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS', 3600)
+        : positive('STORAGE_PRESIGNED_URL_TTL_SECONDS', 3600),
       mimeTypes,
     };
     return this.settings;

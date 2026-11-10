@@ -6,6 +6,7 @@ locals {
 
   use_custom_domain = var.domain_name != ""
   create_acm        = local.use_custom_domain
+  api_origin_https  = var.api_origin_domain_name != ""
 
   frontend_bucket_name = "${local.name_prefix}-frontend-${data.aws_caller_identity.current.account_id}"
   assets_bucket_name   = "${local.name_prefix}-assets-${data.aws_caller_identity.current.account_id}"

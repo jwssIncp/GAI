@@ -1,0 +1,1174 @@
+<title>API Investor no GAI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: reference manual continuing the original Investor contract — sticky index left, one long document per deliverable, wide tables/code scroll in place. */
+:root {
+  --bg: #f4f6f5;
+  --paper: #ffffff;
+  --ink: #1b2420;
+  --muted: #56645d;
+  --rule: #d7ded9;
+  --accent: #1f6f5c;
+  --code-bg: #eaf0ec;
+  --warn-bg: #fff4de;
+  --warn-ink: #6f4500;
+  --ok-bg: #e2f2ea;
+  --ok-ink: #17573f;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111614; --paper: #18201c; --ink: #e2e9e5; --muted: #9babA3; --rule: #2b3631;
+    --accent: #62c4a8; --code-bg: #1f2925; --warn-bg: #2f2716; --warn-ink: #f0c879;
+    --ok-bg: #173026; --ok-ink: #8fdcbc; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111614; --paper: #18201c; --ink: #e2e9e5; --muted: #9babA3; --rule: #2b3631;
+  --accent: #62c4a8; --code-bg: #1f2925; --warn-bg: #2f2716; --warn-ink: #f0c879;
+  --ok-bg: #173026; --ok-ink: #8fdcbc; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap {
+  max-width: 1240px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 40px;
+}
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  nav.toc { position: static !important; max-height: 50vh !important; }
+}
+nav.toc {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start;
+  max-height: calc(100vh - 32px); overflow: auto; font-size: 13px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px;
+}
+.toc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 15px; }
+.theme {
+  font: 600 12px var(--body); color: var(--accent); background: transparent;
+  border: 1px solid var(--rule); border-radius: 4px; padding: 3px 9px; cursor: pointer;
+}
+.filter-label { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.filter { width: 100%; font: 13px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 5px 8px; }
+nav.toc h2 { font-family: var(--display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin: 16px 0 4px; }
+nav.toc h2 a { color: var(--accent); padding: 0; }
+nav.toc a { display: block; color: var(--ink); text-decoration: none; padding: 3px 0; line-height: 1.35; }
+nav.toc a:hover { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main { min-width: 0; }
+.cover { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 8px; display: grid; gap: 10px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.lead { margin: 0; max-width: 70ch; font-size: 16px; }
+.status { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.pill.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.pill.warn { background: var(--warn-bg); color: var(--warn-ink); }
+section.doc { padding-top: 28px; }
+section.doc + section.doc { margin-top: 48px; border-top: 2px solid var(--ink); }
+h1.doc-title { font-family: var(--display); font-size: 32px; line-height: 1.1; margin: 0 0 10px; text-wrap: balance; scroll-margin-top: 16px; }
+h2, h3, h4 { scroll-margin-top: 16px; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 23px; margin: 40px 0 8px; padding-top: 10px; border-top: 1px solid var(--rule); }
+h3 { font-size: 17px; margin: 28px 0 6px; }
+h4 { font-size: 15px; margin: 20px 0 4px; }
+p, li { max-width: 78ch; }
+p { margin: 8px 0; }
+ul, ol { margin: 8px 0; padding-left: 22px; }
+li { margin: 3px 0; }
+ul.check { list-style: none; padding-left: 0; }
+ul.check li { display: flex; gap: 8px; align-items: baseline; }
+.box { flex: none; width: 12px; height: 12px; border: 1.5px solid var(--muted); border-radius: 2px; transform: translateY(1px); }
+a { color: var(--accent); }
+.file { font-family: var(--mono); font-size: 13px; }
+strong { font-weight: 600; }
+code, pre { font-family: var(--mono); font-size: 12.5px; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+.code { position: relative; margin: 10px 0; }
+.code .lang { position: absolute; top: 6px; right: 10px; font: 600 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+pre { background: var(--code-bg); margin: 0; padding: 12px 14px; border-radius: 5px; overflow-x: auto; line-height: 1.5; }
+.tbl { overflow-x: auto; margin: 10px 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; background: var(--bg); }
+table.kv td:first-child { width: 150px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.callout { background: var(--warn-bg); color: var(--warn-ink); border-radius: 5px; padding: 10px 14px; margin: 12px 0; font-size: 14px; max-width: 78ch; }
+.callout code { background: transparent; border: 1px solid currentColor; }
+footer { margin-top: 48px; padding-top: 12px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Índice">
+  <div class="toc-head">
+    <span class="brand">GAI · app Investor</span>
+    <button type="button" id="theme-toggle" class="theme" aria-label="Alternar tema claro/escuro">Tema</button>
+  </div>
+  <label class="filter-label" for="toc-filter">Filtrar índice</label>
+  <input id="toc-filter" class="filter" type="search" placeholder="ex.: refresh, placas, 409">
+  <div id="toc-links">
+<h2><a href="#rel-top">Relatório da API</a></h2><a href="#rel-sumário">Sumário</a><a href="#rel-1-convenções-gerais">1. Convenções gerais</a><a href="#rel-2-autenticação-e-sessão">2. Autenticação e sessão</a><a href="#rel-3-projetos-do-inventariante">3. Projetos do inventariante</a><a href="#rel-4-itens">4. Itens</a><a href="#rel-5-fotos-dos-itens">5. Fotos dos itens</a><a href="#rel-6-placas-duplicidade-e-pendências">6. Placas: duplicidade e pendências</a><a href="#rel-7-despesas">7. Despesas</a><a href="#rel-8-reconciliação-importação">8. Reconciliação (importação)</a><a href="#rel-9-sincronização-conflitos-e-fila-offline">9. Sincronização, conflitos e fila offline</a><a href="#rel-10-exemplos-completos-de-fluxo">10. Exemplos completos de fluxo</a><a href="#rel-11-rotas-descontinuadas-e-recursos-pendentes">11. Rotas descontinuadas e recursos pendentes</a><a href="#rel-12-referência-de-códigos-de-erro">12. Referência de códigos de erro</a>
+<h2><a href="#mat-top">Matriz de migração</a></h2><a href="#mat-1-rotas-do-documento-original">1. Rotas do documento original</a><a href="#mat-2-rotas-novas-sem-equivalente-no-legado">2. Rotas novas sem equivalente no legado</a><a href="#mat-3-campos">3. Campos</a><a href="#mat-4-códigos-http">4. Códigos HTTP</a><a href="#mat-5-resumo">5. Resumo</a>
+<h2><a href="#gui-top">Guia Android/Flutter</a></h2><a href="#gui-1-resumo-das-mudanças-obrigatórias">1. Resumo das mudanças obrigatórias</a><a href="#gui-2-configuração-do-dio">2. Configuração do Dio</a><a href="#gui-3-sessão">3. Sessão</a><a href="#gui-4-itens">4. Itens</a><a href="#gui-5-fila-de-envio">5. Fila de envio</a><a href="#gui-6-sincronização-por-cursor">6. Sincronização por cursor</a><a href="#gui-7-fotos">7. Fotos</a><a href="#gui-8-placas-e-pendências">8. Placas e pendências</a><a href="#gui-9-despesas-e-reconciliação">9. Despesas e reconciliação</a><a href="#gui-10-checklist-de-homologação-do-app">10. Checklist de homologação do app</a>
+  </div>
+</nav>
+<main>
+<header class="cover">
+  <p class="eyebrow">Contrato 1.0.0-rc.2 · revisão 2, 10/11/2026 · base <code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code></p>
+  <p class="lead">Migração das rotas do app Investor 1.4.6+1.12 do Laravel legado para a API mobile do GAI: relatório por funcionalidade, matriz rota a rota e guia de implementação Flutter/Dio.</p>
+  <div class="status"><span class="pill ok">27 operações implementadas e testadas</span><span class="pill warn">Rotas /mobile/* ainda não publicadas na AWS</span><span class="pill warn">Homologação na AWS pendente</span></div>
+</header>
+<section class="doc" aria-labelledby="rel-top">
+<h1 class="doc-title" id="rel-top">GAI — Documentação da API para o aplicativo Investor</h1>
+<p><strong>Migração das rotas do Laravel legado para o GAI · Contrato <code>1.0.0-rc.2</code> · Revisão 2, 10/11/2026 (URL oficial na AWS)</strong></p>
+<p>Este documento descreve, para a equipe do aplicativo Investor (Android/Flutter), todas as rotas que o app 1.4.6+1.12 usa no Laravel e a rota correspondente no GAI, com payloads, respostas, erros, permissões e o que muda no app. Ele pode ser lido sem acesso ao código do backend.</p>
+<aside class="callout"><strong>Estado: release candidate.</strong> Todas as rotas descritas aqui estão implementadas e cobertas por testes automatizados no backend (SQLite, MySQL 8 e storage S3 compatível, em ambiente local). A aplicação está publicada na AWS via CloudFront, e a URL base oficial é <code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code>. <strong>As rotas <code>/mobile/*</code> ainda não estão disponíveis nesse endereço</strong> (ver <a href="#rel-ambientes">Ambientes</a>), e a homologação do app contra a AWS continua pendente.</aside>
+<p>Documentos complementares, na mesma pasta:</p>
+<ul><li><a href="#mat-top">MATRIZ-MIGRACAO.md</a>: rota antiga → rota nova, rota por rota.</li><li><a href="#gui-top">GUIA-MIGRACAO-ANDROID.md</a>: o que implementar no app (Dio, fila, sincronização, fotos), com código.</li><li><span class="file">openapi.yaml</span>: especificação OpenAPI 3.1 (importável em Postman, Insomnia ou geradores de cliente).</li></ul>
+<h2 id="rel-sumário">Sumário</h2>
+<ol><li><a href="#rel-1-convenções-gerais">Convenções gerais</a></li><li><a href="#rel-2-autenticação-e-sessão">Autenticação e sessão</a></li><li><a href="#rel-3-projetos-do-inventariante">Projetos do inventariante</a></li><li><a href="#rel-4-itens">Itens</a></li><li><a href="#rel-5-fotos-dos-itens">Fotos dos itens</a></li><li><a href="#rel-6-placas-duplicidade-e-pendências">Placas: duplicidade e pendências</a></li><li><a href="#rel-7-despesas">Despesas</a></li><li><a href="#rel-8-reconciliação-importação">Reconciliação (importação)</a></li><li><a href="#rel-9-sincronização-conflitos-e-fila-offline">Sincronização, conflitos e fila offline</a></li><li><a href="#rel-10-exemplos-completos-de-fluxo">Exemplos completos de fluxo</a></li><li><a href="#rel-11-rotas-descontinuadas-e-recursos-pendentes">Rotas descontinuadas e recursos pendentes</a></li><li><a href="#rel-12-referência-de-códigos-de-erro">Referência de códigos de erro</a></li></ol>
+<h2 id="rel-1-convenções-gerais">1. Convenções gerais</h2>
+<div class="tbl"><table><thead><tr><th>Tema</th><th>Regra no GAI</th></tr></thead><tbody><tr><td>Base</td><td><code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code> (ver <a href="#rel-ambientes">Ambientes</a>). Todas as rotas do app ficam em <code>/mobile/...</code>, exceto <code>POST /auth/password/change</code>. Nos caminhos abaixo, a base é omitida.</td></tr><tr><td>Formato</td><td>JSON UTF-8 em todas as rotas (não há mais <code>multipart/form-data</code> nem <code>form-urlencoded</code>). Envie <code>Content-Type: application/json</code> e <code>Accept: application/json</code>.</td></tr><tr><td>Nomes de campos</td><td><code>snake_case</code> em inglês (<code>new_plate</code>, <code>unit_text</code>). A tabela de equivalência com o legado está na <a href="#rel-41-campos-do-item-legado--gai">seção 4.1</a>.</td></tr><tr><td>Campos desconhecidos</td><td>Qualquer campo não documentado, no corpo ou na query, gera <strong>400 <code>VALIDATION_ERROR</code></strong>. Não envie campos legados “a mais”.</td></tr><tr><td>Autenticação</td><td><code>Authorization: Bearer &lt;access_token&gt;</code> em todas as rotas, exceto login, refresh e logout. O token é <strong>opaco</strong> (não é JWT).</td></tr><tr><td>Datas e horas</td><td>ISO 8601 em UTC (<code>2026-11-10T13:00:00.000Z</code>). Datas civis em <code>YYYY-MM-DD</code>.</td></tr><tr><td>Dinheiro</td><td>Texto com ponto e até 2 casas: <code>"120.50"</code>, <code>"150"</code>, <code>"0.5"</code>. <code>"12,50"</code>, <code>"R$ 10"</code> ou número JSON geram 400.</td></tr><tr><td>ID do item</td><td>O id gerado no aparelho (<code>microsecondsSinceEpoch</code>) é <strong>texto</strong> e vai na URL: <code>"1730736000123456"</code>. Aceita até 100 caracteres <code>[A-Za-z0-9._:-]</code>, começando por letra ou número. Nunca converta para número.</td></tr><tr><td>Paginação por página</td><td><code>page</code> (≥ 1) e <code>page_size</code> (1 a 100). A resposta traz <code>items</code>, <code>page</code>, <code>page_size</code>, <code>total_items</code>, <code>total_pages</code>.</td></tr><tr><td>Paginação por cursor</td><td>Somente em <code>GET .../items/sync</code> (ver <a href="#rel-44-sincronização-incremental-por-cursor">4.4</a>).</td></tr><tr><td>Erros</td><td><code>{ "code": "...", "message": "...", "details": ... }</code>. <code>message</code> é texto, ou <strong>lista de textos</strong> em erros de validação de campos. Decida pelo <strong>status HTTP + <code>code</code></strong>, nunca pela mensagem.</td></tr><tr><td>Sucesso</td><td>200, 201 ou 204, conforme a rota. <strong>Não</strong> trate “só 200” como sucesso: 201 é a resposta normal de criação.</td></tr><tr><td>Limite de requisições</td><td>Global: 100 requisições por minuto por IP (configurável no servidor). Login: 10/min; refresh e logout: 30/min; troca de senha: 5/min. Excesso: <strong>429 <code>TOO_MANY_REQUESTS</code></strong>.</td></tr></tbody></table></div>
+<p>Exemplo de erro de validação:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "code": "VALIDATION_ERROR",
+  "message": ["property gai_user should not exist", "year must not be greater than 2100"]
+}</code></pre></div>
+<p>Exemplo de erro de regra de negócio:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "code": "VERSION_CONFLICT",
+  "message": "O item mudou no servidor. Baixe a versão atual e reaplique a alteração.",
+  "details": { "item": { "external_item_id": "1730736000123456", "version": 1902, "...": "..." } }
+}</code></pre></div>
+<h3 id="rel-ambientes">Ambientes</h3>
+<div class="tbl"><table><thead><tr><th>Ambiente</th><th>URL base da API</th><th>Observação</th></tr></thead><tbody><tr><td><strong>Produção (AWS/CloudFront)</strong></td><td><code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code></td><td>Endereço oficial por enquanto. Frontend em <code>https://d1kanjou9wgm7q.cloudfront.net</code> (login em <code>/login</code>).</td></tr><tr><td>Desenvolvimento (local)</td><td><code>http://localhost:3000/api/v1</code></td><td>Somente para quem roda o backend na própria máquina. Não usar em builds distribuídos.</td></tr></tbody></table></div>
+<h3 id="rel-observações-sobre-o-ambiente">Observações sobre o ambiente</h3>
+<ul><li>Toda a API é servida pelo mesmo endereço do frontend, no prefixo <code>/api/v1</code>.</li><li>Health check: <code>GET https://d1kanjou9wgm7q.cloudfront.net/api/v1/health</code> → <code>200 {"status":"ok"}</code>.</li><li>Rotas autenticadas sem token retornam <strong>401 em JSON</strong> (ex.: <code>GET /auth/me</code> → <code>{"code":"UNAUTHORIZED","message":"Authentication required"}</code>).</li><li><strong>Atenção:</strong> uma requisição para uma rota inexistente ou com método errado pode retornar <strong>200 com HTML</strong> (a página do app) em vez de 404, por causa do fallback do CloudFront para a SPA. Se a resposta vier como <code>text/html</code>, revise a rota e o método. O app deve tratar qualquer resposta <code>text/html</code> da API como erro, nunca como sucesso.</li><li>Ainda não há domínio próprio. Se um domínio for configurado depois, basta trocar a URL base.</li></ul>
+<aside class="callout"><strong>Rotas <code>/mobile/*</code> ainda não publicadas (verificado em 10/11/2026).</strong> No endereço acima, <code>/health</code>, <code>POST /auth/login</code> e <code>GET /auth/me</code> respondem em JSON, mas <code>GET /mobile/me</code>, <code>POST /mobile/auth/login</code> e <code>POST /mobile/auth/refresh</code> devolvem <strong>200 <code>text/html</code></strong> (a página da SPA). O motivo é que o módulo mobile (<code>gai-backend/src/modules/mobile</code>) existe no código local, mas ainda não foi commitado nem implantado. Os caminhos documentados continuam corretos. Eles passam a funcionar nessa URL depois do próximo deploy que incluir o módulo. Até lá, o app não consegue usar o ambiente da AWS.</aside>
+<h3 id="rel-11-regras-de-acesso-comuns">1.1 Regras de acesso comuns</h3>
+<p>Toda rota com Bearer passa pelas mesmas verificações, nesta ordem:</p>
+<ol><li>Sessão válida e não expirada (senão <strong>401 <code>UNAUTHORIZED</code></strong>).</li><li>Usuário ativo e organização ativa (senão <strong>401</strong>).</li><li>Senha temporária: enquanto <code>must_change_password</code> for <code>true</code>, só a troca de senha funciona; as rotas <code>/mobile/...</code> respondem <strong>403 <code>PASSWORD_CHANGE_REQUIRED</code></strong>. Senha temporária vencida: <strong>401</strong>.</li><li>Conta de campo: a conta precisa estar vinculada a um <strong>inventariante ativo</strong>. Sem isso: <strong>403 <code>MOBILE_ACCESS_DENIED</code></strong>.</li><li>Projeto: nas rotas <code>/mobile/projects/{projectId}/...</code>, o inventariante precisa ter <strong>vínculo ativo e vigente</strong> com o projeto. Sem vínculo: <strong>403 <code>FORBIDDEN</code></strong> (ou <code>PROJECT_NOT_AUTHORIZED</code>). Projeto inexistente ou de outra organização tem a mesma resposta.</li><li>Permissão: cada rota exige as permissões listadas (todas). Sem alguma: <strong>403 <code>FORBIDDEN</code></strong> (“Insufficient permissions”).</li><li>Status do projeto: operações de escrita só em projetos <code>draft</code>, <code>active</code> ou <code>paused</code>. Fora disso: <strong>409 <code>PROJECT_STATUS_BLOCKS_OPERATION</code></strong>.</li></ol>
+<p>A organização e o inventariante vêm <strong>sempre da sessão</strong>. Nada que o app envie (ids de usuário, nome, organização) é usado como prova de identidade.</p>
+<h3 id="rel-12-permissões">1.2 Permissões</h3>
+<div class="tbl"><table><thead><tr><th>Permissão</th><th>Usada em</th><th>Perfil padrão do inventariante</th></tr></thead><tbody><tr><td><code>inventory-items:read</code></td><td>listar, sincronizar e consultar itens; placas</td><td>Sim</td></tr><tr><td><code>inventory-items:create</code> + <code>inventory-items:update</code></td><td><code>PUT</code> de item (as duas são exigidas)</td><td>Sim</td></tr><tr><td><code>inventory-items:deactivate</code></td><td><code>DELETE</code> de item</td><td>Sim</td></tr><tr><td><code>inventory-item-images:read</code> + <code>:download</code></td><td>listar fotos com URL</td><td>Sim</td></tr><tr><td><code>inventory-item-images:create</code></td><td>pedir URL de upload</td><td>Sim</td></tr><tr><td><code>inventory-item-images:update</code></td><td>confirmar upload</td><td>Sim</td></tr><tr><td><code>inventory-item-images:remove</code></td><td>remover foto</td><td>Sim</td></tr><tr><td><code>import-sessions:create</code>, <code>:read</code>, <code>:finish</code></td><td>reconciliação</td><td>Sim</td></tr><tr><td><code>import-files:create</code>, <code>import-payloads:create</code>, <code>import-errors:read</code></td><td>reconciliação</td><td>Sim</td></tr><tr><td><code>expenses:create</code></td><td>registrar despesa</td><td><strong>Não</strong> — concedida por perfil, explicitamente</td></tr><tr><td><code>expenses:upload-attachment</code></td><td>comprovante</td><td><strong>Não</strong> — concedida explicitamente</td></tr><tr><td><code>expenses:read</code></td><td>listar as próprias despesas</td><td><strong>Não</strong> — e não aparece em <code>/mobile/me</code> (ver <a href="#rel-72-listar-as-próprias-despesas">7.2</a>)</td></tr></tbody></table></div>
+<p><code>GET /mobile/me</code> devolve em <code>permissions[]</code> as permissões relevantes ao app que a conta possui. Use a lista para mostrar ou ocultar funções (por exemplo, o menu de despesas só com <code>expenses:create</code>).</p>
+<h2 id="rel-2-autenticação-e-sessão">2. Autenticação e sessão</h2>
+<h3 id="rel-21-modelo-de-sessão">2.1 Modelo de sessão</h3>
+<div class="tbl"><table><thead><tr><th>Elemento</th><th>Valor</th></tr></thead><tbody><tr><td>Access token</td><td>Opaco (UUID). Vale <strong>15 minutos</strong> e <strong>não</strong> é renovado pelo uso. Não tente decodificar; use <code>access_token_expires_at</code>.</td></tr><tr><td>Refresh token</td><td>Opaco, formato <code>gmr_</code> + 43 caracteres. <strong>Uso único e rotativo</strong>: cada refresh devolve um par novo. Vale 14 dias desde a última rotação.</td></tr><tr><td>Limite absoluto</td><td><code>session_expires_at</code>: <strong>30 dias</strong> desde o login. Depois disso, só com novo login (o refresh responde 401 <code>SESSION_EXPIRED</code>).</td></tr><tr><td>Janela de duplicidade</td><td>Se o mesmo refresh token for usado de novo em até 30 s, a resposta é <strong>409 <code>REFRESH_TOKEN_ALREADY_ROTATED</code></strong> (requisição duplicada, não ataque).</td></tr><tr><td>Detecção de roubo</td><td>Reuso do refresh token depois de 30 s revoga a sessão inteira: <strong>401 <code>REFRESH_TOKEN_REUSED</code></strong>.</td></tr><tr><td>Bloqueio de conta</td><td>5 senhas erradas seguidas bloqueiam a conta por 30 minutos: <strong>423 <code>ACCOUNT_LOCKED</code></strong>.</td></tr><tr><td>Inventariante bloqueado</td><td>Login, refresh e demais rotas respondem <strong>403 <code>MOBILE_ACCESS_DENIED</code></strong>.</td></tr></tbody></table></div>
+<h3 id="rel-22-login">2.2 Login</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Tela de login do app. Abre a sessão do aparelho.</td></tr><tr><td>Legado</td><td><code>POST /auth/login</code> <code>{email, password}</code> → JWT de 1 h + <code>user.projects</code></td></tr><tr><td>GAI</td><td><code>POST /mobile/auth/login</code></td></tr><tr><td>Headers</td><td><code>Content-Type: application/json</code>. <strong>Sem</strong> <code>Authorization</code>.</td></tr><tr><td>Parâmetros</td><td>Nenhum.</td></tr><tr><td>Permissões</td><td>Nenhuma permissão específica; a conta precisa estar ativa e vinculada a um inventariante ativo.</td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "identifier": "tecnico@empresa.com",
+  "password": "&lt;senha&gt;",
+  "device_label": "Galaxy A14 - João"
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>identifier</code></td><td>Sim</td><td>E-mail <strong>ou</strong> login. Texto não vazio, até 255 caracteres.</td></tr><tr><td><code>password</code></td><td>Sim</td><td>8 a 256 caracteres.</td></tr><tr><td><code>device_label</code></td><td>Não</td><td>Até 100 caracteres. Informativo (aparece na auditoria); não é prova de identidade.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "token_type": "Bearer",
+  "access_token": "00000000-0000-4000-8000-000000000000",
+  "access_token_expires_at": "2026-11-10T13:15:00.000Z",
+  "refresh_token": "gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl",
+  "refresh_token_expires_at": "2026-11-24T13:00:00.000Z",
+  "session_expires_at": "2026-12-10T13:00:00.000Z",
+  "user": { "id": 29, "full_name": "João Pedro", "must_change_password": false }
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Significado e ação no app</th></tr></thead><tbody><tr><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Campos ausentes, senha com menos de 8 caracteres, campo extra (por exemplo <code>email</code>). Corrija o envio.</td></tr><tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Credenciais inválidas ou conta indisponível. Mensagem genérica, sem revelar o motivo.</td></tr><tr><td>403</td><td><code>MOBILE_ACCESS_DENIED</code></td><td>A conta não tem inventariante ativo (conta só web, inventariante bloqueado ou excluído). Mostre “acesso ao aplicativo não liberado”.</td></tr><tr><td>423</td><td><code>ACCOUNT_LOCKED</code></td><td>Bloqueio temporário por tentativas erradas. Mostre a mensagem e não repita.</td></tr><tr><td>429</td><td><code>TOO_MANY_REQUESTS</code></td><td>Mais de 10 tentativas por minuto do mesmo IP. Aguarde.</td></tr></tbody></table></div>
+<p>Diferenças em relação ao legado:</p>
+<ul><li>O campo <code>email</code> virou <code>identifier</code> e aceita e-mail ou login.</li><li>O token não é JWT. O app não pode mais conferir <code>exp</code> decodificando o token: deve usar <code>access_token_expires_at</code>.</li><li>O access token dura 15 minutos (antes 1 hora) e existe um refresh token separado.</li><li>A resposta não traz <code>user.projects</code>, <code>user.email</code> nem <code>user.role</code>. Os projetos vêm de <code>GET /mobile/me</code>.</li><li><code>user.name</code> (usado como <code>gai_user</code>) deixou de ser necessário: o servidor identifica o técnico pela sessão.</li></ul>
+<p>O que muda no app:</p>
+<ul><li>Trocar o corpo para <code>{identifier, password, device_label}</code>.</li><li>Guardar <code>access_token</code>, <code>refresh_token</code>, <code>access_token_expires_at</code> e <code>session_expires_at</code> em armazenamento seguro (ver <a href="#rel-28-armazenamento-seguro-e-tratamento-de-401403">2.8</a>).</li><li>Se <code>user.must_change_password</code> for <code>true</code>, abrir a tela de troca de senha <strong>antes</strong> de qualquer outra chamada (<a href="#rel-26-troca-de-senha-obrigatória">2.6</a>).</li><li>Depois do login, chamar <code>GET /mobile/me</code> para obter projetos e permissões.</li><li>Tratar 401, 403, 423 e 429 com mensagens distintas (o legado mostrava sempre “Não foi possível fazer o login”).</li></ul>
+<h3 id="rel-23-refresh-renovação-da-sessão">2.3 Refresh (renovação da sessão)</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Renovar o access token sem pedir senha.</td></tr><tr><td>Legado</td><td><code>POST /auth/refresh</code>, sem corpo, com <code>Authorization: Bearer &lt;JWT vencido&gt;</code></td></tr><tr><td>GAI</td><td><code>POST /mobile/auth/refresh</code></td></tr><tr><td>Headers</td><td><code>Content-Type: application/json</code>. <strong>Sem</strong> <code>Authorization</code>.</td></tr><tr><td>Permissões</td><td>Nenhuma; a conta e o inventariante precisam continuar ativos.</td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "refresh_token": "gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl" }</code></pre></div>
+<p><code>refresh_token</code> é obrigatório, com exatamente 47 caracteres no formato <code>gmr_[A-Za-z0-9_-]{43}</code>.</p>
+<p>Resposta <strong>200</strong>: mesmo formato do login, com <strong>um par novo</strong> (access e refresh). O access token anterior é revogado na hora.</p>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação no app</th></tr></thead><tbody><tr><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Token mal formado. Apague os tokens e peça login.</td></tr><tr><td>401</td><td><code>INVALID_REFRESH_TOKEN</code>, <code>SESSION_EXPIRED</code>, <code>SESSION_REVOKED</code>, <code>REFRESH_TOKEN_REUSED</code></td><td>Sessão encerrada. Apague os tokens e peça login. <strong>Não apague a fila offline.</strong></td></tr><tr><td>403</td><td><code>MOBILE_ACCESS_DENIED</code></td><td>Inventariante bloqueado. Mostre “acesso suspenso”. Não apague a fila.</td></tr><tr><td>409</td><td><code>REFRESH_TOKEN_ALREADY_ROTATED</code></td><td>Outra requisição do próprio app já renovou com esse token. Use o par que ela recebeu; se não houver, peça login.</td></tr><tr><td>423</td><td><code>ACCOUNT_LOCKED</code></td><td>Conta bloqueada temporariamente.</td></tr><tr><td>429</td><td><code>TOO_MANY_REQUESTS</code></td><td>Aguarde e repita.</td></tr></tbody></table></div>
+<p>Diferenças em relação ao legado:</p>
+<ul><li>O token vencido não serve mais para renovar. Só o refresh token renova.</li><li>Cada refresh token funciona <strong>uma vez</strong>. Duas renovações paralelas com o mesmo token geram 409 na segunda.</li><li>Se o refresh falhar, o app não deve seguir com o token antigo: ele já não vale.</li></ul>
+<p>O que muda no app:</p>
+<ul><li>Renovar um pouco antes de <code>access_token_expires_at</code> (por exemplo, 60 s antes) ou ao receber 401 em qualquer rota.</li><li>Garantir <strong>um refresh por vez</strong> (mutex) e substituir os <strong>dois</strong> tokens a cada sucesso, gravando-os antes de liberar as requisições que esperavam.</li></ul>
+<h3 id="rel-24-logout">2.4 Logout</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Encerrar a sessão do aparelho (menu “Sair”).</td></tr><tr><td>Legado</td><td>Não existia (o app só apagava o JWT local).</td></tr><tr><td>GAI</td><td><code>POST /mobile/auth/logout</code></td></tr><tr><td>Headers</td><td><code>Content-Type: application/json</code>. Sem <code>Authorization</code>.</td></tr></tbody></table></div>
+<p>Requisição: <code>{ "refresh_token": "gmr_..." }</code>. Resposta: <strong>204</strong> sem corpo, sempre (inclusive para token desconhecido ou já revogado). Erros possíveis: 400 (formato inválido) e 429.</p>
+<p>O que muda no app: chamar o logout antes de apagar os tokens locais; se não houver rede, apagar os tokens mesmo assim (a sessão expira sozinha). Antes de sair, avisar se houver itens pendentes na fila.</p>
+<h3 id="rel-25-identidade-do-inventariante">2.5 Identidade do inventariante</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Saber quem está logado, de qual organização, qual inventariante, quais projetos pode abrir e quais funções mostrar.</td></tr><tr><td>Legado</td><td>Dados em <code>user</code> do login (<code>id</code>, <code>name</code>, <code>email</code>, <code>role</code>, <code>projects</code>).</td></tr><tr><td>GAI</td><td><code>GET /mobile/me</code></td></tr><tr><td>Headers</td><td><code>Authorization: Bearer &lt;access_token&gt;</code>, <code>Accept: application/json</code>.</td></tr><tr><td>Permissões</td><td>Nenhuma específica; exige inventariante ativo.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "user": { "id": 29, "full_name": "João Pedro", "login": "tecnico.campo", "email": "tecnico@empresa.com", "must_change_password": false },
+  "organization": { "id": 3, "name": "Empresa Exemplo" },
+  "field_agent": { "id": 12, "name": "João Pedro", "status": "active" },
+  "projects": [
+    {
+      "id": 97,
+      "name": "TESTE 3 - 2026",
+      "code": "P-097",
+      "status": "active",
+      "assignment": { "id": 40, "role": "Técnico", "start_date": "2026-10-01", "end_date": null }
+    }
+  ],
+  "permissions": [
+    "projects:read", "inventory-items:read", "inventory-items:create", "inventory-items:update",
+    "inventory-items:deactivate", "inventory-item-images:read", "inventory-item-images:create",
+    "inventory-item-images:update", "inventory-item-images:download", "inventory-item-images:remove",
+    "import-sessions:create", "import-sessions:read", "import-sessions:finish",
+    "import-files:create", "import-payloads:create", "import-errors:read"
+  ],
+  "session": { "client_type": "mobile", "expires_at": "2026-11-10T13:15:00.000Z" }
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação</th></tr></thead><tbody><tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Renove a sessão; se o refresh falhar, peça login.</td></tr><tr><td>403</td><td><code>MOBILE_ACCESS_DENIED</code></td><td>Inventariante bloqueado ou desvinculado. Mostre “acesso suspenso”.</td></tr><tr><td>403</td><td><code>PASSWORD_CHANGE_REQUIRED</code></td><td>Abra a troca de senha.</td></tr></tbody></table></div>
+<p>Regras:</p>
+<ul><li><code>projects[]</code> traz só projetos com vínculo <strong>ativo e vigente</strong> (dentro de <code>start_date</code>/<code>end_date</code>) e status <code>draft</code>, <code>active</code> ou <code>paused</code>, ordenados por nome.</li><li><code>session.expires_at</code> é a expiração do access token atual (não da sessão absoluta).</li><li>A lista <code>permissions[]</code> cobre as permissões relevantes ao app; <code>expenses:read</code> não é listada.</li></ul>
+<p>Diferenças e mudanças no app:</p>
+<ul><li>O filtro de projetos agora é feito no servidor. O app não deve filtrar por conta própria nem guardar ids de projeto do login.</li><li>Chame <code>/mobile/me</code> após o login, ao abrir o app e periodicamente (por exemplo, a cada sincronização) para refletir vínculos novos ou encerrados.</li><li>O nome a exibir é <code>field_agent.name</code> (ou <code>user.full_name</code>).</li></ul>
+<h3 id="rel-26-troca-de-senha-obrigatória">2.6 Troca de senha obrigatória</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Trocar a senha temporária criada pelo administrador.</td></tr><tr><td>Legado</td><td>Não existia no app.</td></tr><tr><td>GAI</td><td><code>POST /auth/password/change</code> (rota compartilhada com a web)</td></tr><tr><td>Headers</td><td><code>Authorization: Bearer &lt;access_token&gt;</code>, <code>Content-Type: application/json</code>.</td></tr><tr><td>Permissões</td><td>Nenhuma; é a única rota liberada enquanto <code>must_change_password</code> for <code>true</code>. Limite 5/min.</td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "current_password": "&lt;senha temporária&gt;", "new_password": "&lt;nova senha&gt;" }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>current_password</code></td><td>Sim</td><td>1 a 256 caracteres.</td></tr><tr><td><code>new_password</code></td><td>Sim</td><td>8 a 128 caracteres, não pode ser só espaços, diferente da atual. Frases e espaços são aceitos.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "message": "Senha alterada. Entre novamente para continuar." }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação</th></tr></thead><tbody><tr><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Senha nova fora da regra ou igual à atual.</td></tr><tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Senha atual errada, sessão inválida ou <strong>senha temporária vencida</strong> (peça uma nova ao administrador).</td></tr><tr><td>429</td><td><code>TOO_MANY_REQUESTS</code></td><td>Aguarde.</td></tr></tbody></table></div>
+<p>O que muda no app: criar a tela de troca. Depois do 200, <strong>todas as sessões do usuário são revogadas</strong>: apague os tokens e faça login de novo com a senha nova.</p>
+<h3 id="rel-27-ciclo-de-vida-recomendado">2.7 Ciclo de vida recomendado</h3>
+<div class="code"><span class="lang">text</span><pre><code>Abrir app
+  ├─ sem tokens ─────────────► Login
+  ├─ session_expires_at passou ► Login
+  └─ tokens válidos ─────────► GET /mobile/me
+        ├─ 200 ───────────────► Projetos / fila / sincronização
+        ├─ 401 ───────────────► Refresh (mutex) ─► repete; se falhar ► Login
+        ├─ 403 PASSWORD_CHANGE_REQUIRED ► Troca de senha ► Login
+        └─ 403 MOBILE_ACCESS_DENIED ────► Tela "acesso suspenso"</code></pre></div>
+<h3 id="rel-28-armazenamento-seguro-e-tratamento-de-401403">2.8 Armazenamento seguro e tratamento de 401/403</h3>
+<ul><li>Guarde os tokens com <code>flutter_secure_storage</code> (Android Keystore / EncryptedSharedPreferences). <strong>Nunca</strong> em <code>SharedPreferences</code> comum, banco local sem criptografia ou logs.</li><li>Não registre tokens, senhas ou URLs pré-assinadas nos logs de diagnóstico.</li><li><strong>401</strong> em qualquer rota: renove uma vez e repita a requisição original uma vez. Se o refresh devolver 401, apague os tokens e vá para o login, mantendo a fila offline.</li><li><strong>403</strong> não se resolve com refresh. Diferencie pelo <code>code</code>: <code>PASSWORD_CHANGE_REQUIRED</code> (troca), <code>MOBILE_ACCESS_DENIED</code> (acesso suspenso), <code>FORBIDDEN</code> em rota de projeto (vínculo encerrado: atualize <code>/mobile/me</code> e retire o projeto da tela; itens daquele projeto na fila ficam bloqueados até novo vínculo).</li></ul>
+<h2 id="rel-3-projetos-do-inventariante">3. Projetos do inventariante</h2>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Lista de projetos que o técnico pode abrir.</td></tr><tr><td>Legado</td><td><code>GET /gai/projects</code> (sem token, todos os projetos; o app filtrava por <code>user.projects</code>)</td></tr><tr><td>GAI</td><td><code>GET /mobile/me</code> → <code>projects[]</code> (<a href="#rel-25-identidade-do-inventariante">2.5</a>)</td></tr></tbody></table></div>
+<p>Diferenças:</p>
+<ul><li>Não há rota pública de projetos. A lista vem filtrada pelo servidor, só com projetos vinculados ao inventariante.</li><li><code>nome</code> → <code>name</code>; <code>descricao</code> não existe; há <code>code</code>, <code>status</code> e <code>assignment</code>.</li><li><strong><code>extra_fields</code> por projeto não existe no GAI.</strong> O legado devolvia os nomes dos campos extras (<code>"[\"Patrimônio\",\"Setor\"]"</code>). No GAI, cada item guarda seu próprio objeto <code>extra_fields</code>, mas não há cadastro de nomes por projeto (ver <a href="#rel-112-recursos-ainda-não-implementados">11.2</a>).</li></ul>
+<p>O que muda no app: remover a chamada a <code>/gai/projects</code> e o filtro local; usar <code>projects[]</code>. Para montar os campos extras do formulário, use os nomes já presentes nos itens sincronizados do projeto, mais os que o técnico digitar.</p>
+<h2 id="rel-4-itens">4. Itens</h2>
+<h3 id="rel-41-campos-do-item-legado--gai">4.1 Campos do item (legado → GAI)</h3>
+<div class="tbl"><table><thead><tr><th>Legado (<code>sync_items</code>)</th><th>GAI</th><th>Tipo e validação</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>externalId</code> na URL; <code>external_item_id</code> na resposta</td><td>Texto, até 100 caracteres <code>[A-Za-z0-9._:-]</code></td></tr><tr><td><code>gai_user</code></td><td>— (vem da sessão)</td><td><strong>Não enviar</strong> (400)</td></tr><tr><td><code>project_id</code></td><td><code>projectId</code> na URL</td><td>Inteiro</td></tr><tr><td>—</td><td><code>sequence</code></td><td>Texto até 50 (opcional)</td></tr><tr><td><code>placa_antiga</code></td><td><code>old_plate</code></td><td>Texto até 100; normalizado</td></tr><tr><td><code>placa_antiga_2</code></td><td><code>old_plate_2</code></td><td>Texto até 100; normalizado</td></tr><tr><td><code>placa_nova</code></td><td><code>new_plate</code></td><td>Texto até 100; normalizado</td></tr><tr><td><code>unidade</code></td><td><code>unit_text</code></td><td>Texto até 255</td></tr><tr><td><code>endereco</code></td><td><code>address_text</code></td><td>Texto até 2000</td></tr><tr><td><code>localizacao</code></td><td><code>location_text</code></td><td>Texto até 2000</td></tr><tr><td><code>descricao</code></td><td><code>description</code></td><td>Texto até 4000</td></tr><tr><td><code>marca</code></td><td><code>brand</code></td><td>Texto até 100</td></tr><tr><td><code>modelo</code></td><td><code>model</code></td><td>Texto até 100</td></tr><tr><td><code>num_serie</code></td><td><code>serial_number</code></td><td>Texto até 100</td></tr><tr><td><code>capacidade</code></td><td><code>capacity</code></td><td>Texto até 100</td></tr><tr><td><code>ano</code> (texto)</td><td><code>year</code></td><td><strong>Inteiro</strong> 1900–2100 ou <code>null</code></td></tr><tr><td><code>obs</code></td><td><code>notes</code></td><td>Texto até 4000</td></tr><tr><td><code>valor_usado</code> / <code>valor_novo</code></td><td><code>used_value</code> / <code>new_value</code></td><td>Texto <code>"150.00"</code> ou <code>null</code></td></tr><tr><td><code>fonte</code></td><td><code>source</code> (só leitura)</td><td>Definido pelo servidor: <code>mobile_app</code></td></tr><tr><td><code>extra_fields</code> (não enviado pelo app 1.4.6)</td><td><code>extra_fields</code></td><td>Objeto texto → texto, até 100 campos (nome ≤ 100, valor ≤ 1000)</td></tr><tr><td><code>image_1 … image_n</code></td><td>Fotos em 3 passos (<a href="#rel-5-fotos-dos-itens">seção 5</a>)</td><td>—</td></tr><tr><td>—</td><td><code>base_version</code> (envio) / <code>version</code> (resposta)</td><td>Controle de conflito</td></tr><tr><td>—</td><td><code>deleted</code>, <code>deleted_at</code>, <code>status</code></td><td>Exclusão lógica e situação</td></tr></tbody></table></div>
+<p>Regras de valores:</p>
+<div class="tbl"><table><thead><tr><th>Valor enviado</th><th>Efeito</th></tr></thead><tbody><tr><td>Campo <strong>ausente</strong></td><td>Mantém o valor do servidor.</td></tr><tr><td><code>null</code></td><td><strong>Limpa</strong> o campo.</td></tr><tr><td><code>""</code> ou só espaços (campos de texto e placas)</td><td>Limpa o campo (vira <code>null</code>).</td></tr><tr><td><code>""</code> em <code>year</code>, <code>used_value</code> ou <code>new_value</code></td><td><strong>400</strong> — envie <code>null</code>.</td></tr><tr><td>Texto com espaços nas pontas</td><td>Gravado sem os espaços.</td></tr><tr><td>Placa <code>"ab-12 3"</code></td><td>Gravada como <code>"AB123"</code> (maiúsculas, só <code>[A-Z0-9]</code>). <code>"11-27"</code> vira <code>"1127"</code>.</td></tr><tr><td><code>extra_fields: {"Setor": null}</code> ou <code>""</code></td><td>A entrada é descartada.</td></tr><tr><td><code>extra_fields</code> enviado</td><td><strong>Substitui</strong> o conjunto inteiro de campos extras do item.</td></tr><tr><td><code>extra_fields: null</code></td><td>Remove todos os campos extras.</td></tr></tbody></table></div>
+<p>Objeto <code>Item</code> devolvido pelas rotas de itens:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "id": 5012,
+  "external_item_id": "1730736000123456",
+  "version": 1843,
+  "sequence": null,
+  "old_plate": "12345",
+  "old_plate_2": null,
+  "new_plate": "251",
+  "unit_text": "SEDE",
+  "address_text": "Rua X, 100",
+  "location_text": "RECEPÇÃO",
+  "description": "CADEIRA GIRATÓRIA",
+  "brand": null,
+  "model": null,
+  "serial_number": null,
+  "capacity": null,
+  "year": 2019,
+  "notes": null,
+  "source": "mobile_app",
+  "used_value": "150.00",
+  "new_value": null,
+  "extra_fields": { "Patrimônio": "123", "Setor": "TI" },
+  "status": "pending",
+  "deleted": false,
+  "created_by_id": 29,
+  "updated_by_id": 29,
+  "created_at": "2026-11-10T13:00:00.000Z",
+  "updated_at": "2026-11-10T13:00:00.000Z",
+  "deleted_at": null,
+  "images": [
+    { "id": 881, "status": "uploaded", "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 214733, "checksum": "3f0c…", "created_at": "2026-11-10T13:01:00.000Z" }
+  ]
+}</code></pre></div>
+<ul><li><code>id</code> é o id interno do GAI; a chave do app continua sendo <code>external_item_id</code>.</li><li><code>version</code> é a versão do item no projeto; use-a como <code>base_version</code> na próxima edição. Ela muda a cada alteração do item, inclusive feita pela web, pela importação ou por fotos.</li><li><code>extra_fields</code> é sempre objeto (<code>{}</code> quando vazio).</li><li><code>images</code> aparece em <code>GET</code> (lista, sync e item), com as fotos não removidas. <strong>Não</strong> aparece nas respostas de <code>PUT</code>/<code>DELETE</code> nem em <code>details.item</code> dos conflitos.</li><li><code>status</code>: <code>pending</code>, <code>evaluated</code>, <code>divergent</code>, <code>not_found</code>, <code>duplicated</code>, <code>removed</code> ou <code>inactive</code>. <code>deleted: true</code> significa excluído.</li></ul>
+<h3 id="rel-42-criar-ou-editar-item">4.2 Criar ou editar item</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Cadastro e edição de item (fila de envio).</td></tr><tr><td>Legado</td><td><code>POST /gai/sync_items</code> (multipart, sem token, 1 item por chamada; criava ou atualizava pelo <code>id</code>). Também <code>POST /gai/item/create</code> e <code>/gai/item/update</code> (não usadas desde a 1.4.6).</td></tr><tr><td>GAI</td><td><code>PUT /mobile/projects/{projectId}/items/{externalId}</code></td></tr><tr><td>Headers</td><td><code>Authorization: Bearer</code>, <code>Content-Type: application/json</code>.</td></tr><tr><td>Parâmetros de URL</td><td><code>projectId</code> (inteiro ≥ 1), <code>externalId</code> (id do aparelho, texto).</td></tr><tr><td>Permissões</td><td><code>inventory-items:create</code> <strong>e</strong> <code>inventory-items:update</code>; vínculo com o projeto; projeto em <code>draft</code>/<code>active</code>/<code>paused</code>.</td></tr></tbody></table></div>
+<p>Criação (sem <code>base_version</code>):</p>
+<div class="code"><span class="lang">http</span><pre><code>PUT /api/v1/mobile/projects/97/items/1730736000123456
+Authorization: Bearer &lt;access_token&gt;
+Content-Type: application/json
+
+{
+  "new_plate": "251",
+  "old_plate": "12345",
+  "old_plate_2": null,
+  "unit_text": "SEDE",
+  "address_text": "Rua X, 100",
+  "location_text": "RECEPÇÃO",
+  "description": "CADEIRA GIRATÓRIA",
+  "brand": null,
+  "model": null,
+  "serial_number": null,
+  "capacity": null,
+  "year": 2019,
+  "notes": null,
+  "used_value": "150.00",
+  "extra_fields": { "Patrimônio": "123", "Setor": "TI" }
+}</code></pre></div>
+<p>Resposta <strong>201</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "result": "created", "item": { "external_item_id": "1730736000123456", "version": 1843, "...": "demais campos do Item" } }</code></pre></div>
+<p>Edição (com <code>base_version</code> = <code>version</code> que o aparelho conhece; envie só o que mudou ou o item inteiro):</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "base_version": 1843, "location_text": "SALA 2", "old_plate_2": "998877" }</code></pre></div>
+<p>Resposta <strong>200</strong> <code>{ "result": "updated", "item": { ..., "version": 1902 } }</code>.</p>
+<div class="tbl"><table><thead><tr><th>Situação</th><th>Resposta</th></tr></thead><tbody><tr><td>Item não existe</td><td><strong>201</strong> <code>created</code> (<code>base_version</code> deve ser omitido ou <code>null</code>/<code>0</code>).</td></tr><tr><td>Item existe e o corpo não muda nada</td><td><strong>200</strong> <code>unchanged</code>, mesmo sem <code>base_version</code>. Reenvio após timeout é seguro.</td></tr><tr><td>Item existe, corpo muda algo, <code>base_version</code> igual à versão atual</td><td><strong>200</strong> <code>updated</code>.</td></tr><tr><td><code>base_version</code> ausente ou diferente da atual, com mudança</td><td><strong>409 <code>VERSION_CONFLICT</code></strong>, com o item atual em <code>details.item</code>.</td></tr><tr><td>Item excluído</td><td><strong>409 <code>ITEM_DELETED</code></strong>, com o item em <code>details.item</code>. O app não reativa itens.</td></tr><tr><td><code>base_version</code> &gt; 0 para item que não existe</td><td><strong>404 <code>ITEM_NOT_FOUND</code></strong>.</td></tr><tr><td>Projeto encerrado/cancelado/arquivado</td><td><strong>409 <code>PROJECT_STATUS_BLOCKS_OPERATION</code></strong>.</td></tr><tr><td>Campo inválido ou desconhecido (<code>gai_user</code>, <code>id</code>, <code>placa_nova</code>…)</td><td><strong>400 <code>VALIDATION_ERROR</code></strong>.</td></tr><tr><td><code>externalId</code> fora do padrão</td><td><strong>400 <code>VALIDATION_ERROR</code></strong>.</td></tr><tr><td>Sem vínculo com o projeto / sem permissão</td><td><strong>403</strong>.</td></tr></tbody></table></div>
+<p>Diferenças em relação ao legado:</p>
+<ul><li>JSON em vez de multipart; o id vai na URL e os nomes de campo mudaram (<a href="#rel-41-campos-do-item-legado--gai">4.1</a>).</li><li>As fotos não vão junto: são enviadas depois, em 3 passos, e só depois que o item existe no servidor.</li><li><code>gai_user</code> não é enviado: o autor é a conta da sessão (<code>created_by_id</code>/<code>updated_by_id</code>), e a auditoria registra o inventariante.</li><li>Edição exige <code>base_version</code>; o legado sobrescrevia sempre (“o último ganha”).</li><li>201 também é sucesso; 409 não deve ser repetido automaticamente.</li><li><code>extra_fields</code> passa a ser enviado e salvo por item.</li></ul>
+<p>O que muda no app:</p>
+<ul><li>Montar o corpo com os nomes novos; converter <code>ano</code> para inteiro (ou <code>null</code>) e valores para <code>"0.00"</code> (ou <code>null</code>). Se o técnico digitou um ano não numérico, mantenha o texto original em <code>notes</code> ou em <code>extra_fields</code> (decisão do app).</li><li>Guardar <code>version</code> de cada item depois de cada resposta e usá-la como <code>base_version</code>.</li><li>Tratar 409 como conflito a resolver (<a href="#rel-93-conflitos-409">9.3</a>), nunca como falha a repetir.</li></ul>
+<h3 id="rel-43-consultar-um-item">4.3 Consultar um item</h3>
+<p><code>GET /mobile/projects/{projectId}/items/{externalId}</code> — permissão <code>inventory-items:read</code>. Devolve o <code>Item</code> com <code>images</code>, <strong>inclusive se excluído</strong> (<code>deleted: true</code>). Erros: 400 (id inválido), 403, 404 <code>ITEM_NOT_FOUND</code>. Use para recuperar um item específico após conflito ou para conferir se ele chegou ao servidor. Não existia no legado.</p>
+<h3 id="rel-44-sincronização-incremental-por-cursor">4.4 Sincronização incremental por cursor</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Atualizar a base local com tudo que mudou no servidor: itens de outros técnicos, alterações da web, importações, exclusões e fotos.</td></tr><tr><td>Legado</td><td><code>POST /gai/update_items</code> (lotes de 200 ids já enviados; devolvia <code>gai_user</code> e <code>fields</code>) e <code>GET /external/projects/{id}/items/sync</code> (Reconciliação; respondia 500).</td></tr><tr><td>GAI</td><td><code>GET /mobile/projects/{projectId}/items/sync?cursor=&amp;limit=</code></td></tr><tr><td>Headers</td><td><code>Authorization: Bearer</code>, <code>Accept: application/json</code>.</td></tr><tr><td>Permissões</td><td><code>inventory-items:read</code> e vínculo ativo e vigente com o projeto.</td></tr></tbody></table></div>
+<div class="tbl"><table><thead><tr><th>Query</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>cursor</code></td><td>Não</td><td><code>next_cursor</code> da página anterior (até 200 caracteres). Sem cursor: desde o início.</td></tr><tr><td><code>limit</code></td><td>Não</td><td>1 a 500; padrão 200.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "items": [
+    { "id": 5012, "external_item_id": "1730736000123456", "version": 1843, "deleted": false, "...": "Item completo com images" },
+    { "id": 4420, "external_item_id": null, "version": 1850, "deleted": false, "...": "item criado pela web (somente leitura)" },
+    { "id": 5100, "external_item_id": "1730736000999999", "version": 1851, "deleted": true, "deleted_at": "2026-11-10T12:40:00.000Z", "...": "..." }
+  ],
+  "next_cursor": "eyJ2IjoxLCJwIjo5NywicyI6MTg1MSwiaSI6NTEwMH0",
+  "has_more": true,
+  "server_time": "2026-11-10T13:05:00.000Z"
+}</code></pre></div>
+<p>Regras:</p>
+<ul><li>Ordem por (<code>version</code>, <code>id</code>). Cada página traz itens criados, alterados <strong>e excluídos</strong> depois do cursor.</li><li>Processe a página inteira no banco local e <strong>só então</strong> grave <code>next_cursor</code>. Repita enquanto <code>has_more</code> for <code>true</code>.</li><li>O cursor é opaco e vinculado ao projeto: não o decodifique nem o reutilize em outro projeto. Cursor inválido ou de outro projeto: <strong>400 <code>INVALID_CURSOR</code></strong> → apague o cursor e recomece sem ele.</li><li>Se a sincronização cair no meio, retome com o último cursor salvo; nada é perdido.</li><li>Um item alterado durante a paginação reaparece depois com <code>version</code> maior. Sempre aplique a versão mais alta.</li><li><code>deleted: true</code> → remova (ou marque como excluído) localmente.</li><li><code>external_item_id: null</code> → item criado pela web ou pelo legado; mostre-o, mas <strong>somente leitura</strong> no app (não há como editá-lo pela API mobile).</li><li>Fotos: o item traz <code>images</code> (metadados). A URL de visualização é pedida em <code>GET .../images</code> (<a href="#rel-54-listar-fotos-e-urls-de-visualização">5.4</a>).</li></ul>
+<p>Diferenças em relação ao legado: substitui <code>update_items</code> (que só trazia itens já enviados pelo próprio aparelho) e a rota <code>external/.../items/sync</code> (que falhava). O cursor substitui <code>last_id</code>/<code>next_last_id</code>; o filtro <code>unidade</code> e <code>updated_since</code> não existem (filtre localmente).</p>
+<p>O que muda no app: guardar um cursor por projeto; rodar a sincronização ao abrir o projeto, depois de esvaziar a fila de envio e periodicamente; remover a chamada a <code>update_items</code>.</p>
+<h3 id="rel-45-listar-itens-paginado">4.5 Listar itens (paginado)</h3>
+<p><code>GET /mobile/projects/{projectId}/items</code> — permissão <code>inventory-items:read</code>. Útil para busca pontual on-line; para manter a base local, use a sincronização.</p>
+<div class="tbl"><table><thead><tr><th>Query</th><th>Validação</th></tr></thead><tbody><tr><td><code>page</code></td><td>≥ 1, padrão 1</td></tr><tr><td><code>page_size</code></td><td>1 a 100, padrão 50</td></tr><tr><td><code>new_plate</code></td><td>Igualdade após normalização</td></tr><tr><td><code>old_plate</code></td><td>Igualdade em <code>old_plate</code> <strong>ou</strong> <code>old_plate_2</code></td></tr><tr><td><code>search</code></td><td>Contém, em descrição, placas e <code>external_item_id</code></td></tr><tr><td><code>include_deleted</code></td><td><code>true</code> ou <code>false</code> (padrão)</td></tr></tbody></table></div>
+<p>Resposta: <code>{ "items": [Item...], "page": 1, "page_size": 50, "total_items": 132, "total_pages": 3 }</code>. Não existia no legado.</p>
+<h3 id="rel-46-excluir-item">4.6 Excluir item</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>O técnico exclui um item.</td></tr><tr><td>Legado</td><td><code>POST /gai/item/delete</code> (form <code>id=...</code>, só com internet, resposta ignorada, sem nova tentativa).</td></tr><tr><td>GAI</td><td><code>DELETE /mobile/projects/{projectId}/items/{externalId}[?base_version=N]</code></td></tr><tr><td>Headers</td><td><code>Authorization: Bearer</code>. Sem corpo.</td></tr><tr><td>Permissões</td><td><code>inventory-items:deactivate</code>; vínculo; projeto em <code>draft</code>/<code>active</code>/<code>paused</code>.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "result": "deleted", "item": { "external_item_id": "1730736000123456", "deleted": true, "status": "inactive", "version": 1910, "deleted_at": "2026-11-10T14:00:00.000Z", "...": "..." } }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Situação</th><th>Resposta</th><th>Ação no app</th></tr></thead><tbody><tr><td>Excluído agora</td><td>200 <code>deleted</code></td><td>Concluído.</td></tr><tr><td>Já estava excluído</td><td>200 <code>already_deleted</code></td><td>Concluído.</td></tr><tr><td>Nunca chegou ao servidor</td><td>404 <code>ITEM_NOT_FOUND</code></td><td><strong>Concluído</strong> (nada a excluir).</td></tr><tr><td><code>base_version</code> enviado e diferente</td><td>409 <code>VERSION_CONFLICT</code></td><td>Mostrar ao técnico (o item mudou depois da última sincronização).</td></tr><tr><td>Projeto bloqueado</td><td>409 <code>PROJECT_STATUS_BLOCKS_OPERATION</code></td><td>Erro definitivo.</td></tr></tbody></table></div>
+<p>Diferenças: exclusão <strong>lógica</strong> e idempotente; o item continua no servidor marcado como excluído e aparece na sincronização com <code>deleted: true</code>. Itens excluídos não podem ser editados pelo app (409 <code>ITEM_DELETED</code>).</p>
+<p>O que muda no app: a exclusão entra na <strong>fila</strong>, como qualquer escrita, também offline. Se o item ainda não foi enviado (criado e excluído sem rede), remova as duas operações da fila e não chame o servidor. <code>base_version</code> é opcional: envie para evitar excluir um item que outra pessoa alterou.</p>
+<h2 id="rel-5-fotos-dos-itens">5. Fotos dos itens</h2>
+<h3 id="rel-51-visão-geral">5.1 Visão geral</h3>
+<div class="code"><span class="lang">text</span><pre><code>1. PUT do item (o item precisa existir no servidor)
+2. POST .../images/upload-url      → image.id, upload_url, upload_headers, expires_in_seconds (300)
+3. PUT upload_url (bytes da foto)  → direto no storage S3, SEM Authorization
+4. POST .../images/{id}/confirm-upload → result, image, item_version</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Regra</th><th>Valor</th></tr></thead><tbody><tr><td>Tipos</td><td><code>image/jpeg</code> (ou <code>image/jpg</code>), <code>image/png</code>, <code>image/webp</code></td></tr><tr><td>Tamanho máximo</td><td>10 MiB (10.485.760 bytes) por foto</td></tr><tr><td>Fotos por item</td><td>Até 3 fotos ativas (pendentes + enviadas). A 4ª: <strong>409 <code>CONFLICT</code></strong></td></tr><tr><td>Janela para enviar e confirmar</td><td><code>expires_in_seconds</code> (300 s por padrão), contada desde o pedido da URL</td></tr><tr><td>URL de visualização</td><td>Temporária (300 s por padrão). Não guarde; peça de novo quando precisar</td></tr></tbody></table></div>
+<p>As fotos do app (JPEG, lado maior 1600 px, qualidade 80, ~150–250 KB) estão bem abaixo do limite.</p>
+<h3 id="rel-52-pedir-url-de-upload">5.2 Pedir URL de upload</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Legado</td><td>Fotos iam no multipart do <code>sync_items</code> (<code>image_1…n</code>).</td></tr><tr><td>GAI</td><td><code>POST /mobile/projects/{projectId}/items/{externalId}/images/upload-url</code></td></tr><tr><td>Permissões</td><td><code>inventory-item-images:create</code>; item existente e não excluído.</td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 214733 }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>original_name</code></td><td>Sim</td><td>Até 255 caracteres</td></tr><tr><td><code>mime_type</code></td><td>Sim</td><td><code>image/jpeg</code>, <code>image/jpg</code>, <code>image/png</code>, <code>image/webp</code></td></tr><tr><td><code>size_bytes</code></td><td>Sim</td><td>Inteiro ≥ 1, até 10 MiB; deve ser o tamanho exato do arquivo</td></tr><tr><td><code>checksum</code></td><td>Não</td><td>SHA-256 em hexadecimal minúsculo (64 caracteres). Se enviado, o servidor confere</td></tr></tbody></table></div>
+<p>Resposta <strong>201</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "image": {
+    "id": 881, "organization_id": 3, "inventory_item_id": 5012, "storage_provider": "s3",
+    "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 214733, "checksum": null,
+    "status": "pending_upload", "uploaded_by_id": 29,
+    "created_at": "2026-11-10T13:01:00.000Z", "updated_at": "2026-11-10T13:01:00.000Z", "deleted_at": null
+  },
+  "upload_url": "https://&lt;bucket&gt;.s3.&lt;região&gt;.amazonaws.com/...&amp;X-Amz-Signature=...",
+  "upload_headers": { "Content-Type": "image/jpeg", "Content-Length": "214733" },
+  "expires_in_seconds": 300
+}</code></pre></div>
+<p>Erros: 400 <code>VALIDATION_ERROR</code> / <code>STORAGE_INVALID_SIZE</code> / <code>STORAGE_UNSUPPORTED_MIME</code>; 404 <code>ITEM_NOT_FOUND</code> (envie o item antes); 409 <code>ITEM_DELETED</code>, <code>CONFLICT</code> (limite de 3 fotos) ou <code>PROJECT_STATUS_BLOCKS_OPERATION</code>; 403.</p>
+<h3 id="rel-53-enviar-ao-storage-e-confirmar">5.3 Enviar ao storage e confirmar</h3>
+<p>Envio direto (sem passar pelo backend):</p>
+<div class="code"><span class="lang">http</span><pre><code>PUT &lt;upload_url&gt;
+Content-Type: image/jpeg
+Content-Length: 214733
+
+&lt;bytes do arquivo&gt;</code></pre></div>
+<ul><li>Envie <strong>exatamente</strong> os headers de <code>upload_headers</code>; a assinatura cobre <code>Content-Type</code> e <code>Content-Length</code>.</li><li><strong>Não</strong> envie <code>Authorization</code> nem outros headers de autenticação do GAI.</li><li>O storage responde <strong>200</strong> sem corpo útil. 403 do storage = URL expirada ou headers diferentes: peça nova URL.</li></ul>
+<p>Confirmação: <code>POST /mobile/projects/{projectId}/items/{externalId}/images/{imageId}/confirm-upload</code> — permissão <code>inventory-item-images:update</code>. Corpo <code>{}</code> (opcionalmente <code>{ "size_bytes": 214733, "checksum": "&lt;sha256&gt;" }</code> para conferência extra).</p>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "result": "confirmed", "image": { "id": 881, "status": "uploaded", "checksum": "3f0c…", "...": "..." }, "item_version": 1844 }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação</th></tr></thead><tbody><tr><td>200</td><td><code>confirmed</code> / <code>already_confirmed</code></td><td>Concluído. Atualize a <code>version</code> local do item com <code>item_version</code>.</td></tr><tr><td>404</td><td><code>STORAGE_OBJECT_NOT_FOUND</code></td><td>O PUT não chegou ao storage. Refaça o PUT (se dentro da janela) ou recomece do passo 1.</td></tr><tr><td>409</td><td><code>STORAGE_SIZE_MISMATCH</code>, <code>STORAGE_MIME_MISMATCH</code>, <code>STORAGE_CHECKSUM_MISMATCH</code>, <code>STORAGE_CONTENT_MISMATCH</code></td><td>O arquivo enviado não bate com o declarado (por exemplo, PNG declarado como JPEG). Corrija e recomece do passo 1.</td></tr><tr><td>409</td><td><code>ITEM_DELETED</code></td><td>O item foi excluído. Descarte a foto.</td></tr><tr><td>410</td><td><code>STORAGE_UPLOAD_EXPIRED</code></td><td>Passou a janela. Recomece do passo 1.</td></tr><tr><td>503</td><td><code>STORAGE_UNAVAILABLE</code></td><td>Repita com backoff.</td></tr></tbody></table></div>
+<p>Confirmar de novo uma foto já confirmada responde 200 <code>already_confirmed</code>: é seguro repetir.</p>
+<p>Uma foto pedida e nunca confirmada fica <code>pending_upload</code> e ocupa uma das 3 vagas. Se desistir dela, remova-a (<a href="#rel-55-remover-foto">5.5</a>).</p>
+<h3 id="rel-54-listar-fotos-e-urls-de-visualização">5.4 Listar fotos e URLs de visualização</h3>
+<p><code>GET /mobile/projects/{projectId}/items/{externalId}/images[?with_urls=false]</code> — permissões <code>inventory-item-images:read</code> <strong>e</strong> <code>inventory-item-images:download</code>.</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "item_version": 1844,
+  "items": [
+    {
+      "id": 881, "status": "uploaded", "original_name": "foto_1.jpg", "mime_type": "image/jpeg",
+      "size_bytes": 214733, "checksum": "3f0c…", "created_at": "2026-11-10T13:01:00.000Z",
+      "download_url": "https://&lt;bucket&gt;.s3.&lt;região&gt;.amazonaws.com/...", "expires_in_seconds": 300
+    }
+  ]
+}</code></pre></div>
+<ul><li><code>download_url</code> só existe para fotos <code>uploaded</code>; para <code>pending_upload</code> vem <code>null</code>.</li><li><code>with_urls=false</code> devolve só metadados (sem assinar URLs).</li><li>Atende ao pedido do legado de “URL da foto no servidor”: o app pode apagar fotos locais de itens já sincronizados e baixar quando precisar. Não armazene a URL: ela expira.</li></ul>
+<h3 id="rel-55-remover-foto">5.5 Remover foto</h3>
+<p><code>DELETE /mobile/projects/{projectId}/items/{externalId}/images/{imageId}</code> — permissão <code>inventory-item-images:remove</code>. Resposta 200 <code>{ "result": "removed" | "already_removed", "item_version": 1845 }</code>. Idempotente. Erros: 404 (foto ou item), 409 <code>ITEM_DELETED</code>. Não existia no legado.</p>
+<h2 id="rel-6-placas-duplicidade-e-pendências">6. Placas: duplicidade e pendências</h2>
+<p>As placas são comparadas <strong>normalizadas</strong>: maiúsculas e só <code>[A-Z0-9]</code> (<code>"ab-12"</code> = <code>"AB12"</code>). Só contam itens ativos (não excluídos) do projeto, de todos os aparelhos e da web.</p>
+<h3 id="rel-61-verificar-duplicidade-no-cadastro">6.1 Verificar duplicidade no cadastro</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Avisar, com internet, que a placa digitada já existe no projeto.</td></tr><tr><td>Legado</td><td><code>POST /gai/projects/{project_id}/check_duplicate</code> (multipart <code>search=251</code>; resposta texto, o aviso nunca aparecia).</td></tr><tr><td>GAI</td><td><code>GET /mobile/projects/{projectId}/plates/check?plate=251&amp;kind=new&amp;exclude_external_id=&lt;id&gt;</code></td></tr><tr><td>Permissões</td><td><code>inventory-items:read</code>.</td></tr></tbody></table></div>
+<div class="tbl"><table><thead><tr><th>Query</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>plate</code></td><td>Sim</td><td>Até 100 caracteres, com ao menos uma letra ou número (senão 400)</td></tr><tr><td><code>kind</code></td><td>Não</td><td><code>new</code> (placa nova), <code>old</code> (placa antiga <strong>e</strong> placa antiga 2) ou <code>any</code> (padrão, as três)</td></tr><tr><td><code>exclude_external_id</code></td><td>Não</td><td>Id do item em edição, para não acusar o próprio item</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "plate": "251",
+  "kind": "new",
+  "exists": true,
+  "matches": [
+    {
+      "id": 5100, "external_item_id": "1730736000999999", "version": 1901,
+      "new_plate": "251", "old_plate": null, "old_plate_2": null,
+      "unit_text": "SEDE", "location_text": "COPA", "description": "MESA",
+      "technician": { "user_id": 31, "name": "Maria Souza", "field_agent_id": 14 },
+      "created_at": "2026-10-29T12:00:00.000Z",
+      "matched_fields": ["new_plate"]
+    }
+  ]
+}</code></pre></div>
+<p><code>matches</code> traz no máximo 20 itens. Erros: 400 <code>VALIDATION_ERROR</code>, 403.</p>
+<p>O que muda no app: usar o booleano JSON <code>exists</code> (corrige o defeito do legado) e mostrar técnico, unidade e localização dos itens encontrados. Sem rede, a checagem é só local.</p>
+<h3 id="rel-62-pendências-placas-faltantes-e-duplicadas">6.2 Pendências: placas faltantes e duplicadas</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Tela Pendências: furos na numeração de placas novas e placas duplicadas (novas e antigas).</td></tr><tr><td>Legado</td><td><code>POST /gai/projects/pendencias</code> <code>{project_id, itens: []}</code> (a rota <strong>gravava</strong> os itens recebidos).</td></tr><tr><td>GAI</td><td><code>GET /mobile/projects/{projectId}/plates/report[?from=1&amp;to=500]</code> (somente leitura)</td></tr><tr><td>Permissões</td><td><code>inventory-items:read</code>.</td></tr></tbody></table></div>
+<div class="tbl"><table><thead><tr><th>Query</th><th>Validação</th></tr></thead><tbody><tr><td><code>from</code>, <code>to</code></td><td>Inteiros ≥ 0. Padrão: menor e maior placa nova numérica do projeto. Faixa invertida ou com mais de 1.000.000 de placas: <strong>400 <code>PLATE_RANGE_INVALID</code></strong>.</td></tr></tbody></table></div>
+<p>Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "project_id": 97,
+  "generated_at": "2026-11-10T13:00:00.000Z",
+  "totals": { "items": 10, "with_new_plate": 10, "numeric_new_plates": 8, "non_numeric_new_plates": 1 },
+  "missing_new_plates": { "from": 1, "to": 12, "count": 5, "ranges": ["4", "6-8", "11"] },
+  "duplicated_new_plates": [
+    {
+      "plate": "251",
+      "items": [
+        { "id": 5012, "external_item_id": "1730736000123456", "version": 1843, "new_plate": "251", "old_plate": "12345", "old_plate_2": null, "unit_text": "SEDE", "location_text": "RECEPÇÃO", "description": "CADEIRA GIRATÓRIA", "technician": { "user_id": 29, "name": "João Pedro", "field_agent_id": 12 }, "created_at": "2026-10-28T13:00:00.000Z" },
+        { "id": 5100, "external_item_id": "1730736000999999", "version": 1901, "new_plate": "251", "old_plate": null, "old_plate_2": null, "unit_text": "SEDE", "location_text": "COPA", "description": "MESA", "technician": { "user_id": 31, "name": "Maria Souza", "field_agent_id": 14 }, "created_at": "2026-10-29T12:00:00.000Z" }
+      ]
+    }
+  ],
+  "duplicated_old_plates": []
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Legado</th><th>GAI</th></tr></thead><tbody><tr><td><code>placas_faltantes: ["5","9","11-27"]</code></td><td><code>missing_new_plates.ranges</code> (mesmo formato de faixas) + <code>from</code>, <code>to</code>, <code>count</code></td></tr><tr><td><code>novas_duplicadas[]</code></td><td><code>duplicated_new_plates[]</code></td></tr><tr><td><code>antigas_duplicadas[]</code></td><td><code>duplicated_old_plates[]</code> — considera <code>old_plate</code> e <code>old_plate_2</code></td></tr><tr><td><code>item_id</code></td><td><code>external_item_id</code> (pode ser <code>null</code> para item da web)</td></tr><tr><td><code>gai_user</code></td><td><code>technician.name</code></td></tr><tr><td><code>unidade</code>, <code>localizacao</code>, <code>descricao</code></td><td><code>unit_text</code>, <code>location_text</code>, <code>description</code></td></tr><tr><td><code>created_at</code> <code>"2026-10-28 10:00:00"</code></td><td>ISO 8601 UTC</td></tr></tbody></table></div>
+<p>Regras: placas novas não numéricas (com letras) não entram nas faltantes, mas entram nas duplicadas e em <code>non_numeric_new_plates</code>. Um item com a mesma placa em <code>old_plate</code> e <code>old_plate_2</code> conta uma vez.</p>
+<p>O que muda no app: chamada <code>GET</code> sem corpo; <strong>não enviar itens</strong> por essa rota (os itens sobem pelo <code>PUT</code>). Sincronize a fila antes de abrir o relatório. Sem rede, mantenha o cálculo local como hoje e avise o técnico.</p>
+<h2 id="rel-7-despesas">7. Despesas</h2>
+<aside class="callout">Despesas exigem <strong>permissões financeiras concedidas explicitamente</strong> ao perfil do inventariante (<code>expenses:create</code>, <code>expenses:upload-attachment</code> e, para listar, <code>expenses:read</code>). O perfil padrão de campo <strong>não</strong> as possui. Mostre o menu só quando <code>permissions[]</code> contiver <code>expenses:create</code>.</aside>
+<h3 id="rel-71-registrar-despesa">7.1 Registrar despesa</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Funcionalidade</td><td>Tela Financeiro (nota fiscal).</td></tr><tr><td>Legado</td><td><code>POST /gai/projects/financeiro</code> (multipart com <code>project_id</code>, <code>gai_user</code>, <code>descricao</code>, <code>motivo</code>, <code>data</code> e <code>valor</code> em texto livre, <code>image</code>; resposta ignorada).</td></tr><tr><td>GAI</td><td><code>POST /mobile/projects/{projectId}/expenses</code> + comprovante em 3 passos</td></tr><tr><td>Permissões</td><td><code>expenses:create</code>; vínculo; projeto em <code>draft</code>/<code>active</code>/<code>paused</code>; inventariante ativo.</td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "client_expense_id": "exp-1730736000123456",
+  "description": "Combustível",
+  "reason": "Deslocamento",
+  "expense_date": "2026-11-08",
+  "amount": "120.50"
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>client_expense_id</code></td><td>Sim</td><td>Gerado no aparelho, 8 a 100 caracteres <code>[A-Za-z0-9._:-]</code>, começando por letra ou número. Chave de idempotência.</td></tr><tr><td><code>description</code></td><td>Sim</td><td>Texto (legado <code>descricao</code>).</td></tr><tr><td><code>reason</code></td><td>Não</td><td>Texto ou <code>null</code> (legado <code>motivo</code>).</td></tr><tr><td><code>expense_date</code></td><td>Sim</td><td>Data civil válida <code>YYYY-MM-DD</code> (legado <code>data</code>).</td></tr><tr><td><code>amount</code></td><td>Sim</td><td><code>"120.50"</code> (legado <code>valor</code>).</td></tr><tr><td><code>metadata</code></td><td>Não</td><td>Objeto livre ou <code>null</code>.</td></tr><tr><td><code>field_agent_id</code>, <code>project_id</code>, <code>gai_user</code></td><td>—</td><td><strong>Não enviar</strong> (400). O inventariante vem da sessão; o projeto, da URL.</td></tr></tbody></table></div>
+<p>Resposta <strong>201</strong> (<code>created</code>) ou <strong>200</strong> (<code>existing</code>, reenvio com a mesma chave e os mesmos dados):</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "result": "created",
+  "expense": {
+    "id": 731, "organization_id": 3, "project_id": 97, "field_agent_id": 12,
+    "description": "Combustível", "reason": "Deslocamento",
+    "expense_date": "2026-11-08", "amount": "120.50", "status": "pending",
+    "metadata": null, "created_at": "2026-11-10T13:10:00.000Z", "updated_at": "2026-11-10T13:10:00.000Z"
+  }
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação</th></tr></thead><tbody><tr><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Data ou valor em formato errado, campo extra. Corrija; não repita igual.</td></tr><tr><td>403</td><td><code>FORBIDDEN</code></td><td>Sem permissão financeira ou sem vínculo. Esconda a função.</td></tr><tr><td>409</td><td><code>IDEMPOTENCY_KEY_REUSED</code></td><td>A chave já foi usada com outros dados. Gere outra chave <strong>só</strong> se for de fato outra despesa.</td></tr><tr><td>409</td><td><code>REQUEST_IN_PROGRESS</code></td><td>A mesma despesa ainda está sendo gravada. Repita em alguns segundos.</td></tr><tr><td>409</td><td><code>FIELD_AGENT_INELIGIBLE</code></td><td>Inventariante inativo. Erro definitivo.</td></tr><tr><td>409</td><td><code>CONFLICT</code></td><td>Corrida rara na chave. Repita.</td></tr><tr><td>409</td><td><code>PROJECT_STATUS_BLOCKS_OPERATION</code></td><td>Projeto não aceita novas despesas.</td></tr></tbody></table></div>
+<p>Diferenças e mudanças no app:</p>
+<ul><li>JSON em vez de multipart; a foto da nota vai em 3 passos (<a href="#rel-73-comprovante-da-despesa">7.3</a>), depois de criar a despesa.</li><li>Converter data digitada para <code>YYYY-MM-DD</code> e valor para <code>"0.00"</code> antes de enfileirar; validar no formulário.</li><li>Gerar <code>client_expense_id</code> uma vez, ao salvar, e reutilizá-lo em todas as tentativas. Guardar <code>expense.id</code> para o comprovante.</li><li>Status da despesa: <code>pending</code>, <code>approved</code>, <code>rejected</code>, <code>paid</code> ou <code>cancelled</code> (decididos pela web).</li></ul>
+<h3 id="rel-72-listar-as-próprias-despesas">7.2 Listar as próprias despesas</h3>
+<p><code>GET /mobile/projects/{projectId}/expenses?page=1&amp;page_size=50</code> — permissão <code>expenses:read</code>. <code>page_size</code> de 1 a 100, padrão 50. Devolve só as despesas do inventariante da sessão, no formato paginado <code>{ items: [Expense], page, page_size, total_items, total_pages }</code>.</p>
+<aside class="callout"><code>expenses:read</code> <strong>não</strong> aparece em <code>permissions[]</code> do <code>/mobile/me</code>. O app deve chamar a rota e, se receber <strong>403</strong>, esconder o histórico.</aside>
+<h3 id="rel-73-comprovante-da-despesa">7.3 Comprovante da despesa</h3>
+<ol><li><code>POST /mobile/projects/{projectId}/expenses/{expenseId}/attachments/upload-url</code> — permissão <code>expenses:upload-attachment</code>.</li></ol>
+<div class="code"><span class="lang">json</span><pre><code>{ "original_name": "nota_combustivel.jpg", "mime_type": "image/jpeg", "size_bytes": 183402 }</code></pre></div>
+<p>Resposta <strong>201</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "attachment": { "id": 55, "organization_id": 3, "expense_id": 731, "original_name": "nota_combustivel.jpg", "mime_type": "image/jpeg", "size_bytes": 183402, "checksum": null, "status": "pending_upload", "created_at": "2026-11-10T13:10:05.000Z" },
+  "upload_url": "https://&lt;bucket&gt;.s3.&lt;região&gt;.amazonaws.com/...",
+  "upload_headers": { "Content-Type": "image/jpeg", "Content-Length": "183402" },
+  "expires_in_seconds": 300
+}</code></pre></div>
+<ol><li><code>PUT upload_url</code> com os bytes e exatamente <code>upload_headers</code> (sem <code>Authorization</code>).</li><li><code>POST /mobile/projects/{projectId}/expenses/{expenseId}/attachments/{attachmentId}/confirm-upload</code> com <code>{}</code> → 200 <code>{ "result": "confirmed" | "already_confirmed", "attachment": { ..., "status": "uploaded" } }</code>.</li></ol>
+<div class="tbl"><table><thead><tr><th>Regra</th><th>Valor</th></tr></thead><tbody><tr><td>Tamanho máximo</td><td><strong>20 MiB</strong> (20.971.520 bytes) por comprovante — limite próprio, independente dos 100 MiB do backup</td></tr><tr><td>Tipos recomendados</td><td><code>image/jpeg</code>, <code>image/png</code>, <code>image/webp</code>, <code>application/pdf</code></td></tr><tr><td>Janela</td><td>300 s</td></tr><tr><td>Erros</td><td>400 <code>STORAGE_INVALID_SIZE</code> (acima de 20 MiB), 400 <code>STORAGE_UNSUPPORTED_MIME</code>, 404 <code>NOT_FOUND</code> (despesa de outro inventariante), 409 <code>STORAGE_*_MISMATCH</code>, 410 <code>STORAGE_UPLOAD_EXPIRED</code></td></tr></tbody></table></div>
+<h2 id="rel-8-reconciliação-importação">8. Reconciliação (importação)</h2>
+<p>A Reconciliação envia em lote os itens de uma unidade, com fotos e um backup opcional, dentro de uma <strong>sessão</strong>. Cada técnico só vê as sessões que ele mesmo abriu.</p>
+<div class="code"><span class="lang">text</span><pre><code>POST import-sessions                          → session_uuid (status open, expira em 7 dias)
+  ├─ por foto: files/upload-url {type:image} → PUT → files/{file_id}/confirm-upload
+  ├─ backup:   files/upload-url {type:raw_backup} → PUT → confirm-upload   (opcional)
+  ├─ por lote: payloads {payload_number, idempotency_key, items[≤1000]}
+  ├─ finish                                   → finished | finished_with_errors | failed
+  └─ GET {uuid} (contadores) · GET {uuid}/errors (erros por linha)</code></pre></div>
+<p>Base das rotas: <code>/mobile/projects/{projectId}/import-sessions</code>. <code>{uuid}</code> é o <code>session_uuid</code>.</p>
+<div class="tbl"><table><thead><tr><th>Permissão</th><th>Rotas</th></tr></thead><tbody><tr><td><code>import-sessions:create</code></td><td>criar sessão</td></tr><tr><td><code>import-sessions:read</code></td><td>consultar sessão</td></tr><tr><td><code>import-files:create</code></td><td>upload-url e confirm-upload de arquivos</td></tr><tr><td><code>import-payloads:create</code></td><td>enviar lote</td></tr><tr><td><code>import-sessions:finish</code></td><td>encerrar</td></tr><tr><td><code>import-errors:read</code></td><td>erros</td></tr></tbody></table></div>
+<p>Sessão de outra conta, de outro projeto ou inexistente: <strong>404 <code>NOT_FOUND</code></strong>. <code>uuid</code> mal formado: <strong>400</strong>.</p>
+<h3 id="rel-81-criar-sessão">8.1 Criar sessão</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Legado</td><td><code>POST /gai/items/import-sessions</code> <code>{project_id, unidade, source?, expected_payloads?}</code> → <code>{data: {session_uuid}}</code></td></tr><tr><td>GAI</td><td><code>POST /mobile/projects/{projectId}/import-sessions</code></td></tr></tbody></table></div>
+<p>Requisição (todos opcionais):</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "unidade": "SEDE", "expected_payloads": 3, "device_label": "Galaxy A14 - João" }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Validação</th></tr></thead><tbody><tr><td><code>unidade</code></td><td>Texto até 255</td></tr><tr><td><code>expected_payloads</code></td><td>Inteiro 1 a 1000. Se informado, o <code>finish</code> exige que todos os lotes tenham chegado</td></tr><tr><td><code>device_label</code></td><td>Texto até 100</td></tr><tr><td><code>project_id</code>, <code>source</code></td><td><strong>Não enviar</strong> (400). Projeto vem da URL; a origem é definida pelo servidor</td></tr></tbody></table></div>
+<p>Resposta <strong>201</strong> (sem envelope <code>data</code>):</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "session_uuid": "8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b",
+  "status": "open",
+  "unidade": "SEDE",
+  "expires_at": "2026-11-17T13:00:00.000Z",
+  "expected_payloads": 3,
+  "received_payloads": 0,
+  "processed_payloads": 0,
+  "pending_payloads": 3,
+  "payloads_with_errors": 0,
+  "total_items": 0,
+  "success_items": 0,
+  "failed_items": 0,
+  "created_items": 0,
+  "updated_items": 0,
+  "deleted_items": 0,
+  "backup_uploaded": false,
+  "finished_at": null
+}</code></pre></div>
+<h3 id="rel-82-fotos-e-backup-da-sessão">8.2 Fotos e backup da sessão</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Legado</td><td><code>POST …/images/presign</code> (até 100 arquivos por chamada, <code>client_file_id</code>, devolvia <code>path</code>) e <code>POST /gai/import-sessions/{uuid}/backup</code> (multipart <code>backup_file</code>)</td></tr><tr><td>GAI</td><td><code>POST …/{uuid}/files/upload-url</code> (um arquivo por chamada) → <code>PUT</code> → <code>POST …/{uuid}/files/{fileId}/confirm-upload</code></td></tr></tbody></table></div>
+<p>Requisição de foto:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "type": "image", "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 201544 }</code></pre></div>
+<p>Requisição de backup:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "type": "raw_backup", "original_name": "backup-sessao.zip", "mime_type": "application/zip", "size_bytes": 73400320 }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Tipo</th><th>MIME</th><th>Tamanho máximo</th><th>Janela</th></tr></thead><tbody><tr><td><code>image</code></td><td><code>image/jpeg</code>, <code>image/jpg</code>, <code>image/png</code>, <code>image/webp</code></td><td>10 MiB</td><td>300 s</td></tr><tr><td><code>raw_backup</code></td><td><code>application/zip</code> (também aceita <code>application/json</code>)</td><td><strong>100 MiB</strong> (104.857.600 bytes)</td><td><strong>1800 s</strong></td></tr></tbody></table></div>
+<p>Resposta <strong>201</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "file_id": 4410,
+  "type": "image",
+  "status": "pending_upload",
+  "upload_url": "https://&lt;bucket&gt;.s3.&lt;região&gt;.amazonaws.com/...",
+  "upload_headers": { "Content-Type": "image/jpeg", "Content-Length": "201544" },
+  "expires_in_seconds": 300
+}</code></pre></div>
+<p>Depois do <code>PUT</code>, confirme com <code>{}</code>. Resposta <strong>200</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "file_id": 4410, "type": "image", "status": "uploaded", "size_bytes": 201544, "checksum": "9a1b…" }</code></pre></div>
+<p>Erros: 400 <code>INVALID_IMPORT_FILE</code> (tipo ou tamanho), 409 (sessão encerrada/expirada; <code>STORAGE_*_MISMATCH</code>), 410 <code>STORAGE_UPLOAD_EXPIRED</code>. A confirmação é idempotente. Um backup confirmado faz <code>backup_uploaded = true</code>.</p>
+<p>O que muda no app: uma chamada por arquivo (mantenha até 3 envios ao storage em paralelo); guardar <code>file_id</code> de cada foto; o backup deixa de ser multipart e passa pelos mesmos 3 passos, com janela de 30 min para redes lentas.</p>
+<h3 id="rel-83-enviar-lote-de-itens">8.3 Enviar lote de itens</h3>
+<div class="tbl"><table class="kv"><tbody><tr><td>Legado</td><td><code>POST …/{uuid}/payloads</code> <code>{payload_number, items[]}</code> com campos em português, <code>gai_user</code> e <code>images[{disk, path, sort_order}]</code></td></tr><tr><td>GAI</td><td><code>POST /mobile/projects/{projectId}/import-sessions/{uuid}/payloads</code></td></tr></tbody></table></div>
+<p>Requisição:</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "payload_number": 1,
+  "idempotency_key": "rec-8f1c2b3a-p1",
+  "items": [
+    {
+      "operation": "upsert",
+      "external_item_id": "1730736000123456",
+      "sequence": "12",
+      "new_plate": "251",
+      "old_plate": "12345",
+      "unit_text": "SEDE",
+      "location_text": "RECEPÇÃO",
+      "description": "CADEIRA GIRATÓRIA",
+      "used_value": "150.00",
+      "extra_fields": { "Patrimônio": "123" },
+      "images": [{ "file_id": 4410 }]
+    },
+    { "operation": "delete", "external_item_id": "1730736000777777" }
+  ]
+}</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Campo</th><th>Obrigatório</th><th>Validação</th></tr></thead><tbody><tr><td><code>payload_number</code></td><td>Sim</td><td>Inteiro ≥ 1</td></tr><tr><td><code>idempotency_key</code></td><td>Sim</td><td>8 a 128 caracteres; gere uma por lote e reutilize nas tentativas</td></tr><tr><td><code>items</code></td><td>Sim</td><td>Até 1000</td></tr><tr><td><code>items[].operation</code></td><td>Sim</td><td><code>upsert</code> ou <code>delete</code></td></tr><tr><td><code>items[].external_item_id</code></td><td>Sim</td><td>Mesmo padrão do id do item</td></tr><tr><td><code>items[].&lt;campos do item&gt;</code></td><td>Não</td><td>Os mesmos do <code>PUT</code> (<a href="#rel-41-campos-do-item-legado--gai">4.1</a>), com as mesmas regras de ausente/<code>null</code></td></tr><tr><td><code>items[].images</code></td><td>Não</td><td>Até 50 <code>{file_id}</code> de fotos <strong>desta sessão</strong>, já confirmadas</td></tr><tr><td><code>base_version</code>, <code>gai_user</code>, <code>item_id</code>, <code>fonte</code>, <code>disk</code>, <code>path</code>, <code>sort_order</code></td><td>—</td><td><strong>Não enviar</strong> (400)</td></tr></tbody></table></div>
+<p>Resposta <strong>201</strong>:</p>
+<div class="code"><span class="lang">json</span><pre><code>{ "payload_number": 1, "status": "partially_processed", "items_count": 2, "created_count": 1, "updated_count": 0, "deleted_count": 0, "failed_count": 1 }</code></pre></div>
+<div class="tbl"><table><thead><tr><th>Situação</th><th>Resposta</th></tr></thead><tbody><tr><td>Lote aplicado</td><td>201, <code>status</code> <code>processed</code>, <code>partially_processed</code> (alguns itens falharam) ou <code>failed</code> (todos falharam)</td></tr><tr><td>Mesmo lote reenviado (mesmo número, chave e conteúdo)</td><td>201 com o mesmo resultado; nada é aplicado de novo</td></tr><tr><td>Mesmo número ou chave com conteúdo diferente</td><td><strong>409 <code>PAYLOAD_IDEMPOTENCY_CONFLICT</code></strong></td></tr><tr><td><code>file_id</code> que não pertence à sessão</td><td><strong>400 <code>INVALID_IMAGE_FILE</code></strong> (lote inteiro recusado)</td></tr><tr><td>Foto da sessão ainda não confirmada</td><td>O item falha (erro da linha), os demais seguem</td></tr><tr><td>Sessão expirada / encerrada</td><td><strong>409 <code>IMPORT_SESSION_EXPIRED</code></strong> / <strong><code>IMPORT_SESSION_TERMINAL</code></strong></td></tr></tbody></table></div>
+<p>Regras de aplicação: cada item é aplicado de forma isolada (sem escrita parcial do item). Itens excluídos não são alterados nem reativados. No lote mobile, <code>null</code> limpa o campo, como no <code>PUT</code>. O lote não usa <code>base_version</code>: ele aplica o estado enviado (use a Reconciliação para carga em massa, não para edições concorrentes).</p>
+<p>Diferenças: nomes de campo iguais aos do <code>PUT</code>; <code>item_id</code> → <code>external_item_id</code>; <code>sequence</code> passa a ser <strong>texto</strong> (<code>"12"</code>, não <code>12</code>); <code>gai_user</code> sai (vem da sessão); fotos por <code>file_id</code>; <code>idempotency_key</code> obrigatória; operação <code>delete</code> disponível.</p>
+<h3 id="rel-84-encerrar-sessão">8.4 Encerrar sessão</h3>
+<p><code>POST /mobile/projects/{projectId}/import-sessions/{uuid}/finish</code> — sem corpo (ou <code>{}</code>). Resposta <strong>200</strong> com o mesmo objeto da sessão; <code>status</code> final <code>finished</code>, <code>finished_with_errors</code> ou <code>failed</code>.</p>
+<div class="tbl"><table><thead><tr><th>Status</th><th><code>code</code></th><th>Ação</th></tr></thead><tbody><tr><td>409</td><td><code>CONFLICT</code></td><td>Faltam lotes de <code>expected_payloads</code>. Envie os que faltam.</td></tr><tr><td>409</td><td><code>IMPORT_PAYLOAD_PROCESSING</code></td><td>Há lote em processamento. Aguarde e tente de novo (ver <a href="#rel-87-sessões-interrompidas">8.7</a>).</td></tr><tr><td>409</td><td><code>IMPORT_SESSION_TERMINAL</code> / <code>IMPORT_SESSION_EXPIRED</code></td><td>Sessão já encerrada ou expirada. Consulte o status.</td></tr></tbody></table></div>
+<h3 id="rel-85-consultar-sessão">8.5 Consultar sessão</h3>
+<p><code>GET /mobile/projects/{projectId}/import-sessions/{uuid}</code> → 200 com o objeto da sessão (<a href="#rel-81-criar-sessão">8.1</a>).</p>
+<div class="tbl"><table><thead><tr><th>Legado (<code>data.*</code>)</th><th>GAI</th></tr></thead><tbody><tr><td><code>status</code> <code>ready</code></td><td><code>receiving</code></td></tr><tr><td><code>status</code> <code>completed</code> / <code>completed_with_errors</code></td><td><code>finished</code> / <code>finished_with_errors</code></td></tr><tr><td>—</td><td><code>cancelled</code>, <code>expired</code> (novos)</td></tr><tr><td><code>received_payloads</code>, <code>processed_payloads</code>, <code>total_items</code>, <code>success_items</code>, <code>failed_items</code>, <code>expected_payloads</code>, <code>pending_payloads</code>, <code>backup_uploaded</code></td><td>Mesmos nomes, sem envelope <code>data</code></td></tr><tr><td>—</td><td><code>created_items</code>, <code>updated_items</code>, <code>deleted_items</code>, <code>payloads_with_errors</code>, <code>unidade</code>, <code>expires_at</code>, <code>finished_at</code></td></tr></tbody></table></div>
+<p>Status possíveis: <code>open</code>, <code>receiving</code>, <code>processing</code>, <code>finished</code>, <code>finished_with_errors</code>, <code>failed</code>, <code>cancelled</code>, <code>expired</code>. <code>success_items</code> = criados + atualizados + excluídos. <code>pending_payloads</code> = esperados − recebidos (<code>null</code> sem <code>expected_payloads</code>).</p>
+<p>O app pode consultar a cada 5 s enquanto houver lote em processamento, como hoje; o envio de lote já devolve o resultado de forma síncrona na maioria dos casos.</p>
+<h3 id="rel-86-erros-da-sessão">8.6 Erros da sessão</h3>
+<p><code>GET /mobile/projects/{projectId}/import-sessions/{uuid}/errors?page=1&amp;page_size=100</code> (<code>page_size</code> 1 a 100, padrão 100):</p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "items": [
+    { "payload_number": 1, "row_number": 2, "item_id": "1730736000999999", "error_code": "VALIDATION_ERROR", "error_message": "image file not uploaded and confirmed in this session" }
+  ],
+  "page": 1,
+  "page_size": 100,
+  "total_items": 1,
+  "total_pages": 1
+}</code></pre></div>
+<p>Diferença: o legado devolvia <code>{data: {errors: [...]}}</code>; agora é paginado, com <code>row_number</code> e <code>error_code</code> além de <code>payload_number</code>, <code>item_id</code> e <code>error_message</code>.</p>
+<h3 id="rel-87-sessões-interrompidas">8.7 Sessões interrompidas</h3>
+<ul><li><strong>App fechado no meio:</strong> guarde <code>session_uuid</code>, <code>file_id</code> confirmados e o número/chave de cada lote. Ao voltar, consulte a sessão; reenvie os lotes não confirmados com a <strong>mesma</strong> <code>idempotency_key</code> (é seguro) e encerre.</li><li><strong>Foto não confirmada a tempo (410):</strong> peça nova URL; o <code>file_id</code> antigo não deve ser usado.</li><li><strong>Lote preso em <code>processing</code></strong> (queda do servidor durante o processamento, por mais de 15 min): o <code>finish</code> responde 409 <code>IMPORT_PAYLOAD_PROCESSING</code>. <strong>O app não tem rota de reprocessamento</strong>: um gestor reprocessa pela web e o app reenvia o lote (idempotente) ou apenas encerra.</li><li><strong>Sessão expirada (7 dias):</strong> abra uma sessão nova e reenvie.</li></ul>
+<h3 id="rel-88-baixar-itens-para-a-reconciliação">8.8 Baixar itens para a Reconciliação</h3>
+<p>O legado usava <code>GET /external/projects/{id}/items/sync</code> (que respondia 500). No GAI, use a sincronização por cursor (<a href="#rel-44-sincronização-incremental-por-cursor">4.4</a>), que já inclui itens importados, fotos e exclusões. Filtre por <code>unit_text</code> no aparelho, se necessário.</p>
+<h2 id="rel-9-sincronização-conflitos-e-fila-offline">9. Sincronização, conflitos e fila offline</h2>
+<h3 id="rel-91-identificadores-e-idempotência">9.1 Identificadores e idempotência</h3>
+<ul><li>O id gerado no aparelho é a chave do item em todas as rotas e <strong>sempre texto</strong>. Zeros à esquerda são preservados. Ids numéricos do app não sofrem com a comparação sem distinção de maiúsculas usada pelo banco.</li><li><code>PUT</code> de item, <code>DELETE</code> de item, confirmação de upload, criação de despesa (<code>client_expense_id</code>) e lote de reconciliação (<code>idempotency_key</code>) são idempotentes: repetir a mesma requisição depois de um timeout não duplica nada.</li><li>Itens criados por vários aparelhos ao mesmo tempo no mesmo projeto não colidem (validado com 4 aparelhos em paralelo no MySQL).</li></ul>
+<h3 id="rel-92-versão-do-item">9.2 Versão do item</h3>
+<ul><li>Cada item tem <code>version</code>, que aumenta a cada alteração (app, web, importação, fotos). As versões são únicas e crescentes por projeto.</li><li>Na edição, envie <code>base_version</code> = última <code>version</code> que o aparelho recebeu para aquele item (do <code>PUT</code>, do <code>confirm-upload</code> via <code>item_version</code>, ou da sincronização).</li></ul>
+<h3 id="rel-93-conflitos-409">9.3 Conflitos 409</h3>
+<div class="tbl"><table><thead><tr><th><code>code</code></th><th>Causa</th><th>Recuperação recomendada</th></tr></thead><tbody><tr><td><code>VERSION_CONFLICT</code></td><td>O item mudou no servidor (web ou outro técnico) depois da versão conhecida</td><td>Leia <code>details.item</code>. Se o técnico alterou campos que não mudaram no servidor, reaplique <strong>só esses campos</strong> sobre <code>details.item</code> e reenvie com <code>base_version = details.item.version</code>. Se os mesmos campos mudaram dos dois lados, mostre as duas versões e deixe o técnico escolher. <strong>Nunca</strong> force sem <code>base_version</code> atualizado.</td></tr><tr><td><code>ITEM_DELETED</code></td><td>O item foi excluído no servidor</td><td>Descarte a edição local, marque o item como excluído e avise o técnico.</td></tr><tr><td><code>PROJECT_STATUS_BLOCKS_OPERATION</code></td><td>Projeto não aceita mais escrita</td><td>Erro definitivo; mova para “não enviados”.</td></tr></tbody></table></div>
+<p>Quando dois aparelhos enviam a mesma <code>base_version</code>, exatamente um recebe 200 e os outros recebem 409 (validado em teste de concorrência).</p>
+<h3 id="rel-94-fila-de-envio-e-política-de-tentativas">9.4 Fila de envio e política de tentativas</h3>
+<div class="tbl"><table><thead><tr><th>Resposta</th><th>Ação na fila</th></tr></thead><tbody><tr><td>2xx (inclui 201, <code>unchanged</code>, <code>already_deleted</code>, <code>already_confirmed</code>, <code>existing</code>)</td><td>Remove da fila e grava <code>version</code>/ids devolvidos.</td></tr><tr><td>404 <code>ITEM_NOT_FOUND</code> em <code>DELETE</code></td><td>Remove da fila (concluído).</td></tr><tr><td>401</td><td>Renova a sessão (uma vez) e repete. Se o refresh falhar, pausa a fila até novo login.</td></tr><tr><td>403</td><td>Pausa as operações daquele projeto; atualiza <code>/mobile/me</code>. Não repete automaticamente.</td></tr><tr><td>409</td><td>Move para a tela de conflitos (<a href="#rel-93-conflitos-409">9.3</a>). Não repete automaticamente.</td></tr><tr><td>410 (upload)</td><td>Recomeça a foto do passo 1.</td></tr><tr><td>Outros 4xx (400, 404 de foto, 413)</td><td>“Erro definitivo”, visível ao técnico, <strong>sem repetir</strong>.</td></tr><tr><td>429, 5xx, timeout ou sem rede</td><td>Repete com backoff exponencial: 5 s, 10 s, 20 s… até 5 min, com variação aleatória.</td></tr></tbody></table></div>
+<p>Ordem: uma operação por item, na ordem em que foram feitas (criar → fotos → editar → excluir). Operações de itens diferentes podem seguir em paralelo (o app usa 2). A foto só sobe depois que o <code>PUT</code> do item foi concluído.</p>
+<h3 id="rel-95-exclusão-offline">9.5 Exclusão offline</h3>
+<ol><li>O técnico exclui sem rede: marque o item como excluído localmente e enfileire <code>DELETE</code>.</li><li>Se o item ainda tinha <code>PUT</code> pendente na fila (nunca enviado), cancele as duas operações.</li><li>Ao voltar a rede, o <code>DELETE</code> responde 200 (<code>deleted</code>/<code>already_deleted</code>) ou 404 (nunca chegou): os dois são sucesso.</li><li>A sincronização seguinte traz o item com <code>deleted: true</code>, confirmando o estado.</li><li>Se outra pessoa editou o item antes, e o app enviou <code>base_version</code>, a resposta é 409 <code>VERSION_CONFLICT</code>: pergunte ao técnico se mantém a exclusão (reenvie com a versão nova ou sem <code>base_version</code>).</li></ol>
+<h3 id="rel-96-alterações-simultâneas-web-e-outros-técnicos">9.6 Alterações simultâneas (web e outros técnicos)</h3>
+<ul><li>A sincronização por cursor traz todas as alterações, inclusive as da web, com a nova <code>version</code>.</li><li>Ao aplicar uma página, se o item local tiver edição pendente na fila, <strong>não sobrescreva</strong> a edição local: guarde a versão do servidor como base e deixe a fila resolver (o envio dará 200 ou 409).</li><li>Itens com <code>external_item_id: null</code> (web/legado) são somente leitura no app.</li></ul>
+<h2 id="rel-10-exemplos-completos-de-fluxo">10. Exemplos completos de fluxo</h2>
+<p>Valores fictícios. Os caminhos abaixo são relativos à base <code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code>. Exemplo: <code>POST /mobile/auth/login</code> = <code>POST https://d1kanjou9wgm7q.cloudfront.net/api/v1/mobile/auth/login</code>.</p>
+<h3 id="rel-101-login--projetos--refresh">10.1 Login → projetos → refresh</h3>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/auth/login
+Content-Type: application/json
+
+{ "identifier": "tecnico.campo", "password": "&lt;senha&gt;", "device_label": "Galaxy A14" }</code></pre></div>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "token_type": "Bearer",
+  "access_token": "00000000-0000-4000-8000-000000000000",
+  "access_token_expires_at": "2026-11-10T13:15:00.000Z",
+  "refresh_token": "gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl",
+  "refresh_token_expires_at": "2026-11-24T13:00:00.000Z",
+  "session_expires_at": "2026-12-10T13:00:00.000Z",
+  "user": { "id": 29, "full_name": "João Pedro", "must_change_password": false }
+}</code></pre></div>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/me
+Authorization: Bearer 00000000-0000-4000-8000-000000000000</code></pre></div>
+<p>Resposta: ver <a href="#rel-25-identidade-do-inventariante">2.5</a> (<code>projects: [{ "id": 97, ... }]</code>).</p>
+<p>Às 13:14 (antes de <code>access_token_expires_at</code>):</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/auth/refresh
+Content-Type: application/json
+
+{ "refresh_token": "gmr_EXEMPLOexemploEXEMPLOexemploEXEMPLOexempl" }</code></pre></div>
+<p>Resposta 200 com <strong>novo</strong> <code>access_token</code> e <strong>novo</strong> <code>refresh_token</code>; grave os dois antes de liberar outras requisições.</p>
+<h3 id="rel-102-cadastro-de-item--fotos--confirmação">10.2 Cadastro de item → fotos → confirmação</h3>
+<div class="code"><span class="lang">http</span><pre><code>PUT /mobile/projects/97/items/1730736000123456
+Authorization: Bearer &lt;access_token&gt;
+Content-Type: application/json
+
+{ "new_plate": "251", "unit_text": "SEDE", "location_text": "RECEPÇÃO", "description": "CADEIRA GIRATÓRIA" }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "result": "created", "item": { "version": 1843, ... } }</code></p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/items/1730736000123456/images/upload-url
+Authorization: Bearer &lt;access_token&gt;
+Content-Type: application/json
+
+{ "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 214733 }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "image": { "id": 881, "status": "pending_upload", ... }, "upload_url": "...", "upload_headers": { "Content-Type": "image/jpeg", "Content-Length": "214733" }, "expires_in_seconds": 300 }</code></p>
+<div class="code"><span class="lang">http</span><pre><code>PUT &lt;upload_url&gt;
+Content-Type: image/jpeg
+Content-Length: 214733
+
+&lt;bytes&gt;</code></pre></div>
+<p>→ <strong>200</strong> (storage)</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/items/1730736000123456/images/881/confirm-upload
+Authorization: Bearer &lt;access_token&gt;
+Content-Type: application/json
+
+{}</code></pre></div>
+<p>→ <strong>200</strong> <code>{ "result": "confirmed", "image": { "id": 881, "status": "uploaded", ... }, "item_version": 1844 }</code> — grave <code>version = 1844</code>. Repita os 3 passos para a 2ª e a 3ª foto.</p>
+<h3 id="rel-103-edição-com-versão--conflito-409--recuperação">10.3 Edição com versão → conflito 409 → recuperação</h3>
+<p>O aparelho conhece <code>version 1844</code> e o técnico muda a localização. Enquanto isso, a web mudou a descrição (versão atual 1902).</p>
+<div class="code"><span class="lang">http</span><pre><code>PUT /mobile/projects/97/items/1730736000123456
+Content-Type: application/json
+
+{ "base_version": 1844, "location_text": "SALA 2" }</code></pre></div>
+<p>→ <strong>409</strong></p>
+<div class="code"><span class="lang">json</span><pre><code>{
+  "code": "VERSION_CONFLICT",
+  "message": "O item mudou no servidor. Baixe a versão atual e reaplique a alteração.",
+  "details": { "item": { "external_item_id": "1730736000123456", "version": 1902, "location_text": "RECEPÇÃO", "description": "CADEIRA GIRATÓRIA PRETA", "...": "..." } }
+}</code></pre></div>
+<p>O técnico alterou só <code>location_text</code>, que não mudou no servidor. O app reaplica sobre a versão nova:</p>
+<div class="code"><span class="lang">http</span><pre><code>PUT /mobile/projects/97/items/1730736000123456
+Content-Type: application/json
+
+{ "base_version": 1902, "location_text": "SALA 2" }</code></pre></div>
+<p>→ <strong>200</strong> <code>{ "result": "updated", "item": { "version": 1903, "location_text": "SALA 2", "description": "CADEIRA GIRATÓRIA PRETA", ... } }</code></p>
+<h3 id="rel-104-exclusão-offline--envio-posterior--sincronização">10.4 Exclusão offline → envio posterior → sincronização</h3>
+<p>Sem rede, o técnico exclui o item <code>1730736000999999</code> (versão conhecida 1901). O app marca como excluído e enfileira. Com rede:</p>
+<div class="code"><span class="lang">http</span><pre><code>DELETE /mobile/projects/97/items/1730736000999999?base_version=1901
+Authorization: Bearer &lt;access_token&gt;</code></pre></div>
+<p>→ <strong>200</strong> <code>{ "result": "deleted", "item": { "deleted": true, "status": "inactive", "version": 1910, ... } }</code></p>
+<p>Se a mesma exclusão for reenviada: <strong>200</strong> <code>already_deleted</code>. Se o item nunca tivesse sido enviado: <strong>404 <code>ITEM_NOT_FOUND</code></strong> (também concluído). Na próxima sincronização, o item vem com <code>"deleted": true</code> e <code>"version": 1910</code>.</p>
+<h3 id="rel-105-sincronização-paginada-com-cursor">10.5 Sincronização paginada com cursor</h3>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/projects/97/items/sync?limit=200
+Authorization: Bearer &lt;access_token&gt;</code></pre></div>
+<p>→ <code>{ "items": [ ...200 itens... ], "next_cursor": "eyJ2IjoxLCJwIjo5NywicyI6MTIwMCwiaSI6NDQwMH0", "has_more": true, "server_time": "..." }</code></p>
+<p>Aplica os 200 itens, grava o cursor e continua:</p>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/projects/97/items/sync?limit=200&amp;cursor=eyJ2IjoxLCJwIjo5NywicyI6MTIwMCwiaSI6NDQwMH0</code></pre></div>
+<p>→ <code>{ "items": [ ...37 itens... ], "next_cursor": "eyJ2IjoxLCJwIjo5NywicyI6MTkxMCwiaSI6NTEwMH0", "has_more": false, ... }</code></p>
+<p>Grava o último cursor. Na próxima sincronização, comece dele: virão só os itens alterados depois. Se a conexão cair na segunda página, repita com o cursor da primeira.</p>
+<h3 id="rel-106-placas-duplicadas-e-faltantes">10.6 Placas duplicadas e faltantes</h3>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/projects/97/plates/check?plate=251&amp;kind=new&amp;exclude_external_id=1730736000123456
+Authorization: Bearer &lt;access_token&gt;</code></pre></div>
+<p>→ <code>{ "plate": "251", "kind": "new", "exists": true, "matches": [ { "external_item_id": "1730736000999999", "technician": { "name": "Maria Souza", ... }, "matched_fields": ["new_plate"], ... } ] }</code></p>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/projects/97/plates/report
+Authorization: Bearer &lt;access_token&gt;</code></pre></div>
+<p>→ ver <a href="#rel-62-pendências-placas-faltantes-e-duplicadas">6.2</a> (<code>missing_new_plates.ranges</code>, <code>duplicated_new_plates</code>, <code>duplicated_old_plates</code>).</p>
+<h3 id="rel-107-despesa-com-comprovante">10.7 Despesa com comprovante</h3>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/expenses
+Authorization: Bearer &lt;access_token&gt;
+Content-Type: application/json
+
+{ "client_expense_id": "exp-1730736000123456", "description": "Combustível", "reason": "Deslocamento", "expense_date": "2026-11-08", "amount": "120.50" }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "result": "created", "expense": { "id": 731, "status": "pending", ... } }</code> (reenvio: <strong>200</strong> <code>existing</code>, mesmo <code>id</code>).</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/expenses/731/attachments/upload-url
+Content-Type: application/json
+
+{ "original_name": "nota.jpg", "mime_type": "image/jpeg", "size_bytes": 183402 }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "attachment": { "id": 55, "status": "pending_upload", ... }, "upload_url": "...", "upload_headers": {...}, "expires_in_seconds": 300 }</code> → <code>PUT upload_url</code> →</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/expenses/731/attachments/55/confirm-upload
+Content-Type: application/json
+
+{}</code></pre></div>
+<p>→ <strong>200</strong> <code>{ "result": "confirmed", "attachment": { "id": 55, "status": "uploaded", ... } }</code></p>
+<h3 id="rel-108-reconciliação-completa">10.8 Reconciliação completa</h3>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/import-sessions
+Content-Type: application/json
+
+{ "unidade": "SEDE", "expected_payloads": 2 }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "session_uuid": "8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b", "status": "open", "expected_payloads": 2, "pending_payloads": 2, ... }</code></p>
+<p>Fotos (uma por chamada):</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/import-sessions/8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b/files/upload-url
+Content-Type: application/json
+
+{ "type": "image", "original_name": "foto_1.jpg", "mime_type": "image/jpeg", "size_bytes": 201544 }</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "file_id": 4410, "status": "pending_upload", "upload_url": "...", ... }</code> → <code>PUT</code> → <code>POST .../files/4410/confirm-upload {}</code> → <strong>200</strong> <code>{ "file_id": 4410, "status": "uploaded", ... }</code></p>
+<p>Backup (opcional): mesmo fluxo com <code>{ "type": "raw_backup", "original_name": "backup.zip", "mime_type": "application/zip", "size_bytes": 73400320 }</code> (janela de 1800 s).</p>
+<p>Lotes:</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/import-sessions/8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b/payloads
+Content-Type: application/json
+
+{
+  "payload_number": 1,
+  "idempotency_key": "rec-8f1c2b3a-p1",
+  "items": [
+    { "operation": "upsert", "external_item_id": "1730736000123456", "new_plate": "251", "unit_text": "SEDE", "description": "CADEIRA", "images": [{ "file_id": 4410 }] },
+    { "operation": "upsert", "external_item_id": "1730736000555555", "new_plate": "252", "unit_text": "SEDE", "images": [{ "file_id": 4411 }] }
+  ]
+}</code></pre></div>
+<p>→ <strong>201</strong> <code>{ "payload_number": 1, "status": "partially_processed", "items_count": 2, "created_count": 1, "updated_count": 0, "deleted_count": 0, "failed_count": 1 }</code> (a foto 4411 não tinha sido confirmada). O lote 2 segue igual, com <code>payload_number: 2</code> e outra chave.</p>
+<div class="code"><span class="lang">http</span><pre><code>POST /mobile/projects/97/import-sessions/8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b/finish</code></pre></div>
+<p>→ <strong>200</strong> <code>{ "status": "finished_with_errors", "received_payloads": 2, "processed_payloads": 2, "success_items": 3, "failed_items": 1, "backup_uploaded": true, "finished_at": "...", ... }</code></p>
+<div class="code"><span class="lang">http</span><pre><code>GET /mobile/projects/97/import-sessions/8f1c2b3a-4d5e-4f60-8a7b-9c0d1e2f3a4b/errors</code></pre></div>
+<p>→ <code>{ "items": [ { "payload_number": 1, "row_number": 2, "item_id": "1730736000555555", "error_code": "...", "error_message": "image file not uploaded and confirmed in this session" } ], "page": 1, "page_size": 100, "total_items": 1, "total_pages": 1 }</code></p>
+<p>Para corrigir, abra nova sessão (a atual está encerrada) ou envie o item pelo <code>PUT</code> normal.</p>
+<h2 id="rel-11-rotas-descontinuadas-e-recursos-pendentes">11. Rotas descontinuadas e recursos pendentes</h2>
+<h3 id="rel-111-rotas-legadas-sem-equivalente-direto">11.1 Rotas legadas sem equivalente direto</h3>
+<div class="tbl"><table><thead><tr><th>Rota legada</th><th>Situação no GAI</th></tr></thead><tbody><tr><td><code>GET /gai/projects</code></td><td>Substituída por <code>GET /mobile/me</code> (<code>projects[]</code>).</td></tr><tr><td><code>POST /gai/item/create</code>, <code>POST /gai/item/update</code></td><td>Descontinuadas (já não eram usadas desde a 1.4.6). Use o <code>PUT</code> de item.</td></tr><tr><td><code>POST /gai/update_items</code></td><td>Substituída pela sincronização por cursor.</td></tr><tr><td><code>POST /gai/import-sessions/{uuid}/backup</code></td><td>Substituída pelo upload de arquivo <code>raw_backup</code> em 3 passos.</td></tr><tr><td><code>POST …/images/presign</code> (lote de até 100)</td><td>Substituída por <code>files/upload-url</code> (um arquivo por chamada) + confirmação obrigatória.</td></tr><tr><td><code>GET /external/projects/{id}/items/sync</code></td><td>Substituída pela sincronização por cursor do item.</td></tr></tbody></table></div>
+<p>As rotas legadas continuam no Laravel e <strong>não</strong> são replicadas no GAI: cada versão do app aponta para uma única base.</p>
+<h3 id="rel-112-recursos-ainda-não-implementados">11.2 Recursos ainda não implementados</h3>
+<div class="tbl"><table><thead><tr><th>Recurso</th><th>Situação</th><th>Alternativa até lá</th></tr></thead><tbody><tr><td>Nomes de <code>extra_fields</code> por projeto (legado em <code>GET /gai/projects</code>)</td><td>Não existe cadastro por projeto no GAI</td><td>Derivar os nomes dos itens sincronizados do projeto; o técnico pode adicionar nomes novos</td></tr><tr><td>Renomear unidade/localização em lote</td><td>Sem rota mobile</td><td>Renomear item a item com <code>PUT</code> (cada item gera nova versão) ou pela web</td></tr><tr><td>Upload de logs de diagnóstico do app</td><td>Sem rota</td><td>Manter o envio manual atual</td></tr><tr><td>Reprocessar lote preso da reconciliação</td><td>Só pela web (gestor)</td><td>Reenviar o lote (idempotente) depois do reprocessamento</td></tr><tr><td>Editar itens sem <code>external_item_id</code> (criados na web/legado)</td><td>Não suportado pela API mobile</td><td>Somente leitura no app</td></tr><tr><td>Filtro por unidade e <code>updated_since</code> na sincronização</td><td>Não existe</td><td>Filtrar localmente</td></tr></tbody></table></div>
+<h3 id="rel-113-pendências-de-ambiente-não-dependem-do-app">11.3 Pendências de ambiente (não dependem do app)</h3>
+<ul><li>Publicar o módulo mobile na AWS. Hoje as rotas <code>/mobile/*</code> caem no fallback da SPA (200 <code>text/html</code>). Ver <a href="#rel-ambientes">Ambientes</a>.</li><li>Homologação do app na AWS (CloudFront, ALB, RDS, S3) <strong>não realizada</strong>. Tempos medidos são de ambiente local.</li><li>Já confirmado em 10/11/2026: erros 4xx de rotas existentes chegam como JSON com o status real (401 em <code>/auth/me</code>, 400 em <code>/auth/login</code>). Rotas inexistentes recebem 200 <code>text/html</code> do fallback da SPA.</li><li>Aparelhos atrás do mesmo IP (CGNAT, Wi-Fi do cliente) dividem o limite de 100 requisições/min; o valor será ajustado com dados da homologação. O backoff em 429 é obrigatório.</li><li>Backup de 100 MiB em rede móvel real: confirmar que cabe na janela de 30 min.</li></ul>
+<h2 id="rel-12-referência-de-códigos-de-erro">12. Referência de códigos de erro</h2>
+<div class="tbl"><table><thead><tr><th>HTTP</th><th><code>code</code></th><th>Onde</th><th>Ação</th></tr></thead><tbody><tr><td>400</td><td><code>VALIDATION_ERROR</code></td><td>Qualquer rota</td><td>Corrigir o envio; não repetir igual</td></tr><tr><td>400</td><td><code>INVALID_CURSOR</code></td><td>sync</td><td>Apagar cursor e recomeçar</td></tr><tr><td>400</td><td><code>PLATE_RANGE_INVALID</code></td><td>plates/report</td><td>Ajustar <code>from</code>/<code>to</code></td></tr><tr><td>400</td><td><code>STORAGE_INVALID_SIZE</code>, <code>STORAGE_UNSUPPORTED_MIME</code></td><td>upload-url</td><td>Corrigir arquivo</td></tr><tr><td>400</td><td><code>INVALID_IMPORT_FILE</code>, <code>INVALID_IMAGE_FILE</code></td><td>reconciliação</td><td>Corrigir arquivo / <code>file_id</code></td></tr><tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Rotas com Bearer, login</td><td>Refresh; se falhar, login</td></tr><tr><td>401</td><td><code>INVALID_REFRESH_TOKEN</code>, <code>SESSION_EXPIRED</code>, <code>SESSION_REVOKED</code>, <code>REFRESH_TOKEN_REUSED</code></td><td>refresh</td><td>Login (manter fila)</td></tr><tr><td>403</td><td><code>MOBILE_ACCESS_DENIED</code></td><td>login, refresh, todas</td><td>“Acesso suspenso”</td></tr><tr><td>403</td><td><code>PASSWORD_CHANGE_REQUIRED</code></td><td>todas <code>/mobile</code></td><td>Troca de senha</td></tr><tr><td>403</td><td><code>FORBIDDEN</code>, <code>PROJECT_NOT_AUTHORIZED</code></td><td>rotas de projeto</td><td>Sem permissão ou vínculo; atualizar <code>/mobile/me</code></td></tr><tr><td>404</td><td><code>ITEM_NOT_FOUND</code></td><td>itens, fotos</td><td>Em <code>DELETE</code>: concluído. Em fotos: enviar o item antes</td></tr><tr><td>404</td><td><code>NOT_FOUND</code>, <code>STORAGE_OBJECT_NOT_FOUND</code></td><td>despesas, sessões, confirmação</td><td>Conferir ids / refazer o PUT</td></tr><tr><td>409</td><td><code>VERSION_CONFLICT</code>, <code>ITEM_DELETED</code></td><td>itens</td><td>Resolver conflito</td></tr><tr><td>409</td><td><code>PROJECT_STATUS_BLOCKS_OPERATION</code></td><td>escritas</td><td>Erro definitivo</td></tr><tr><td>409</td><td><code>REFRESH_TOKEN_ALREADY_ROTATED</code></td><td>refresh</td><td>Usar o par da outra requisição</td></tr><tr><td>409</td><td><code>STORAGE_SIZE_MISMATCH</code>, <code>STORAGE_MIME_MISMATCH</code>, <code>STORAGE_CHECKSUM_MISMATCH</code>, <code>STORAGE_CONTENT_MISMATCH</code></td><td>confirmações</td><td>Recomeçar o upload com o arquivo correto</td></tr><tr><td>409</td><td><code>CONFLICT</code></td><td>fotos (limite de 3), despesas, finish</td><td>Ver rota</td></tr><tr><td>409</td><td><code>IDEMPOTENCY_KEY_REUSED</code>, <code>REQUEST_IN_PROGRESS</code>, <code>FIELD_AGENT_INELIGIBLE</code></td><td>despesas</td><td>Ver <a href="#rel-71-registrar-despesa">7.1</a></td></tr><tr><td>409</td><td><code>PAYLOAD_IDEMPOTENCY_CONFLICT</code>, <code>IMPORT_PAYLOAD_PROCESSING</code>, <code>IMPORT_SESSION_TERMINAL</code>, <code>IMPORT_SESSION_EXPIRED</code></td><td>reconciliação</td><td>Ver <a href="#rel-83-enviar-lote-de-itens">8.3</a> e <a href="#rel-84-encerrar-sessão">8.4</a></td></tr><tr><td>410</td><td><code>STORAGE_UPLOAD_EXPIRED</code></td><td>confirmações</td><td>Pedir nova URL</td></tr><tr><td>423</td><td><code>ACCOUNT_LOCKED</code></td><td>login, refresh</td><td>Aguardar o desbloqueio</td></tr><tr><td>429</td><td><code>TOO_MANY_REQUESTS</code></td><td>todas</td><td>Backoff</td></tr><tr><td>500</td><td><code>INTERNAL_ERROR</code></td><td>todas</td><td>Backoff; reportar se persistir</td></tr><tr><td>503</td><td><code>STORAGE_UNAVAILABLE</code></td><td>confirmações, URLs</td><td>Backoff</td></tr></tbody></table></div>
+</section>
+<section class="doc" aria-labelledby="mat-top">
+<h1 class="doc-title" id="mat-top">Matriz de migração: app Investor (Laravel → GAI)</h1>
+<p><strong>Origem:</strong> contrato do app Investor 1.4.6+1.12 (levantado do código do app em 04/11/2026). <strong>Destino:</strong> API mobile do GAI, contrato <code>1.0.0-rc.2</code> (conferido no código em 10/11/2026; revisão 2 em 10/11/2026: URL oficial na AWS).</p>
+<ul><li>Base legada: <code>…/si/api</code>. Base GAI, produção (AWS/CloudFront): <code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code> (omitida abaixo). Desenvolvimento local: <code>http://localhost:3000/api/v1</code>.</li><li>Todas as rotas GAI exigem <code>Authorization: Bearer &lt;access_token&gt;</code>, exceto login, refresh e logout.</li><li>Detalhes de cada rota: <a href="#rel-top">RELATORIO-API-INVESTOR.md</a>. Implementação no app: <a href="#gui-top">GUIA-MIGRACAO-ANDROID.md</a>.</li><li><strong>Situação:</strong> todas as rotas GAI listadas estão implementadas e testadas localmente. Em 10/11/2026, as rotas <code>/mobile/*</code> ainda <strong>não respondiam</strong> na URL da AWS: devolvem 200 <code>text/html</code> do fallback da SPA porque o módulo mobile ainda não foi implantado. A homologação na AWS ainda não foi feita. Ver as observações sobre o ambiente em <a href="#rel-ambientes">RELATORIO-API-INVESTOR.md</a>.</li></ul>
+<h2 id="mat-1-rotas-do-documento-original">1. Rotas do documento original</h2>
+<p>Legenda da coluna Situação: <strong>Preservada</strong> (mesma função, contrato novo) · <strong>Substituída</strong> (novo fluxo) · <strong>Descontinuada</strong> (sem uso; não migrar).</p>
+<div class="tbl"><table><thead><tr><th>#</th><th>Funcionalidade</th><th>Rota antiga</th><th>Rota nova</th><th>Situação</th><th>Mudança necessária no app</th></tr></thead><tbody><tr><td>1</td><td>Login</td><td><code>POST /auth/login</code> <code>{email, password}</code></td><td><code>POST /mobile/auth/login</code> <code>{identifier, password, device_label?}</code></td><td>Preservada</td><td>Novo corpo; guardar access + refresh token em armazenamento seguro; token opaco (não decodificar); tratar 401/403/423/429; abrir troca de senha se <code>must_change_password</code>.</td></tr><tr><td>2</td><td>Renovar sessão</td><td><code>POST /auth/refresh</code> (Bearer vencido, sem corpo)</td><td><code>POST /mobile/auth/refresh</code> <code>{refresh_token}</code></td><td>Preservada</td><td>Enviar o refresh token no corpo; um refresh por vez (mutex); trocar os dois tokens; 409 <code>REFRESH_TOKEN_ALREADY_ROTATED</code>; 401 → login.</td></tr><tr><td>3</td><td>Lista de projetos</td><td><code>GET /gai/projects</code> (sem token; filtro por <code>user.projects</code> no app)</td><td><code>GET /mobile/me</code> → <code>projects[]</code></td><td>Substituída</td><td>Remover filtro local; projetos vêm filtrados pelo servidor; <code>nome</code> → <code>name</code>. Não há <code>extra_fields</code> por projeto.</td></tr><tr><td>4</td><td>Criar/editar item (fila)</td><td><code>POST /gai/sync_items</code> (multipart, sem token)</td><td><code>PUT /mobile/projects/{projectId}/items/{externalId}</code> (JSON)</td><td>Substituída</td><td>JSON com nomes novos; id na URL; sem <code>gai_user</code>; <code>base_version</code> na edição; 201/200 sucesso; 409 conflito; fotos em fluxo separado.</td></tr><tr><td>5</td><td>Fotos do item</td><td><code>image_1…n</code> no multipart do <code>sync_items</code></td><td><code>POST …/items/{externalId}/images/upload-url</code> → <code>PUT {upload_url}</code> → <code>POST …/images/{imageId}/confirm-upload</code></td><td>Substituída</td><td>Upload direto ao storage em 3 passos, depois do item existir; até 3 fotos de até 10 MiB; janela de 300 s.</td></tr><tr><td>6</td><td>Atualizar itens enviados</td><td><code>POST /gai/update_items</code> (lotes de 200 ids)</td><td><code>GET /mobile/projects/{projectId}/items/sync?cursor=&amp;limit=</code></td><td>Substituída</td><td>Sincronização incremental por cursor por projeto; inclui excluídos, itens da web e de outros técnicos.</td></tr><tr><td>7</td><td>Excluir item</td><td><code>POST /gai/item/delete</code> (form, só online, sem nova tentativa)</td><td><code>DELETE /mobile/projects/{projectId}/items/{externalId}[?base_version=]</code></td><td>Preservada</td><td>Enfileirar também offline; 200 e 404 são sucesso; exclusão lógica.</td></tr><tr><td>8</td><td>Duplicidade de placa no cadastro</td><td><code>POST /gai/projects/{id}/check_duplicate</code> (multipart <code>search</code>)</td><td><code>GET /mobile/projects/{projectId}/plates/check?plate=&amp;kind=&amp;exclude_external_id=</code></td><td>Substituída</td><td>Ler o booleano JSON <code>exists</code> (corrige o defeito do aviso que nunca aparecia); <code>kind=old</code> cobre <code>placa_antiga_2</code>.</td></tr><tr><td>9</td><td>Pendências (faltantes e duplicadas)</td><td><code>POST /gai/projects/pendencias</code> <code>{project_id, itens: []}</code></td><td><code>GET /mobile/projects/{projectId}/plates/report[?from=&amp;to=]</code></td><td>Substituída</td><td><code>GET</code> somente leitura (não grava itens); renomear campos da resposta (tabela 3).</td></tr><tr><td>10</td><td>Despesa (nota fiscal)</td><td><code>POST /gai/projects/financeiro</code> (multipart)</td><td><code>POST /mobile/projects/{projectId}/expenses</code> + <code>POST …/expenses/{id}/attachments/upload-url</code> → <code>PUT</code> → <code>POST …/attachments/{attachmentId}/confirm-upload</code></td><td>Substituída</td><td>Exige permissão financeira; data <code>YYYY-MM-DD</code>; valor <code>"120.50"</code>; <code>client_expense_id</code> idempotente; comprovante até 20 MiB em 3 passos.</td></tr><tr><td>11</td><td>Criar item (antigo)</td><td><code>POST /gai/item/create</code></td><td>— (usar o <code>PUT</code> da linha 4)</td><td>Descontinuada</td><td>Nenhuma: o app não chama desde a 1.4.6. Remover o código morto.</td></tr><tr><td>12</td><td>Editar item (antigo)</td><td><code>POST /gai/item/update</code></td><td>— (usar o <code>PUT</code> da linha 4)</td><td>Descontinuada</td><td>Idem.</td></tr><tr><td>13</td><td>Reconciliação: abrir sessão</td><td><code>POST /gai/items/import-sessions</code> <code>{project_id, unidade, source?, expected_payloads?}</code></td><td><code>POST /mobile/projects/{projectId}/import-sessions</code> <code>{unidade?, expected_payloads?, device_label?}</code></td><td>Preservada</td><td><code>project_id</code> na URL; não enviar <code>source</code>; resposta sem envelope <code>data</code>.</td></tr><tr><td>14</td><td>Reconciliação: URLs de fotos</td><td><code>POST /gai/items/import-sessions/{uuid}/images/presign</code> (até 100 arquivos)</td><td><code>POST …/import-sessions/{uuid}/files/upload-url</code> <code>{type: "image", …}</code> (1 arquivo por chamada)</td><td>Substituída</td><td>Uma chamada por arquivo; guardar <code>file_id</code>; não há <code>client_file_id</code> nem <code>path</code>.</td></tr><tr><td>15</td><td>Reconciliação: envio ao storage</td><td><code>PUT {upload_url}</code></td><td><code>PUT {upload_url}</code> com <code>upload_headers</code></td><td>Preservada</td><td>Enviar exatamente <code>Content-Type</code> e <code>Content-Length</code> devolvidos; sem token.</td></tr><tr><td>16</td><td>Reconciliação: confirmar arquivo</td><td>— (não existia)</td><td><code>POST …/import-sessions/{uuid}/files/{fileId}/confirm-upload</code></td><td><strong>Nova, obrigatória</strong></td><td>Confirmar cada foto/backup antes de referenciá-lo no lote.</td></tr><tr><td>17</td><td>Reconciliação: lote de itens</td><td><code>POST /gai/items/import-sessions/{uuid}/payloads</code></td><td><code>POST …/import-sessions/{uuid}/payloads</code></td><td>Preservada</td><td><code>idempotency_key</code> obrigatória; <code>operation</code> + <code>external_item_id</code>; campos com nomes do <code>PUT</code>; <code>sequence</code> texto; sem <code>gai_user</code>; fotos por <code>file_id</code>.</td></tr><tr><td>18</td><td>Reconciliação: encerrar</td><td><code>POST /gai/items/import-sessions/{uuid}/finish</code></td><td><code>POST …/import-sessions/{uuid}/finish</code></td><td>Preservada</td><td>Novos status finais (<code>finished</code>, <code>finished_with_errors</code>, <code>failed</code>); tratar 409.</td></tr><tr><td>19</td><td>Reconciliação: status</td><td><code>GET /gai/items/import-sessions/{uuid}</code></td><td><code>GET …/import-sessions/{uuid}</code></td><td>Preservada</td><td>Sem envelope <code>data</code>; status renomeados (tabela 4).</td></tr><tr><td>20</td><td>Reconciliação: erros</td><td><code>GET /gai/items/import-sessions/{uuid}/errors</code></td><td><code>GET …/import-sessions/{uuid}/errors?page=&amp;page_size=</code></td><td>Preservada</td><td>Resposta paginada <code>{items, page, …}</code>; novos campos <code>row_number</code>, <code>error_code</code>.</td></tr><tr><td>21</td><td>Reconciliação: backup</td><td><code>POST /gai/import-sessions/{uuid}/backup</code> (multipart <code>backup_file</code>, até 100 MB)</td><td><code>files/upload-url</code> <code>{type: "raw_backup", mime_type: "application/zip"}</code> → <code>PUT</code> → <code>confirm-upload</code></td><td>Substituída</td><td>3 passos; até 100 MiB; janela de 1800 s.</td></tr><tr><td>22</td><td>Reconciliação: baixar itens</td><td><code>GET /external/projects/{id}/items/sync?unidade=&amp;limit=&amp;last_id=&amp;updated_since=</code> (respondia 500)</td><td><code>GET /mobile/projects/{projectId}/items/sync?cursor=&amp;limit=</code></td><td>Substituída</td><td>Cursor opaco no lugar de <code>last_id</code>/<code>next_last_id</code>; filtrar unidade localmente; <code>image</code> (URLs) → <code>images</code> (metadados) + <code>GET …/images</code> para URLs.</td></tr></tbody></table></div>
+<p>Todas as 22 rotas/fluxos do documento original têm correspondência ou justificativa.</p>
+<h2 id="mat-2-rotas-novas-sem-equivalente-no-legado">2. Rotas novas sem equivalente no legado</h2>
+<div class="tbl"><table><thead><tr><th>Rota GAI</th><th>Finalidade</th></tr></thead><tbody><tr><td><code>POST /mobile/auth/logout</code></td><td>Encerrar a sessão do aparelho</td></tr><tr><td><code>GET /mobile/me</code></td><td>Identidade, inventariante, projetos e permissões</td></tr><tr><td><code>POST /auth/password/change</code></td><td>Troca obrigatória de senha temporária</td></tr><tr><td><code>GET /mobile/projects/{projectId}/items</code></td><td>Listagem paginada com filtros (busca on-line)</td></tr><tr><td><code>GET /mobile/projects/{projectId}/items/{externalId}</code></td><td>Consultar um item (inclusive excluído)</td></tr><tr><td><code>GET /mobile/projects/{projectId}/items/{externalId}/images</code></td><td>Fotos com URL temporária de visualização</td></tr><tr><td><code>DELETE /mobile/projects/{projectId}/items/{externalId}/images/{imageId}</code></td><td>Remover foto</td></tr><tr><td><code>GET /mobile/projects/{projectId}/expenses</code></td><td>Listar as próprias despesas (<code>expenses:read</code>)</td></tr></tbody></table></div>
+<p>Total da API mobile: 27 operações (todas no <span class="file">openapi.yaml</span>).</p>
+<h2 id="mat-3-campos">3. Campos</h2>
+<h3 id="mat-31-item">3.1 Item</h3>
+<div class="tbl"><table><thead><tr><th>Legado</th><th>GAI</th><th>Observação</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>externalId</code> (URL) / <code>external_item_id</code></td><td>Sempre texto</td></tr><tr><td><code>gai_user</code></td><td>—</td><td>Vem da sessão; enviar gera 400</td></tr><tr><td><code>project_id</code></td><td>URL</td><td>—</td></tr><tr><td><code>sequence</code> (int na reconciliação)</td><td><code>sequence</code></td><td><strong>Texto</strong> até 50</td></tr><tr><td><code>placa_antiga</code> / <code>placa_antiga_2</code> / <code>placa_nova</code></td><td><code>old_plate</code> / <code>old_plate_2</code> / <code>new_plate</code></td><td>Normalizadas (maiúsculas, <code>[A-Z0-9]</code>)</td></tr><tr><td><code>unidade</code> / <code>endereco</code> / <code>localizacao</code> / <code>descricao</code></td><td><code>unit_text</code> / <code>address_text</code> / <code>location_text</code> / <code>description</code></td><td>—</td></tr><tr><td><code>marca</code> / <code>modelo</code> / <code>num_serie</code> / <code>capacidade</code></td><td><code>brand</code> / <code>model</code> / <code>serial_number</code> / <code>capacity</code></td><td>—</td></tr><tr><td><code>ano</code> (texto)</td><td><code>year</code></td><td>Inteiro 1900–2100 ou <code>null</code></td></tr><tr><td><code>obs</code></td><td><code>notes</code></td><td>—</td></tr><tr><td><code>valor_usado</code> / <code>valor_novo</code></td><td><code>used_value</code> / <code>new_value</code></td><td><code>"150.00"</code> ou <code>null</code></td></tr><tr><td><code>fonte</code></td><td><code>source</code> (só leitura)</td><td><code>mobile_app</code></td></tr><tr><td><code>extra_fields</code></td><td><code>extra_fields</code></td><td>Objeto texto → texto (≤ 100 campos)</td></tr><tr><td><code>image_1..n</code> / <code>image</code> (URLs)</td><td><code>images</code> (metadados)</td><td>Upload em 3 passos; URL via <code>GET …/images</code></td></tr><tr><td>—</td><td><code>version</code>, <code>deleted</code>, <code>deleted_at</code>, <code>status</code></td><td>Controle de versão e exclusão lógica</td></tr></tbody></table></div>
+<p>Valores: campo ausente mantém; <code>null</code> limpa; <code>""</code> limpa textos e placas, mas gera 400 em <code>year</code> e valores.</p>
+<h3 id="mat-32-pendências">3.2 Pendências</h3>
+<div class="tbl"><table><thead><tr><th>Legado</th><th>GAI</th></tr></thead><tbody><tr><td><code>placas_faltantes</code></td><td><code>missing_new_plates.ranges</code> (+ <code>from</code>, <code>to</code>, <code>count</code>)</td></tr><tr><td><code>novas_duplicadas</code></td><td><code>duplicated_new_plates</code></td></tr><tr><td><code>antigas_duplicadas</code></td><td><code>duplicated_old_plates</code> (inclui <code>old_plate_2</code>)</td></tr><tr><td><code>itens[].item_id</code></td><td><code>items[].external_item_id</code></td></tr><tr><td><code>itens[].gai_user</code></td><td><code>items[].technician.name</code></td></tr><tr><td><code>itens[].unidade</code> / <code>localizacao</code> / <code>descricao</code></td><td><code>unit_text</code> / <code>location_text</code> / <code>description</code></td></tr></tbody></table></div>
+<h3 id="mat-33-despesa">3.3 Despesa</h3>
+<div class="tbl"><table><thead><tr><th>Legado</th><th>GAI</th></tr></thead><tbody><tr><td><code>project_id</code></td><td>URL</td></tr><tr><td><code>gai_user</code></td><td>— (sessão)</td></tr><tr><td><code>descricao</code></td><td><code>description</code></td></tr><tr><td><code>motivo</code></td><td><code>reason</code></td></tr><tr><td><code>data</code> (texto livre)</td><td><code>expense_date</code> (<code>YYYY-MM-DD</code>)</td></tr><tr><td><code>valor</code> (texto livre)</td><td><code>amount</code> (<code>"120.50"</code>)</td></tr><tr><td><code>image</code> (multipart)</td><td>anexo em 3 passos</td></tr><tr><td>—</td><td><code>client_expense_id</code> (obrigatório, idempotência)</td></tr></tbody></table></div>
+<h3 id="mat-34-sessão-de-reconciliação">3.4 Sessão de reconciliação</h3>
+<div class="tbl"><table><thead><tr><th>Legado</th><th>GAI</th></tr></thead><tbody><tr><td><code>{ "data": { ... } }</code></td><td>sem envelope</td></tr><tr><td><code>ready</code></td><td><code>receiving</code></td></tr><tr><td><code>completed</code> / <code>completed_with_errors</code></td><td><code>finished</code> / <code>finished_with_errors</code></td></tr><tr><td>—</td><td><code>cancelled</code>, <code>expired</code></td></tr><tr><td><code>images[{disk, path, sort_order}]</code></td><td><code>images[{file_id}]</code></td></tr><tr><td><code>client_file_id</code></td><td>—</td></tr></tbody></table></div>
+<h2 id="mat-4-códigos-http">4. Códigos HTTP</h2>
+<div class="tbl"><table><thead><tr><th>Situação</th><th>Legado</th><th>GAI</th></tr></thead><tbody><tr><td>Sucesso</td><td>Só 200 contava</td><td>200, 201, 204</td></tr><tr><td>Sem token / vencido</td><td>Rotas <code>/gai</code> sem token</td><td>401 → refresh</td></tr><tr><td>Sem permissão / vínculo / acesso</td><td>—</td><td>403 (<code>FORBIDDEN</code>, <code>MOBILE_ACCESS_DENIED</code>, <code>PASSWORD_CHANGE_REQUIRED</code>)</td></tr><tr><td>Conflito de versão, excluído, chave reutilizada</td><td>—</td><td>409 (não repetir sem resolver)</td></tr><tr><td>Upload fora da janela</td><td>—</td><td>410</td></tr><tr><td>Conta bloqueada</td><td>—</td><td>423</td></tr><tr><td>Limite de requisições</td><td>—</td><td>429</td></tr></tbody></table></div>
+<h2 id="mat-5-resumo">5. Resumo</h2>
+<div class="tbl"><table><thead><tr><th>Categoria</th><th>Itens</th></tr></thead><tbody><tr><td><strong>Preservadas</strong> (mesma função, contrato novo)</td><td>Login, refresh, exclusão de item, abrir sessão, PUT no storage, lote, encerrar, status e erros da reconciliação</td></tr><tr><td><strong>Substituídas por novos fluxos</strong></td><td>Projetos (<code>/mobile/me</code>), <code>sync_items</code> (PUT), fotos (3 passos), <code>update_items</code> e <code>external/sync</code> (cursor), <code>check_duplicate</code> (<code>plates/check</code>), <code>pendencias</code> (<code>plates/report</code>), <code>financeiro</code> (expenses + anexo), <code>presign</code> (<code>files/upload-url</code>), backup (<code>raw_backup</code>)</td></tr><tr><td><strong>Descontinuadas</strong></td><td><code>item/create</code>, <code>item/update</code></td></tr><tr><td><strong>Novas</strong></td><td>Logout, <code>/mobile/me</code>, troca de senha, confirmação de upload, consulta e listagem de itens, fotos com URL, remoção de foto, listagem de despesas</td></tr><tr><td><strong>Mudanças obrigatórias no app</strong></td><td>Bearer em todas as rotas; tokens opacos com refresh rotativo; JSON no lugar de multipart; nomes de campos novos; <code>base_version</code> e tratamento de 409; fila com exclusão offline; sincronização por cursor; uploads em 3 passos; permissões financeiras; tratamento de 401/403/410/429</td></tr><tr><td><strong>Ainda não implementado no GAI</strong></td><td>Nomes de <code>extra_fields</code> por projeto; renomear unidade/localização em lote; upload de logs; reprocessamento de lote pelo app; edição de itens sem <code>external_item_id</code></td></tr></tbody></table></div>
+</section>
+<section class="doc" aria-labelledby="gui-top">
+<h1 class="doc-title" id="gui-top">Guia de migração do app Investor (Flutter/Dio) para o GAI</h1>
+<p>Este guia descreve o que mudar no app para trocar a base Laravel pela API mobile do GAI. O contrato de cada rota está em <a href="#rel-top">RELATORIO-API-INVESTOR.md</a>; a correspondência rota a rota, em <a href="#mat-top">MATRIZ-MIGRACAO.md</a>; o contrato formal, em <span class="file">openapi.yaml</span>.</p>
+<p>Os trechos de código são ilustrativos (Dart 3, <code>dio</code> 5, <code>flutter_secure_storage</code>). Adapte nomes e camadas à arquitetura atual do app (<code>lib/shareds/helpers/connection.dart</code>, <code>lib/shareds/sync/sync_impl.dart</code>, <code>lib/modules/auth/</code>, <code>lib/modules/reconciliacao/</code>).</p>
+<aside class="callout"><strong>Revisão 2, 10/11/2026.</strong> URL base oficial (AWS/CloudFront, ainda sem domínio próprio): <code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code>. A API está implementada e testada localmente, mas as rotas <code>/mobile/*</code> <strong>ainda não respondem nesse endereço</strong>: devolvem 200 <code>text/html</code> até o deploy do módulo mobile. Rode o checklist da <a href="#gui-10-checklist-de-homologação-do-app">seção 10</a> quando o deploy for feito e antes de publicar o app.</aside>
+<h2 id="gui-1-resumo-das-mudanças-obrigatórias">1. Resumo das mudanças obrigatórias</h2>
+<div class="tbl"><table><thead><tr><th>Área</th><th>Hoje (1.4.6)</th><th>Com o GAI</th></tr></thead><tbody><tr><td>Base</td><td><code>…/si/api</code></td><td><code>https://d1kanjou9wgm7q.cloudfront.net/api/v1</code> (configurável por flavor/ambiente)</td></tr><tr><td>Token</td><td>JWT de 1 h, só em login/refresh e reconciliação</td><td>Token opaco de 15 min em <strong>todas</strong> as rotas + refresh token rotativo</td></tr><tr><td>Formato</td><td>multipart / form-urlencoded / JSON</td><td>Só JSON (exceto o <code>PUT</code> binário ao storage)</td></tr><tr><td>Projetos</td><td><code>GET /gai/projects</code> + filtro local</td><td><code>GET /mobile/me</code></td></tr><tr><td>Envio de item</td><td><code>POST /gai/sync_items</code> (multipart com fotos)</td><td><code>PUT …/items/{id}</code> (JSON) + fotos em 3 passos</td></tr><tr><td>Sucesso</td><td>só HTTP 200</td><td>200, 201 e 204</td></tr><tr><td>Edição</td><td>sobrescreve</td><td><code>base_version</code> + tratamento de 409</td></tr><tr><td>Exclusão</td><td>só online, sem fila</td><td>fila, também offline</td></tr><tr><td>Atualização da base</td><td><code>update_items</code></td><td>sincronização por cursor</td></tr><tr><td>Pendências</td><td><code>POST pendencias</code> com <code>itens: []</code></td><td><code>GET plates/report</code></td></tr><tr><td>Despesas</td><td>multipart com texto livre</td><td>JSON validado + comprovante em 3 passos + permissão</td></tr><tr><td>Reconciliação</td><td>presign em lote, <code>path</code>, backup multipart</td><td>um arquivo por chamada, confirmação, <code>file_id</code>, backup em 3 passos</td></tr></tbody></table></div>
+<h2 id="gui-2-configuração-do-dio">2. Configuração do Dio</h2>
+<div class="code"><span class="lang">dart</span><pre><code>final api = Dio(BaseOptions(
+  baseUrl: Env.gaiBaseUrl, // produção: https://d1kanjou9wgm7q.cloudfront.net/api/v1
+  connectTimeout: const Duration(seconds: 15),
+  sendTimeout: const Duration(seconds: 60),
+  receiveTimeout: const Duration(seconds: 60),
+  headers: {'Accept': 'application/json'},
+  contentType: Headers.jsonContentType,
+  // Deixe o app decidir pelo status; não lance exceção para 4xx esperados.
+  validateStatus: (s) =&gt; s != null &amp;&amp; s &lt; 500,
+));
+
+// Cliente separado para o storage (S3): SEM interceptors de autenticação.
+final storage = Dio(BaseOptions(
+  connectTimeout: const Duration(seconds: 30),
+  sendTimeout: const Duration(minutes: 5),
+  receiveTimeout: const Duration(seconds: 60),
+));</code></pre></div>
+<ul><li>Use <strong>dois clientes</strong>: o do GAI (com autenticação) e o do storage (sem nada). Um <code>Authorization</code> enviado ao storage invalida a URL pré-assinada.</li><li>Não registre corpo de requisição/resposta de autenticação nem URLs pré-assinadas no log de diagnóstico.</li></ul>
+<p>Modelo de erro:</p>
+<div class="code"><span class="lang">dart</span><pre><code>class ApiError {
+  final int status;
+  final String code;
+  final String message; // junta a lista quando message vier como array
+  final Map&lt;String, dynamic&gt;? details;
+  ApiError(this.status, this.code, this.message, this.details);
+
+  factory ApiError.from(Response r) {
+    final body = r.data is Map ? r.data as Map : const {};
+    final msg = body['message'];
+    return ApiError(
+      r.statusCode ?? 0,
+      (body['code'] as String?) ?? 'UNKNOWN',
+      msg is List ? msg.join('\n') : (msg?.toString() ?? ''),
+      body['details'] is Map ? Map&lt;String, dynamic&gt;.from(body['details']) : null,
+    );
+  }
+}</code></pre></div>
+<p>Decida sempre por <code>status</code> + <code>code</code>. Nunca compare a mensagem.</p>
+<h2 id="gui-3-sessão">3. Sessão</h2>
+<h3 id="gui-31-armazenamento-seguro">3.1 Armazenamento seguro</h3>
+<div class="code"><span class="lang">dart</span><pre><code>class TokenStore {
+  static const _s = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
+  Future&lt;void&gt; save(Map&lt;String, dynamic&gt; t) async {
+    await _s.write(key: 'access_token', value: t['access_token']);
+    await _s.write(key: 'refresh_token', value: t['refresh_token']);
+    await _s.write(key: 'access_expires_at', value: t['access_token_expires_at']);
+    await _s.write(key: 'session_expires_at', value: t['session_expires_at']);
+  }
+
+  Future&lt;void&gt; clear() =&gt; _s.deleteAll(); // não apaga a fila offline (outro storage)
+}</code></pre></div>
+<p>Migração da versão atual: na primeira abertura da versão GAI, apague o JWT legado e peça login. A fila offline do Laravel precisa ser <strong>esvaziada antes da atualização</strong> (ou convertida para o formato novo — ver <a href="#gui-55-migração-da-fila-existente">5.5</a>).</p>
+<h3 id="gui-32-login-identidade-e-troca-de-senha">3.2 Login, identidade e troca de senha</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;void&gt; login(String identifier, String password) async {
+  final r = await api.post('/mobile/auth/login', data: {
+    'identifier': identifier,
+    'password': password,
+    'device_label': await deviceLabel(), // ex.: modelo + nome do técnico
+  });
+  switch (r.statusCode) {
+    case 200:
+      await tokens.save(r.data);
+      if (r.data['user']['must_change_password'] == true) {
+        return nav.toChangePassword();
+      }
+      await loadMe();
+    case 401: throw LoginError('Usuário ou senha inválidos.');
+    case 403: throw LoginError('Acesso ao aplicativo não liberado para esta conta.');
+    case 423: throw LoginError(ApiError.from(r).message); // bloqueio temporário
+    case 429: throw LoginError('Muitas tentativas. Aguarde um minuto.');
+    default:  throw LoginError('Não foi possível fazer o login.');
+  }
+}
+
+Future&lt;void&gt; loadMe() async {
+  final r = await api.get('/mobile/me');
+  final me = MobileMe.fromJson(r.data);
+  // Projetos já vêm filtrados pelo servidor. Não filtre localmente.
+  // Permissões controlam o menu: despesas só com 'expenses:create'.
+}</code></pre></div>
+<p>Troca de senha (<code>POST /auth/password/change {current_password, new_password}</code>): em 200, chame <code>tokens.clear()</code> e volte ao login — todas as sessões foram revogadas.</p>
+<h3 id="gui-33-refresh-único-interceptor">3.3 Refresh único (interceptor)</h3>
+<p>Requisitos: renovar antes de vencer ou ao receber 401; <strong>um refresh por vez</strong>; trocar os dois tokens; repetir a requisição original uma única vez.</p>
+<div class="code"><span class="lang">dart</span><pre><code>class AuthInterceptor extends QueuedInterceptor {
+  // `raw` é um Dio com as mesmas BaseOptions, SEM este interceptor: usado no refresh
+  // e na repetição. Chamar o próprio `api` aqui dentro trava a fila do QueuedInterceptor.
+  AuthInterceptor(this.raw, this.tokens);
+  final Dio raw;
+  final TokenStore tokens;
+  Future&lt;bool&gt;? _refreshing; // compartilhado entre requisições concorrentes
+
+  static const _public = ['/mobile/auth/login', '/mobile/auth/refresh', '/mobile/auth/logout'];
+
+  @override
+  Future&lt;void&gt; onRequest(RequestOptions o, RequestInterceptorHandler h) async {
+    if (_public.contains(o.path)) return h.next(o);
+    if (await tokens.accessExpiresWithin(const Duration(seconds: 60))) {
+      await _refreshOnce();
+    }
+    o.headers['Authorization'] = 'Bearer ${await tokens.access()}';
+    h.next(o);
+  }
+
+  @override
+  Future&lt;void&gt; onResponse(Response r, ResponseInterceptorHandler h) async {
+    final o = r.requestOptions;
+    if (r.statusCode == 401 &amp;&amp; !_public.contains(o.path) &amp;&amp; o.extra['retried'] != true) {
+      if (await _refreshOnce()) {
+        o.extra['retried'] = true;
+        o.headers['Authorization'] = 'Bearer ${await tokens.access()}';
+        return h.resolve(await raw.fetch(o));
+      }
+      session.expired(); // vai ao login, mantém a fila
+    }
+    h.next(r);
+  }
+
+  Future&lt;bool&gt; _refreshOnce() =&gt; _refreshing ??= _doRefresh().whenComplete(() =&gt; _refreshing = null);
+
+  Future&lt;bool&gt; _doRefresh() async {
+    final refresh = await tokens.refresh();
+    if (refresh == null) return false;
+    final r = await raw.post('/mobile/auth/refresh', data: {'refresh_token': refresh});
+    if (r.statusCode == 200) {
+      await tokens.save(r.data); // grava ANTES de liberar as requisições em espera
+      return true;
+    }
+    final e = ApiError.from(r);
+    if (r.statusCode == 409 &amp;&amp; e.code == 'REFRESH_TOKEN_ALREADY_ROTATED') {
+      // Outro processo do app (ex.: WorkManager) renovou. Recarregue do storage.
+      return await tokens.refresh() != refresh;
+    }
+    if (r.statusCode == 403) session.accessSuspended();
+    if (r.statusCode == 401 || r.statusCode == 400) await tokens.clear();
+    return false;
+  }
+}</code></pre></div>
+<ul><li>Se o app tem sincronização em segundo plano (WorkManager/isolate), use um <strong>lock entre processos</strong> (por exemplo, arquivo de lock ou serializar todo acesso à API num único isolate). Dois processos renovando com o mesmo token geram 409 e, após 30 s, 401 <code>REFRESH_TOKEN_REUSED</code> (sessão revogada).</li><li>Antes de qualquer chamada, se <code>session_expires_at</code> já passou, vá direto ao login.</li></ul>
+<h3 id="gui-34-tratamento-de-401-e-403">3.4 Tratamento de 401 e 403</h3>
+<div class="tbl"><table><thead><tr><th>Resposta</th><th>Ação</th></tr></thead><tbody><tr><td>401 em rota de negócio</td><td>Refresh único + repetir uma vez. Se o refresh falhar: login, mantendo a fila.</td></tr><tr><td>401 no refresh</td><td>Apagar tokens, login.</td></tr><tr><td>403 <code>PASSWORD_CHANGE_REQUIRED</code></td><td>Tela de troca de senha.</td></tr><tr><td>403 <code>MOBILE_ACCESS_DENIED</code></td><td>Tela “acesso suspenso”; pausar fila e sincronização.</td></tr><tr><td>403 <code>FORBIDDEN</code> em <code>/mobile/projects/{id}/...</code></td><td>Vínculo encerrado ou sem permissão: recarregar <code>/mobile/me</code>, retirar o projeto e pausar a fila daquele projeto.</td></tr></tbody></table></div>
+<h3 id="gui-35-logout">3.5 Logout</h3>
+<p><code>POST /mobile/auth/logout {refresh_token}</code> → 204. Depois, <code>tokens.clear()</code>. Se a fila não estiver vazia, avise o técnico antes de sair.</p>
+<h2 id="gui-4-itens">4. Itens</h2>
+<h3 id="gui-41-conversão-do-modelo-local">4.1 Conversão do modelo local</h3>
+<div class="code"><span class="lang">dart</span><pre><code>String? _txt(String? v) =&gt; (v == null || v.trim().isEmpty) ? null : v.trim();
+
+int? _year(String? ano) {
+  final n = int.tryParse((ano ?? '').trim());
+  return (n != null &amp;&amp; n &gt;= 1900 &amp;&amp; n &lt;= 2100) ? n : null;
+}
+
+String? _money(String? v) {
+  final s = (v ?? '').trim().replaceAll('R\$', '').replaceAll(' ', '');
+  if (s.isEmpty) return null;
+  // "1.234,56" → "1234.56"; "150" → "150.00"
+  final normalized = s.contains(',') ? s.replaceAll('.', '').replaceAll(',', '.') : s;
+  final d = double.tryParse(normalized);
+  return d == null ? null : d.toStringAsFixed(2);
+}
+
+Map&lt;String, dynamic&gt; toGaiBody(LocalItem i, {int? baseVersion}) =&gt; {
+  if (baseVersion != null) 'base_version': baseVersion,
+  'new_plate': _txt(i.placaNova),
+  'old_plate': _txt(i.placaAntiga),
+  'old_plate_2': _txt(i.placaAntiga2),
+  'unit_text': _txt(i.unidade),
+  'address_text': _txt(i.endereco),
+  'location_text': _txt(i.localizacao),
+  'description': _txt(i.descricao),
+  'brand': _txt(i.marca),
+  'model': _txt(i.modelo),
+  'serial_number': _txt(i.numSerie),
+  'capacity': _txt(i.capacidade),
+  'year': _year(i.ano),
+  'notes': _txt(i.obs),
+  'extra_fields': i.extraFields.isEmpty ? null : i.extraFields, // Map&lt;String, String&gt;
+};</code></pre></div>
+<ul><li><strong>Não</strong> envie <code>id</code>, <code>gai_user</code>, <code>project_id</code>, <code>fonte</code> nem nomes em português: geram 400.</li><li>Enviar o item inteiro é seguro: campos iguais aos do servidor não contam como mudança. Mas lembre que <code>null</code> <strong>limpa</strong>; se o app não conhece um campo (por exemplo, valores editados só pela web), <strong>omita a chave</strong> em vez de mandar <code>null</code>.</li><li>Um <code>ano</code> não numérico vira <code>null</code>; se quiser preservar o texto, grave-o em <code>notes</code> ou em <code>extra_fields</code> (decisão de produto).</li><li>O servidor normaliza as placas (<code>"ab-12"</code> → <code>"AB12"</code>). Atualize o item local com o <code>item</code> devolvido para comparar placas do mesmo jeito.</li><li>Guarde <code>version</code> em cada item local (coluna nova) e a data da última sincronização.</li></ul>
+<h3 id="gui-42-envio-criação-e-edição">4.2 Envio (criação e edição)</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;SendResult&gt; sendItem(int projectId, LocalItem i) async {
+  final r = await api.put(
+    '/mobile/projects/$projectId/items/${Uri.encodeComponent(i.externalId)}',
+    data: toGaiBody(i, baseVersion: i.serverVersion), // null na criação
+  );
+  if (r.statusCode == 200 || r.statusCode == 201) {
+    await db.applyServerItem(r.data['item']); // grava version, placas normalizadas
+    return SendResult.done;
+  }
+  return classify(r); // ver 5.2
+}</code></pre></div>
+<ul><li><code>externalId</code> é o mesmo <code>microsecondsSinceEpoch</code> de hoje, <strong>como texto</strong>.</li><li>Criação: <code>serverVersion == null</code> → 201. Reenvio do mesmo corpo após timeout → 200 <code>unchanged</code>.</li><li>Edição: <code>base_version</code> = <code>serverVersion</code>. 409 → <a href="#gui-44-conflitos">4.4</a>.</li></ul>
+<h3 id="gui-43-exclusão">4.3 Exclusão</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;SendResult&gt; deleteItem(int projectId, LocalItem i) async {
+  final q = i.serverVersion == null ? '' : '?base_version=${i.serverVersion}';
+  final r = await api.delete('/mobile/projects/$projectId/items/${Uri.encodeComponent(i.externalId)}$q');
+  if (r.statusCode == 200 || (r.statusCode == 404 &amp;&amp; ApiError.from(r).code == 'ITEM_NOT_FOUND')) {
+    await db.markDeleted(i.externalId);
+    return SendResult.done;
+  }
+  return classify(r);
+}</code></pre></div>
+<p>Ao excluir offline um item que ainda tem <code>PUT</code> pendente e nunca foi enviado, remova as operações da fila sem chamar o servidor.</p>
+<h3 id="gui-44-conflitos">4.4 Conflitos</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;void&gt; onConflict(int projectId, LocalItem local, ApiError e) async {
+  final server = e.details?['item'] as Map&lt;String, dynamic&gt;?;
+  if (e.code == 'ITEM_DELETED') {
+    await db.markDeleted(local.externalId, reason: 'excluído no servidor');
+    return queue.drop(local.externalId);
+  }
+  if (e.code == 'VERSION_CONFLICT' &amp;&amp; server != null) {
+    final changed = local.fieldsChangedSince(local.serverSnapshot); // o que o técnico mexeu
+    final serverChanged = diff(local.serverSnapshot, server);       // o que mudou lá
+    if (changed.keys.toSet().intersection(serverChanged.keys.toSet()).isEmpty) {
+      // Sem colisão: reaplica só os campos do técnico sobre a versão nova.
+      await queue.replacePut(local.externalId,
+          body: {'base_version': server['version'], ...changed});
+    } else {
+      await conflicts.add(local, server); // tela para o técnico escolher
+    }
+  }
+}</code></pre></div>
+<p>Guarde, por item, o último estado recebido do servidor (<code>serverSnapshot</code>) para calcular o que o técnico alterou. Nunca reenvie sem <code>base_version</code> atualizado.</p>
+<h2 id="gui-5-fila-de-envio">5. Fila de envio</h2>
+<h3 id="gui-51-modelo">5.1 Modelo</h3>
+<div class="tbl"><table><thead><tr><th>Coluna</th><th>Uso</th></tr></thead><tbody><tr><td><code>op</code></td><td><code>put_item</code>, <code>delete_item</code>, <code>upload_image</code>, <code>create_expense</code>, <code>upload_receipt</code></td></tr><tr><td><code>project_id</code>, <code>external_id</code></td><td>Chave do item (ou <code>client_expense_id</code>)</td></tr><tr><td><code>payload</code></td><td>Corpo JSON já convertido</td></tr><tr><td><code>attempts</code>, <code>next_attempt_at</code></td><td>Backoff</td></tr><tr><td><code>state</code></td><td><code>pending</code>, <code>conflict</code>, <code>failed</code> (definitivo), <code>blocked</code> (403/sessão)</td></tr><tr><td><code>last_error</code></td><td><code>status</code> + <code>code</code> para a tela de pendências</td></tr></tbody></table></div>
+<p>Ordem: por item, na ordem em que as operações foram criadas (<code>put_item</code> → <code>upload_image</code>… → <code>put_item</code> → <code>delete_item</code>). Itens diferentes podem ir em paralelo (mantenha 2, como hoje). Gatilhos atuais continuam válidos: abrir o app, salvar, editar, rede voltar e a cada 1 min.</p>
+<h3 id="gui-52-classificação-das-respostas">5.2 Classificação das respostas</h3>
+<div class="code"><span class="lang">dart</span><pre><code>SendResult classify(Response r) {
+  final e = ApiError.from(r);
+  switch (r.statusCode) {
+    case 401: return SendResult.retryAfterRefresh; // o interceptor já tentou; pausa até login
+    case 403: return SendResult.blocked;           // não repetir; ver 3.4
+    case 409: return SendResult.conflict;          // tela de conflitos
+    case 410: return SendResult.restartUpload;     // só uploads
+    case 429: return SendResult.retryLater;
+  }
+  if ((r.statusCode ?? 0) &gt;= 500) return SendResult.retryLater;
+  return SendResult.failed; // 400/404 etc.: definitivo, visível ao técnico
+}</code></pre></div>
+<p>Erros de rede e timeouts (<code>DioExceptionType.connectionTimeout</code>, <code>receiveTimeout</code>, <code>connectionError</code>) → <code>retryLater</code>.</p>
+<h3 id="gui-53-backoff">5.3 Backoff</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Duration backoff(int attempt) {
+  final base = Duration(seconds: 5 * (1 &lt;&lt; attempt.clamp(0, 6))); // 5 s, 10 s, 20 s … 320 s
+  final capped = base &gt; const Duration(minutes: 5) ? const Duration(minutes: 5) : base;
+  return capped + Duration(milliseconds: Random().nextInt(1000)); // jitter
+}</code></pre></div>
+<p>Diferente de hoje, <strong>não repita para sempre</strong> erros 4xx: eles não se resolvem sozinhos.</p>
+<h3 id="gui-54-idempotência">5.4 Idempotência</h3>
+<p>Repetir após timeout é seguro para <code>PUT</code> de item (<code>unchanged</code>), <code>DELETE</code> (<code>already_deleted</code>), confirmações (<code>already_confirmed</code>), despesa com o mesmo <code>client_expense_id</code> (<code>existing</code>) e lote de reconciliação com a mesma <code>idempotency_key</code>. Gere essas chaves <strong>uma vez</strong>, ao criar a operação, e guarde-as na fila.</p>
+<h3 id="gui-55-migração-da-fila-existente">5.5 Migração da fila existente</h3>
+<p>Ao atualizar o app, itens pendentes do formato <code>sync_items</code> podem ser convertidos para <code>put_item</code> (criação sem <code>base_version</code>) + <code>upload_image</code> por foto ainda existente no aparelho. Como o <code>PUT</code> é idempotente, um item que já tinha chegado ao servidor pelo legado (mesmo id, mesmo projeto, se os dados foram migrados para o GAI) responderá 200 <code>unchanged</code> ou 409 (se divergiu). Exclusões locais nunca enviadas viram <code>delete_item</code>.</p>
+<h2 id="gui-6-sincronização-por-cursor">6. Sincronização por cursor</h2>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;void&gt; syncProject(int projectId) async {
+  var cursor = await db.cursor(projectId); // null na primeira vez
+  while (true) {
+    final r = await api.get('/mobile/projects/$projectId/items/sync',
+        queryParameters: {'limit': 200, if (cursor != null) 'cursor': cursor});
+    if (r.statusCode == 400 &amp;&amp; ApiError.from(r).code == 'INVALID_CURSOR') {
+      cursor = null; await db.saveCursor(projectId, null); continue;
+    }
+    if (r.statusCode != 200) throw ApiError.from(r);
+    await db.transaction(() async {
+      for (final it in r.data['items']) {
+        await db.mergeServerItem(projectId, it); // ver regras abaixo
+      }
+      await db.saveCursor(projectId, r.data['next_cursor']); // só depois de aplicar a página
+    });
+    cursor = r.data['next_cursor'];
+    if (r.data['has_more'] != true) break;
+  }
+}</code></pre></div>
+<p>Regras de <code>mergeServerItem</code>:</p>
+<ul><li>Chave local: <code>external_item_id</code>. Se for <code>null</code>, use o <code>id</code> do servidor e marque <strong>somente leitura</strong>.</li><li><code>deleted == true</code> → remova ou marque excluído localmente (e descarte operações pendentes desse item, exceto se quiser alertar o técnico).</li><li>Se houver operação pendente na fila para o item, <strong>não sobrescreva</strong> os campos locais: atualize só <code>serverSnapshot</code> (a fila resolverá com 200 ou 409).</li><li>Aplique apenas se <code>version</code> recebida for maior que a local.</li><li><code>images</code> traz metadados das fotos do servidor; para exibir, peça <code>GET …/images</code> (URL de 300 s).</li></ul>
+<p>Quando rodar: ao abrir um projeto, após esvaziar a fila, periodicamente (por exemplo, a cada 5 min com o app aberto) e por ação do técnico. Substitui <code>update_items</code> e <code>GET /external/.../items/sync</code>.</p>
+<h2 id="gui-7-fotos">7. Fotos</h2>
+<h3 id="gui-71-envio-de-uma-foto">7.1 Envio de uma foto</h3>
+<div class="code"><span class="lang">dart</span><pre><code>Future&lt;SendResult&gt; uploadImage(int projectId, String externalId, File f) async {
+  final bytes = await f.readAsBytes();
+  final base = '/mobile/projects/$projectId/items/${Uri.encodeComponent(externalId)}/images';
+
+  final r1 = await api.post('$base/upload-url', data: {
+    'original_name': p.basename(f.path),
+    'mime_type': 'image/jpeg',
+    'size_bytes': bytes.length,
+  });
+  if (r1.statusCode != 201) return classify(r1); // 404 = item ainda não existe; 409 CONFLICT = 3 fotos
+  final imageId = r1.data['image']['id'];
+  final headers = Map&lt;String, dynamic&gt;.from(r1.data['upload_headers']);
+
+  final r2 = await storage.put(r1.data['upload_url'],
+      data: Stream.fromIterable([bytes]),
+      options: Options(headers: headers, validateStatus: (_) =&gt; true));
+  if (r2.statusCode != 200) return SendResult.restartUpload;
+
+  final r3 = await api.post('$base/$imageId/confirm-upload', data: {});
+  if (r3.statusCode == 200) {
+    await db.setServerVersion(externalId, r3.data['item_version']);
+    await db.markImageUploaded(f.path, imageId);
+    return SendResult.done;
+  }
+  if (r3.statusCode == 410) return SendResult.restartUpload;
+  return classify(r3);
+}</code></pre></div>
+<ul><li>Envie os headers de <code>upload_headers</code> <strong>exatamente</strong>; não acrescente <code>Authorization</code>.</li><li>Os três passos precisam caber em <code>expires_in_seconds</code> (300 s). Em rede lenta, prefira pedir a URL imediatamente antes do envio.</li><li>Até 3 fotos por item, 10 MiB cada. A compressão atual (1600 px, qualidade 80) atende.</li><li>Se a confirmação falhar com <code>STORAGE_*_MISMATCH</code>, o arquivo mudou entre o pedido e o envio: recomece.</li><li>Uma foto pedida e abandonada fica <code>pending_upload</code> e ocupa vaga; remova-a com <code>DELETE …/images/{imageId}</code> antes de tentar outra, se receber 409 <code>CONFLICT</code>.</li></ul>
+<h3 id="gui-72-liberar-espaço-no-aparelho">7.2 Liberar espaço no aparelho</h3>
+<p>Depois de <code>markImageUploaded</code>, o app pode apagar a foto local de itens sincronizados e exibir a do servidor via <code>GET …/images</code> (pedido 2 do legado). Não guarde <code>download_url</code>; ela expira em 300 s.</p>
+<h2 id="gui-8-placas-e-pendências">8. Placas e pendências</h2>
+<div class="code"><span class="lang">dart</span><pre><code>// Aviso de duplicidade no cadastro (com rede)
+final r = await api.get('/mobile/projects/$pid/plates/check', queryParameters: {
+  'plate': placa, 'kind': 'new', // 'old' cobre placa antiga e placa antiga 2
+  if (editingId != null) 'exclude_external_id': editingId,
+});
+final exists = r.data['exists'] == true; // booleano JSON</code></pre></div>
+<div class="code"><span class="lang">dart</span><pre><code>// Tela Pendências
+final r = await api.get('/mobile/projects/$pid/plates/report');
+final faltantes = List&lt;String&gt;.from(r.data['missing_new_plates']['ranges']); // ["4","6-8"]
+final dupNovas = r.data['duplicated_new_plates'];   // [{plate, items:[{external_item_id, technician:{name}, unit_text, location_text, description}]}]
+final dupAntigas = r.data['duplicated_old_plates'];</code></pre></div>
+<ul><li>Esvazie a fila antes de abrir o relatório, para incluir os itens do próprio aparelho.</li><li>Não envie itens nessa rota (o legado enviava <code>itens: []</code>).</li><li>Sem rede, mantenha o cálculo local atual e avise que o resultado é parcial.</li></ul>
+<h2 id="gui-9-despesas-e-reconciliação">9. Despesas e reconciliação</h2>
+<h3 id="gui-91-despesas">9.1 Despesas</h3>
+<ul><li>Mostre o menu só se <code>me.permissions</code> contiver <code>expenses:create</code>. O histórico (<code>GET …/expenses</code>) exige <code>expenses:read</code>, que <strong>não</strong> aparece em <code>/mobile/me</code>: chame e esconda a lista se vier 403.</li><li>Valide no formulário: data → <code>YYYY-MM-DD</code>; valor → <code>"0.00"</code>.</li><li>Gere <code>client_expense_id</code> ao salvar (ex.: <code>exp-&lt;microsecondsSinceEpoch&gt;</code>), enfileire <code>create_expense</code> e, depois do 201/200, enfileire <code>upload_receipt</code> com o <code>expense.id</code> devolvido.</li><li>Comprovante: mesmos 3 passos das fotos, em <code>…/expenses/{id}/attachments/upload-url</code> e <code>…/attachments/{attachmentId}/confirm-upload</code>; até <strong>20 MiB</strong>; JPEG, PNG, WEBP ou PDF.</li></ul>
+<div class="code"><span class="lang">dart</span><pre><code>final r = await api.post('/mobile/projects/$pid/expenses', data: {
+  'client_expense_id': op.clientExpenseId,
+  'description': form.descricao,
+  'reason': form.motivo.isEmpty ? null : form.motivo,
+  'expense_date': DateFormat('yyyy-MM-dd').format(form.data),
+  'amount': _money(form.valor),
+});
+// 201 created | 200 existing → r.data['expense']['id']</code></pre></div>
+<h3 id="gui-92-reconciliação">9.2 Reconciliação</h3>
+<div class="tbl"><table><thead><tr><th>Passo</th><th>Mudança</th></tr></thead><tbody><tr><td>Abrir sessão</td><td><code>POST /mobile/projects/{pid}/import-sessions {unidade, expected_payloads}</code>; ler <code>session_uuid</code> direto da resposta (sem <code>data</code>). Não enviar <code>project_id</code> nem <code>source</code>.</td></tr><tr><td>Fotos</td><td>Uma chamada <code>files/upload-url {type: "image", original_name, mime_type, size_bytes}</code> por foto; <code>PUT</code>; <code>files/{file_id}/confirm-upload</code>. Até 3 envios em paralelo ao storage. Guardar <code>file_id</code>.</td></tr><tr><td>Backup</td><td><code>files/upload-url {type: "raw_backup", mime_type: "application/zip", ...}</code> (até 100 MiB, janela de 1800 s); <code>PUT</code>; <code>confirm-upload</code>.</td></tr><tr><td>Lotes</td><td><code>{payload_number, idempotency_key, items}</code>; cada item com <code>operation: "upsert"</code> (ou <code>"delete"</code>), <code>external_item_id</code>, campos com os nomes do <code>PUT</code>, <code>sequence</code> como <strong>texto</strong> e <code>images: [{file_id}]</code>. Sem <code>gai_user</code>, <code>item_id</code>, <code>fonte</code>, <code>disk</code>, <code>path</code>, <code>sort_order</code>.</td></tr><tr><td>Campos nulos</td><td>Continue <strong>omitindo</strong> campos sem valor (como hoje): ausente mantém; <code>null</code> limpa.</td></tr><tr><td>Resultado do lote</td><td><code>status</code> <code>processed</code> / <code>partially_processed</code> / <code>failed</code> + contagens.</td></tr><tr><td>Encerrar</td><td><code>POST …/finish</code>; status final <code>finished</code>, <code>finished_with_errors</code> ou <code>failed</code>; 409 → ver relatório 8.4.</td></tr><tr><td>Status</td><td>Mapear <code>ready</code> → <code>receiving</code>, <code>completed</code> → <code>finished</code>, <code>completed_with_errors</code> → <code>finished_with_errors</code>; novos <code>cancelled</code> e <code>expired</code>.</td></tr><tr><td>Erros</td><td><code>GET …/errors?page=1&amp;page_size=100</code> → <code>items[]</code> (paginado).</td></tr><tr><td>Baixar itens</td><td>Usar a sincronização da <a href="#gui-6-sincronização-por-cursor">seção 6</a> e filtrar <code>unit_text</code> localmente.</td></tr><tr><td>Retomada</td><td>Persistir <code>session_uuid</code>, <code>file_id</code> e a chave de cada lote; reenviar com a mesma chave após falha.</td></tr></tbody></table></div>
+<h2 id="gui-10-checklist-de-homologação-do-app">10. Checklist de homologação do app</h2>
+<ul class="check"><li><span class="box" aria-hidden="true"></span><code>GET https://d1kanjou9wgm7q.cloudfront.net/api/v1/health</code> responde <code>200 {"status":"ok"}</code> e <code>GET /mobile/me</code> sem token responde <strong>401 JSON</strong>, não HTML. Isso confirma que o módulo mobile foi publicado.</li></ul>
+<ul class="check"><li><span class="box" aria-hidden="true"></span>Login com e-mail e com login; senha errada; conta bloqueada (423); conta sem inventariante (403).</li><li><span class="box" aria-hidden="true"></span>Troca obrigatória de senha e novo login.</li><li><span class="box" aria-hidden="true"></span>Token expirando durante o uso: refresh transparente; duas requisições simultâneas com token vencido geram <strong>um</strong> refresh.</li><li><span class="box" aria-hidden="true"></span>Refresh com app em segundo plano e em primeiro plano ao mesmo tempo (sem 401 <code>REFRESH_TOKEN_REUSED</code>).</li><li><span class="box" aria-hidden="true"></span>Logout; sessão de 30 dias expirada leva ao login sem perder a fila.</li><li><span class="box" aria-hidden="true"></span>Inventariante bloqueado durante o uso: 403 e tela de acesso suspenso.</li><li><span class="box" aria-hidden="true"></span>Projeto desvinculado durante o uso: some da lista; fila do projeto pausada.</li><li><span class="box" aria-hidden="true"></span>Cadastro offline de 50 itens com 3 fotos cada; sincronização ao voltar a rede, sem duplicatas.</li><li><span class="box" aria-hidden="true"></span>Reenvio após timeout (<code>unchanged</code>, <code>already_confirmed</code>).</li><li><span class="box" aria-hidden="true"></span>Mesmo item editado em dois aparelhos: um 200, outro 409 e recuperação.</li><li><span class="box" aria-hidden="true"></span>Item editado na web enquanto o técnico edita offline.</li><li><span class="box" aria-hidden="true"></span>Exclusão offline e reenvio de edição antiga (<code>ITEM_DELETED</code>).</li><li><span class="box" aria-hidden="true"></span>Sincronização com cursor interrompida no meio e retomada; item da web aparece somente leitura.</li><li><span class="box" aria-hidden="true"></span>Foto com janela expirada (410) e foto trocada (409 <code>STORAGE_*_MISMATCH</code>).</li><li><span class="box" aria-hidden="true"></span>Pendências comparadas com o resultado do Laravel para o mesmo projeto (incluindo <code>placa_antiga_2</code>).</li><li><span class="box" aria-hidden="true"></span>Despesa com comprovante, reenviada duas vezes (mesmo <code>id</code>); comprovante de 21 MiB recusado.</li><li><span class="box" aria-hidden="true"></span>Reconciliação com backup de ~100 MiB em rede móvel, lote com erro parcial, retomada após fechar o app.</li><li><span class="box" aria-hidden="true"></span>429 com vários aparelhos na mesma rede Wi-Fi: backoff sem perder dados.</li></ul>
+</section>
+<footer>Gerado a partir de RELATORIO-API-INVESTOR.md, MATRIZ-MIGRACAO.md e GUIA-MIGRACAO-ANDROID.md (pasta docs/entrega-api-app-investor). O contrato formal está em openapi.yaml, na mesma pasta. Exemplos com valores fictícios; nenhuma credencial real.</footer>
+</main>
+</div>
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('theme-toggle');
+  try { var saved = localStorage.getItem('gai-theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var current = root.getAttribute('data-theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    var next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('gai-theme', next); } catch (e) {}
+  });
+  var filter = document.getElementById('toc-filter');
+  var links = document.querySelectorAll('#toc-links a');
+  filter.addEventListener('input', function () {
+    var q = filter.value.trim().toLowerCase();
+    links.forEach(function (a) { a.hidden = q && a.textContent.toLowerCase().indexOf(q) === -1 && a.parentElement.tagName !== 'H2'; });
+  });
+})();
+</script>

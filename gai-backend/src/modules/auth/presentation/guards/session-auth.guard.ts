@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { FieldAgentEntity } from '../../../field-agents/infrastructure/persistence/field-agent.entity';
-import { operationalDay } from '../../../field-agents/application/services/operational-eligibility';
+import { resolveFieldAccess } from '../../../field-agents/application/services/field-access';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { RoleAuthorizationService } from '../../application/services/role-authorization.service';
@@ -147,9 +147,12 @@ export class SessionAuthGuard implements CanActivate {
       'auth.sessionTtlHours',
       8,
     );
-    const expiresAt = new Date(
-      now.getTime() + sessionTtlHours * 60 * 60 * 1000,
-    );
+    // Mobile access sessions are short-lived and never extended by activity;
+    // they are renewed only through refresh-token rotation.
+    const expiresAt =
+      session.clientType === 'mobile'
+        ? session.expiresAt
+        : new Date(now.getTime() + sessionTtlHours * 60 * 60 * 1000);
     await this.sessions.touch(session.id, now, expiresAt);
 
     const roleAssignments = await this.assignments.findActiveByUserId(user.id);
@@ -159,45 +162,34 @@ export class SessionAuthGuard implements CanActivate {
     if (
       !systemRoles.includes(UserRole.ORG_ADMIN) &&
       !systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
-      roleAssignments.some((role) =>
+      (roleAssignments.some((role) =>
         role.roleKey?.startsWith('FIELD_AGENT_ORG_'),
-      )
+      ) ||
+        (await this.isLinkedToFieldAgent(user.id)))
     ) {
+      // Any account linked to a field agent (even through a custom profile, or
+      // whose agent is inactive/blocked/deleted) is confined to projects with an
+      // active, in-period assignment of an active agent. Default deny.
       if (!this.db)
         throw new ForbiddenException({
           code: 'FORBIDDEN',
           message: 'Não foi possível verificar os projetos autorizados.',
         });
-      const links = await this.db
-        .getRepository(FieldAgentEntity)
-        .createQueryBuilder('agent')
-        .innerJoin(
-          'project_field_agents',
-          'link',
-          'link.field_agent_id=agent.id AND link.organization_id=agent.organization_id',
-        )
-        .innerJoin(
-          'projects',
-          'project',
-          'project.id=link.project_id AND project.organization_id=agent.organization_id AND project.deleted_at IS NULL',
-        )
-        .where(
-          'agent.userId=:userId AND agent.organizationId=:org AND agent.status=:active AND link.status=:active',
-          { userId: user.id, org: user.organizationId, active: 'active' },
-        )
-        .andWhere(
-          '(link.start_date IS NULL OR link.start_date<=:today) AND (link.end_date IS NULL OR link.end_date>=:today)',
-          { today: operationalDay() },
-        )
-        .select('link.project_id', 'id')
-        .getRawMany<{ id: number }>();
-      allowedProjectIds = links.map((link) => Number(link.id));
+      const access = await resolveFieldAccess(
+        this.db,
+        user.id,
+        user.organizationId,
+      );
+      allowedProjectIds = [
+        ...new Set(access.assignments.map((link) => link.projectId)),
+      ];
       const projectId = endpoint.match(
-        /^\/api\/v1\/projects\/(\d+)(?:\/|$)/,
+        /^\/api\/v1\/(?:mobile\/)?projects\/(\d+)(?:\/|$)/,
       )?.[1];
       if (
         !endpoint.startsWith('/api/v1/auth/') &&
         !(endpoint === '/api/v1/projects' && request.method === 'GET') &&
+        !(endpoint === '/api/v1/mobile/me' && request.method === 'GET') &&
         (!projectId || !allowedProjectIds.includes(Number(projectId)))
       ) {
         throw new ForbiddenException({
@@ -220,6 +212,16 @@ export class SessionAuthGuard implements CanActivate {
     };
 
     return true;
+  }
+
+  private async isLinkedToFieldAgent(userId: number): Promise<boolean> {
+    if (!this.db) return false;
+    return (
+      (await this.db.getRepository(FieldAgentEntity).count({
+        where: { userId },
+        withDeleted: true,
+      })) > 0
+    );
   }
 
   private extractToken(request: Request): string | null {

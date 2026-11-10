@@ -57,6 +57,11 @@ import {
     },
     { provide: STORAGE_SIGNER, useClass: ConfiguredStorageSignerService },
   ],
-  exports: [IMPORT_SESSIONS_REPOSITORY, TypeOrmModule],
+  exports: [
+    IMPORT_SESSIONS_REPOSITORY,
+    ImportSessionsService,
+    ImportSessionScopeService,
+    TypeOrmModule,
+  ],
 })
 export class ImportSessionsModule {}

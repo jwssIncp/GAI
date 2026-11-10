@@ -122,6 +122,17 @@ describe('Pino sensitive log redaction', () => {
     await close(server);
   });
 
+  it('redacts the CloudFront origin secret header', async () => {
+    const secret = 'origin-verify-secret-must-not-leak';
+    await request(server)
+      .post('/api/v1/mobile/me')
+      .set('X-Origin-Verify', secret)
+      .send({});
+    const logs = output.join('\n');
+    expect(logs).not.toContain(secret);
+    expect(logs).toContain(REDACTED_LOG_VALUE);
+  });
+
   it('redacts Authorization, Cookie and Set-Cookie while preserving request metadata', async () => {
     const meToken = 'me-bearer-token-must-not-leak';
     const logoutToken = 'logout-bearer-token-must-not-leak';

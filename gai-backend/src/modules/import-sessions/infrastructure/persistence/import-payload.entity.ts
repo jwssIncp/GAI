@@ -44,6 +44,10 @@ export class ImportPayloadEntity {
   @Column({ type: 'varchar', length: 128, nullable: true })
   checksum!: string | null;
 
+  /** SHA-256 of the received items computed by the server (replay check). */
+  @Column({ name: 'content_hash', type: 'varchar', length: 64, nullable: true })
+  contentHash!: string | null;
+
   @Column({
     type: 'varchar',
     length: 20,

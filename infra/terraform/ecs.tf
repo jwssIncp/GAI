@@ -69,10 +69,18 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "STORAGE_PROVIDER", value = "s3" },
         { name = "STORAGE_BUCKET", value = aws_s3_bucket.assets.bucket },
         { name = "STORAGE_PRESIGNED_URL_TTL_SECONDS", value = "300" },
-        { name = "STORAGE_MAX_SIZE_BYTES", value = "52428800" },
+        # Onda 3: cap for longer windows used only by import backups (30 min).
+        { name = "STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS", value = "1800" },
+        # Onda 3: mobile reconciliation backups up to 100 MiB (images keep 10 MB).
+        { name = "STORAGE_MAX_SIZE_BYTES", value = "104857600" },
         { name = "STORAGE_ALLOWED_MIME_TYPES", value = "image/jpeg,image/jpg,image/png,image/webp,application/pdf,application/json,text/plain,text/csv,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
         { name = "STORAGE_FORCE_PATH_STYLE", value = "false" },
-        { name = "DB_LOGGING", value = "false" }
+        { name = "DB_LOGGING", value = "false" },
+        # CloudFront -> ALB -> task: trust exactly these two proxy hops for req.ip
+        # (rate limiting and audit IPs). The ALB only accepts CloudFront.
+        { name = "TRUST_PROXY_HOPS", value = "2" },
+        # Swagger UI/JSON only outside production.
+        { name = "SWAGGER_ENABLED", value = var.environment == "production" ? "false" : "true" }
       ]
 
       # Initial revision only; CI (.github/scripts/register-task-definitions.sh) owns it afterwards.

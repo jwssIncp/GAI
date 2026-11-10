@@ -1,0 +1,133 @@
+{
+  "date": "2026-11-09",
+  "legacy": {
+    "path": "C:/Users/Jonathan/Downloads/api-app-investor.html",
+    "sha256": "d8b504932140a57e8473f605ef85055f054974b49f45e8c3359f91ccffec857e",
+    "version": "1.4.6+1.12",
+    "sections": [
+      {
+        "id": "login",
+        "line": 156,
+        "method": "POST",
+        "path": "/auth/login"
+      },
+      {
+        "id": "refresh",
+        "line": 186,
+        "method": "POST",
+        "path": "/auth/refresh"
+      },
+      {
+        "id": "projects",
+        "line": 200,
+        "method": "GET",
+        "path": "/gai/projects"
+      },
+      {
+        "id": "sync-items",
+        "line": 221,
+        "method": "POST",
+        "path": "/gai/sync_items"
+      },
+      {
+        "id": "update-items",
+        "line": 263,
+        "method": "POST",
+        "path": "/gai/update_items"
+      },
+      {
+        "id": "item-delete",
+        "line": 277,
+        "method": "POST",
+        "path": "/gai/item/delete"
+      },
+      {
+        "id": "check-duplicate",
+        "line": 289,
+        "method": "POST",
+        "path": "/gai/projects/{project_id}/check_duplicate"
+      },
+      {
+        "id": "pendencias",
+        "line": 300,
+        "method": "POST",
+        "path": "/gai/projects/pendencias"
+      },
+      {
+        "id": "financeiro",
+        "line": 332,
+        "method": "POST",
+        "path": "/gai/projects/financeiro"
+      },
+      {
+        "id": "nao-usados",
+        "line": 349,
+        "method": "POST",
+        "path": "/gai/item/create · /gai/item/update"
+      },
+      {
+        "id": "rec-create",
+        "line": 359,
+        "method": "POST",
+        "path": "/gai/items/import-sessions"
+      },
+      {
+        "id": "rec-presign",
+        "line": 375,
+        "method": "POST",
+        "path": "/gai/items/import-sessions/{uuid}/images/presign"
+      },
+      {
+        "id": "rec-s3",
+        "line": 401,
+        "method": "PUT",
+        "path": "{upload_url}"
+      },
+      {
+        "id": "rec-payloads",
+        "line": 408,
+        "method": "POST",
+        "path": "/gai/items/import-sessions/{uuid}/payloads"
+      },
+      {
+        "id": "rec-finish",
+        "line": 444,
+        "method": "POST",
+        "path": "/gai/items/import-sessions/{uuid}/finish"
+      },
+      {
+        "id": "rec-status",
+        "line": 449,
+        "method": "GET",
+        "path": "/gai/items/import-sessions/{uuid}"
+      },
+      {
+        "id": "rec-errors",
+        "line": 473,
+        "method": "GET",
+        "path": "/gai/items/import-sessions/{uuid}/errors"
+      },
+      {
+        "id": "rec-backup",
+        "line": 489,
+        "method": "POST",
+        "path": "/gai/import-sessions/{uuid}/backup"
+      },
+      {
+        "id": "rec-sync",
+        "line": 500,
+        "method": "GET",
+        "path": "/external/projects/{project_id}/items/sync"
+      }
+    ],
+    "operations": 20
+  },
+  "backend": {
+    "routes": 333,
+    "controllers": 39
+  },
+  "limitations": [
+    "MySQL local recusou conexao",
+    "Sem verificacao AWS ou HTTP de rotas privadas; guard faz touch na sessao"
+  ]
+}

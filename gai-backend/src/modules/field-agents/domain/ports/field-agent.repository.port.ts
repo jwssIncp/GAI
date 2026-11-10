@@ -37,6 +37,11 @@ export const FIELD_AGENT_REPOSITORY = Symbol('FIELD_AGENT_REPOSITORY');
 
 export interface FieldAgentRepository {
   findById(id: number): Promise<FieldAgent | null>;
+  /** Agent bound to a user account in the organization, including deleted. */
+  findLinkedToUser(
+    userId: number,
+    organizationId: number,
+  ): Promise<FieldAgent | null>;
   findAssignmentById(id: number): Promise<ProjectFieldAgent | null>;
   findUserOrganizationId(userId: number): Promise<number | null | undefined>;
   hasActiveAssignment(

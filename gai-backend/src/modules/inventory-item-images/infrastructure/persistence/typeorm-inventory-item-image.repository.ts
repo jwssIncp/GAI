@@ -27,14 +27,32 @@ export class TypeOrmInventoryItemImageRepository implements InventoryItemImageRe
     return entity ? this.toDomain(entity) : null;
   }
 
-  async countActiveByItem(inventoryItemId: number): Promise<number> {
-    return this.imageRepo.count({
-      where: {
-        inventoryItemId,
-        status: Not(InventoryItemImageStatus.REMOVED),
-      },
-      withDeleted: true,
-    });
+  async countActiveByItem(
+    inventoryItemId: number,
+    pendingSince?: Date,
+  ): Promise<number> {
+    if (!pendingSince)
+      return this.imageRepo.count({
+        where: {
+          inventoryItemId,
+          status: Not(InventoryItemImageStatus.REMOVED),
+        },
+        withDeleted: true,
+      });
+    // A pending upload whose confirmation window has passed can never be
+    // confirmed (410), so it must not consume the per-item photo quota.
+    return this.imageRepo
+      .createQueryBuilder('image')
+      .withDeleted()
+      .where('image.inventoryItemId = :inventoryItemId', { inventoryItemId })
+      .andWhere('image.status <> :removed', {
+        removed: InventoryItemImageStatus.REMOVED,
+      })
+      .andWhere(
+        '(image.status <> :pending OR image.createdAt >= :pendingSince)',
+        { pending: InventoryItemImageStatus.PENDING_UPLOAD, pendingSince },
+      )
+      .getCount();
   }
 
   async list(

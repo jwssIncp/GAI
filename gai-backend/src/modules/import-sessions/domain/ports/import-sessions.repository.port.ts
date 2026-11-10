@@ -17,6 +17,7 @@ export interface ListImportPayloadsParams {
   pageSize: number;
   organizationId: number;
   importSessionId: number;
+  status?: string;
 }
 
 export interface ListImportErrorsParams {

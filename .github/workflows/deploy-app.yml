@@ -9,6 +9,10 @@ on:
       environment:
         type: string
         required: true
+      release_confirmation:
+        description: Must be APLICAR (the release runs DB migrations after a verified snapshot)
+        type: string
+        required: true
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
@@ -18,7 +22,20 @@ jobs:
     name: Deploy ${{ inputs.environment }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    # Shared with the Ops workflows: never two releases/ops tasks per environment.
+    concurrency:
+      group: gai-release-${{ inputs.environment }}
+      cancel-in-progress: false
     steps:
+      - name: Require explicit release approval
+        env:
+          CONFIRMATION: ${{ inputs.release_confirmation }}
+        run: |
+          if [[ "$CONFIRMATION" != "APLICAR" ]]; then
+            echo "Release not approved: type APLICAR (migrations run after a verified RDS snapshot)."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Configure AWS (OIDC)
@@ -76,6 +93,12 @@ jobs:
           ) | with_entries(select(.value != null))' \
             "${{ steps.render.outputs.task-definition }}" > task-definition-clean.json
           bash .github/scripts/register-task-definitions.sh task-definition-clean.json
+
+      # Order is a safety contract (checked by .github/scripts/deploy-safety.test.cjs):
+      # verified snapshot -> release (migrations) -> ECS update. Any failure stops here.
+      - name: Verified RDS snapshot before migrations
+        id: snapshot
+        run: bash .github/scripts/rds-pre-release-snapshot.sh
 
       - name: Release (migrations, permissions, platform admin)
         env:

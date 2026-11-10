@@ -25,12 +25,17 @@ import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 import authConfig from './common/config/auth.config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { resolveThrottleDefaults } from './common/http/trust-proxy';
 import { CorrelationIdInterceptor } from './common/interceptors/correlation-id.interceptor';
 import { SENSITIVE_LOG_REDACTION } from './common/logging/sensitive-log-redaction';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthAuditLogEntity } from './modules/auth/infrastructure/persistence/auth-audit-log.entity';
 import { PasswordResetTokenEntity } from './modules/auth/infrastructure/persistence/password-reset-token.entity';
 import { SessionEntity } from './modules/auth/infrastructure/persistence/session.entity';
+import { MobileRefreshTokenEntity } from './modules/auth/infrastructure/persistence/mobile-refresh-token.entity';
+import { MobileModule } from './modules/mobile/mobile.module';
+import { MobileIdempotencyKeyEntity } from './modules/mobile/mobile-idempotency-key.entity';
+import { InventoryItemSyncCounterEntity } from './modules/inventory-items/infrastructure/persistence/inventory-item-sync-counter.entity';
 import { UserEntity } from './modules/auth/infrastructure/persistence/user.entity';
 import { CatalogAssetsModule } from './modules/catalog-assets/catalog-assets.module';
 import { CatalogAssetAuditLogEntity } from './modules/catalog-assets/infrastructure/persistence/catalog-asset-audit-log.entity';
@@ -115,12 +120,8 @@ import { UsersModule } from './modules/users/users.module';
         customProps: () => ({ service: 'gai-backend' }),
       },
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    // Tracker is req.ip (ThrottlerGuard default); see common/http/trust-proxy.
+    ThrottlerModule.forRoot([resolveThrottleDefaults()]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: () => ({
@@ -140,6 +141,9 @@ import { UsersModule } from './modules/users/users.module';
           OrganizationAuditLogEntity,
           UserEntity,
           SessionEntity,
+          MobileRefreshTokenEntity,
+          InventoryItemSyncCounterEntity,
+          MobileIdempotencyKeyEntity,
           PasswordResetTokenEntity,
           AuthAuditLogEntity,
           ProjectEntity,
@@ -223,6 +227,7 @@ import { UsersModule } from './modules/users/users.module';
     AssistedReconciliationModule,
     CatalogAssetsModule,
     CompaniesModule,
+    MobileModule,
   ],
   controllers: [AppController],
   providers: [

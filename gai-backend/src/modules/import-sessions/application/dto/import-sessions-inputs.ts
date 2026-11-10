@@ -97,6 +97,15 @@ export class ImportPayloadItemDto {
   @MaxLength(100)
   old_plate?: string | null;
 
+  @ApiPropertyOptional({
+    maxLength: 100,
+    description: 'Segunda placa antiga (legado placa_antiga_2)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  old_plate_2?: string | null;
+
   @ApiPropertyOptional({ maxLength: 100 })
   @IsOptional()
   @IsString()

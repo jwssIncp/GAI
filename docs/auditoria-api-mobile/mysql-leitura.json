@@ -1,0 +1,11 @@
+{
+  "environment": "local",
+  "schemaOnly": true,
+  "queries": [],
+  "tables": [],
+  "columns": [],
+  "constraints": [],
+  "indexes": [],
+  "status": "not-verified",
+  "errorCode": "ECONNREFUSED"
+}

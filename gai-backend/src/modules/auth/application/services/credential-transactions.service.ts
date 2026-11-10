@@ -86,10 +86,26 @@ export class CredentialTransactionsService {
     }
   }
 
-  async authenticate(
+  async authenticate<T = undefined>(
     identifier: string,
     password: string,
     ipAddress: string | null,
+    options: {
+      /** Defaults to the sliding web session (auth.sessionTtlHours). */
+      session?: {
+        clientType: 'mobile';
+        expiresAt: (now: Date) => Date;
+        refreshFamilyId: string;
+      };
+      /** Runs in the login transaction after the session is written; throwing
+       * rolls back the session (and the login bookkeeping). */
+      onSession?: (
+        manager: EntityManager,
+        user: UserEntity,
+        session: SessionEntity,
+      ) => Promise<T>;
+      auditOperation?: AuthAuditOperation;
+    } = {},
   ) {
     const normalized = identifier.trim().toLowerCase();
     const outcome = await identityTransaction(this.db, async (manager) => {
@@ -153,10 +169,12 @@ export class CredentialTransactionsService {
       user.lockedUntil = null;
       user.lastLoginAt = now;
       await users.save(user);
-      const expiresAt = new Date(
-        now.getTime() +
-          this.config.get<number>('auth.sessionTtlHours', 8) * 3600000,
-      );
+      const expiresAt = options.session
+        ? options.session.expiresAt(now)
+        : new Date(
+            now.getTime() +
+              this.config.get<number>('auth.sessionTtlHours', 8) * 3600000,
+          );
       const session = await manager.getRepository(SessionEntity).save({
         id: randomUUID(),
         userId: user.id,
@@ -166,14 +184,19 @@ export class CredentialTransactionsService {
         lastActivityAt: now,
         expiresAt,
         revokedAt: null,
+        clientType: options.session?.clientType ?? 'web',
+        refreshFamilyId: options.session?.refreshFamilyId ?? null,
       });
+      const extra = options.onSession
+        ? await options.onSession(manager, user, session)
+        : (undefined as T);
       await manager.getRepository(AuthAuditLogEntity).save({
         userId: user.id,
-        operation: AuthAuditOperation.LOGIN,
+        operation: options.auditOperation ?? AuthAuditOperation.LOGIN,
         ipAddress,
         result: AuthAuditResult.SUCCESS,
       });
-      return { user, session } as const;
+      return { user, session, extra } as const;
     });
     if ('failure' in outcome)
       throw new HttpException(

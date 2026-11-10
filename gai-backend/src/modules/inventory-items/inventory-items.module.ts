@@ -12,6 +12,8 @@ import { INVENTORY_ITEM_REPOSITORY } from './domain/ports/inventory-item.reposit
 import { InventoryItemAuditLogEntity } from './infrastructure/persistence/inventory-item-audit-log.entity';
 import { InventoryItemEntity } from './infrastructure/persistence/inventory-item.entity';
 import { TypeOrmInventoryItemRepository } from './infrastructure/persistence/typeorm-inventory-item.repository';
+import { InventoryItemSyncCounterEntity } from './infrastructure/persistence/inventory-item-sync-counter.entity';
+import { InventoryItemSyncSubscriber } from './infrastructure/persistence/inventory-item-sync';
 import { InventoryItemsController } from './presentation/inventory-items.controller';
 
 @Module({
@@ -19,6 +21,7 @@ import { InventoryItemsController } from './presentation/inventory-items.control
     TypeOrmModule.forFeature([
       InventoryItemEntity,
       InventoryItemAuditLogEntity,
+      InventoryItemSyncCounterEntity,
     ]),
     AuthModule,
     ProjectsModule,
@@ -26,6 +29,7 @@ import { InventoryItemsController } from './presentation/inventory-items.control
   controllers: [InventoryItemsController],
   providers: [
     InventoryItemScopeService,
+    InventoryItemSyncSubscriber,
     CreateInventoryItemUseCase,
     ListInventoryItemsUseCase,
     GetInventoryItemUseCase,
@@ -36,6 +40,10 @@ import { InventoryItemsController } from './presentation/inventory-items.control
       useClass: TypeOrmInventoryItemRepository,
     },
   ],
-  exports: [INVENTORY_ITEM_REPOSITORY, TypeOrmModule],
+  exports: [
+    INVENTORY_ITEM_REPOSITORY,
+    InventoryItemScopeService,
+    TypeOrmModule,
+  ],
 })
 export class InventoryItemsModule {}
