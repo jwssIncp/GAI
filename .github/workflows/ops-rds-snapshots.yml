@@ -1,0 +1,58 @@
+name: Ops - RDS pre-release snapshots (homolog)
+
+# Retention of the manual snapshots created before each release (deploy-app.yml).
+# Dry-run lists what would be deleted; deletion requires typing APLICAR. Only
+# snapshots tagged Purpose=pre-release/Environment=<env> with the exact
+# "<db>-pre-release-<run>-<attempt>" name are candidates; the newest ones are
+# always kept. Production is not offered (and the script refuses it).
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [homolog]
+        default: homolog
+      retention_days:
+        description: Delete pre-release snapshots older than N days (>= 7)
+        type: string
+        default: '30'
+      confirm:
+        description: Type APLICAR to delete (empty = dry-run)
+        type: string
+        default: ''
+
+concurrency:
+  # Same lane as releases: never delete while a release creates/uses a snapshot.
+  group: gai-release-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  retention:
+    name: Snapshot retention (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Load deploy config (Parameter Store)
+        run: bash .github/scripts/load-deploy-config.sh "${{ inputs.environment }}"
+
+      - name: Apply retention
+        env:
+          RETENTION_DAYS: ${{ inputs.retention_days }}
+          APPLY: ${{ inputs.confirm == 'APLICAR' && '1' || '0' }}
+        run: node .github/scripts/rds-snapshot-retention.cjs

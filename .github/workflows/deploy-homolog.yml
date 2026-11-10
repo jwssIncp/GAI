@@ -2,6 +2,11 @@ name: Deploy Homolog
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type APLICAR to release (verified RDS snapshot, then DB migrations, then ECS update)
+        type: string
+        required: true
 
 concurrency:
   group: deploy-homolog
@@ -22,4 +27,5 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       environment: homolog
+      release_confirmation: ${{ inputs.confirm }}
     secrets: inherit

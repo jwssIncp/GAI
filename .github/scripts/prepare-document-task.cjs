@@ -24,7 +24,7 @@ function resolveAssetsBucket(environment) {
 
 // This transform is pure/local. CI downloads the current task revision, so an
 // initial Terraform environment change alone would not update later releases.
-function prepareDocumentTask(input, name = 'gai-backend') {
+function prepareDocumentTask(input, name = 'gai-backend', envName = process.env.ENV_NAME) {
   const task = structuredClone(input);
   const container = task.containerDefinitions?.find((item) => item.name === name);
   if (!container) throw Error('Backend container missing from task definition');
@@ -35,7 +35,17 @@ function prepareDocumentTask(input, name = 'gai-backend') {
     { name: 'STORAGE_PROVIDER', value: 's3' },
     { name: 'STORAGE_BUCKET', value: bucket },
     { name: 'STORAGE_PRESIGNED_URL_TTL_SECONDS', value: '300' },
-    { name: 'STORAGE_MAX_SIZE_BYTES', value: '52428800' },
+    // Mobile (Ondas 0-4): kept in sync with infra/terraform/ecs.tf so a release
+    // never downgrades them when it starts from an older task revision.
+    { name: 'STORAGE_MAX_SIZE_BYTES', value: '104857600' },
+    { name: 'STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS', value: '1800' },
+    { name: 'TRUST_PROXY_HOPS', value: '2' },
+    {
+      name: 'SWAGGER_ENABLED',
+      value:
+        env.find((item) => item.name === 'SWAGGER_ENABLED')?.value ||
+        (envName === 'production' ? 'false' : 'true'),
+    },
     { name: 'STORAGE_ALLOWED_MIME_TYPES', value: STORAGE_MIME_TYPES },
     { name: 'STORAGE_FORCE_PATH_STYLE', value: 'false' },
     { name: 'INVENTORY_ITEM_IMAGE_STORAGE_PROVIDER', value: 's3' },

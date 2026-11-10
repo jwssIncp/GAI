@@ -1,0 +1,82 @@
+name: Ops - Mobile (homolog)
+
+# One-off operational tasks for the mobile API (Ondas 0-4), run as an ECS task
+# with the <family>-release task definition (same image/DB credentials as the
+# release step). Read-only and dry-run tasks need no confirmation; tasks that
+# write require typing APLICAR. Production is intentionally not offered until
+# the homologation is approved.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [homolog]
+        default: homolog
+      task:
+        description: Task
+        type: choice
+        options:
+          - external-duplicates      # read-only report before MobileItemSync migration
+          - field-roles-dry-run      # shows which field roles would gain permissions
+          - field-roles-apply        # grants the least-privilege field set (writes)
+          - retention-dry-run        # counts purgeable refresh tokens / idempotency keys
+          - retention-apply          # deletes them (writes)
+        default: external-duplicates
+      confirm:
+        description: Type APLICAR to run a task that writes (field-roles-apply, retention-apply)
+        type: string
+        default: ''
+
+concurrency:
+  # Same group as deploy-app.yml: never concurrent with a release or another ops task.
+  group: gai-release-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+jobs:
+  run:
+    name: ${{ inputs.task }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Resolve command
+        id: cmd
+        env:
+          TASK: ${{ inputs.task }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          case "$TASK" in
+            external-duplicates) CMD='["npm", "run", "items:external-duplicates:prod"]' ;;
+            field-roles-dry-run) CMD='["npm", "run", "field-roles:upgrade:prod"]' ;;
+            field-roles-apply)   CMD='["npm", "run", "field-roles:upgrade:prod", "--", "--apply"]' ;;
+            retention-dry-run)   CMD='["npm", "run", "mobile:retention:prod"]' ;;
+            retention-apply)     CMD='["npm", "run", "mobile:retention:prod", "--", "--apply"]' ;;
+            *) echo "Unknown task"; exit 1 ;;
+          esac
+          if [[ "$TASK" == *-apply && "$CONFIRM" != "APLICAR" ]]; then
+            echo "Task $TASK writes data: type APLICAR in 'confirm' to run it."; exit 1
+          fi
+          echo "command=$CMD" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Load deploy config (Parameter Store)
+        run: bash .github/scripts/load-deploy-config.sh "${{ inputs.environment }}"
+
+      - name: Run task (output in the ECS task logs / CloudWatch)
+        env:
+          TASK_COMMAND: ${{ steps.cmd.outputs.command }}
+        run: ECS_TASK_DEFINITION="${ECS_TASK_FAMILY}-release" bash .github/scripts/ecs-run-migrations.sh
