@@ -4,11 +4,14 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { applyTrustProxy } from './common/http/trust-proxy';
 import { ErrorResponseDto } from './common/swagger/error-response.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+  // Must run before any middleware reads req.ip (throttling, audit logs).
+  applyTrustProxy(app);
 
   app.setGlobalPrefix('api/v1');
 
@@ -26,16 +29,20 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('GAI Backend API')
-    .setDescription('Gestão do Ativo Imobilizado — Backend API')
-    .setVersion('1.1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig, {
-    extraModels: [ErrorResponseDto],
-  });
-  SwaggerModule.setup('api/docs', app, document);
+  // Public API docs only where explicitly allowed (disabled in production via
+  // SWAGGER_ENABLED=false; the official mobile contract is docs/onda-4…/openapi.yaml).
+  if (process.env.SWAGGER_ENABLED !== 'false') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('GAI Backend API')
+      .setDescription('Gestão do Ativo Imobilizado — Backend API')
+      .setVersion('1.1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig, {
+      extraModels: [ErrorResponseDto],
+    });
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

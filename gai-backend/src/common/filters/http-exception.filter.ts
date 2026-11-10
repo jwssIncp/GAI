@@ -57,6 +57,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
       [HttpStatus.CONFLICT]: 'CONFLICT',
       [HttpStatus.LOCKED]: 'ACCOUNT_LOCKED',
+      [HttpStatus.TOO_MANY_REQUESTS]: 'TOO_MANY_REQUESTS',
+      [HttpStatus.GONE]: 'GONE',
     };
     return codes[status] ?? 'INTERNAL_ERROR';
   }

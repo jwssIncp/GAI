@@ -46,6 +46,14 @@ import { InventoryItemImagesController } from './presentation/inventory-item-ima
       useClass: ConfiguredStorageSignerService,
     },
   ],
-  exports: [INVENTORY_ITEM_IMAGE_REPOSITORY, TypeOrmModule],
+  exports: [
+    INVENTORY_ITEM_IMAGE_REPOSITORY,
+    CreateInventoryItemImageUploadUrlUseCase,
+    ConfirmInventoryItemImageUploadUseCase,
+    GetInventoryItemImageUseCase,
+    CreateInventoryItemImageDownloadUrlUseCase,
+    RemoveInventoryItemImageUseCase,
+    TypeOrmModule,
+  ],
 })
 export class InventoryItemImagesModule {}

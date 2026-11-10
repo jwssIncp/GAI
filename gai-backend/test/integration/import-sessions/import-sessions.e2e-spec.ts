@@ -108,7 +108,8 @@ describe('Import Sessions (e2e)', () => {
       .send(payloadBody)
       .expect(201);
     const payload = payloadResponse.body as ImportPayloadBody;
-    expect(payload.status).toBe('processed');
+    // Onda 3: a payload with failed items is not reported as fully processed.
+    expect(payload.status).toBe('partially_processed');
     expect(payload.created_count).toBe(1);
     expect(payload.failed_count).toBe(1);
 
@@ -179,7 +180,7 @@ describe('Import Sessions (e2e)', () => {
       .expect(200)
       .expect((response) => {
         const body = response.body as ImportSessionBody;
-        expect(body.status).toBe('finished');
+        expect(body.status).toBe('finished_with_errors');
         expect(body.total_created).toBe(1);
         expect(body.total_failed).toBe(1);
       });

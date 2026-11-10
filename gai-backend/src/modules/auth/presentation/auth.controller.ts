@@ -168,11 +168,9 @@ export class AuthController {
     return this.confirmPasswordResetUseCase.execute(dto, this.extractIp(req));
   }
 
+  // req.ip honours only the trusted proxy hops (TRUST_PROXY_HOPS); the raw
+  // X-Forwarded-For header is client-controlled and must not be audited as-is.
   private extractIp(req: Request): string | null {
-    return (
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
-      req.ip ??
-      null
-    );
+    return req.ip ?? null;
   }
 }

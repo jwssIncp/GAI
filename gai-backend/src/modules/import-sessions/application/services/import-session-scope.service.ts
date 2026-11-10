@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -10,7 +11,16 @@ export interface ImportSessionActorContext {
   id: number;
   systemRoles: UserRole[];
   organizationId: number | null;
+  /** Field account confined to linked projects: only its own sessions. */
+  confined?: boolean;
 }
+
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const FILE_TYPE_MIME: Record<string, string[]> = {
+  image: IMAGE_MIME_TYPES,
+  raw_backup: ['application/zip', 'application/json'],
+  raw_payload: ['application/json'],
+};
 
 @Injectable()
 export class ImportSessionScopeService {
@@ -60,6 +70,51 @@ export class ImportSessionScopeService {
 
   presignedUrlTtlSeconds(): number {
     return Number(process.env.STORAGE_PRESIGNED_URL_TTL_SECONDS ?? 300);
+  }
+
+  /** Mobile reconciliation sessions (legacy app expects 7 days). */
+  mobileSessionTtlHours(): number {
+    return Number(process.env.MOBILE_IMPORT_SESSION_TTL_HOURS ?? 168);
+  }
+
+  /** Upload/confirm window per file type: large backups get a longer one. */
+  uploadTtlSeconds(type: string): number {
+    if (type !== 'raw_backup') return this.presignedUrlTtlSeconds();
+    return Math.max(
+      this.presignedUrlTtlSeconds(),
+      Number(process.env.IMPORT_BACKUP_UPLOAD_TTL_SECONDS ?? 1800),
+    );
+  }
+
+  /** Type-specific MIME and size rules on top of the storage allowlist. */
+  assertFileForType(type: string, mimeType: string, sizeBytes: number): void {
+    const allowed = FILE_TYPE_MIME[type];
+    if (allowed && !allowed.includes(mimeType.toLowerCase()))
+      throw new BadRequestException({
+        code: 'INVALID_IMPORT_FILE',
+        message: `Tipo de arquivo não permitido para ${type}.`,
+      });
+    const max =
+      type === 'image'
+        ? Number(process.env.INVENTORY_ITEM_IMAGE_MAX_SIZE_BYTES ?? 10485760)
+        : type === 'raw_backup'
+          ? Number(process.env.IMPORT_BACKUP_MAX_SIZE_BYTES ?? 104857600)
+          : null;
+    if (max !== null && sizeBytes > max)
+      throw new BadRequestException({
+        code: 'INVALID_IMPORT_FILE',
+        message: `Arquivo excede o limite de ${max} bytes para ${type}.`,
+      });
+  }
+
+  maxImagesPerItem(): number {
+    return Number(process.env.INVENTORY_ITEM_IMAGE_MAX_PER_ITEM ?? 3);
+  }
+
+  /** Items applied per transaction: bounds how long the project write lock
+   * (sync counter) is held by a large payload. */
+  itemsPerTransaction(): number {
+    return Math.max(1, Number(process.env.IMPORT_ITEMS_PER_TRANSACTION ?? 100));
   }
 
   normalizePlate(value: string | null | undefined): string | null | undefined {

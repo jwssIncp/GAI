@@ -3,4 +3,6 @@ export enum InventoryItemImageAuditOperation {
   CONFIRM_UPLOAD = 'CONFIRM_UPLOAD',
   REMOVE = 'REMOVE',
   DOWNLOAD_URL = 'DOWNLOAD_URL',
+  /** Linked from a verified import-session file (mobile reconciliation). */
+  IMPORT_LINK = 'IMPORT_LINK',
 }

@@ -47,6 +47,18 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     return entity ? this.toFieldAgentDomain(entity) : null;
   }
 
+  async findLinkedToUser(
+    userId: number,
+    organizationId: number,
+  ): Promise<FieldAgent | null> {
+    const entity = await this.fieldAgentRepo.findOne({
+      where: { userId, organizationId },
+      withDeleted: true,
+      order: { deletedAt: 'ASC', id: 'DESC' },
+    });
+    return entity ? this.toFieldAgentDomain(entity) : null;
+  }
+
   async findAssignmentById(id: number): Promise<ProjectFieldAgent | null> {
     const entity = await this.assignmentRepo.findOne({ where: { id } });
     return entity ? this.toAssignmentDomain(entity) : null;

@@ -37,6 +37,10 @@ import { PaymentsExpensesController } from './presentation/payments-expenses.con
     },
     { provide: STORAGE_SIGNER, useClass: ConfiguredStorageSignerService },
   ],
-  exports: [PAYMENTS_EXPENSES_REPOSITORY, TypeOrmModule],
+  exports: [
+    PAYMENTS_EXPENSES_REPOSITORY,
+    PaymentsExpensesService,
+    TypeOrmModule,
+  ],
 })
 export class PaymentsExpensesModule {}

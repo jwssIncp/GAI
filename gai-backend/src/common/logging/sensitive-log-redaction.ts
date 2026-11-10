@@ -42,6 +42,10 @@ function buildSensitiveLogPaths(): string[] {
     'req.headers.Authorization',
     'req.headers.cookie',
     'req.headers.Cookie',
+    // CloudFront -> ALB origin secret (infra/terraform/origin_protection.tf).
+    'req.headers["x-origin-verify"]',
+    'request.headers["x-origin-verify"]',
+    'headers["x-origin-verify"]',
     'request.headers.authorization',
     'request.headers.Authorization',
     'request.headers.cookie',

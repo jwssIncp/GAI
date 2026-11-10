@@ -69,6 +69,18 @@ export class PaymentsExpensesScopeService {
   presignedUrlTtlSeconds(): number {
     return Number(process.env.STORAGE_PRESIGNED_URL_TTL_SECONDS ?? 300);
   }
+  /** Receipt-specific limit, independent of the global storage cap (which is
+   * raised to 100 MiB for import backups). */
+  assertAttachmentSize(sizeBytes: number): void {
+    const max = Number(
+      process.env.EXPENSE_ATTACHMENT_MAX_SIZE_BYTES ?? 20 * 1024 * 1024,
+    );
+    if (sizeBytes > max)
+      throw new BadRequestException({
+        code: 'STORAGE_INVALID_SIZE',
+        message: `O comprovante excede o limite de ${max} bytes.`,
+      });
+  }
   buildExpenseAttachmentPath(input: {
     organizationId: number;
     expenseId: number;

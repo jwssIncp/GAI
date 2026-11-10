@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { isExternalItemIdConflict } from './inventory-item-sync';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItem } from '../../domain/entities/inventory-item';
@@ -80,7 +81,17 @@ export class TypeOrmInventoryItemRepository implements InventoryItemRepository {
         InventoryItemAuditLogEntity,
       );
 
-      const saved = await itemRepository.save(this.toEntity(item));
+      let saved: InventoryItemEntity;
+      try {
+        saved = await itemRepository.save(this.toEntity(item));
+      } catch (error) {
+        if (isExternalItemIdConflict(error))
+          throw new ConflictException({
+            code: 'EXTERNAL_ITEM_ID_CONFLICT',
+            message: 'Já existe um item com este external_item_id no projeto.',
+          });
+        throw error;
+      }
       await auditRepository.save({
         inventoryItemId: audit.inventoryItemId || saved.id,
         organizationId: audit.organizationId,

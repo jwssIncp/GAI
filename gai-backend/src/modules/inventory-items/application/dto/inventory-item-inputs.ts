@@ -14,7 +14,7 @@ import {
 import { JsonRecord } from '../../domain/entities/inventory-item';
 import { InventoryItemStatus } from '../../domain/enums/inventory-item-status.enum';
 
-const MONEY_PATTERN = /^\d{1,13}(\.\d{1,2})?$/;
+export const MONEY_PATTERN = /^\d{1,13}(\.\d{1,2})?$/;
 
 export class InventoryItemFieldsDto {
   @ApiPropertyOptional({ maxLength: 100, nullable: true })

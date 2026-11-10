@@ -497,10 +497,9 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
           'processing_import_sessions',
           'session.status IN (:...processingStatuses)',
         ),
-        this.countStatus(
+        this.countCase(
           'finished_import_sessions',
-          'session.status',
-          ImportSessionStatus.FINISHED,
+          `session.status IN ('${ImportSessionStatus.FINISHED}', '${ImportSessionStatus.FINISHED_WITH_ERRORS}')`,
         ),
         this.countStatus(
           'failed_import_sessions',

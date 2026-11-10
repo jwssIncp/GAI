@@ -79,7 +79,10 @@ export class CreateInventoryItemImageUploadUrlUseCase {
     this.scope.assertMimeType(dto.mime_type);
     this.scope.assertSize(dto.size_bytes);
     this.scope.assertImageLimit(
-      await this.repository.countActiveByItem(itemId),
+      await this.repository.countActiveByItem(
+        itemId,
+        new Date(Date.now() - this.scope.presignedUrlTtlSeconds() * 1000),
+      ),
     );
 
     const originalName = this.scope.cleanText(dto.original_name);
