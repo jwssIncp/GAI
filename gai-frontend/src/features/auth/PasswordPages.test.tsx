@@ -27,14 +27,14 @@ it("shows a recovery API error and allows retry without success feedback", async
   );
   await userEvent.type(screen.getByLabelText("Email"), "synthetic@gai.test");
   await userEvent.click(
-    screen.getByRole("button", { name: "Enviar instrucoes" }),
+    screen.getByRole("button", { name: "Enviar instruções" }),
   );
   expect(await screen.findByRole("alert")).toHaveTextContent(
     "Serviço temporariamente indisponível",
   );
   expect(screen.queryByText("Solicitação recebida")).not.toBeInTheDocument();
   await userEvent.click(
-    screen.getByRole("button", { name: "Enviar instrucoes" }),
+    screen.getByRole("button", { name: "Enviar instruções" }),
   );
   expect(await screen.findByText("Solicitação recebida")).toBeVisible();
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();

@@ -102,12 +102,12 @@ export function ProjectImportSessionsPage() {
     { header: 'Atualizados', cell: (session) => session.total_updated },
     { header: 'Removidos', cell: (session) => session.total_deleted },
     { header: 'Criada em', cell: (session) => formatDateTime(session.created_at) },
-    { header: 'Acoes', cell: (session) => (
+    { header: 'Ações', cell: (session) => (
       <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" aria-label="Visualizar importacao" onClick={() => setViewing(session)}><Eye size={16} /></Button>
-        <PermissionGate permissions={['import-sessions:finish']}><Button type="button" variant="ghost" aria-label="Finalizar importacao" disabled={session.status !== 'open' && session.status !== 'receiving'} onClick={() => setFinishing(session)}><CheckCircle2 size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['import-sessions:cancel']}><Button type="button" variant="ghost" aria-label="Cancelar importacao" disabled={session.status === 'finished' || session.status === 'cancelled' || session.status === 'expired'} onClick={() => setCanceling(session)}><XCircle size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['import-sessions:retry']}><Button type="button" variant="ghost" aria-label="Retry importacao" disabled={session.status !== 'failed'} onClick={() => setRetrying(session)}><RefreshCw size={16} /></Button></PermissionGate>
+        <Button type="button" variant="ghost" aria-label="Visualizar importação" onClick={() => setViewing(session)}><Eye size={16} /></Button>
+        <PermissionGate permissions={['import-sessions:finish']}><Button type="button" variant="ghost" aria-label="Finalizar importação" disabled={session.status !== 'open' && session.status !== 'receiving'} onClick={() => setFinishing(session)}><CheckCircle2 size={16} /></Button></PermissionGate>
+        <PermissionGate permissions={['import-sessions:cancel']}><Button type="button" variant="ghost" aria-label="Cancelar importação" disabled={session.status === 'finished' || session.status === 'cancelled' || session.status === 'expired'} onClick={() => setCanceling(session)}><XCircle size={16} /></Button></PermissionGate>
+        <PermissionGate permissions={['import-sessions:retry']}><Button type="button" variant="ghost" aria-label="Retry importação" disabled={session.status !== 'failed'} onClick={() => setRetrying(session)}><RefreshCw size={16} /></Button></PermissionGate>
       </div>
     ) },
   ];
@@ -115,31 +115,31 @@ export function ProjectImportSessionsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Importacoes"
-        description={`Projeto #${projectId}. Sessoes de sincronizacao, payloads, erros e arquivos brutos.`}
-        action={hasPermission('import-sessions:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Nova importacao</Button> : null}
+        title="Importações"
+        description={`Projeto #${projectId}. Sessões de sincronização, payloads, erros e arquivos brutos.`}
+        action={hasPermission('import-sessions:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Nova importação</Button> : null}
       />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/accounting-items`}>Base contabil</Link>
-        <span className="text-muted-foreground">/ Importacoes</span>
+        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/accounting-items`}>Base contábil</Link>
+        <span className="text-muted-foreground">/ Importações</span>
       </div>
       <FilterPanel>
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" disabled aria-label="Filtrar importacao por tipo">
+        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" disabled aria-label="Filtrar importação por tipo">
           <option>Todos os tipos</option>
           {importSessionTypes.map((item) => <option key={item}>{importSessionTypeLabels[item]}</option>)}
         </select>
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" disabled aria-label="Filtrar importacao por origem">
+        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" disabled aria-label="Filtrar importação por origem">
           <option>Todas origens</option>
           {importSessionSources.map((item) => <option key={item}>{importSessionSourceLabels[item]}</option>)}
         </select>
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as ImportSessionStatus | ''); setPage(1); }} aria-label="Filtrar importacao por status">
+        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as ImportSessionStatus | ''); setPage(1); }} aria-label="Filtrar importação por status">
           <option value="">Todos status</option>
           {importSessionStatuses.map((item) => <option key={item} value={item}>{importSessionStatusLabels[item]}</option>)}
         </select>
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="date" disabled aria-label="Inicio do periodo" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="date" disabled aria-label="Fim do periodo" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="date" disabled aria-label="Início do período" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="date" disabled aria-label="Fim do período" />
       </FilterPanel>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => query.refetch()} /> : data ? (
         <>
@@ -147,13 +147,13 @@ export function ProjectImportSessionsPage() {
           <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
         </>
       ) : null}
-      <DrawerForm open={createOpen} onOpenChange={setCreateOpen} title="Nova importacao">
+      <DrawerForm open={createOpen} onOpenChange={setCreateOpen} title="Nova importação">
         <ImportSessionForm busy={create.isPending} onSubmit={(payload) => create.mutate(payload, { onSuccess: () => setCreateOpen(false) })} />
       </DrawerForm>
       <ImportSessionDetailDrawer projectId={projectId} session={viewing} onOpenChange={(open) => !open && setViewing(null)} />
-      <ConfirmDialog open={Boolean(finishing)} onOpenChange={(open) => !open && setFinishing(null)} title="Finalizar importacao" description={`Finalizar recebimento da sessao #${finishing?.id ?? ''}?`} onConfirm={() => finishing && finish.mutate(finishing.id, { onSuccess: () => setFinishing(null) })} />
-      <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && setCanceling(null)} title="Cancelar importacao" description={`Cancelar sessao #${canceling?.id ?? ''}?`} onConfirm={() => canceling && cancel.mutate(canceling.id, { onSuccess: () => setCanceling(null) })} />
-      <ConfirmDialog open={Boolean(retrying)} onOpenChange={(open) => !open && setRetrying(null)} title="Retry da importacao" description={`Reprocessar payloads com erro da sessao #${retrying?.id ?? ''}?`} onConfirm={() => retrying && retry.mutate(retrying.id, { onSuccess: () => setRetrying(null) })} />
+      <ConfirmDialog open={Boolean(finishing)} onOpenChange={(open) => !open && setFinishing(null)} title="Finalizar importação" description={`Finalizar recebimento da sessão #${finishing?.id ?? ''}?`} onConfirm={() => finishing && finish.mutate(finishing.id, { onSuccess: () => setFinishing(null) })} />
+      <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && setCanceling(null)} title="Cancelar importação" description={`Cancelar sessão #${canceling?.id ?? ''}?`} onConfirm={() => canceling && cancel.mutate(canceling.id, { onSuccess: () => setCanceling(null) })} />
+      <ConfirmDialog open={Boolean(retrying)} onOpenChange={(open) => !open && setRetrying(null)} title="Retry da importação" description={`Reprocessar payloads com erro da sessão #${retrying?.id ?? ''}?`} onConfirm={() => retrying && retry.mutate(retrying.id, { onSuccess: () => setRetrying(null) })} />
     </PageContainer>
   );
 }
@@ -184,8 +184,8 @@ function ImportSessionForm({ busy, onSubmit }: { busy?: boolean; onSubmit: (payl
       <FormField label="Payloads esperados" error={form.formState.errors.expected_payloads?.message}>
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="number" min={1} max={100000} {...form.register('expected_payloads')} />
       </FormField>
-      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">O processamento da importacao acontece no backend. O frontend apenas registra a sessao e acompanha o andamento.</p>
-      <Button loading={busy}>Criar importacao</Button>
+      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">O processamento da importação acontece no backend. O frontend apenas registra a sessão e acompanha o andamento.</p>
+      <Button loading={busy}>Criar importação</Button>
     </form>
   );
 }
@@ -195,7 +195,7 @@ function ImportSessionDetailDrawer({ projectId, session, onOpenChange }: { proje
   const detail = useImportSession(projectId, session?.id);
   const current = detail.data ?? session;
   return (
-    <DrawerForm open={Boolean(session)} onOpenChange={onOpenChange} title="Detalhes da importacao">
+    <DrawerForm open={Boolean(session)} onOpenChange={onOpenChange} title="Detalhes da importação">
       {current ? (
         <div className="grid gap-5">
           <div className="grid gap-3 md:grid-cols-2">
@@ -217,7 +217,7 @@ function ImportSessionDetailDrawer({ projectId, session, onOpenChange }: { proje
           <div className="flex flex-wrap gap-2 border-b">
             {([...(current.type === 'physical_observations_import' ? ['physical' as const] : []), 'payloads', 'errors', 'files', 'technical'] as const).map((item) => (
               <button key={item} type="button" className={`px-3 py-2 text-sm font-medium ${tab === item ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setTab(item)}>
-                {item === 'physical' ? 'Importar XLSX' : item === 'payloads' ? 'Payloads' : item === 'errors' ? 'Erros' : item === 'files' ? 'Arquivos' : 'Dados tecnicos'}
+                {item === 'physical' ? 'Importar XLSX' : item === 'payloads' ? 'Payloads' : item === 'errors' ? 'Erros' : item === 'files' ? 'Arquivos' : 'Dados técnicos'}
               </button>
             ))}
           </div>
@@ -245,7 +245,7 @@ function PhysicalObservationsPanel({ projectId, sessionId }: { projectId: number
     if (!next.name.toLowerCase().endsWith('.xlsx')) return;
     setFile(next);
   }
-  return <section className="grid gap-3 rounded-xl border p-4"><div><h3 className="font-semibold">Importar observacoes fisicas</h3><p className="mt-1 text-sm text-muted-foreground">Somente XLSX. O arquivo e processado pelo backend; erros validos permanecem disponiveis por linha na aba Erros.</p></div><label className="grid gap-1 text-sm font-medium">Numero do payload<input className="h-10 rounded-md border bg-background px-3" type="number" min={1} value={payloadNumber} onChange={(event) => setPayloadNumber(event.target.value)} /></label><label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium"><FileUp size={16} /> {file?.name ?? 'Selecionar XLSX'}<FileUpload className="sr-only" aria-label="Selecionar XLSX de observacoes fisicas" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={select} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}{mutation.isSuccess ? <p role="status" className="rounded-md bg-success/10 p-3 text-sm">Arquivo processado. Consulte o resumo de payloads e os erros por linha.</p> : null}<Button disabled={!file || !payloadNumber || mutation.isPending} onClick={submit}>{mutation.isPending ? 'Processando...' : 'Enviar e processar XLSX'}</Button></section>;
+  return <section className="grid gap-3 rounded-xl border p-4"><div><h3 className="font-semibold">Importar observações físicas</h3><p className="mt-1 text-sm text-muted-foreground">Somente XLSX. O arquivo e processado pelo backend; erros válidos permanecem disponíveis por linha na aba Erros.</p></div><label className="grid gap-1 text-sm font-medium">Número do payload<input className="h-10 rounded-md border bg-background px-3" type="number" min={1} value={payloadNumber} onChange={(event) => setPayloadNumber(event.target.value)} /></label><label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium"><FileUp size={16} /> {file?.name ?? 'Selecionar XLSX'}<FileUpload className="sr-only" aria-label="Selecionar XLSX de observações físicas" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={select} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}{mutation.isSuccess ? <p role="status" className="rounded-md bg-success/10 p-3 text-sm">Arquivo processado. Consulte o resumo de payloads e os erros por linha.</p> : null}<Button disabled={!file || !payloadNumber || mutation.isPending} onClick={submit}>{mutation.isPending ? 'Processando...' : 'Enviar e processar XLSX'}</Button></section>;
 }
 
 function PayloadsPanel({ projectId, sessionId }: { projectId: number; sessionId: number }) {
@@ -256,7 +256,7 @@ function PayloadsPanel({ projectId, sessionId }: { projectId: number; sessionId:
   const reprocess = useReprocessImportPayload(projectId, sessionId);
   const data = payloads.data ? normalizePage(payloads.data) : null;
   const columns: Column<ImportPayload>[] = [
-    { header: 'Numero', cell: (payload) => payload.payload_number },
+    { header: 'Número', cell: (payload) => payload.payload_number },
     { header: 'Status', cell: (payload) => <StatusBadge value={payload.status} /> },
     { header: 'Itens', cell: (payload) => payload.items_count },
     { header: 'Imagens', cell: (payload) => payload.images_count },
@@ -265,13 +265,13 @@ function PayloadsPanel({ projectId, sessionId }: { projectId: number; sessionId:
     { header: 'Removidos', cell: (payload) => payload.deleted_count },
     { header: 'Falhas', cell: (payload) => payload.failed_count },
     { header: 'Checksum', cell: (payload) => payload.checksum ?? '-' },
-    { header: 'Acoes', cell: (payload) => <PermissionGate permissions={['import-payloads:reprocess']}><Button type="button" variant="ghost" aria-label="Reprocessar payload" disabled={payload.status !== 'failed'} onClick={() => setReprocessing(payload)}><RefreshCw size={16} /></Button></PermissionGate> },
+    { header: 'Ações', cell: (payload) => <PermissionGate permissions={['import-payloads:reprocess']}><Button type="button" variant="ghost" aria-label="Reprocessar payload" disabled={payload.status !== 'failed'} onClick={() => setReprocessing(payload)}><RefreshCw size={16} /></Button></PermissionGate> },
   ];
   return (
     <section className="grid gap-3">
       <PermissionGate permissions={['import-payloads:create']}><div className="flex justify-end"><Button type="button" onClick={() => setCreateOpen(true)}><Send size={16} /> Enviar payload</Button></div></PermissionGate>
       {payloads.isLoading ? <LoadingState label="Carregando payloads" /> : payloads.isError ? <ErrorState message={(payloads.error as Error).message} onRetry={() => payloads.refetch()} /> : data ? <DataTable columns={columns} items={data.items} getKey={(payload) => payload.id} /> : null}
-      <ModalForm open={createOpen} onOpenChange={setCreateOpen} title="Enviar payload tecnico">
+      <ModalForm open={createOpen} onOpenChange={setCreateOpen} title="Enviar payload técnico">
         <PayloadForm busy={create.isPending} onSubmit={(payload) => create.mutate(payload, { onSuccess: () => setCreateOpen(false) })} />
       </ModalForm>
       <ConfirmDialog open={Boolean(reprocessing)} onOpenChange={(open) => !open && setReprocessing(null)} title="Reprocessar payload" description={`Reprocessar payload #${reprocessing?.payload_number ?? ''}?`} onConfirm={() => reprocessing && reprocess.mutate(reprocessing.id, { onSuccess: () => setReprocessing(null) })} />
@@ -292,7 +292,7 @@ function PayloadForm({ busy, onSubmit }: { busy?: boolean; onSubmit: (payload: {
         metadata: body.metadata,
       });
     })}>
-      <FormField label="Numero do payload" error={form.formState.errors.payload_number?.message}><input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="number" {...form.register('payload_number')} /></FormField>
+      <FormField label="Número do payload" error={form.formState.errors.payload_number?.message}><input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="number" {...form.register('payload_number')} /></FormField>
       <FormField label="Chave idempotente" error={form.formState.errors.idempotency_key?.message}><input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('idempotency_key')} /></FormField>
       <FormField label="Checksum"><input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('checksum')} /></FormField>
       <FormField label="Payload JSON" error={form.formState.errors.payload_json?.message}><textarea className="min-h-40 rounded-md border bg-background px-3 py-2 font-mono text-xs outline-none focus:ring-2 focus:ring-ring" {...form.register('payload_json')} /></FormField>
@@ -306,8 +306,8 @@ function ErrorsPanel({ projectId, sessionId }: { projectId: number; sessionId: n
   const data = errors.data ? normalizePage(errors.data) : null;
   const columns: Column<ImportPayloadError>[] = [
     { header: 'Linha', cell: (error) => error.row_number ?? '-' },
-    { header: 'Referencia', cell: (error) => error.item_reference ?? '-' },
-    { header: 'Codigo', cell: (error) => error.error_code },
+    { header: 'Referência', cell: (error) => error.item_reference ?? '-' },
+    { header: 'Código', cell: (error) => error.error_code },
     { header: 'Mensagem', cell: (error) => error.error_message },
     { header: 'Criado em', cell: (error) => formatDateTime(error.created_at) },
   ];
@@ -329,12 +329,12 @@ function FilesPanel({ projectId, sessionId }: { projectId: number; sessionId: nu
     { header: 'Tamanho', cell: (file) => formatBytes(file.size_bytes) },
     { header: 'Checksum', cell: (file) => file.checksum ?? '-' },
     { header: 'Status', cell: (file) => <StatusBadge value={file.status} /> },
-    { header: 'Acoes', cell: (file) => <PermissionGate permissions={['import-files:download']}><Button type="button" variant="secondary" disabled={file.status !== 'uploaded' && file.status !== 'processed'} onClick={() => downloadUrl.mutate(file.id, { onSuccess: (result) => setDownload({ url: result.download_url, file: result.file }) })}><FileDown size={16} /> Baixar</Button></PermissionGate> },
+    { header: 'Ações', cell: (file) => <PermissionGate permissions={['import-files:download']}><Button type="button" variant="secondary" disabled={file.status !== 'uploaded' && file.status !== 'processed'} onClick={() => downloadUrl.mutate(file.id, { onSuccess: (result) => setDownload({ url: result.download_url, file: result.file }) })}><FileDown size={16} /> Baixar</Button></PermissionGate> },
   ];
   async function handleFile(file: File) {
     setFeedback(null);
     if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
-      setFeedback('Tipo de arquivo nao permitido pelo contrato atual.');
+      setFeedback('Tipo de arquivo não permitido pelo contrato atual.');
       return;
     }
     if (file.size < 1 || file.size > MAX_FILE_SIZE) {
@@ -346,7 +346,7 @@ function FilesPanel({ projectId, sessionId }: { projectId: number; sessionId: nu
       await upload.mutateAsync(file);
       setFeedback('Arquivo enviado com sucesso.');
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel enviar o arquivo.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível enviar o arquivo.');
     } finally {
       setProgressValue(null);
     }
@@ -357,7 +357,7 @@ function FilesPanel({ projectId, sessionId }: { projectId: number; sessionId: nu
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={fileType} onChange={(event) => setFileType(event.target.value as ImportFileType)} aria-label="Tipo do arquivo">
           {importFileTypes.map((item) => <option key={item} value={item}>{importFileTypeLabels[item]}</option>)}
         </select>
-        <PermissionGate permissions={['import-files:create']}><label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"><FileUp size={16} /> Enviar arquivo<FileUpload aria-label="Enviar arquivo de importacao" className="sr-only" accept={ALLOWED_FILE_TYPES.join(',')} onFile={handleFile} /></label></PermissionGate>
+        <PermissionGate permissions={['import-files:create']}><label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"><FileUp size={16} /> Enviar arquivo<FileUpload aria-label="Enviar arquivo de importação" className="sr-only" accept={ALLOWED_FILE_TYPES.join(',')} onFile={handleFile} /></label></PermissionGate>
       </div>
       {feedback ? <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">{feedback}</p> : null}
       {progressValue !== null ? <ProgressCard label="Upload" value={progressValue} /> : null}

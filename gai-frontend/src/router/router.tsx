@@ -221,7 +221,7 @@ export const router = createBrowserRouter([
           { path: "profile", element: <ProfilePage /> },
           {
             path: "settings",
-            element: <PlaceholderPage title="Configuracoes" />,
+            element: <PlaceholderPage title="Configurações" />,
           },
         ],
       },

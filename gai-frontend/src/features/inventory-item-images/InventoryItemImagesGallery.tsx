@@ -35,11 +35,11 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
   async function handleFile(file: File) {
     setFeedback(null);
     if (!ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) {
-      setFeedback('Formato nao permitido. Envie JPEG, PNG ou WEBP.');
+      setFeedback('Formato não permitido. Envie JPEG, PNG ou WEBP.');
       return;
     }
     if (file.size < 1) {
-      setFeedback('Arquivo vazio nao pode ser enviado.');
+      setFeedback('Arquivo vazio não pode ser enviado.');
       return;
     }
     setUploadProgress(0);
@@ -47,7 +47,7 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
       await upload.mutateAsync(file);
       setFeedback('Imagem enviada com sucesso.');
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel enviar a imagem.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível enviar a imagem.');
     } finally {
       setUploadProgress(null);
     }
@@ -59,7 +59,7 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
       const response = await download.mutateAsync(image.id);
       setPreview({ url: response.download_url, image: response.image });
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel gerar o acesso temporario.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível gerar o acesso temporário.');
     }
   }
 
@@ -74,7 +74,7 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-semibold">Imagens do item</h3>
-          <p className="text-sm text-muted-foreground">{imagePage?.totalItems ? `${imagePage.totalItems} imagem(ns) cadastrada(s)` : 'Metadados e arquivos protegidos por URL temporaria.'}</p>
+          <p className="text-sm text-muted-foreground">{imagePage?.totalItems ? `${imagePage.totalItems} imagem(ns) cadastrada(s)` : 'Metadados e arquivos protegidos por URL temporária.'}</p>
         </div>
         <PermissionGate permissions={['inventory-item-images:create']}>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
@@ -124,10 +124,10 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
           ))}
         </div>
       ) : (
-        <EmptyState title="Nenhuma imagem cadastrada" description="Adicione imagens do item para apoiar a conferencia do inventario." />
+        <EmptyState title="Nenhuma imagem cadastrada" description="Adicione imagens do item para apoiar a conferência do inventário." />
       )}
 
-      <ModalForm open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)} title={preview?.image.original_name ?? 'Visualizacao da imagem'}>
+      <ModalForm open={Boolean(preview)} onOpenChange={(open) => !open && setPreview(null)} title={preview?.image.original_name ?? 'Visualização da imagem'}>
         {preview ? <img className="max-h-[68vh] w-full rounded-md object-contain" src={preview.url} alt={preview.image.original_name} /> : null}
       </ModalForm>
 
@@ -135,7 +135,7 @@ export function InventoryItemImagesGallery({ projectId, itemId }: { projectId: n
         open={Boolean(removing)}
         onOpenChange={(open) => !open && setRemoving(null)}
         title="Remover imagem"
-        description={`A imagem ${removing?.original_name ?? ''} sera removida logicamente do item.`}
+        description={`A imagem ${removing?.original_name ?? ''} será removida logicamente do item.`}
         onConfirm={confirmRemove}
       />
     </section>

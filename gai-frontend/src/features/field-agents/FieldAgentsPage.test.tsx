@@ -379,7 +379,7 @@ describe("FieldAgentsPage", () => {
       page([agent], { total_items: 30, total_pages: 2 }),
     );
     renderWithProviders(<FieldAgentsPage />);
-    await userEvent.click(await screen.findByLabelText("Proxima pagina"));
+    await userEvent.click(await screen.findByLabelText("Próxima página"));
     await waitFor(() =>
       expect(mocks.list).toHaveBeenLastCalledWith(
         expect.objectContaining({ page: 2, page_size: 20 }),
@@ -490,7 +490,7 @@ describe("FieldAgentsPage", () => {
       organization_id: 1,
       project_id: 10,
       field_agent_id: 7,
-      role: "Lider",
+      role: "Líder",
       status: "active",
       start_date: null,
       end_date: null,
@@ -507,7 +507,7 @@ describe("FieldAgentsPage", () => {
     });
     renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
     expect(await screen.findByText("Ana Inventariante")).toBeInTheDocument();
-    expect(screen.getByText("Lider")).toBeInTheDocument();
+    expect(screen.getByText("Líder")).toBeInTheDocument();
   });
 
   it("trata conflito ao reativar vinculo e mantem o formulario aberto", async () => {
@@ -516,7 +516,7 @@ describe("FieldAgentsPage", () => {
       organization_id: 1,
       project_id: 10,
       field_agent_id: 7,
-      role: "Lider",
+      role: "Líder",
       status: "inactive",
       start_date: null,
       end_date: null,
@@ -538,7 +538,7 @@ describe("FieldAgentsPage", () => {
       }),
     );
     renderWithProviders(<ProjectFieldAgentsPanel project={project} />);
-    await userEvent.click(await screen.findByLabelText("Editar vinculo"));
+    await userEvent.click(await screen.findByLabelText("Editar vínculo"));
     await userEvent.selectOptions(screen.getByLabelText("Status"), "active");
     await userEvent.click(
       screen.getByRole("button", { name: "Atualizar vínculo" }),
@@ -613,7 +613,7 @@ describe("FieldAgentsPage", () => {
       await screen.findByRole("button", { name: "Vincular inventariante" }),
     );
     expect(
-      await screen.findByText("Nao foi possivel carregar os inventariantes."),
+      await screen.findByText("Não foi possível carregar os inventariantes."),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Tentar novamente" }),
@@ -626,7 +626,7 @@ describe("FieldAgentsPage", () => {
       organization_id: 1,
       project_id: 10,
       field_agent_id: 7,
-      role: "Lider",
+      role: "Líder",
       status: "active",
       start_date: null,
       end_date: null,
@@ -651,8 +651,8 @@ describe("FieldAgentsPage", () => {
     expect(
       screen.queryByRole("button", { name: "Vincular inventariante" }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Editar vinculo")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Remover vinculo")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Editar vínculo")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Remover vínculo")).not.toBeInTheDocument();
     expect(mocks.list).not.toHaveBeenCalled();
   });
 

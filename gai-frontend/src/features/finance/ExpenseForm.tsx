@@ -23,8 +23,8 @@ export function ExpenseForm({ initial, fieldAgents, busy, onSubmit }: { initial?
 
   return (
     <form className="grid gap-4" onSubmit={form.handleSubmit((values) => onSubmit(expenseFormSchema.parse(values)))}>
-      <FormField label="Descricao" error={form.formState.errors.description?.message}>
-        <Input placeholder="Alimentacao, deslocamento, hospedagem..." {...form.register('description')} />
+      <FormField label="Descrição" error={form.formState.errors.description?.message}>
+        <Input placeholder="Alimentação, deslocamento, hospedagem..." {...form.register('description')} />
       </FormField>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Data" error={form.formState.errors.expense_date?.message}><DateInput {...form.register('expense_date')} /></FormField>

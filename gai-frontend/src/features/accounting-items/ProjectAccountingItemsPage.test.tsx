@@ -52,7 +52,7 @@ const item: InventoryAccountingItem = {
   organization_id: 1,
   project_id: 10,
   plate: 'PAT-001',
-  description: 'Notebook contabil',
+  description: 'Notebook contábil',
   accounting_account_description: 'Equipamentos de informatica',
   location: 'Sala 20',
   acquisition_date: '2025-01-10',
@@ -63,7 +63,7 @@ const item: InventoryAccountingItem = {
   note_1: 'Obs A',
   note_2: null,
   new_inventory_plate: 'NEW-001',
-  inventory_description: 'Notebook inventario',
+  inventory_description: 'Notebook inventário',
   inventory_location: 'Sala 21',
   metadata: null,
   imported_by_id: 1,
@@ -125,7 +125,7 @@ describe('ProjectAccountingItemsPage', () => {
 
   it('renderiza listagem da base contabil', async () => {
     renderPage();
-    expect(await screen.findByText('Notebook contabil')).toBeInTheDocument();
+    expect(await screen.findByText('Notebook contábil')).toBeInTheDocument();
     expect(screen.getByText('PAT-001')).toBeInTheDocument();
   });
 
@@ -142,59 +142,59 @@ describe('ProjectAccountingItemsPage', () => {
   });
 
   it('renderiza erro', async () => {
-    mocks.list.mockRejectedValue(new Error('Falha contabil'));
+    mocks.list.mockRejectedValue(new Error('Falha contábil'));
     renderPage();
-    expect(await screen.findByText('Falha contabil')).toBeInTheDocument();
+    expect(await screen.findByText('Falha contábil')).toBeInTheDocument();
   });
 
   it('oculta importar sem permissao', async () => {
     renderPage(noPermissions);
-    await screen.findByText('Notebook contabil');
+    await screen.findByText('Notebook contábil');
     expect(screen.queryByRole('button', { name: /importar xlsx/i })).not.toBeInTheDocument();
   });
 
   it('valida arquivo invalido', async () => {
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: /importar xlsx/i }));
-    await userEvent.upload(screen.getByLabelText('Selecionar XLSX contabil'), new File(['x'], 'base.csv', { type: 'text/csv' }), { applyAccept: false });
-    expect(await screen.findByText('Envie um arquivo .xlsx valido.')).toBeInTheDocument();
+    await userEvent.upload(screen.getByLabelText('Selecionar XLSX contábil'), new File(['x'], 'base.csv', { type: 'text/csv' }), { applyAccept: false });
+    expect(await screen.findByText('Envie um arquivo .xlsx válido.')).toBeInTheDocument();
     expect(mocks.importFile).not.toHaveBeenCalled();
   });
 
   it('filtros chamam API com parametros corretos', async () => {
     renderPage();
-    await userEvent.selectOptions(await screen.findByLabelText('Filtrar base contabil por status'), 'matched');
+    await userEvent.selectOptions(await screen.findByLabelText('Filtrar base contábil por status'), 'matched');
     await userEvent.type(screen.getByPlaceholderText('Placa'), 'PAT');
-    await userEvent.type(screen.getByPlaceholderText('Codigo base'), 'BASE');
+    await userEvent.type(screen.getByPlaceholderText('Código base'), 'BASE');
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ status: 'matched', plate: 'PAT', base_code: 'BASE' })));
   });
 
   it('pagina usando page/page_size', async () => {
     mocks.list.mockResolvedValue(page([item], { total_items: 30, total_pages: 2 }));
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Proxima pagina'));
+    await userEvent.click(await screen.findByLabelText('Próxima página'));
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ page: 2, page_size: 20 })));
   });
 
   it('detalhe renderiza dados principais', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Visualizar item contabil'));
-    expect(await screen.findByText('Item contabil #21 - Projeto #10')).toBeInTheDocument();
+    await userEvent.click(await screen.findByLabelText('Visualizar item contábil'));
+    expect(await screen.findByText('Item contábil #21 - Projeto #10')).toBeInTheDocument();
     expect(screen.getAllByText('Sala 20').length).toBeGreaterThan(0);
   });
 
   it('edicao valida valor monetario', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Editar item contabil'));
-    await userEvent.clear(screen.getByLabelText('Valor de aquisicao'));
-    await userEvent.type(screen.getByLabelText('Valor de aquisicao'), '12,345');
-    await userEvent.click(screen.getByRole('button', { name: /atualizar item contabil/i }));
+    await userEvent.click(await screen.findByLabelText('Editar item contábil'));
+    await userEvent.clear(screen.getByLabelText('Valor de aquisição'));
+    await userEvent.type(screen.getByLabelText('Valor de aquisição'), '12,345');
+    await userEvent.click(screen.getByRole('button', { name: /atualizar item contábil/i }));
     expect(await screen.findByText('Valor deve seguir o formato 9999999999999.99')).toBeInTheDocument();
   });
 
   it('desativa com confirmacao', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Desativar item contabil'));
+    await userEvent.click(await screen.findByLabelText('Desativar item contábil'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.deactivate).toHaveBeenCalledWith(10, 21));
   });
@@ -202,7 +202,7 @@ describe('ProjectAccountingItemsPage', () => {
   it('renderiza historico e erros de importacao', async () => {
     renderPage();
     expect(await screen.findByText('base.xlsx')).toBeInTheDocument();
-    await userEvent.click(screen.getByLabelText('Visualizar erros da importacao'));
+    await userEvent.click(screen.getByLabelText('Visualizar erros da importação'));
     expect(await screen.findByText('Linha 3')).toBeInTheDocument();
     expect(screen.getByText('Placa obrigatoria')).toBeInTheDocument();
   });

@@ -44,11 +44,11 @@ export function PendingIssueForm({ initial, busy, onSubmit }: { initial?: Invent
           </select>
         </FormField>
       ) : null}
-      <FormField label="Titulo" error={form.formState.errors.title?.message}><Input {...form.register('title')} /></FormField>
-      <FormField label="Descricao"><Input {...form.register('description')} /></FormField>
+      <FormField label="Título" error={form.formState.errors.title?.message}><Input {...form.register('title')} /></FormField>
+      <FormField label="Descrição"><Input {...form.register('description')} /></FormField>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Item inventariado ID" error={form.formState.errors.inventory_item_id?.message}><Input inputMode="numeric" {...form.register('inventory_item_id')} /></FormField>
-        <FormField label="Item contabil ID" error={form.formState.errors.accounting_item_id?.message}><Input inputMode="numeric" {...form.register('accounting_item_id')} /></FormField>
+        <FormField label="Item contábil ID" error={form.formState.errors.accounting_item_id?.message}><Input inputMode="numeric" {...form.register('accounting_item_id')} /></FormField>
       </div>
       <FormField label="Valor antigo JSON" error={form.formState.errors.old_value?.message}>
         <textarea className="min-h-20 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('old_value')} />
@@ -59,7 +59,7 @@ export function PendingIssueForm({ initial, busy, onSubmit }: { initial?: Invent
       <FormField label="Metadata JSON" error={form.formState.errors.metadata?.message}>
         <textarea className="min-h-20 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('metadata')} />
       </FormField>
-      <Button loading={busy}>{initial ? 'Atualizar pendencia' : 'Salvar pendencia'}</Button>
+      <Button loading={busy}>{initial ? 'Atualizar pendência' : 'Salvar pendência'}</Button>
     </form>
   );
 }

@@ -10,7 +10,7 @@ export function LoadingState({ label = 'Carregando dados' }: { label?: string })
           <Loader2 className="relative animate-spin" size={20} />
         </div>
         <p className="mt-1 text-sm font-semibold text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">Sincronizando as informacoes mais recentes.</p>
+        <p className="text-xs text-muted-foreground">Sincronizando as informações mais recentes.</p>
         <div className="mt-2 grid w-full gap-2" aria-hidden="true">
           <span className="skeleton-shimmer h-2 w-full rounded-full" />
           <span className="skeleton-shimmer mx-auto h-2 w-3/4 rounded-full" />
@@ -34,12 +34,12 @@ export function EmptyState({ title = 'Nenhum registro encontrado', description =
   );
 }
 
-export function ErrorState({ message = 'Nao foi possivel carregar os dados.', onRetry }: { message?: string; onRetry?: () => void }) {
+export function ErrorState({ message = 'Não foi possível carregar os dados.', onRetry }: { message?: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="relative overflow-hidden rounded-xl border border-destructive/25 bg-destructive/[0.045] p-5 shadow-panel">
       <div className="absolute inset-y-0 left-0 w-1 bg-destructive" aria-hidden="true" />
       <div className="flex items-center gap-2.5 font-semibold text-destructive">
-        <span className="grid size-8 place-items-center rounded-lg bg-destructive/10"><AlertTriangle size={16} /></span> Nao foi possivel concluir
+        <span className="grid size-8 place-items-center rounded-lg bg-destructive/10"><AlertTriangle size={16} /></span> Não foi possível concluir
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{message}</p>
       {onRetry ? (

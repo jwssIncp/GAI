@@ -125,7 +125,7 @@ describe('InventoryItemImagesGallery', () => {
     renderGallery();
     const file = new File(['dados'], 'nota.txt', { type: 'text/plain' });
     await userEvent.upload(await screen.findByLabelText('Adicionar imagem'), file, { applyAccept: false });
-    expect(await screen.findByText('Formato nao permitido. Envie JPEG, PNG ou WEBP.')).toBeInTheDocument();
+    expect(await screen.findByText('Formato não permitido. Envie JPEG, PNG ou WEBP.')).toBeInTheDocument();
     expect(mocks.createUploadUrl).not.toHaveBeenCalled();
   });
 

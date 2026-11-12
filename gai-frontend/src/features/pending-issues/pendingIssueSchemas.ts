@@ -7,19 +7,19 @@ export const pendingIssueSeverities = ['low', 'medium', 'high', 'critical'] as c
 
 export const pendingIssueTypeLabels: Record<InventoryPendingIssueType, string> = {
   missing_plate: 'Furo de placa',
-  accounting_item_not_found: 'Item contabil nao encontrado',
-  physical_item_without_accounting_match: 'Item fisico sem base contabil',
-  plate_divergence: 'Divergencia de placa',
-  description_divergence: 'Divergencia de descricao',
-  location_divergence: 'Divergencia de localizacao',
+  accounting_item_not_found: 'Item contábil não encontrado',
+  physical_item_without_accounting_match: 'Item físico sem base contábil',
+  plate_divergence: 'Divergência de placa',
+  description_divergence: 'Divergência de descrição',
+  location_divergence: 'Divergência de localização',
   duplicated_item: 'Item duplicado',
-  manual_issue: 'Pendencia manual',
-  other: 'Outra pendencia',
+  manual_issue: 'Pendência manual',
+  other: 'Outra pendência',
 };
 
 export const pendingIssueStatusLabels: Record<InventoryPendingIssueStatus, string> = {
   open: 'Aberta',
-  in_review: 'Em analise',
+  in_review: 'Em análise',
   resolved: 'Resolvida',
   ignored: 'Ignorada',
   cancelled: 'Cancelada',
@@ -27,9 +27,9 @@ export const pendingIssueStatusLabels: Record<InventoryPendingIssueStatus, strin
 
 export const pendingIssueSeverityLabels: Record<InventoryPendingIssueSeverity, string> = {
   low: 'Baixa',
-  medium: 'Media',
+  medium: 'Média',
   high: 'Alta',
-  critical: 'Critica',
+  critical: 'Crítica',
 };
 
 const optionalText = z.string().trim().transform((value) => (value ? value : undefined)).optional();
@@ -37,7 +37,7 @@ const optionalId = z
   .string()
   .trim()
   .transform((value) => (value ? Number(value) : undefined))
-  .pipe(z.number().int().min(1, 'Informe um ID valido').optional());
+  .pipe(z.number().int().min(1, 'Informe um ID válido').optional());
 const optionalJson = z
   .string()
   .trim()
@@ -46,17 +46,17 @@ const optionalJson = z
     try {
       return JSON.parse(value) as Record<string, unknown>;
     } catch {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Informe um JSON valido' });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Informe um JSON válido' });
       return z.NEVER;
     }
   })
   .optional();
 
 export const pendingIssueFormSchema = z.object({
-  type: z.enum(pendingIssueTypes, { required_error: 'Informe o tipo da pendencia' }),
+  type: z.enum(pendingIssueTypes, { required_error: 'Informe o tipo da pendência' }),
   severity: z.enum(pendingIssueSeverities, { required_error: 'Informe a severidade' }),
   status: z.enum(pendingIssueStatuses).optional(),
-  title: z.string().trim().min(1, 'Informe o titulo').max(255, 'Titulo deve ter ate 255 caracteres'),
+  title: z.string().trim().min(1, 'Informe o título').max(255, 'Título deve ter até 255 caracteres'),
   description: optionalText,
   inventory_item_id: optionalId,
   accounting_item_id: optionalId,
@@ -66,7 +66,7 @@ export const pendingIssueFormSchema = z.object({
 });
 
 export const resolutionSchema = z.object({
-  resolution_notes: z.string().trim().min(1, 'Informe as observacoes da resolucao'),
+  resolution_notes: z.string().trim().min(1, 'Informe as observações da resolução'),
 });
 
 export const ignoreSchema = z.object({

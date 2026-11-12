@@ -220,12 +220,12 @@ test.describe('redesign behaviour', () => {
     await expect(drawer).not.toBeVisible();
     await expect(page.getByRole('status').filter({ hasText: 'Projeto criado' })).toBeVisible();
     await page.getByPlaceholder('Buscar projeto', { exact: true }).fill(prefix);
-    await expect(page.getByText(/Pagina 1 de 2/)).toBeVisible();
-    await page.getByRole('button', { name: 'Proxima pagina' }).click();
+    await expect(page.getByText(/Página 1 de 2/)).toBeVisible();
+    await page.getByRole('button', { name: 'Próxima página' }).click();
     await expect(page).toHaveURL(/page=2/);
     await page.reload();
-    await expect(page.getByText(/Pagina 2 de 2/)).toBeVisible();
-    await page.getByRole('button', { name: 'Pagina anterior' }).click();
+    await expect(page.getByText(/Página 2 de 2/)).toBeVisible();
+    await page.getByRole('button', { name: 'Página anterior' }).click();
     const cancel = page.getByRole('button', { name: 'Cancelar', exact: true }).first();
     await cancel.click();
     await expect(page.getByRole('dialog', { name: 'Cancelar', exact: true })).toBeVisible();

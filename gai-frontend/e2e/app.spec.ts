@@ -190,7 +190,7 @@ const inventorySession = {
   id: 5,
   organization_id: 1,
   project_id: 10,
-  name: 'Inventario operacional',
+  name: 'Inventário operacional',
   status: 'active',
   current_round_id: 22,
   started_at: '2026-08-20T10:00:00.000Z',
@@ -387,7 +387,7 @@ const accountingItem = {
   organization_id: 1,
   project_id: 10,
   plate: 'PAT-001',
-  description: 'Notebook contabil',
+  description: 'Notebook contábil',
   accounting_account_description: 'Equipamentos de informatica',
   location: 'Sala 20',
   acquisition_date: '2025-01-10',
@@ -398,7 +398,7 @@ const accountingItem = {
   note_1: 'Obs A',
   note_2: null,
   new_inventory_plate: 'NEW-001',
-  inventory_description: 'Notebook inventario',
+  inventory_description: 'Notebook inventário',
   inventory_location: 'Sala 21',
   metadata: null,
   imported_by_id: 1,
@@ -471,7 +471,7 @@ const importError = {
   row_number: 3,
   item_reference: 'PAT-1',
   error_code: 'INVALID_ITEM',
-  error_message: 'Item invalido',
+  error_message: 'Item inválido',
   created_at: '2026-01-01T00:06:00.000Z',
 };
 
@@ -498,7 +498,7 @@ const pendingIssue = {
   status: 'open',
   severity: 'high',
   title: 'Placa divergente',
-  description: 'Placa fisica difere da base contabil',
+  description: 'Placa física difere da base contábil',
   old_value: { plate: 'OLD-1' },
   new_value: { plate: 'NEW-1' },
   resolution_notes: null,
@@ -519,7 +519,7 @@ const project = {
   organization_id: 1,
   company_id: 3,
   name: 'Projeto Alpha',
-  description: 'Inventario da filial SP',
+  description: 'Inventário da filial SP',
   status: 'active',
   start_date: '2026-01-01',
   end_date: null,
@@ -636,7 +636,7 @@ const expense = {
   project_id: 10,
   field_agent_id: 7,
   description: 'Almoco em campo',
-  reason: 'Equipe em inventario',
+  reason: 'Equipe em inventário',
   expense_date: '2026-01-02',
   amount: '45.90',
   status: 'pending',
@@ -715,7 +715,7 @@ test('listagem paginada', async ({ page }) => {
   await authenticate(page);
   await page.goto('/app/organizations');
   await expect(page.getByText('Empresa Exemplo Ltda')).toBeVisible();
-  await expect(page.getByText('Pagina 1 de 1')).toBeVisible();
+  await expect(page.getByText('Página 1 de 1')).toBeVisible();
 });
 
 test('acessa tela de inventariantes autenticado', async ({ page }) => {
@@ -781,7 +781,7 @@ test('abre formulario e valida campos obrigatorios de item', async ({ page }) =>
   await page.goto('/app/projects/10/inventory-items');
   await page.getByRole('button', { name: /novo item/i }).click();
   await page.getByRole('button', { name: /salvar item/i }).click();
-  await expect(page.getByText('Informe a descricao do item')).toBeVisible();
+  await expect(page.getByText('Informe a descrição do item')).toBeVisible();
 });
 
 test('abre detalhe de item', async ({ page }) => {
@@ -839,8 +839,8 @@ test('acessa base contabil a partir de um projeto autenticado', async ({ page })
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/accounting-items');
-  await expect(page.getByRole('heading', { name: 'Base contabil' })).toBeVisible();
-  await expect(page.getByText('Notebook contabil')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Base contábil' })).toBeVisible();
+  await expect(page.getByText('Notebook contábil')).toBeVisible();
   await expect(page.getByText('base.xlsx')).toBeVisible();
 });
 
@@ -856,33 +856,33 @@ test('abre modal e valida arquivo invalido da base contabil', async ({ page }) =
   await authenticate(page);
   await page.goto('/app/projects/10/accounting-items');
   await page.getByRole('button', { name: /importar xlsx/i }).click();
-  await page.getByLabel('Selecionar XLSX contabil').setInputFiles({ name: 'base.csv', mimeType: 'text/csv', buffer: Buffer.from('csv') });
-  await expect(page.getByText('Envie um arquivo .xlsx valido.')).toBeVisible();
+  await page.getByLabel('Selecionar XLSX contábil').setInputFiles({ name: 'base.csv', mimeType: 'text/csv', buffer: Buffer.from('csv') });
+  await expect(page.getByText('Envie um arquivo .xlsx válido.')).toBeVisible();
 });
 
 test('filtra base contabil por status e placa', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/accounting-items');
-  await page.getByLabel('Filtrar base contabil por status').selectOption('pending');
+  await page.getByLabel('Filtrar base contábil por status').selectOption('pending');
   await page.getByPlaceholder('Placa').fill('PAT');
-  await expect(page.getByText('Notebook contabil')).toBeVisible();
+  await expect(page.getByText('Notebook contábil')).toBeVisible();
 });
 
 test('abre detalhe de item contabil', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/accounting-items');
-  await page.getByLabel('Visualizar item contabil').click();
-  await expect(page.getByText('Item contabil #21 - Projeto #10')).toBeVisible();
-  await expect(page.getByLabel('Detalhes do item contabil').getByText('Sala 20')).toBeVisible();
+  await page.getByLabel('Visualizar item contábil').click();
+  await expect(page.getByText('Item contábil #21 - Projeto #10')).toBeVisible();
+  await expect(page.getByLabel('Detalhes do item contábil').getByText('Sala 20')).toBeVisible();
 });
 
 test('acessa pendencias a partir de um projeto autenticado', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await expect(page.getByRole('heading', { name: 'Pendencias' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Pendências' })).toBeVisible();
   await expect(page.getByText('Placa divergente')).toBeVisible();
 });
 
@@ -897,17 +897,17 @@ test('abre nova pendencia e valida obrigatorios', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByRole('button', { name: /nova pendencia/i }).click();
-  await page.getByLabel('Titulo').fill('');
-  await page.getByRole('button', { name: /salvar pendencia/i }).click();
-  await expect(page.getByText('Informe o titulo')).toBeVisible();
+  await page.getByRole('button', { name: /nova pendência/i }).click();
+  await page.getByLabel('Título').fill('');
+  await page.getByRole('button', { name: /salvar pendência/i }).click();
+  await expect(page.getByText('Informe o título')).toBeVisible();
 });
 
 test('filtra pendencias por status', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByLabel('Filtrar pendencia por status').selectOption('open');
+  await page.getByLabel('Filtrar pendência por status').selectOption('open');
   await expect(page.getByText('Placa divergente')).toBeVisible();
 });
 
@@ -915,8 +915,8 @@ test('abre detalhe da pendencia', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByLabel('Visualizar pendencia').click();
-  await expect(page.getByText(/Pendencia #41/)).toBeVisible();
+  await page.getByLabel('Visualizar pendência').click();
+  await expect(page.getByText(/Pendência #41/)).toBeVisible();
   await expect(page.getByText('Item inventariado #11')).toBeVisible();
 });
 
@@ -924,38 +924,38 @@ test('resolve pendencia com observacao', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByLabel('Resolver pendencia').click();
-  await page.getByLabel('Observacoes da resolucao').fill('Conferido');
-  await page.getByRole('button', { name: /resolver pendencia/i }).click();
-  await expect(page.getByRole('heading', { name: 'Resolver pendencia' })).not.toBeVisible();
+  await page.getByLabel('Resolver pendência').click();
+  await page.getByLabel('Observações da resolução').fill('Conferido');
+  await page.getByRole('button', { name: /resolver pendência/i }).click();
+  await expect(page.getByRole('heading', { name: 'Resolver pendência' })).not.toBeVisible();
 });
 
 test('ignora pendencia', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByLabel('Ignorar pendencia').click();
-  await page.getByLabel('Motivo ou observacao').fill('Nao aplicavel');
-  await page.getByRole('button', { name: /ignorar pendencia/i }).click();
-  await expect(page.getByRole('heading', { name: 'Ignorar pendencia' })).not.toBeVisible();
+  await page.getByLabel('Ignorar pendência').click();
+  await page.getByLabel('Motivo ou observação').fill('Nao aplicavel');
+  await page.getByRole('button', { name: /ignorar pendência/i }).click();
+  await expect(page.getByRole('heading', { name: 'Ignorar pendência' })).not.toBeVisible();
 });
 
 test('cancela pendencia com confirmacao', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByLabel('Cancelar pendencia').click();
+  await page.getByLabel('Cancelar pendência').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByText('Cancelar pendencia')).not.toBeVisible();
+  await expect(page.getByText('Cancelar pendência')).not.toBeVisible();
 });
 
 test('aciona geracao automatica de pendencias', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/pending-issues');
-  await page.getByRole('button', { name: /gerar pendencias/i }).click();
+  await page.getByRole('button', { name: /gerar pendências/i }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByText('Geracao concluida: 3 criada(s), 1 ignorada(s).')).toBeVisible();
+  await expect(page.getByText('Geração concluída: 3 criada(s), 1 ignorada(s).')).toBeVisible();
 });
 
 test('acessa financeiro do projeto com listagem paginada', async ({ page }) => {
@@ -964,7 +964,7 @@ test('acessa financeiro do projeto com listagem paginada', async ({ page }) => {
   await page.goto('/app/projects/10/finance');
   await expect(page.getByRole('heading', { name: 'Financeiro do projeto' })).toBeVisible();
   await expect(page.getByText('Pagamento #10')).toBeVisible();
-  await expect(page.getByText('Pagina 1 de 1')).toBeVisible();
+  await expect(page.getByText('Página 1 de 1')).toBeVisible();
 });
 
 test('bloqueia financeiro sem permissao', async ({ page }) => {
@@ -1008,9 +1008,9 @@ test('acessa exportacoes a partir de um projeto autenticado', async ({ page }) =
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/export-jobs');
-  await expect(page.getByRole('heading', { name: 'Exportacoes' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Exportações' })).toBeVisible();
   await expect(page.getByText('Nenhum registro encontrado')).toBeVisible();
-  await expect(page.getByRole('button', { name: /nova exportacao/i })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /nova exportação/i })).toBeEnabled();
 });
 
 test('acessa workspace consolidado do projeto', async ({ page }) => {
@@ -1018,7 +1018,7 @@ test('acessa workspace consolidado do projeto', async ({ page }) => {
   await authenticate(page);
   await page.goto('/app/projects/10/summary');
   await expect(page.getByRole('heading', { name: 'Projeto Alpha' })).toBeVisible();
-  await expect(page.getByText('Inventario da filial SP')).toBeVisible();
+  await expect(page.getByText('Inventário da filial SP')).toBeVisible();
   await expect(page.getByText('Total de itens')).toBeVisible();
   await expect(page.getByText('Alertas operacionais')).toBeVisible();
 });
@@ -1070,15 +1070,15 @@ test('abre exportacoes pelo resumo do projeto', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/summary');
-  await page.getByRole('link', { name: 'Exportacoes' }).first().click();
-  await expect(page.getByRole('heading', { name: 'Exportacoes' })).toBeVisible();
+  await page.getByRole('link', { name: 'Exportações' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Exportações' })).toBeVisible();
 });
 
 test('acessa importacoes a partir de um projeto autenticado', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await expect(page.getByRole('heading', { name: 'Importacoes' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Importações' })).toBeVisible();
   await expect(page.getByText('uuid-50')).toBeVisible();
 });
 
@@ -1093,8 +1093,8 @@ test('abre nova importacao e valida tipo obrigatorio', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await page.getByRole('button', { name: /nova importacao/i }).click();
-  await page.getByRole('button', { name: /criar importacao/i }).click();
+  await page.getByRole('button', { name: /nova importação/i }).click();
+  await page.getByRole('button', { name: /criar importação/i }).click();
   await expect(page.getByText('Selecione o tipo')).toBeVisible();
 });
 
@@ -1106,7 +1106,7 @@ test('preenche formulario de criacao de importacao', async ({ page }) => {
   });
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await page.getByRole('button', { name: /nova importacao/i }).click();
+  await page.getByRole('button', { name: /nova importação/i }).click();
   await page.locator('select[name="type"]').selectOption('mobile_sync');
   await page.locator('select[name="source"]').selectOption('mobile_app');
   await page.locator('input[name="expected_payloads"]').fill('2');
@@ -1122,10 +1122,10 @@ test('abre detalhe de importacao e navega nas abas', async ({ page }) => {
   await page.route('**/api/v1/projects/10/import-sessions/50/files**', async (route: any) => route.fulfill({ json: [importFile] }));
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await page.getByLabel('Visualizar importacao').click();
+  await page.getByLabel('Visualizar importação').click();
   await expect(page.getByText('Payloads recebidos')).toBeVisible();
   await page.getByRole('button', { name: 'Erros' }).click();
-  await expect(page.getByText('Item invalido')).toBeVisible();
+  await expect(page.getByText('Item inválido')).toBeVisible();
   await page.getByRole('button', { name: 'Arquivos' }).click();
   await expect(page.getByText('raw.json')).toBeVisible();
   await expect(page.getByText('private/raw.zip')).not.toBeVisible();
@@ -1135,7 +1135,7 @@ test('filtra importacoes por status', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await page.getByLabel('Filtrar importacao por status').selectOption('open');
+  await page.getByLabel('Filtrar importação por status').selectOption('open');
   await expect(page.getByText('uuid-50')).toBeVisible();
 });
 
@@ -1143,12 +1143,12 @@ test('finaliza e cancela importacao com confirmacao', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/import-sessions');
-  await page.getByLabel('Finalizar importacao').click();
+  await page.getByLabel('Finalizar importação').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByText('Finalizar importacao')).not.toBeVisible();
-  await page.getByLabel('Cancelar importacao').click();
+  await expect(page.getByText('Finalizar importação')).not.toBeVisible();
+  await page.getByLabel('Cancelar importação').click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByText('Cancelar importacao')).not.toBeVisible();
+  await expect(page.getByText('Cancelar importação')).not.toBeVisible();
 });
 
 test('retoma sessao de inventario por deep link e refresh', async ({ page }) => {
@@ -1156,12 +1156,12 @@ test('retoma sessao de inventario por deep link e refresh', async ({ page }) => 
   await mockInventoryOperationApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/inventory/sessions/5');
-  await expect(page.getByRole('heading', { name: 'Inventario operacional' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Inventário operacional' })).toBeVisible();
   await expect(page.getByText('Rodada 2').first()).toBeVisible();
   await expect(page.getByText('ATIVA').first()).toBeVisible();
   await page.reload();
   await expect(page.getByText('Rodada 2').first()).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Adicionar observacao' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Adicionar observação' })).toBeEnabled();
 });
 
 test('anexa evidencia, cria reinventario e retoma nova rodada apos refresh', async ({ page }) => {
@@ -1171,23 +1171,23 @@ test('anexa evidencia, cria reinventario e retoma nova rodada apos refresh', asy
   await page.goto('/app/projects/10/inventory/sessions/5');
   await page.getByRole('button', { name: 'Abrir' }).click();
   await expect(page.getByText('evidence.webp')).toBeVisible();
-  await page.getByLabel('Anexar evidencia').setInputFiles({ name: 'nova.webp', mimeType: 'image/webp', buffer: Buffer.from('fake-webp') });
-  await expect(page.getByText('Evidencia enviada e confirmada com sucesso.')).toBeVisible();
+  await page.getByLabel('Anexar evidência').setInputFiles({ name: 'nova.webp', mimeType: 'image/webp', buffer: Buffer.from('fake-webp') });
+  await expect(page.getByText('Evidência enviada e confirmada com sucesso.')).toBeVisible();
   await page.getByRole('button', { name: 'Fechar' }).click();
 
   await page.getByRole('button', { name: 'Solicitar reinventario' }).click();
   await page.getByLabel('Item divergente').fill('12');
-  await page.getByLabel('Motivo').fill('Nova conferencia');
+  await page.getByLabel('Motivo').fill('Nova conferência');
   await page.getByRole('button', { name: 'Criar nova rodada' }).click();
   await expect(page.getByText('Rodada 3').first()).toBeVisible();
   await page.reload();
   await expect(page.getByText('Rodada 3').first()).toBeVisible();
 
-  await page.getByRole('button', { name: 'Adicionar observacao' }).click();
-  const observationDrawer = page.getByRole('dialog', { name: /Nova observacao/ });
+  await page.getByRole('button', { name: 'Adicionar observação' }).click();
+  const observationDrawer = page.getByRole('dialog', { name: /Nova observação/ });
   await observationDrawer.getByLabel('Item patrimonial').fill('12');
   await observationDrawer.getByLabel('Inventariante', { exact: true }).fill('7');
-  await observationDrawer.getByRole('button', { name: 'Registrar observacao' }).click();
+  await observationDrawer.getByRole('button', { name: 'Registrar observação' }).click();
   await expect(page.getByText('#12')).toBeVisible();
 });
 
@@ -1198,11 +1198,11 @@ test('finaliza rodada e sessao removendo acoes operacionais', async ({ page }) =
   await page.goto('/app/projects/10/inventory/sessions/5');
   await page.getByRole('button', { name: 'Finalizar rodada atual' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('button', { name: 'Finalizar sessao' })).toBeVisible();
-  await page.getByRole('button', { name: 'Finalizar sessao' }).click();
+  await expect(page.getByRole('button', { name: 'Finalizar sessão' })).toBeVisible();
+  await page.getByRole('button', { name: 'Finalizar sessão' }).click();
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('button', { name: 'Adicionar observacao' })).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Cancelar sessao' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar observação' })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancelar sessão' })).not.toBeVisible();
 });
 
 test('apresenta conflito 409 de observacao por codigo de dominio', async ({ page }) => {
@@ -1211,10 +1211,10 @@ test('apresenta conflito 409 de observacao por codigo de dominio', async ({ page
   await page.route('**/api/v1/projects/10/inventory-sessions/5/rounds/*/observations', async (route: any) => route.fulfill({ status: 409, json: { code: 'OBSERVATION_ALREADY_RECORDED', message: 'Item already has an observation in this round' } }));
   await authenticate(page);
   await page.goto('/app/projects/10/inventory/sessions/5');
-  await page.getByRole('button', { name: 'Adicionar observacao' }).click();
-  const observationDrawer = page.getByRole('dialog', { name: /Nova observacao/ });
+  await page.getByRole('button', { name: 'Adicionar observação' }).click();
+  const observationDrawer = page.getByRole('dialog', { name: /Nova observação/ });
   await observationDrawer.getByLabel('Item patrimonial').fill('11');
   await observationDrawer.getByLabel('Inventariante', { exact: true }).fill('7');
-  await observationDrawer.getByRole('button', { name: 'Registrar observacao' }).click();
-  await expect(page.getByText('Este item ja possui uma observacao nesta rodada.')).toBeVisible();
+  await observationDrawer.getByRole('button', { name: 'Registrar observação' }).click();
+  await expect(page.getByText('Este item já possui uma observação nesta rodada.')).toBeVisible();
 });

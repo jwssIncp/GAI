@@ -63,7 +63,7 @@ export function ObservationEvidenceDrawer({
     setFeedback(null);
     setPreview(null);
     if (!ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) {
-      setFeedback('Formato nao permitido. Envie JPEG, PNG ou WEBP.');
+      setFeedback('Formato não permitido. Envie JPEG, PNG ou WEBP.');
       return;
     }
     if (file.size < 1 || file.size > MAX_EVIDENCE_SIZE) {
@@ -73,7 +73,7 @@ export function ObservationEvidenceDrawer({
     setUploadProgress(0);
     try {
       await upload.mutateAsync(file);
-      setFeedback('Evidencia enviada e confirmada com sucesso.');
+      setFeedback('Evidência enviada e confirmada com sucesso.');
     } catch (error) {
       setFeedback(getInventoryOperationErrorMessage(error));
     } finally {
@@ -92,13 +92,13 @@ export function ObservationEvidenceDrawer({
   }
 
   return (
-    <DrawerForm open={open} onOpenChange={onOpenChange} title={`Evidencias da observacao #${observation?.id ?? ''}`}>
+    <DrawerForm open={open} onOpenChange={onOpenChange} title={`Evidências da observação #${observation?.id ?? ''}`}>
       <div className="grid gap-4">
         {sessionActive ? (
           <PermissionGate permissions={['inventory-observations:create']}>
             <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-              <ImagePlus size={16} /> Anexar evidencia
-              <FileUpload aria-label="Anexar evidencia" accept={ALLOWED_IMAGE_TYPES.join(',')} className="sr-only" onFile={handleFile} disabled={upload.isPending} />
+              <ImagePlus size={16} /> Anexar evidência
+              <FileUpload aria-label="Anexar evidência" accept={ALLOWED_IMAGE_TYPES.join(',')} className="sr-only" onFile={handleFile} disabled={upload.isPending} />
             </label>
           </PermissionGate>
         ) : null}
@@ -107,11 +107,11 @@ export function ObservationEvidenceDrawer({
         {uploadProgress !== null ? (
           <div role="status" aria-live="polite">
             <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary transition-all" style={{ width: `${uploadProgress}%` }} /></div>
-            <p className="mt-1 text-xs text-muted-foreground">Enviando evidencia: {uploadProgress}%</p>
+            <p className="mt-1 text-xs text-muted-foreground">Enviando evidência: {uploadProgress}%</p>
           </div>
         ) : null}
 
-        {evidence.isLoading ? <LoadingState label="Carregando evidencias" /> : evidence.isError ? (
+        {evidence.isLoading ? <LoadingState label="Carregando evidências" /> : evidence.isError ? (
           <ErrorState message={getInventoryOperationErrorMessage(evidence.error)} onRetry={() => evidence.refetch()} />
         ) : data?.items.length ? (
           <div className="grid gap-3">
@@ -124,7 +124,7 @@ export function ObservationEvidenceDrawer({
                   </div>
                   <StatusBadge value={item.status} />
                 </div>
-                <p className="text-xs text-muted-foreground">Criada em {formatDateTime(item.created_at)} por {item.created_by_id ? `#${item.created_by_id}` : 'responsavel nao informado'}</p>
+                <p className="text-xs text-muted-foreground">Criada em {formatDateTime(item.created_at)} por {item.created_by_id ? `#${item.created_by_id}` : 'responsável não informado'}</p>
                 <PermissionGate permissions={['inventory-sessions:read']}>
                   <Button type="button" variant="secondary" onClick={() => openPreview(item)} disabled={download.isPending || item.status !== 'uploaded'}>
                     <Download size={16} /> Visualizar
@@ -135,14 +135,14 @@ export function ObservationEvidenceDrawer({
             <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
           </div>
         ) : (
-          <EmptyState title="Nenhuma evidencia anexada" description="Esta observacao ainda nao possui evidencias confirmadas." />
+          <EmptyState title="Nenhuma evidência anexada" description="Esta observação ainda não possui evidências confirmadas." />
         )}
 
         {preview ? (
-          <section className="rounded-lg border bg-muted/30 p-3" aria-label="Visualizacao da evidencia">
+          <section className="rounded-lg border bg-muted/30 p-3" aria-label="Visualização da evidência">
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="truncate text-sm font-medium">{preview.evidence.original_name}</p>
-              <Button type="button" variant="ghost" aria-label="Fechar visualizacao" onClick={() => setPreview(null)}><X size={16} /></Button>
+              <Button type="button" variant="ghost" aria-label="Fechar visualização" onClick={() => setPreview(null)}><X size={16} /></Button>
             </div>
             <img className="max-h-[52vh] w-full rounded-md object-contain" src={preview.url} alt={preview.evidence.original_name} />
           </section>

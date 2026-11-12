@@ -5,8 +5,8 @@ import { EmptyState } from '@/components/base/States';
 export function PlaceholderPage({ title, dependency }: { title: string; dependency?: string }) {
   return (
     <PageContainer>
-      <PageHeader title={title} description="Modulo preparado para proxima rodada." />
-      <EmptyState title="Modulo preparado para proxima rodada" description={dependency ?? 'A rota esta reservada, mas nenhuma chamada ficticia foi adicionada ao produto.'} />
+      <PageHeader title={title} description="Módulo preparado para próxima rodada." />
+      <EmptyState title="Módulo preparado para próxima rodada" description={dependency ?? 'A rota esta reservada, mas nenhuma chamada ficticia foi adicionada ao produto.'} />
     </PageContainer>
   );
 }

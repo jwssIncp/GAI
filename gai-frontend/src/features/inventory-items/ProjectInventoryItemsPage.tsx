@@ -57,17 +57,17 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
 
   const columns: Column<InventoryItem>[] = [
     ...(hasPermission('asset-valuations:batch-create')&&hasPermission('asset-valuations:create')&&hasPermission('asset-valuations:read')?[{header:'Selecionar',cell:(item:InventoryItem)=><input type="checkbox" aria-label={`Selecionar item ${item.id}`} checked={selection.ids.includes(item.id)} onChange={()=>{const ids=selection.ids.includes(item.id)?selection.ids.filter(id=>id!==item.id):[...selection.ids,item.id];setSelection({ids,contract:{kind:'ids',ids}});}}/>}]:[]),
-    { header: 'Sequencia', cell: (item) => item.sequence ?? '-' },
+    { header: 'Sequência', cell: (item) => item.sequence ?? '-' },
     { header: 'Placa antiga', cell: (item) => item.old_plate ?? '-' },
     { header: 'Placa nova', cell: (item) => item.new_plate ?? '-' },
-    { header: 'Descricao', cell: (item) => <div className="font-medium">{item.description ?? '-'}<div className="text-xs text-muted-foreground">{item.external_item_id ?? `#${item.id}`}</div></div> },
+    { header: 'Descrição', cell: (item) => <div className="font-medium">{item.description ?? '-'}<div className="text-xs text-muted-foreground">{item.external_item_id ?? `#${item.id}`}</div></div> },
     { header: 'Marca', cell: (item) => item.brand ?? '-' },
     { header: 'Modelo', cell: (item) => item.model ?? '-' },
-    { header: 'Localizacao', cell: (item) => item.location_text ?? item.unit_text ?? '-' },
+    { header: 'Localização', cell: (item) => item.location_text ?? item.unit_text ?? '-' },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },
     { header: 'Atualizado em', cell: (item) => formatDateTime(item.updated_at) },
     {
-      header: 'Acoes',
+      header: 'Ações',
       cell: (item) => (
         <div className="flex items-center gap-1">
           <Button type="button" variant="ghost" aria-label="Visualizar item" onClick={() => setViewingId(item.id)}><Eye size={16} /></Button>
@@ -95,7 +95,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
     <PageContainer>
       <PageHeader
         title="Itens inventariados"
-        description={`Projeto #${projectId}. Itens patrimoniais registrados no inventario.`}
+        description={`Projeto #${projectId}. Itens patrimoniais registrados no inventário.`}
         action={hasPermission('inventory-items:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo item</Button> : null}
       />
       <div className="flex gap-2 border-b pb-3 text-sm">
@@ -110,7 +110,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
         </select>
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={oldPlate} onChange={(event) => { setOldPlate(event.target.value); setPage(1); }} placeholder="Placa antiga" />
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={newPlate} onChange={(event) => { setNewPlate(event.target.value); setPage(1); }} placeholder="Placa nova" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descricao" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descrição" />
       </FilterPanel>
       <PermissionGate permissions={['asset-valuations:read','inventory-items:read']}><ValuationBatchPanel projectId={projectId} selection={selection} currentItems={data?.items??[]} filters={{search:params.search,status:params.status,old_plate:params.old_plate,new_plate:params.new_plate,description:params.description}} onSelection={setSelection} onViewItem={setViewingId}/></PermissionGate>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
@@ -130,7 +130,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
         open={Boolean(confirm)}
         onOpenChange={(open) => !open && setConfirm(null)}
         title={confirm?.action === 'deactivate' ? 'Desativar item' : 'Reativar item'}
-        description={`Confirmar alteracao de status do item ${confirm?.item.description ?? confirm?.item.id ?? ''}?`}
+        description={`Confirmar alteração de status do item ${confirm?.item.description ?? confirm?.item.id ?? ''}?`}
         onConfirm={() => {
           if (!confirm) return;
           const mutation = confirm.action === 'deactivate' ? deactivate : reactivate;

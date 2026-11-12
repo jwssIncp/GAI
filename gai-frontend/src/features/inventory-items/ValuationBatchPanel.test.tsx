@@ -197,7 +197,7 @@ describe("Batch valuation integrated item workspace", () => {
     );
     await userEvent.click(
       screen
-        .getAllByRole("button", { name: "Proxima pagina" })
+        .getAllByRole("button", { name: "Próxima página" })
         .find((b) => !b.hasAttribute("disabled"))!,
     );
     await userEvent.click(

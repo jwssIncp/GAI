@@ -70,9 +70,9 @@ export function ProjectFinancePage() {
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/pending-issues`}>Pendencias</Link>
+        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/pending-issues`}>Pendências</Link>
         <span className="text-muted-foreground">/ Financeiro</span>
-        <PermissionGate permissions={['expense-accountabilities:read']}><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/finance/accountabilities`}>Prestacao de contas</Link></PermissionGate>
+        <PermissionGate permissions={['expense-accountabilities:read']}><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/finance/accountabilities`}>Prestação de contas</Link></PermissionGate>
       </div>
       <PaymentSummaryCards projectId={projectId} />
       <div className="flex w-fit gap-1 rounded-xl border border-border/70 bg-muted/45 p-1.5 shadow-inner" role="group" aria-label="Visões financeiras">
@@ -140,13 +140,13 @@ function PaymentsTab({ projectId, fieldAgents }: { projectId: number; fieldAgent
   const data = query.data ? normalizePage(query.data) : null;
   const columns: Column<FieldAgentPayment>[] = [
     { header: 'Inventariante', cell: (payment) => <div className="font-medium">#{payment.field_agent_id}<div className="text-xs text-muted-foreground">Pagamento #{payment.id}</div></div> },
-    { header: 'Periodo', cell: (payment) => `${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}` },
+    { header: 'Período', cell: (payment) => `${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}` },
     { header: 'Dias', cell: (payment) => payment.days },
-    { header: 'Diaria', cell: (payment) => formatMoney(payment.daily_rate) },
+    { header: 'Diária', cell: (payment) => formatMoney(payment.daily_rate) },
     { header: 'Total', cell: (payment) => <span className="font-medium">{formatMoney(payment.final_amount)}</span> },
     { header: 'Status', cell: (payment) => <StatusBadge value={payment.status} /> },
     { header: 'Pago em', cell: (payment) => formatDate(payment.payment_date) },
-    { header: 'Acoes', cell: (payment) => (
+    { header: 'Ações', cell: (payment) => (
       <div className="flex items-center gap-1">
         <Button type="button" variant="ghost" aria-label="Visualizar pagamento" onClick={() => setViewing(payment)}><Eye size={16} /></Button>
         <PermissionGate permissions={['payments:update']}><Button type="button" variant="ghost" aria-label="Editar pagamento" disabled={payment.status === 'paid' || payment.status === 'cancelled'} onClick={() => setEditing(payment)}><Pencil size={16} /></Button></PermissionGate>
@@ -167,7 +167,7 @@ function PaymentsTab({ projectId, fieldAgents }: { projectId: number; fieldAgent
         </select>
         <AgentSelect value={fieldAgentId} onChange={(value) => { setFieldAgentId(value); setPage(1); }} agents={fieldAgents} />
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={state} onChange={(event) => { setState(event.target.value); setPage(1); }} placeholder="UF/Estado" />
-        <DateInput aria-label="Inicio do pagamento" value={startDate} onChange={(event) => { setStartDate(event.target.value); setPage(1); }} />
+        <DateInput aria-label="Início do pagamento" value={startDate} onChange={(event) => { setStartDate(event.target.value); setPage(1); }} />
         <DateInput aria-label="Fim do pagamento" value={endDate} onChange={(event) => { setEndDate(event.target.value); setPage(1); }} />
         <DateInput aria-label="Data de pagamento" value={paymentDate} onChange={(event) => { setPaymentDate(event.target.value); setPage(1); }} />
       </FilterPanel>
@@ -232,7 +232,7 @@ function ExpensesTab({ projectId, fieldAgents }: { projectId: number; fieldAgent
     { header: 'Valor', cell: (expense) => <span className="font-medium">{formatMoney(expense.amount)}</span> },
     { header: 'Status', cell: (expense) => <StatusBadge value={expense.status} /> },
     { header: 'Atualizada em', cell: (expense) => formatDateTime(expense.updated_at) },
-    { header: 'Acoes', cell: (expense) => (
+    { header: 'Ações', cell: (expense) => (
       <div className="flex items-center gap-1">
         <Button type="button" variant="ghost" aria-label="Visualizar despesa" onClick={() => setViewing(expense)}><Eye size={16} /></Button>
         <Button type="button" variant="ghost" aria-label="Comprovantes da despesa" onClick={() => setAttachments(expense)}><Receipt size={16} /></Button>
@@ -254,7 +254,7 @@ function ExpensesTab({ projectId, fieldAgents }: { projectId: number; fieldAgent
           {expenseStatuses.map((item) => <option key={item} value={item}>{expenseStatusLabels[item]}</option>)}
         </select>
         <AgentSelect value={fieldAgentId} onChange={(value) => { setFieldAgentId(value); setPage(1); }} agents={fieldAgents} />
-        <DateInput aria-label="Inicio da despesa" value={startDate} onChange={(event) => { setStartDate(event.target.value); setPage(1); }} />
+        <DateInput aria-label="Início da despesa" value={startDate} onChange={(event) => { setStartDate(event.target.value); setPage(1); }} />
         <DateInput aria-label="Fim da despesa" value={endDate} onChange={(event) => { setEndDate(event.target.value); setPage(1); }} />
       </FilterPanel>
       {hasPermission('expenses:create') ? <div className="flex justify-end"><Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Nova despesa</Button></div> : null}
@@ -294,14 +294,14 @@ function PaymentDetailDrawer({ payment, onOpenChange }: { payment: FieldAgentPay
       {payment ? (
         <dl className="grid gap-3 text-sm">
           <Detail label="Status" value={<StatusBadge value={payment.status} />} />
-          <Detail label="Periodo" value={`${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}`} />
+          <Detail label="Período" value={`${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}`} />
           <Detail label="Dias" value={payment.days} />
-          <Detail label="Diaria" value={formatMoney(payment.daily_rate)} />
-          <Detail label="Total diario" value={formatMoney(payment.daily_total)} />
+          <Detail label="Diária" value={formatMoney(payment.daily_rate)} />
+          <Detail label="Total diário" value={formatMoney(payment.daily_total)} />
           <Detail label="Adicional" value={formatMoney(payment.additional_amount)} />
           <Detail label="Desconto" value={formatMoney(payment.discount_amount)} />
           <Detail label="Final" value={formatMoney(payment.final_amount)} />
-          <Detail label="Observacoes" value={payment.notes ?? '-'} />
+          <Detail label="Observações" value={payment.notes ?? '-'} />
         </dl>
       ) : null}
     </DrawerForm>
@@ -314,7 +314,7 @@ function ExpenseDetailDrawer({ expense, onOpenChange }: { expense: Expense | nul
       {expense ? (
         <dl className="grid gap-3 text-sm">
           <Detail label="Status" value={<StatusBadge value={expense.status} />} />
-          <Detail label="Descricao" value={expense.description} />
+          <Detail label="Descrição" value={expense.description} />
           <Detail label="Data" value={formatDate(expense.expense_date)} />
           <Detail label="Valor" value={formatMoney(expense.amount)} />
           <Detail label="Inventariante" value={expense.field_agent_id ? `#${expense.field_agent_id}` : '-'} />

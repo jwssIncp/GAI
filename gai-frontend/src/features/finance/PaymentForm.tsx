@@ -31,11 +31,11 @@ export function PaymentForm({ initial, fieldAgents, busy, onSubmit }: { initial?
         <Controller control={form.control} name="field_agent_id" render={({ field }) => <FieldAgentSelect value={field.value ?? ''} onChange={field.onChange} selectedLabel={fieldAgents.find(agent => String(agent.id) === field.value)?.name} />} />
       </FormField>
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Inicio" error={form.formState.errors.start_date?.message}><DateInput {...form.register('start_date')} /></FormField>
+        <FormField label="Início" error={form.formState.errors.start_date?.message}><DateInput {...form.register('start_date')} /></FormField>
         <FormField label="Fim" error={form.formState.errors.end_date?.message}><DateInput {...form.register('end_date')} /></FormField>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Valor diario" error={form.formState.errors.daily_rate?.message}><MoneyInput {...form.register('daily_rate')} /></FormField>
+        <FormField label="Valor diário" error={form.formState.errors.daily_rate?.message}><MoneyInput {...form.register('daily_rate')} /></FormField>
         <FormField label="UF/Estado"><Input placeholder="SP" {...form.register('state')} /></FormField>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -43,7 +43,7 @@ export function PaymentForm({ initial, fieldAgents, busy, onSubmit }: { initial?
         <FormField label="Desconto" error={form.formState.errors.discount_amount?.message}><MoneyInput {...form.register('discount_amount')} /></FormField>
       </div>
       <FormField label="Data de pagamento"><DateInput {...form.register('payment_date')} /></FormField>
-      <FormField label="Observacoes">
+      <FormField label="Observações">
         <textarea className="min-h-24 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('notes')} />
       </FormField>
       <Button loading={busy}>{initial ? 'Salvar pagamento' : 'Criar pagamento'}</Button>

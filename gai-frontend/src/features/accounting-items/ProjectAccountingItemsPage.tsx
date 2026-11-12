@@ -51,30 +51,30 @@ export function ProjectAccountingItemsPage() {
 
   const columns: Column<InventoryAccountingItem>[] = [
     { header: 'Placa', cell: (item) => <div className="font-medium">{item.plate ?? '-'}<div className="text-xs text-muted-foreground">#{item.id}</div></div> },
-    { header: 'Descricao', cell: (item) => item.description ?? '-' },
-    { header: 'Conta contabil', cell: (item) => item.accounting_account_description ?? '-' },
-    { header: 'Localizacao', cell: (item) => item.location ?? '-' },
-    { header: 'Aquisicao', cell: (item) => formatDate(item.acquisition_date) },
+    { header: 'Descrição', cell: (item) => item.description ?? '-' },
+    { header: 'Conta contábil', cell: (item) => item.accounting_account_description ?? '-' },
+    { header: 'Localização', cell: (item) => item.location ?? '-' },
+    { header: 'Aquisição', cell: (item) => formatDate(item.acquisition_date) },
     { header: 'Valor', cell: (item) => formatMoney(item.acquisition_value) },
     { header: 'Cod. base', cell: (item) => item.base_code ?? '-' },
     { header: 'Investor', cell: (item) => item.investor_code ?? '-' },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },
     { header: 'Atualizado em', cell: (item) => formatDateTime(item.updated_at) },
     {
-      header: 'Acoes',
+      header: 'Ações',
       cell: (item) => (
         <div className="flex items-center gap-1">
-          <Button type="button" variant="ghost" aria-label="Visualizar item contabil" onClick={() => setViewingId(item.id)}><Eye size={16} /></Button>
+          <Button type="button" variant="ghost" aria-label="Visualizar item contábil" onClick={() => setViewingId(item.id)}><Eye size={16} /></Button>
           <PermissionGate permissions={['inventory-accounting-items:update']}>
-            <Button type="button" variant="ghost" aria-label="Editar item contabil" onClick={() => setEditing(item)}><Pencil size={16} /></Button>
+            <Button type="button" variant="ghost" aria-label="Editar item contábil" onClick={() => setEditing(item)}><Pencil size={16} /></Button>
           </PermissionGate>
           {item.status === 'inactive' ? (
             <PermissionGate permissions={['inventory-accounting-items:reactivate']}>
-              <Button type="button" variant="ghost" aria-label="Reativar item contabil" onClick={() => setConfirm({ action: 'reactivate', item })}><RotateCcw size={16} /></Button>
+              <Button type="button" variant="ghost" aria-label="Reativar item contábil" onClick={() => setConfirm({ action: 'reactivate', item })}><RotateCcw size={16} /></Button>
             </PermissionGate>
           ) : (
             <PermissionGate permissions={['inventory-accounting-items:deactivate']}>
-              <Button type="button" variant="ghost" aria-label="Desativar item contabil" onClick={() => setConfirm({ action: 'deactivate', item })}><XCircle size={16} /></Button>
+              <Button type="button" variant="ghost" aria-label="Desativar item contábil" onClick={() => setConfirm({ action: 'deactivate', item })}><XCircle size={16} /></Button>
             </PermissionGate>
           )}
         </div>
@@ -84,22 +84,22 @@ export function ProjectAccountingItemsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Base contabil" description={`Projeto #${projectId}. Itens patrimoniais importados da base contabil.`} />
+      <PageHeader title="Base contábil" description={`Projeto #${projectId}. Itens patrimoniais importados da base contábil.`} />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <span className="text-muted-foreground">/ Base contabil</span>
+        <span className="text-muted-foreground">/ Base contábil</span>
       </div>
       <FilterPanel>
-        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar base contabil" />
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryAccountingItemStatus | ''); setPage(1); }} aria-label="Filtrar base contabil por status">
+        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar base contábil" />
+        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryAccountingItemStatus | ''); setPage(1); }} aria-label="Filtrar base contábil por status">
           <option value="">Todos os status</option>
           {accountingItemStatuses.map((itemStatus) => <option key={itemStatus} value={itemStatus}>{itemStatus}</option>)}
         </select>
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={plate} onChange={(event) => { setPlate(event.target.value); setPage(1); }} placeholder="Placa" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descricao" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={baseCode} onChange={(event) => { setBaseCode(event.target.value); setPage(1); }} placeholder="Codigo base" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={investorCode} onChange={(event) => { setInvestorCode(event.target.value); setPage(1); }} placeholder="Codigo investor" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descrição" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={baseCode} onChange={(event) => { setBaseCode(event.target.value); setPage(1); }} placeholder="Código base" />
+        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={investorCode} onChange={(event) => { setInvestorCode(event.target.value); setPage(1); }} placeholder="Código investor" />
       </FilterPanel>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
         <>
@@ -109,14 +109,14 @@ export function ProjectAccountingItemsPage() {
       ) : null}
       <AccountingImportsPanel projectId={projectId} />
       <AccountingItemDetailDrawer projectId={projectId} id={viewingId} open={Boolean(viewingId)} onOpenChange={(open) => !open && setViewingId(undefined)} />
-      <DrawerForm open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)} title="Editar item contabil">
+      <DrawerForm open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)} title="Editar item contábil">
         {editing ? <AccountingItemForm initial={editing} busy={update.isPending} onSubmit={(payload) => update.mutate({ id: editing.id, payload }, { onSuccess: () => setEditing(null) })} /> : null}
       </DrawerForm>
       <ConfirmDialog
         open={Boolean(confirm)}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title={confirm?.action === 'deactivate' ? 'Desativar item contabil' : 'Reativar item contabil'}
-        description={`Confirmar alteracao de status do item ${confirm?.item.plate ?? confirm?.item.id ?? ''}?`}
+        title={confirm?.action === 'deactivate' ? 'Desativar item contábil' : 'Reativar item contábil'}
+        description={`Confirmar alteração de status do item ${confirm?.item.plate ?? confirm?.item.id ?? ''}?`}
         onConfirm={() => {
           if (!confirm) return;
           const mutation = confirm.action === 'deactivate' ? deactivate : reactivate;

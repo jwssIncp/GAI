@@ -126,7 +126,7 @@ describe('ProjectInventoryItemsPage', () => {
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: /novo item/i }));
     await userEvent.click(screen.getByRole('button', { name: /salvar item/i }));
-    expect(await screen.findByText('Informe a descricao do item')).toBeInTheDocument();
+    expect(await screen.findByText('Informe a descrição do item')).toBeInTheDocument();
   });
 
   it('oculta criar sem permissao', async () => {
@@ -145,7 +145,7 @@ describe('ProjectInventoryItemsPage', () => {
   it('pagina chamando page/page_size', async () => {
     mocks.listByProject.mockResolvedValue(page([item], { total_items: 30, total_pages: 2 }));
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Proxima pagina'));
+    await userEvent.click(await screen.findByLabelText('Próxima página'));
     await waitFor(() => expect(mocks.listByProject).toHaveBeenLastCalledWith(10, expect.objectContaining({ page: 2, page_size: 20 })));
   });
 

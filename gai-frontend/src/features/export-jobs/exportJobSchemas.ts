@@ -15,11 +15,11 @@ export const exportJobStatuses = ['pending', 'processing', 'finished', 'failed',
 export const exportJobTypeLabels: Record<(typeof exportJobTypes)[number], string> = {
   valuation_batches_xlsx: 'Resultados de avaliações em lote XLSX',
   inventory_items_xlsx: 'Itens inventariados XLSX',
-  inventory_accounting_items_xlsx: 'Base contabil XLSX',
-  pending_issues_xlsx: 'Pendencias XLSX',
+  inventory_accounting_items_xlsx: 'Base contábil XLSX',
+  pending_issues_xlsx: 'Pendências XLSX',
   payments_xlsx: 'Pagamentos XLSX',
   expenses_xlsx: 'Despesas XLSX',
-  project_backup_xlsx: 'Relatorio consolidado do projeto XLSX',
+  project_backup_xlsx: 'Relatório consolidado do projeto XLSX',
 };
 
 export const exportJobStatusLabels: Record<(typeof exportJobStatuses)[number], string> = {
@@ -31,5 +31,5 @@ export const exportJobStatusLabels: Record<(typeof exportJobStatuses)[number], s
   expired: 'Expirada',
 };
 
-export const exportJobFormSchema = z.object({ type: z.enum(exportJobTypes, { required_error: 'Selecione o tipo de exportacao' }) });
+export const exportJobFormSchema = z.object({ type: z.enum(exportJobTypes, { required_error: 'Selecione o tipo de exportação' }) });
 export type ExportJobFormValues = z.infer<typeof exportJobFormSchema>;

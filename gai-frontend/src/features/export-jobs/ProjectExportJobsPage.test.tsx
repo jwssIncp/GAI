@@ -118,18 +118,18 @@ describe('ProjectExportJobsPage', () => {
   });
 
   it('exibe erro real da listagem', async () => {
-    mocks.list.mockRejectedValue(new Error('Falha ao carregar exportacoes'));
+    mocks.list.mockRejectedValue(new Error('Falha ao carregar exportações'));
     renderPage();
-    expect(await screen.findByText('Falha ao carregar exportacoes')).toBeInTheDocument();
+    expect(await screen.findByText('Falha ao carregar exportações')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
   });
 
   it('solicita uma nova exportacao com tipo validado', async () => {
     renderPage();
     await screen.findByText('inventario.xlsx');
-    await userEvent.click(screen.getByRole('button', { name: 'Nova exportacao' }));
-    await userEvent.selectOptions(await screen.findByLabelText('Tipo de exportacao'), 'project_backup_xlsx');
-    await userEvent.click(screen.getByRole('button', { name: 'Solicitar exportacao' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Nova exportação' }));
+    await userEvent.selectOptions(await screen.findByLabelText('Tipo de exportação'), 'project_backup_xlsx');
+    await userEvent.click(screen.getByRole('button', { name: 'Solicitar exportação' }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(10, 'project_backup_xlsx'));
   });
 
@@ -161,7 +161,7 @@ describe('ProjectExportJobsPage', () => {
     renderPage('/app/projects/10/export-jobs?new=1', limited);
     expect(await screen.findByText('inventario.xlsx')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Baixar' })).not.toBeInTheDocument();
-    const select = screen.getByLabelText('Tipo de exportacao');
+    const select = screen.getByLabelText('Tipo de exportação');
     expect(select.querySelector('option[value="inventory_items_xlsx"]')).not.toBeNull();
     expect(select.querySelector('option[value="expenses_xlsx"]')).toBeNull();
     expect(select.querySelector('option[value="payments_xlsx"]')).toBeNull();

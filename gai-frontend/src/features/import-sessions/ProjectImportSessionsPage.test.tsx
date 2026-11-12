@@ -80,7 +80,7 @@ const session: ImportSession = {
   updated_at: '2026-01-01T00:05:00.000Z',
 };
 const payload: ImportPayload = { id: 70, payload_number: 1, idempotency_key: 'idem-1', checksum: 'abc', status: 'failed', items_count: 4, images_count: 2, created_count: 1, updated_count: 2, deleted_count: 0, failed_count: 1, raw_payload_path: 'raw/payload.json', error_message: 'Erro de teste' };
-const error: ImportPayloadError = { id: 90, row_number: 3, item_reference: 'PAT-1', error_code: 'INVALID_ITEM', error_message: 'Item invalido', created_at: '2026-01-01T00:06:00.000Z' };
+const error: ImportPayloadError = { id: 90, row_number: 3, item_reference: 'PAT-1', error_code: 'INVALID_ITEM', error_message: 'Item inválido', created_at: '2026-01-01T00:06:00.000Z' };
 const file: ImportFile = { id: 81, type: 'raw_payload', storage_provider: 's3', bucket: 'private', path: 'imports/raw.json', original_name: 'raw.json', mime_type: 'application/json', size_bytes: 1200, checksum: 'xyz', status: 'uploaded' };
 
 function page<T>(items: T[], overrides: Partial<PaginatedItems<T>> = {}): PaginatedItems<T> {
@@ -124,7 +124,7 @@ describe('ProjectImportSessionsPage', () => {
   it('renderiza listagem de importacoes', async () => {
     renderPage();
     expect(await screen.findByText('uuid-50')).toBeInTheDocument();
-    expect(screen.getAllByText('Sincronizacao mobile').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Sincronização mobile').length).toBeGreaterThan(0);
   });
 
   it('renderiza loading, vazio e erro', async () => {
@@ -138,55 +138,55 @@ describe('ProjectImportSessionsPage', () => {
   });
 
   it('renderiza erro', async () => {
-    mocks.list.mockRejectedValue(new Error('Falha nas importacoes'));
+    mocks.list.mockRejectedValue(new Error('Falha nas importações'));
     renderPage();
-    expect(await screen.findByText('Falha nas importacoes')).toBeInTheDocument();
+    expect(await screen.findByText('Falha nas importações')).toBeInTheDocument();
   });
 
   it('oculta nova importacao sem permissao', async () => {
     renderPage(noPermissions);
-    await screen.findByText('Sincronizacao mobile');
-    expect(screen.queryByRole('button', { name: /nova importacao/i })).not.toBeInTheDocument();
+    await screen.findByText('Sincronização mobile');
+    expect(screen.queryByRole('button', { name: /nova importação/i })).not.toBeInTheDocument();
   });
 
   it('valida formulario de nova importacao', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /nova importacao/i }));
-    await userEvent.click(screen.getByRole('button', { name: /criar importacao/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /nova importação/i }));
+    await userEvent.click(screen.getByRole('button', { name: /criar importação/i }));
     expect(await screen.findByText('Selecione o tipo')).toBeInTheDocument();
   });
 
   it('cria sessao com payload real', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /nova importacao/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /nova importação/i }));
     await userEvent.selectOptions(document.querySelector('select[name="type"]') as HTMLSelectElement, 'mobile_sync');
     await userEvent.selectOptions(document.querySelector('select[name="source"]') as HTMLSelectElement, 'mobile_app');
     await userEvent.type(document.querySelector('input[name="expected_payloads"]') as HTMLInputElement, '2');
-    await userEvent.click(screen.getByRole('button', { name: /criar importacao/i }));
+    await userEvent.click(screen.getByRole('button', { name: /criar importação/i }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(10, { type: 'mobile_sync', source: 'mobile_app', expected_payloads: 2 }));
   });
 
   it('filtra por status com parametro real', async () => {
     renderPage();
-    await userEvent.selectOptions(await screen.findByLabelText('Filtrar importacao por status'), 'open');
+    await userEvent.selectOptions(await screen.findByLabelText('Filtrar importação por status'), 'open');
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ status: 'open', page: 1, page_size: 20 })));
   });
 
   it('pagina usando page/page_size', async () => {
     mocks.list.mockResolvedValue(page([session], { total_items: 30, total_pages: 2 }));
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Proxima pagina'));
+    await userEvent.click(await screen.findByLabelText('Próxima página'));
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ page: 2, page_size: 20 })));
   });
 
   it('detalhe renderiza abas, contadores e omite paths internos', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Visualizar importacao'));
+    await userEvent.click(await screen.findByLabelText('Visualizar importação'));
     expect(await screen.findByText('Payloads recebidos')).toBeInTheDocument();
     expect(screen.getAllByText('uuid-50').length).toBeGreaterThan(0);
     expect(screen.queryByText('private/raw.zip')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Erros' }));
-    expect(await screen.findByText('Item invalido')).toBeInTheDocument();
+    expect(await screen.findByText('Item inválido')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Arquivos' }));
     expect(await screen.findByText('raw.json')).toBeInTheDocument();
     expect(screen.queryByText('private')).not.toBeInTheDocument();
@@ -195,10 +195,10 @@ describe('ProjectImportSessionsPage', () => {
 
   it('upload chama upload-url e confirm-upload', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Visualizar importacao'));
+    await userEvent.click(await screen.findByLabelText('Visualizar importação'));
     await userEvent.click(await screen.findByRole('button', { name: 'Arquivos' }));
     const uploadFile = new File(['{}'], 'raw.json', { type: 'application/json' });
-    await userEvent.upload(await screen.findByLabelText('Enviar arquivo de importacao'), uploadFile);
+    await userEvent.upload(await screen.findByLabelText('Enviar arquivo de importação'), uploadFile);
     await waitFor(() => expect(mocks.createFileUploadUrl).toHaveBeenCalledWith(10, 50, expect.objectContaining({ type: 'raw_payload', original_name: 'raw.json' })));
     expect(mocks.uploadToPresignedUrl).toHaveBeenCalledWith('https://upload.example/import-file', uploadFile, expect.any(Function));
     await waitFor(() => expect(mocks.confirmFileUpload).toHaveBeenCalledWith(10, 50, 82, { size_bytes: uploadFile.size }));
@@ -206,7 +206,7 @@ describe('ProjectImportSessionsPage', () => {
 
   it('download usa endpoint download-url', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Visualizar importacao'));
+    await userEvent.click(await screen.findByLabelText('Visualizar importação'));
     await userEvent.click(await screen.findByRole('button', { name: 'Arquivos' }));
     await userEvent.click(await screen.findByRole('button', { name: /baixar/i }));
     await waitFor(() => expect(mocks.fileDownloadUrl).toHaveBeenCalledWith(10, 50, 81));
@@ -216,7 +216,7 @@ describe('ProjectImportSessionsPage', () => {
     mocks.list.mockResolvedValue(page([{ ...session, status: 'failed' as const }]));
     renderPage();
     await screen.findByText('uuid-50');
-    await userEvent.click(screen.getByLabelText('Retry importacao'));
+    await userEvent.click(screen.getByLabelText('Retry importação'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.retry).toHaveBeenCalledWith(10, 50));
   });
@@ -224,10 +224,10 @@ describe('ProjectImportSessionsPage', () => {
   it('finalizar e cancelar usam confirmacao', async () => {
     renderPage();
     await screen.findByText('uuid-50');
-    await userEvent.click(screen.getByLabelText('Finalizar importacao'));
+    await userEvent.click(screen.getByLabelText('Finalizar importação'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.finish).toHaveBeenCalledWith(10, 50));
-    await userEvent.click(screen.getByLabelText('Cancelar importacao'));
+    await userEvent.click(screen.getByLabelText('Cancelar importação'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.cancel).toHaveBeenCalledWith(10, 50));
   });

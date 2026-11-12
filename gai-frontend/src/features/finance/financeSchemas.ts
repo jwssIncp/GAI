@@ -5,13 +5,13 @@ const money = z
   .trim()
   .min(1, 'Informe o valor')
   .transform((value) => value.replace(',', '.'))
-  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Use ate 13 digitos e 2 casas decimais'));
+  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Use até 13 dígitos e 2 casas decimais'));
 
 const optionalMoney = z
   .string()
   .trim()
   .transform((value) => (value ? value.replace(',', '.') : undefined))
-  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Use ate 13 digitos e 2 casas decimais').optional());
+  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Use até 13 dígitos e 2 casas decimais').optional());
 
 const optionalText = z.string().trim().transform((value) => (value ? value : undefined)).optional();
 const optionalDate = z.string().trim().transform((value) => (value ? value : undefined)).optional();
@@ -37,7 +37,7 @@ export const expenseStatusLabels: Record<(typeof expenseStatuses)[number], strin
 export const paymentFormSchema = z.object({
   field_agent_id: z.string().min(1, 'Selecione o inventariante').transform(Number),
   state: optionalText,
-  start_date: z.string().min(1, 'Informe o inicio'),
+  start_date: z.string().min(1, 'Informe o início'),
   end_date: z.string().min(1, 'Informe o fim'),
   payment_date: optionalDate,
   daily_rate: money,
@@ -62,7 +62,7 @@ export const paidDateSchema = z.object({
 });
 
 export const rejectExpenseSchema = z.object({
-  reason: z.string().trim().min(3, 'Informe o motivo da rejeicao'),
+  reason: z.string().trim().min(3, 'Informe o motivo da rejeição'),
 });
 
 export type PaymentFormValues = z.input<typeof paymentFormSchema>;

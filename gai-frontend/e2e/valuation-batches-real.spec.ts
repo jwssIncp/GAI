@@ -81,7 +81,7 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByRole("checkbox", { name: `Selecionar item ${ids[22]}`, exact: true })
     .check();
   await page
-    .getByRole("button", { name: "Proxima pagina", exact: true })
+    .getByRole("button", { name: "Próxima página", exact: true })
     .click();
   await page
     .getByRole("checkbox", { name: `Selecionar item ${ids[0]}`, exact: true })
@@ -258,7 +258,7 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByRole("dialog")
     .getByRole("button", { name: `Histórico do item #${ids[22]}`, exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("Avaliacoes manuais");
+  await expect(page.getByRole("dialog")).toContainText("Avaliações manuais");
   await expect(page.getByRole("dialog")).toContainText(
     "SINTETICO Catalogo individual documentado",
   );

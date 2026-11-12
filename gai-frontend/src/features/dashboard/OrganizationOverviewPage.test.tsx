@@ -42,7 +42,7 @@ describe('Organization overview', () => {
   it('handles service failures without misleading zero cards', async () => {
     mocks.get.mockRejectedValue(new Error('offline'));
     mount();
-    expect(await screen.findByText('Nao foi possivel carregar os dados.')).toBeInTheDocument();
+    expect(await screen.findByText('Não foi possível carregar os dados.')).toBeInTheDocument();
     expect(screen.queryByText('Quantidade de projetos')).not.toBeInTheDocument();
     expect(screen.queryByText('Indisponível')).not.toBeInTheDocument();
   });

@@ -36,26 +36,26 @@ export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: Inven
     <form className="grid gap-4" onSubmit={form.handleSubmit((values) => onSubmit(clean(values as unknown as InventoryItemInput)))}>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="ID externo"><Input {...form.register('external_item_id')} /></FormField>
-        <FormField label="Sequencia"><Input {...form.register('sequence')} /></FormField>
+        <FormField label="Sequência"><Input {...form.register('sequence')} /></FormField>
         <FormField label="Placa antiga"><Input {...form.register('old_plate')} /></FormField>
         <FormField label="Placa nova"><Input {...form.register('new_plate')} /></FormField>
       </div>
-      <FormField label="Descricao" error={form.formState.errors.description?.message}>
+      <FormField label="Descrição" error={form.formState.errors.description?.message}>
         <Input {...form.register('description')} />
       </FormField>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Marca"><Input {...form.register('brand')} /></FormField>
         <FormField label="Modelo"><Input {...form.register('model')} /></FormField>
-        <FormField label="Numero de serie"><Input {...form.register('serial_number')} /></FormField>
+        <FormField label="Número de série"><Input {...form.register('serial_number')} /></FormField>
         <FormField label="Capacidade"><Input {...form.register('capacity')} /></FormField>
         <FormField label="Ano" error={form.formState.errors.year?.message}><DateInput type="number" min={1900} max={2100} {...form.register('year')} /></FormField>
         <FormField label="Origem"><Input {...form.register('source')} /></FormField>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Unidade"><Input {...form.register('unit_text')} /></FormField>
-        <FormField label="Localizacao"><Input {...form.register('location_text')} /></FormField>
+        <FormField label="Localização"><Input {...form.register('location_text')} /></FormField>
       </div>
-      <FormField label="Endereco"><Input {...form.register('address_text')} /></FormField>
+      <FormField label="Endereço"><Input {...form.register('address_text')} /></FormField>
       <div className="grid gap-4 md:grid-cols-3">
         <FormField label="Valor usado" error={form.formState.errors.used_value?.message}><MoneyInput {...form.register('used_value')} /></FormField>
         <FormField label="Valor novo" error={form.formState.errors.new_value?.message}><MoneyInput {...form.register('new_value')} /></FormField>
@@ -65,7 +65,7 @@ export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: Inven
           </select>
         </FormField>
       </div>
-      <FormField label="Observacoes"><Input {...form.register('notes')} /></FormField>
+      <FormField label="Observações"><Input {...form.register('notes')} /></FormField>
       <Button loading={busy}>{initial ? 'Atualizar item' : 'Salvar item'}</Button>
     </form>
   );

@@ -20,9 +20,9 @@ export function ProtectedRoute({ permissions }: { permissions?: string[] }) {
     }
   }, [hasValidStoredSession, restore, user]);
 
-  if (bootstrapping) return <LoadingState label="Restaurando sessao" />;
+  if (bootstrapping) return <LoadingState label="Restaurando sessão" />;
   if (!user && hasValidStoredSession)
-    return <LoadingState label="Validando sessao" />;
+    return <LoadingState label="Validando sessão" />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (user.must_change_password && location.pathname !== "/app/change-password")
     return <Navigate to="/app/change-password" replace />;

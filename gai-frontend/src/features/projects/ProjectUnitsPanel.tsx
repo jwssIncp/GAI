@@ -33,7 +33,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
       setSelectedId('');
       toast({ title: 'Unidade vinculada', description: 'A unidade foi adicionada ao projeto.', tone: 'success' });
     } catch (error) {
-      toast(unitErrorToast(error, 'Nao foi possivel vincular a unidade'));
+      toast(unitErrorToast(error, 'Não foi possível vincular a unidade'));
     }
   }
 
@@ -42,9 +42,9 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
     try {
       await remove.mutateAsync(removing.company_unit_id);
       setRemoving(null);
-      toast({ title: 'Unidade removida', description: 'O vinculo foi removido sem apagar o historico.', tone: 'success' });
+      toast({ title: 'Unidade removida', description: 'O vínculo foi removido sem apagar o histórico.', tone: 'success' });
     } catch (error) {
-      toast(unitErrorToast(error, 'Nao foi possivel remover a unidade'));
+      toast(unitErrorToast(error, 'Não foi possível remover a unidade'));
     }
   }
 
@@ -52,7 +52,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
     <section id="unidades" className="premium-panel scroll-mt-52 p-5 sm:p-6">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
-          <p className="eyebrow">Escopo fisico</p>
+          <p className="eyebrow">Escopo físico</p>
           <h2 className="mt-2 flex items-center gap-2 text-lg font-bold tracking-tight"><MapPin size={18} /> Unidades do projeto</h2>
           <p className="mt-1 text-sm text-muted-foreground">Somente unidades ativas da empresa vinculada podem ser adicionadas.</p>
         </div>
@@ -67,7 +67,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
       <div className="mt-5">
         {units.isLoading ? <LoadingState label="Carregando unidades" /> : null}
         {units.isError ? <ErrorState message={units.error instanceof Error ? units.error.message : undefined} onRetry={() => void units.refetch()} /> : null}
-        {!units.isLoading && !units.isError && !assignments.length ? <EmptyState title="Nenhuma unidade vinculada" description="Adicione uma unidade ativa da empresa para delimitar o escopo fisico do projeto." /> : null}
+        {!units.isLoading && !units.isError && !assignments.length ? <EmptyState title="Nenhuma unidade vinculada" description="Adicione uma unidade ativa da empresa para delimitar o escopo físico do projeto." /> : null}
         {assignments.length ? (
           <div className="grid gap-2">
             {assignments.map((assignment) => {
@@ -78,7 +78,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
                 <div key={assignment.id} className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/25 p-4">
                   <div>
                     <p className="font-semibold">{name}</p>
-                    {code ? <p className="mt-1 text-xs text-muted-foreground">Codigo: {code}</p> : null}
+                    {code ? <p className="mt-1 text-xs text-muted-foreground">Código: {code}</p> : null}
                   </div>
                   {canRemove ? <Button type="button" variant="ghost" size="sm" aria-label={`Remover ${name}`} onClick={() => setRemoving(assignment)}><Trash2 size={15} /> Remover</Button> : null}
                 </div>
@@ -91,7 +91,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
         open={Boolean(removing)}
         onOpenChange={(open) => !open && !remove.isPending && setRemoving(null)}
         title="Remover unidade"
-        description="Confirma a remocao desta unidade do projeto? O historico de auditoria sera preservado."
+        description="Confirma a remoção desta unidade do projeto? O histórico de auditoria será preservado."
         busy={remove.isPending}
         onConfirm={() => void removeSelected()}
       />
@@ -100,7 +100,7 @@ export function ProjectUnitsPanel({ project }: { project: Project }) {
 }
 
 function unitErrorToast(error: unknown, fallback: string) {
-  if (error instanceof ApiError && error.status === 403) return { title: 'Sem permissao', description: 'Seu acesso nao permite alterar unidades.', tone: 'error' as const };
-  if (error instanceof ApiError && error.status === 409) return { title: 'Vinculo indisponivel', description: error.message, tone: 'error' as const };
+  if (error instanceof ApiError && error.status === 403) return { title: 'Sem permissão', description: 'Seu acesso não permite alterar unidades.', tone: 'error' as const };
+  if (error instanceof ApiError && error.status === 409) return { title: 'Vínculo indisponível', description: error.message, tone: 'error' as const };
   return { title: fallback, description: error instanceof Error ? error.message : 'Tente novamente.', tone: 'error' as const };
 }

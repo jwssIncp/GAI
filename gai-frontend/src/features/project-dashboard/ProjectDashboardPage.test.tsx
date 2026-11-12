@@ -117,6 +117,6 @@ describe('ProjectDashboardPage', () => {
   it('renders the standard error state', async () => {
     mocks.dashboardAnalytics.mockRejectedValueOnce(new Error('network'));
     renderPage();
-    expect(await screen.findByText('Nao foi possivel concluir')).toBeInTheDocument();
+    expect(await screen.findByText('Não foi possível concluir')).toBeInTheDocument();
   });
 });

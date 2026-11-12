@@ -19,7 +19,7 @@ export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }:
           <section className="rounded-lg border p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold">{item.description || 'Item sem descricao'}</h2>
+                <h2 className="text-lg font-semibold">{item.description || 'Item sem descrição'}</h2>
                 <p className="text-muted-foreground">Item #{item.id} - Projeto #{item.project_id}</p>
               </div>
               <StatusBadge value={item.status} />
@@ -31,15 +31,15 @@ export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }:
             <MetricCard label="Valor usado" value={formatMoney(item.used_value)} />
             <MetricCard label="Valor novo" value={formatMoney(item.new_value)} />
           </div>
-          <Info label="Sequencia" value={item.sequence} />
-          <Info label="Localizacao" value={item.location_text} />
+          <Info label="Sequência" value={item.sequence} />
+          <Info label="Localização" value={item.location_text} />
           <Info label="Unidade" value={item.unit_text} />
-          <Info label="Endereco" value={item.address_text} />
+          <Info label="Endereço" value={item.address_text} />
           <Info label="Marca / Modelo" value={[item.brand, item.model].filter(Boolean).join(' / ')} />
-          <Info label="Numero de serie" value={item.serial_number} />
+          <Info label="Número de série" value={item.serial_number} />
           <Info label="Capacidade" value={item.capacity} />
           <Info label="Ano" value={item.year ? String(item.year) : undefined} />
-          <Info label="Observacoes" value={item.notes} />
+          <Info label="Observações" value={item.notes} />
           <Info label="Criado em" value={formatDateTime(item.created_at)} />
           <Info label="Atualizado em" value={formatDateTime(item.updated_at)} />
           <PermissionGate permissions={['inventory-item-images:read']} fallback={<ImagePlaceholder />}>
@@ -47,7 +47,7 @@ export function InventoryItemDetailDrawer({ projectId, id, open, onOpenChange }:
           </PermissionGate>
           <ItemEvidencePanels projectId={projectId} itemId={item.id} />
           <section className="rounded-lg border bg-muted/30 p-4 text-muted-foreground">
-            Area preparada para pendencias relacionadas ao item. A implementacao profunda fica para a rodada do modulo de pendencias.
+            Área preparada para pendências relacionadas ao item. A implementação profunda fica para a rodada do módulo de pendências.
           </section>
         </div>
       ) : null}
@@ -65,5 +65,5 @@ function Info({ label, value }: { label: string; value?: string | null }) {
 }
 
 function ImagePlaceholder() {
-  return <p className="mt-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">Voce nao tem permissao para visualizar as imagens deste item.</p>;
+  return <p className="mt-2 rounded-md bg-muted p-3 text-sm text-muted-foreground">Você não tem permissão para visualizar as imagens deste item.</p>;
 }

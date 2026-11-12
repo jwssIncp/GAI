@@ -90,7 +90,7 @@ describe('ProjectUnitsPanel', () => {
   it('lista, vincula e remove unidades pelos endpoints reais', async () => {
     renderPanel();
     expect(await screen.findByText('Matriz')).toBeInTheDocument();
-    expect(screen.getByText('Codigo: MTZ')).toBeInTheDocument();
+    expect(screen.getByText('Código: MTZ')).toBeInTheDocument();
     await screen.findByRole('option', { name: 'Filial Norte (NRT)' });
     expect(screen.queryByRole('option', { name: 'Matriz (MTZ)' })).not.toBeInTheDocument();
 

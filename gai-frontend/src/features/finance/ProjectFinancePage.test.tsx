@@ -116,7 +116,7 @@ const expense: Expense = {
   project_id: 20,
   field_agent_id: 7,
   description: 'Almoco em campo',
-  reason: 'Equipe em inventario',
+  reason: 'Equipe em inventário',
   expense_date: '2026-01-02',
   amount: '45.90',
   status: 'pending',
@@ -235,7 +235,7 @@ describe('ProjectFinancePage', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     await userEvent.click(await screen.findByLabelText('Rejeitar despesa'));
     await userEvent.click(screen.getByRole('button', { name: /rejeitar despesa/i }));
-    expect(await screen.findByText('Informe o motivo da rejeicao')).toBeInTheDocument();
+    expect(await screen.findByText('Informe o motivo da rejeição')).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText('Motivo'), 'Sem comprovante');
     await userEvent.click(screen.getByRole('button', { name: /rejeitar despesa/i }));
     await waitFor(() => expect(mocks.expenseReject).toHaveBeenCalledWith(20, 15, { reason: 'Sem comprovante' }));
@@ -245,7 +245,7 @@ describe('ProjectFinancePage', () => {
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     await userEvent.click(await screen.findByLabelText('Comprovantes da despesa'));
-    const file = new File(['conteudo'], 'novo.pdf', { type: 'application/pdf' });
+    const file = new File(['conteúdo'], 'novo.pdf', { type: 'application/pdf' });
     await userEvent.upload(await screen.findByLabelText('Enviar comprovante'), file);
     await waitFor(() => expect(mocks.createUploadUrl).toHaveBeenCalledWith(20, 15, expect.objectContaining({ original_name: 'novo.pdf', mime_type: 'application/pdf' })));
     expect(mocks.uploadToPresignedUrl).toHaveBeenCalledWith('https://upload.example/proof', file, expect.any(Function));

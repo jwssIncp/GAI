@@ -136,7 +136,7 @@ export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNav
             <Button variant="secondary" className="h-11 rounded-xl border-white/10 bg-white/[0.06] p-1.5 pr-2 text-topbar-foreground shadow-none hover:border-primary/35 hover:bg-white/[0.1] sm:pr-3" aria-label={`Menu do usuário ${user?.login ?? 'Usuário'}`}>
               <span className="grid size-8 place-items-center rounded-lg bg-premium-gradient text-[0.6875rem] font-extrabold text-primary-foreground shadow-glow">{initials}</span>
               <span className="hidden min-w-0 text-left sm:block">
-                <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuario'}</span>
+                <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuário'}</span>
                 <span className="block max-w-32 truncate text-[0.625rem] font-medium text-topbar-muted">{organizationLabel}</span>
               </span>
               <ChevronDown className="text-topbar-muted" size={14} />

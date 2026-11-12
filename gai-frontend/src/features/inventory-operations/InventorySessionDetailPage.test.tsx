@@ -76,7 +76,7 @@ const activeSession: InventorySession = {
   id: 5,
   organization_id: 1,
   project_id: 10,
-  name: 'Inventario final',
+  name: 'Inventário final',
   status: 'active',
   current_round_id: 22,
   started_at: '2026-08-20T10:00:00.000Z',
@@ -199,16 +199,16 @@ describe('InventorySessionDetailPage', () => {
 
   it('reconstroi deep link e rodada atual apenas pelas APIs', async () => {
     renderPage();
-    expect(await screen.findByText('Inventario final')).toBeInTheDocument();
+    expect(await screen.findByText('Inventário final')).toBeInTheDocument();
     expect(screen.getAllByText('Rodada 2').length).toBeGreaterThan(0);
     expect(screen.getAllByText('ATIVA').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Adicionar observacao' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Adicionar observação' })).toBeEnabled();
     expect(mocks.getSession).toHaveBeenCalledWith(10, 5);
     expect(mocks.listRounds).toHaveBeenCalledWith(10, 5, expect.objectContaining({ page: 1, page_size: 20 }));
   });
 
   it('recupera a nova rodada apos reinventario e nova montagem', async () => {
-    const round3 = { ...currentRound, id: 23, round_number: 3, reason: 'Nova conferencia' };
+    const round3 = { ...currentRound, id: 23, round_number: 3, reason: 'Nova conferência' };
     const session3 = { ...activeSession, current_round_id: 23 };
     mocks.getSession.mockResolvedValueOnce(activeSession).mockResolvedValue(session3);
     mocks.listRounds.mockResolvedValueOnce(page([currentRound, initialRound])).mockResolvedValue(page([round3, currentRound, initialRound]));
@@ -216,9 +216,9 @@ describe('InventorySessionDetailPage', () => {
     const view = renderPage();
     await userEvent.click(await screen.findByRole('button', { name: 'Solicitar reinventario' }));
     await userEvent.type(screen.getByLabelText('Item divergente'), '11');
-    await userEvent.type(screen.getByLabelText('Motivo'), 'Nova conferencia');
+    await userEvent.type(screen.getByLabelText('Motivo'), 'Nova conferência');
     await userEvent.click(screen.getByRole('button', { name: 'Criar nova rodada' }));
-    await waitFor(() => expect(mocks.requestReinventory).toHaveBeenCalledWith(10, 5, { inventory_item_id: 11, reason: 'Nova conferencia' }));
+    await waitFor(() => expect(mocks.requestReinventory).toHaveBeenCalledWith(10, 5, { inventory_item_id: 11, reason: 'Nova conferência' }));
     expect(await screen.findAllByText('Rodada 3')).not.toHaveLength(0);
     view.unmount();
     renderPage();
@@ -232,11 +232,11 @@ describe('InventorySessionDetailPage', () => {
     mocks.listRounds.mockResolvedValue(page([{ ...currentRound, status: 'finished', finished_at: '2026-08-20T14:00:00.000Z' }]));
     mocks.finishSession.mockResolvedValue(finished);
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Finalizar sessao' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Finalizar sessão' }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.finishSession).toHaveBeenCalledWith(10, 5));
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Finalizar sessao' })).not.toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: 'Adicionar observacao' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Finalizar sessão' })).not.toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Adicionar observação' })).not.toBeInTheDocument();
   });
 
   it('cancela a sessao somente com motivo explicito', async () => {
@@ -244,7 +244,7 @@ describe('InventorySessionDetailPage', () => {
     mocks.getSession.mockResolvedValueOnce(activeSession).mockResolvedValue(cancelled);
     mocks.cancelSession.mockResolvedValue(cancelled);
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Cancelar sessao' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Cancelar sessão' }));
     const submit = screen.getByRole('button', { name: 'Confirmar cancelamento' });
     expect(submit).toBeDisabled();
     await userEvent.type(screen.getByLabelText('Motivo do cancelamento'), 'Campanha suspensa');
@@ -259,20 +259,20 @@ describe('InventorySessionDetailPage', () => {
     mocks.listRounds.mockResolvedValue(page([{ ...currentRound, status: 'finished', finished_at: '2026-08-20T14:00:00.000Z' }]));
     mocks.finishSession.mockRejectedValue(new ApiError(409, { code: 'INVENTORY_SESSION_STATUS_INVALID', message: 'Only active sessions can be finished' }));
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Finalizar sessao' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Finalizar sessão' }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
-    expect(await screen.findByText('A sessao mudou de estado e esta acao nao esta mais disponivel.')).toBeInTheDocument();
+    expect(await screen.findByText('A sessão mudou de estado e esta ação não está mais disponível.')).toBeInTheDocument();
   });
 
   it('traduz 409 por codigo e reutiliza a idempotency_key no retry', async () => {
     mocks.createObservation.mockRejectedValueOnce(new ApiError(409, { code: 'OBSERVATION_ALREADY_RECORDED', message: 'Item already has an observation in this round' })).mockResolvedValue(observation);
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar observacao' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar observação' }));
     await userEvent.type(screen.getByLabelText('Item patrimonial'), '11');
     await userEvent.type(screen.getByLabelText('Inventariante'), '7');
-    await userEvent.click(screen.getByRole('button', { name: 'Registrar observacao' }));
-    expect(await screen.findByText('Este item ja possui uma observacao nesta rodada.')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Registrar observacao' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Registrar observação' }));
+    expect(await screen.findByText('Este item já possui uma observação nesta rodada.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Registrar observação' }));
     await waitFor(() => expect(mocks.createObservation).toHaveBeenCalledTimes(2));
     const firstKey = mocks.createObservation.mock.calls[0][3].idempotency_key;
     const retryKey = mocks.createObservation.mock.calls[1][3].idempotency_key;
@@ -285,7 +285,7 @@ describe('InventorySessionDetailPage', () => {
     await userEvent.click((await screen.findAllByRole('button', { name: 'Abrir' }))[0]);
     expect(await screen.findByText('evidence.webp')).toBeInTheDocument();
     const file = new File(['image'], 'nova.webp', { type: 'image/webp' });
-    await userEvent.upload(screen.getByLabelText('Anexar evidencia'), file);
+    await userEvent.upload(screen.getByLabelText('Anexar evidência'), file);
     await waitFor(() => expect(mocks.confirmEvidenceUpload).toHaveBeenCalledWith(10, 5, 22, 31, 41, { size_bytes: file.size }));
     expect(mocks.createEvidenceUploadUrl).toHaveBeenCalledWith(10, 5, 22, 31, { original_name: 'nova.webp', mime_type: 'image/webp', size_bytes: file.size });
     expect(mocks.uploadToPresignedUrl).toHaveBeenCalledWith('https://storage.example/upload', file, expect.any(Function));

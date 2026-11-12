@@ -54,7 +54,7 @@ const project: Project = {
   organization_id: 1,
   company_id: 3,
   name: 'Projeto Alpha',
-  description: 'Inventario da filial SP',
+  description: 'Inventário da filial SP',
   status: 'active',
   start_date: '2026-01-01',
   end_date: null,
@@ -87,8 +87,8 @@ function renderPage(user: CurrentUser = admin) {
             <Route path="/app/projects/:projectId" element={<ProjectLayout />}>
               <Route path="summary" element={<ProjectSummaryPage />} />
               <Route path="inventory-items" element={<h1>Itens do projeto</h1>} />
-              <Route path="inventory/sessions" element={<h1>Sessoes do projeto</h1>} />
-              <Route path="accounting-items" element={<h1>Base contabil</h1>} />
+              <Route path="inventory/sessions" element={<h1>Sessões do projeto</h1>} />
+              <Route path="accounting-items" element={<h1>Base contábil</h1>} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -106,7 +106,7 @@ describe('ProjectSummaryPage workspace', () => {
     mocks.projectFieldAgentsAssign.mockResolvedValue({});
     mocks.projectFieldAgentsRemove.mockResolvedValue({});
     mocks.companyGet.mockResolvedValue({ id: 3, organization_id: 1, name: 'Empresa Alpha', status: 'active' });
-    mocks.organizationGet.mockResolvedValue({ id: 1, legal_name: 'Organizacao Alpha', status: 'ACTIVE' });
+    mocks.organizationGet.mockResolvedValue({ id: 1, legal_name: 'Organização Alpha', status: 'ACTIVE' });
     mocks.projectUnitsList.mockResolvedValue({ items: [] });
   });
 
@@ -114,10 +114,10 @@ describe('ProjectSummaryPage workspace', () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Projeto Alpha' })).toBeInTheDocument();
     expect(screen.getByText('Projetos')).toBeInTheDocument();
-    expect(screen.getByText('Inventario da filial SP')).toBeInTheDocument();
+    expect(screen.getByText('Inventário da filial SP')).toBeInTheDocument();
     expect(await screen.findByText('Empresa Alpha')).toBeInTheDocument();
     expect(screen.getByText('Total de itens')).toBeInTheDocument();
-    expect(screen.getByText('Pendencias criticas')).toBeInTheDocument();
+    expect(screen.getByText('Pendências críticas')).toBeInTheDocument();
     expect(mocks.get).toHaveBeenCalledWith(10);
     expect(mocks.dashboard).toHaveBeenCalledWith(10);
   });
@@ -138,13 +138,13 @@ describe('ProjectSummaryPage workspace', () => {
   it('renderiza projeto nao encontrado', async () => {
     mocks.get.mockRejectedValue(new Error('404 NOT_FOUND'));
     renderPage();
-    expect(await screen.findByText('Projeto nao encontrado')).toBeInTheDocument();
+    expect(await screen.findByText('Projeto não encontrado')).toBeInTheDocument();
   });
 
   it('oculta card e atalho quando usuario nao possui permissao', async () => {
     renderPage(noPermissions);
     expect(await screen.findByRole('heading', { name: 'Projeto Alpha' })).toBeInTheDocument();
-    expect(screen.queryByText('Acoes rapidas')).toBeInTheDocument();
+    expect(screen.queryByText('Ações rápidas')).toBeInTheDocument();
     expect(screen.queryByText('Novo item')).not.toBeInTheDocument();
     expect(screen.queryByText('Itens inventariados')).not.toBeInTheDocument();
   });
@@ -159,8 +159,8 @@ describe('ProjectSummaryPage workspace', () => {
 
   it('atalho importar base contabil redireciona para o fluxo existente', async () => {
     renderPage();
-    await userEvent.click(await screen.findByText('Importar base contabil'));
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Base contabil' })).toBeInTheDocument());
+    await userEvent.click(await screen.findByText('Importar base contábil'));
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Base contábil' })).toBeInTheDocument());
   });
 
   it('sinaliza projeto finalizado e bloqueia acoes operacionais', async () => {
@@ -170,16 +170,16 @@ describe('ProjectSummaryPage workspace', () => {
     expect(await screen.findByText('Projeto bloqueado operacionalmente')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /novo item/i })).toBeDisabled();
     expect(screen.queryByRole('link', { name: 'Editar projeto' })).not.toBeInTheDocument();
-    expect(screen.getByText(/vinculos de inventariantes somente para consulta/i)).toBeInTheDocument();
+    expect(screen.getByText(/vínculos de inventariantes somente para consulta/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Vincular inventariante' })).not.toBeInTheDocument();
   });
 
   it('nao inventa configuracoes editaveis e preserva dados legados para consulta', async () => {
     mocks.get.mockResolvedValue({ ...project, settings: { legacy_mode: true } });
     renderPage();
-    expect(await screen.findByText(/nenhuma configuracao operacional suportada/i)).toBeInTheDocument();
+    expect(await screen.findByText(/nenhuma configuração operacional suportada/i)).toBeInTheDocument();
     await userEvent.click(screen.getByText('Dados legados somente para consulta'));
     expect(screen.getByText(/"legacy_mode": true/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /salvar configuracoes/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /salvar configurações/i })).not.toBeInTheDocument();
   });
 });
