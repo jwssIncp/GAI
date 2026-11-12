@@ -122,3 +122,38 @@ export function groupOfTab(groups: ProjectTabGroup[], tabId: string | null): Pro
   if (!tabId) return null;
   return groups.find((group) => group.tabs.some((tab) => tab.id === tabId)) ?? null;
 }
+
+export type BreadcrumbStep = { label: string; to?: string };
+
+/**
+ * Trilha do workspace depois de "Projetos › <projeto>": grupo › aba › detalhe, com os
+ * mesmos nomes da navegação em dois níveis. `to` é relativo a /app/projects/:id/.
+ */
+export function projectBreadcrumbSteps(projectId: string, pathname: string, hash: string): BreadcrumbStep[] {
+  const root = `/app/projects/${projectId}/`;
+  if (!pathname.startsWith(root)) return [];
+  const rest = pathname.slice(root.length).replace(/\/+$/, "");
+  const groups = projectTabGroups(projectId);
+  const tabId = activeProjectTabId(projectId, pathname, hash);
+  const group = groupOfTab(groups, tabId);
+  const tab = group?.tabs.find((candidate) => candidate.id === tabId);
+  if (!group || !tab) return rest === "area" ? [{ label: "Área" }] : [];
+  const parts = rest.split("/");
+  const details: BreadcrumbStep[] = [];
+  if (tab.id === "preparation" && parts[1]) {
+    details.push({ label: parts[1] === "client-checklist" ? "Checklist do cliente" : "Kick-off" });
+  } else if (tab.id === "inventory-sessions" && parts[2]) {
+    details.push({ label: `Sessão #${parts[2]}` });
+  } else if (tab.id === "technical-reports" && parts[1]) {
+    if (parts[1] === "templates") {
+      details.push({ label: "Modelos da organização", to: parts[2] ? "technical-reports/templates" : undefined });
+      if (parts[2]) details.push({ label: `Modelo #${parts[2]}` });
+    } else if (parts[1] === "responsibles") {
+      details.push({ label: "Responsáveis cadastrados" });
+    } else {
+      details.push({ label: `Laudo #${parts[1]}` });
+    }
+  }
+  const tabPath = tab.path.split("#")[0];
+  return [{ label: group.label }, { label: tab.label, to: details.length ? tabPath : undefined }, ...details];
+}

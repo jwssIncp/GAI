@@ -6,6 +6,9 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { navigationHref } from '@/features/projects/navigationContext';
 import { useToast } from '@/components/ui/toast-context';
+import { usePermissions } from '@/features/auth/usePermissions';
+import { useProject } from '@/features/projects/projectQueries';
+import { projectBreadcrumbSteps } from '@/features/projects/projectNavigation';
 
 const breadcrumbLabels: Record<string, string> = {
   'technical-reports': 'Laudos',
@@ -45,8 +48,50 @@ const breadcrumbLabels: Record<string, string> = {
   accountabilities: 'Prestações',
 };
 
+type Crumb = { label: string; to?: string };
+
+function BreadcrumbList({ crumbs }: { crumbs: Crumb[] }) {
+  return (
+    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+      {crumbs.map((crumb, index) => {
+        const last = index === crumbs.length - 1;
+        return (
+          <li key={`${crumb.label}-${index}`} className={`items-center gap-1 ${last ? 'inline-flex min-w-0' : 'hidden sm:inline-flex'}`}>
+            {index ? <ChevronRight className="shrink-0 text-topbar-muted" size={12} aria-hidden="true" /> : null}
+            {crumb.to && !last ?
+              <Link className="rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={crumb.to}>{crumb.label}</Link> :
+              <span aria-current={last ? 'page' : undefined} className={last ? 'truncate font-semibold text-topbar-foreground' : ''}>{crumb.label}</span>}
+          </li>
+        );
+      })}
+    </ol></nav>
+  );
+}
+
+// Dentro do workspace: Projetos › <nome do projeto> › <grupo> › <aba> [› detalhe], com os
+// mesmos nomes da navegação em dois níveis. Sem permissão de leitura do projeto, mostra #id.
+function ProjectBreadcrumbs({ projectId }: { projectId: string }) {
+  const location = useLocation();
+  const { hasPermission } = usePermissions();
+  const canRead = hasPermission('projects:read');
+  const project = useProject(canRead ? Number(projectId) : undefined);
+  const root = `/app/projects/${projectId}/`;
+  const name = canRead && project.data && String(project.data.id) === projectId ? project.data.name : `#${projectId}`;
+  const crumbs: Crumb[] = [
+    { label: 'Projetos', to: navigationHref('/app/projects', location.search) },
+    { label: name, to: navigationHref(root + 'summary', location.search) },
+    ...projectBreadcrumbSteps(projectId, location.pathname, location.hash).map((step) => ({
+      label: step.label,
+      to: step.to ? navigationHref(root + step.to, location.search) : undefined,
+    })),
+  ];
+  return <BreadcrumbList crumbs={crumbs} />;
+}
+
 export function Breadcrumbs() {
   const location = useLocation();
+  const projectId = location.pathname.match(/^\/app\/projects\/([1-9]\d*)\/./)?.[1];
+  if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
   const parts = location.pathname.split('/').filter(Boolean).slice(1);
   return (
     <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
