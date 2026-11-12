@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openProjectTab, projectNav, projectTabLink } from './projectNavigation';
 
 const user = {
   id: 1,
@@ -1037,8 +1038,10 @@ test('navega entre abas do workspace do projeto', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/summary');
-  await page.getByRole('link', { name: 'Itens', exact: true }).click();
+  await openProjectTab(page, 'Inventário', 'Itens e avaliação');
   await expect(page.getByRole('heading', { name: 'Itens inventariados' })).toBeVisible();
+  await expect(projectTabLink(page, 'Inventário', 'Itens e avaliação')).toHaveAttribute('aria-current', 'page');
+  await expect(projectNav(page).getByRole('link', { name: 'Imagens', exact: true })).toHaveCount(0);
 });
 
 test('abre atalho rapido de novo item no workspace', async ({ page }) => {

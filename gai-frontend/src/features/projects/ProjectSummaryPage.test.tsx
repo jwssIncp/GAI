@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -87,6 +87,7 @@ function renderPage(user: CurrentUser = admin) {
             <Route path="/app/projects/:projectId" element={<ProjectLayout />}>
               <Route path="summary" element={<ProjectSummaryPage />} />
               <Route path="inventory-items" element={<h1>Itens do projeto</h1>} />
+              <Route path="inventory/sessions" element={<h1>Sessoes do projeto</h1>} />
               <Route path="accounting-items" element={<h1>Base contabil</h1>} />
             </Route>
           </Routes>
@@ -150,7 +151,9 @@ describe('ProjectSummaryPage workspace', () => {
 
   it('navega entre abas e atalho novo item', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('link', { name: 'Itens' }));
+    const nav = await screen.findByRole('navigation', { name: 'Abas do projeto' });
+    await userEvent.click(within(nav).getByRole('link', { name: 'Inventário' }));
+    await userEvent.click(await within(nav).findByRole('link', { name: 'Itens e avaliação' }));
     expect(await screen.findByRole('heading', { name: 'Itens do projeto' })).toBeInTheDocument();
   });
 

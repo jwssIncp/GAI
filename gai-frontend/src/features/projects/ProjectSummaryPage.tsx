@@ -332,7 +332,7 @@ function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activi
 function ProjectSettings({ project }: { project: Project }) {
   const settings = project.settings && Object.keys(project.settings).length ? project.settings : null;
   return (
-    <section id="configuracoes" className="premium-panel scroll-mt-44 p-5 sm:p-6">
+    <section id="configuracoes" className="premium-panel scroll-mt-52 p-5 sm:p-6">
       <p className="eyebrow">Configuracoes</p>
       <h2 className="mt-2 text-lg font-bold tracking-tight">Configuracoes operacionais</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">Nenhuma configuracao operacional suportada pode ser alterada nesta versao.</p>

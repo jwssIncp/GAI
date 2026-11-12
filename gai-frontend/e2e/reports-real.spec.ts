@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 import { writeFile } from "node:fs/promises";
 const expect = baseExpect.configure({ timeout: 15000 });
 test.skip(
@@ -81,7 +82,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   const base = `/projects/${project}/technical-reports`,
     root = "/app" + base;
   await page.goto(`/app/projects/${project}/summary`);
-  await page.getByRole("link", { name: "Laudos", exact: true }).click();
+  await openProjectTab(page, "Contábil e laudo", "Laudos");
   await expect(page).toHaveURL(root);
   const nav = page.getByRole("navigation", { name: "Navegação dos laudos" });
   await nav.getByRole("link", { name: "Responsáveis cadastrados" }).click();
@@ -310,11 +311,11 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   await expect(page.locator(".technical-report-document h1")).toHaveText(name);
   await page.goForward();
   await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
-  await page.getByRole("link", { name: "Itens", exact: true }).click();
+  await openProjectTab(page, "Inventário", "Itens e avaliação");
   await expect(page).toHaveURL(
     new RegExp(`/projects/${project}/inventory-items`),
   );
-  await page.getByRole("link", { name: "Laudos", exact: true }).click();
+  await openProjectTab(page, "Contábil e laudo", "Laudos");
   await expect(page).toHaveURL(root);
   expect(errors).toEqual([]);
   expect(http).toEqual([]);

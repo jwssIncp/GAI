@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 const expect = baseExpect.configure({ timeout: 15000 });
 test.skip(
   process.env.GAI_RECEIVABLES_REAL !== "1",
@@ -64,7 +65,7 @@ test("ORG_ADMIN operates installments, partial/full receipts, reversal, cash, ex
     })
   ).id;
   await page.goto(`/app/projects/${project}/summary`);
-  await page.getByRole("link", { name: "Recebíveis", exact: true }).click();
+  await openProjectTab(page, "Financeiro", "Recebíveis");
   await expect(page).toHaveURL(new RegExp(`project_id=${project}`));
   await page.getByRole("link", { name: "Novo recebível" }).click();
   await expect(

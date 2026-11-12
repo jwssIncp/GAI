@@ -1,4 +1,5 @@
 ﻿import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 const expect = baseExpect.configure({ timeout: 15000 });
 test.skip(
   process.env.GAI_BUDGETS_REAL !== "1",
@@ -309,10 +310,7 @@ test("ORG_ADMIN publishes explicit prices, builds a standalone budget, compares 
     })
   ).id;
   await page.goto(`/app/projects/${project}/summary`);
-  const projectNav = page.getByRole("navigation", { name: "Abas do projeto" });
-  await projectNav
-    .getByRole("link", { name: "Orçamentos", exact: true })
-    .click();
+  await openProjectTab(page, "Comercial", "Orçamentos");
   await expect(page).toHaveURL(
     new RegExp(`/app/budgets\\?project_id=${project}$`),
   );
@@ -327,9 +325,7 @@ test("ORG_ADMIN publishes explicit prices, builds a standalone budget, compares 
     "data-project-id",
     String(project),
   );
-  await projectNav
-    .getByRole("link", { name: "Orçamentos", exact: true })
-    .click();
+  await openProjectTab(page, "Comercial", "Orçamentos");
   await page
     .getByRole("link", { name: number + "-PROJETO", exact: true })
     .click();

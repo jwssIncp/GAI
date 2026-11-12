@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 import { createRequire } from "node:module";
 const XLSX = createRequire(import.meta.url)(
   "../../gai-backend/node_modules/xlsx",
@@ -237,10 +238,9 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByRole("dialog")
     .getByRole("button", { name: "Fechar", exact: true })
     .click();
-  const nav = page.getByRole("navigation", { name: "Abas do projeto" });
-  await nav.getByRole("link", { name: "Visão geral", exact: true }).click();
+  await openProjectTab(page, "Visão geral", "Resumo");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/summary$`));
-  await nav.getByRole("link", { name: "Itens", exact: true }).click();
+  await openProjectTab(page, "Inventário", "Itens e avaliação");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/inventory-items$`));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();

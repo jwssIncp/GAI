@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 const expect = baseExpect.configure({ timeout: 15000 });
 import { createRequire } from "node:module";
 const XLSX = createRequire(import.meta.url)(
@@ -151,8 +152,7 @@ test("ORG_ADMIN reviews and persists assisted reconciliation while retaining pro
     .click();
   await panel.scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath("assisted-desktop.png") });
-  const nav = page.getByRole("navigation", { name: "Abas do projeto" });
-  await nav.getByRole("link", { name: "Itens", exact: true }).click();
+  await openProjectTab(page, "Inventário", "Itens e avaliação");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/inventory-items$`));
   await page.goBack();
   await expect(panel.getByRole("cell", { name: /Aprovada/ })).toBeVisible();

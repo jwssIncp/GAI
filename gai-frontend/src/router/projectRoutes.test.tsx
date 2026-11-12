@@ -121,25 +121,31 @@ describe("Production project route tree: persistent navigation", () => {
     }),
   );
   afterAll(() => vi.unstubAllGlobals());
-  it("navigates continuously across guarded children, anchors, preparation and browser history without remounting navigation", async () => {
+  async function go(nav: HTMLElement, group: string, tab: string) {
+    await userEvent.click(within(nav).getByRole("link", { name: group }));
+    await userEvent.click(await within(nav).findByRole("link", { name: tab }));
+  }
+
+  it("navigates continuously across groups, tabs, anchors, preparation and browser history without remounting navigation", async () => {
     const router = setup();
     const nav = await screen.findByRole("navigation", {
       name: "Abas do projeto",
     });
     const wrapper = nav.closest("[data-project-id]");
-    for (const [label, suffix, heading] of [
-      ["Itens", "inventory-items", "Itens"],
-      ["Financeiro", "finance", "Financeiro"],
-      ["Pendências", "pending-issues", "Pendências"],
-      ["Dashboard", "dashboard", "Dashboard"],
-      ["Base contábil", "accounting-items", "Contábil"],
-      ["Unidades", "summary#unidades", "Resumo"],
-      ["Configurações", "summary#configuracoes", "Resumo"],
-      ["Visão geral", "summary", "Resumo"],
-      ["Preparação", "preparation/kickoff", "Preparação"],
-      ["Itens", "inventory-items", "Itens"],
+    for (const [group, label, suffix, heading] of [
+      ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
+      ["Financeiro", "Pagamentos e despesas", "finance", "Financeiro"],
+      ["Inventário", "Pendências", "pending-issues", "Pendências"],
+      ["Visão geral", "Dashboard", "dashboard", "Dashboard"],
+      ["Contábil e laudo", "Base contábil", "accounting-items", "Contábil"],
+      ["Visão geral", "Unidades", "summary#unidades", "Resumo"],
+      ["Visão geral", "Configurações", "summary#configuracoes", "Resumo"],
+      ["Campo", "Equipe de campo", "summary#inventariantes", "Resumo"],
+      ["Visão geral", "Resumo", "summary", "Resumo"],
+      ["Campo", "Preparação", "preparation/kickoff", "Preparação"],
+      ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
     ]) {
-      await userEvent.click(within(nav).getByRole("link", { name: label }));
+      await go(nav, group, label);
       expect(
         await screen.findByRole("heading", { name: heading + " · 31" }),
       ).toBeInTheDocument();
@@ -150,6 +156,10 @@ describe("Production project route tree: persistent navigation", () => {
         "aria-current",
         "page",
       );
+      expect(within(nav).getByRole("link", { name: group })).toHaveAttribute(
+        "aria-current",
+        "true",
+      );
       expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
         nav,
       );
@@ -159,6 +169,10 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       await screen.findByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
     await act(() => router.navigate(1));
     expect(
       await screen.findByRole("heading", { name: "Itens · 31" }),
@@ -171,14 +185,19 @@ describe("Production project route tree: persistent navigation", () => {
       "data-project-id",
       "32",
     );
-    expect(
-      within(nav).getByRole("link", { name: "Preparação" }),
-    ).toHaveAttribute("href", "/app/projects/32/preparation/kickoff");
+    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+      "href",
+      "/app/projects/32/preparation/kickoff",
+    );
   });
 
-  it("supports direct checklist links, keeps preparation selected and distinguishes the existing image entry from items", async () => {
-    setup("/app/projects/31/preparation/client-checklist");
+  it("supports direct checklist links, keeps preparation selected and opens the former image URL on items without an image tab", async () => {
+    const router = setup("/app/projects/31/preparation/client-checklist");
     const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
+    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
     expect(
       within(nav).getByRole("link", { name: "Preparação" }),
     ).toHaveAttribute("aria-current", "page");
@@ -186,17 +205,16 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       screen.getByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
-    await userEvent.click(within(nav).getByRole("link", { name: "Imagens" }));
+    await act(() => router.navigate("/app/projects/31/inventory-items?view=images"));
     expect(
       await screen.findByRole("heading", { name: "Itens · 31" }),
     ).toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: "Imagens" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
     expect(
-      within(nav).getByRole("link", { name: "Itens" }),
-    ).not.toHaveAttribute("aria-current");
+      within(nav).getByRole("link", { name: "Itens e avaliação" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(nav).queryByRole("link", { name: "Imagens" }),
+    ).not.toBeInTheDocument();
   });
 
   it("hides unauthorized tabs and guards direct navigation even for an administrative label with incomplete effective grants", async () => {
@@ -217,6 +235,13 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       within(nav).queryByRole("link", { name: "Unidades" }),
     ).not.toBeInTheDocument();
+    expect(
+      within(
+        within(nav).getByRole("group", { name: "Grupos do projeto" }),
+      )
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Inventário"]);
     await act(() => router.navigate("/app/projects/31/preparation/kickoff"));
     await waitFor(() =>
       expect(
