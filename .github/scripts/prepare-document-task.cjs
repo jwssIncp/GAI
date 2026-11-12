@@ -40,6 +40,8 @@ function prepareDocumentTask(input, name = 'gai-backend', envName = process.env.
     { name: 'STORAGE_MAX_SIZE_BYTES', value: '104857600' },
     { name: 'STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS', value: '1800' },
     { name: 'TRUST_PROXY_HOPS', value: '2' },
+    // RDS for MySQL 8.4: TLS verified against the RDS CA bundle (works on 8.0 too).
+    { name: 'DB_SSL', value: 'amazon-rds' },
     {
       name: 'SWAGGER_ENABLED',
       value:

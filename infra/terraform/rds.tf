@@ -21,9 +21,21 @@ resource "aws_db_subnet_group" "public" {
   }
 }
 
+# MySQL 8.4 LTS (8.0 left RDS standard support; Extended Support is billed).
+# A family change needs a new group: create it before the instance switches to it.
 resource "aws_db_parameter_group" "main" {
-  name   = "${local.name_prefix}-mysql80"
-  family = "mysql8.0"
+  name   = "${local.name_prefix}-mysql84"
+  family = "mysql8.4"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  # Every client (ECS app, release task, db-lock) connects with DB_SSL=amazon-rds.
+  parameter {
+    name  = "require_secure_transport"
+    value = "1"
+  }
 
   parameter {
     name  = "character_set_server"
@@ -43,9 +55,17 @@ resource "aws_db_parameter_group" "main" {
 }
 
 resource "aws_db_instance" "main" {
-  identifier     = local.name_prefix
-  engine         = "mysql"
-  engine_version = "8.0"
+  identifier = local.name_prefix
+  engine     = "mysql"
+
+  # Major version only: RDS picks the default 8.4.x and auto_minor_version_upgrade
+  # keeps it current without drift in this file.
+  engine_version              = "8.4"
+  allow_major_version_upgrade = true
+
+  # Homolog has no real data: apply engine/parameter changes now, not in the
+  # maintenance window. Production keeps changes for the window.
+  apply_immediately = var.environment != "production"
 
   instance_class        = var.db_instance_class
   allocated_storage     = 20

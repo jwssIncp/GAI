@@ -16,6 +16,7 @@ import { FIELD_ENTITIES } from './modules/field-coordination/field.entity';
 import { FieldCoordinationModule } from './modules/field-coordination/field.module';
 import { Module } from '@nestjs/common';
 import { MYSQL_UTC_OPTIONS } from './common/persistence/mysql-utc-options';
+import { mysqlSslOptions } from './common/persistence/mysql-ssl';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -127,6 +128,7 @@ import { UsersModule } from './modules/users/users.module';
       useFactory: () => ({
         type: 'mysql' as const,
         ...MYSQL_UTC_OPTIONS,
+        ...mysqlSslOptions(),
         host: process.env.DB_HOST ?? 'localhost',
         port: parseInt(process.env.DB_PORT ?? '3306', 10),
         username: process.env.DB_USERNAME ?? 'gai',

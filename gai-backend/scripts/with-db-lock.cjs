@@ -30,9 +30,19 @@ function parseArgs(argv) {
   return { ...options, command: argv.slice(sep + 1) };
 }
 
+// Same contract as src/common/persistence/mysql-ssl.ts (this script runs without dist/ in CI).
+function sslOptions(value) {
+  const mode = (value ?? '').trim().toLowerCase();
+  if (mode === '' || mode === 'false') return {};
+  if (mode === 'amazon-rds') return { ssl: 'Amazon RDS' };
+  if (mode === 'true') return { ssl: { rejectUnauthorized: true } };
+  throw new Error('DB_SSL must be empty, "false", "true" or "amazon-rds"');
+}
+
 async function main() {
   const { name, wait, command } = parseArgs(process.argv.slice(2));
   const connection = await mysql.createConnection({
+    ...sslOptions(process.env.DB_SSL),
     host: process.env.DB_HOST ?? 'localhost',
     port: Number(process.env.DB_PORT ?? 3306),
     user: process.env.DB_USERNAME ?? 'gai',
@@ -78,4 +88,4 @@ if (require.main === module)
     },
   );
 
-module.exports = { parseArgs, LOCK_BUSY };
+module.exports = { parseArgs, sslOptions, LOCK_BUSY };
