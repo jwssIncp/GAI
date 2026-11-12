@@ -3,13 +3,20 @@ import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { GaiLogo } from '@/components/base/GaiLogo';
-import { navigation } from '@/constants/navigation';
+import { navigation, type NavigationSection } from '@/constants/navigation';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { navigationContext, navigationHref } from '@/features/projects/navigationContext';
 import { cn } from '@/utils/cn';
 
 type SidebarProps = { mobileOpen: boolean; onMobileOpenChange: (open: boolean) => void };
-const sectionLabels = { workspace: 'Área de trabalho', management: 'Administração' };
+// Ordem e títulos das seções do menu (módulos). "overview" não tem título.
+const sections: Array<[NavigationSection, string | null]> = [
+  ['overview', null],
+  ['projects', 'Projetos'],
+  ['commercial', 'Comercial'],
+  ['finance', 'Financeiro'],
+  ['management', 'Administração'],
+];
 
 export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
   const location = useLocation();
@@ -63,11 +70,11 @@ function SidebarContent({ collapsed = false, onToggle }: { collapsed?: boolean; 
       <GaiLogo variant={collapsed ? 'symbol' : 'horizontal'} appearance="dark" />
     </div>
     <nav className="flex-1 overflow-y-auto px-3 py-5" aria-label="Navegação principal">
-      {(Object.keys(sectionLabels) as Array<keyof typeof sectionLabels>).map(section => {
+      {sections.map(([section, title]) => {
         const items = visible.filter(item => item.section === section);
         if (!items.length) return null;
         return <div key={section} className="mb-6 last:mb-0">
-          <p className={cn('mb-2 px-3 text-[0.625rem] font-bold uppercase tracking-[0.14em] text-sidebar-muted', collapsed && 'sr-only')}>{sectionLabels[section]}</p>
+          {title ? <p className={cn('mb-2 px-3 text-[0.625rem] font-bold uppercase tracking-[0.14em] text-sidebar-muted', collapsed && 'sr-only')}>{title}</p> : null}
           <div className="grid gap-1">
             {items.map(item => {
               const Icon = item.icon;

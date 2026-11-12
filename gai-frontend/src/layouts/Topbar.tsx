@@ -33,7 +33,7 @@ const breadcrumbLabels: Record<string, string> = {
   entries:'Classificações',
   accounts:'Plano de contas',
   periods:'Competências',
-  receivables:'Contas a receber',
+  receivables:'Recebíveis',
   'cash-flow':'Fluxo de caixa',
   new:'Novo',
   'import-sessions': 'Importações',
