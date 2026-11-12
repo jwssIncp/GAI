@@ -113,4 +113,19 @@ describe('Terraform static checks (Onda 5.1)', () => {
     expect(retention).toMatch(/"aws:ResourceTag\/Purpose" = "pre-release"/);
     expect(iam.match(/rds:DeleteDBSnapshot/g)).toHaveLength(1);
   });
+
+  it('runs RDS on MySQL 8.4 LTS with TLS required and TLS-enabled clients', () => {
+    const rds = stripComments(sources['rds.tf']);
+    expect(rds).toMatch(/family\s*=\s*"mysql8\.4"/);
+    expect(rds).toMatch(/engine_version\s*=\s*"8\.4"/);
+    expect(rds).toMatch(/allow_major_version_upgrade\s*=\s*true/);
+    expect(rds).toMatch(/create_before_destroy\s*=\s*true/);
+    expect(rds).toMatch(
+      /name\s*=\s*"require_secure_transport"\s*\n\s*value\s*=\s*"1"/,
+    );
+    expect(rds).not.toMatch(/mysql8\.0|"8\.0"/);
+    expect(stripComments(sources['ecs.tf'])).toMatch(
+      /name = "DB_SSL", value = "amazon-rds"/,
+    );
+  });
 });

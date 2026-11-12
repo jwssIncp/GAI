@@ -72,6 +72,7 @@ test('keeps mobile storage limits, proxy hops and Swagger policy in every releas
   assert.equal(homolog.STORAGE_MAX_SIZE_BYTES, '104857600');
   assert.equal(homolog.STORAGE_PRESIGNED_URL_MAX_TTL_SECONDS, '1800');
   assert.equal(homolog.TRUST_PROXY_HOPS, '2');
+  assert.equal(homolog.DB_SSL, 'amazon-rds');
   assert.equal(homolog.SWAGGER_ENABLED, 'true');
   assert.equal(envOf(prepareDocumentTask(fixture(), 'gai-backend', 'production')).SWAGGER_ENABLED, 'false');
   const explicit = fixture();

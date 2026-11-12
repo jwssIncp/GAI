@@ -3,6 +3,7 @@ import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { MYSQL_UTC_OPTIONS } from './src/common/persistence/mysql-utc-options';
+import { mysqlSslOptions } from './src/common/persistence/mysql-ssl';
 
 config();
 
@@ -12,6 +13,7 @@ const ext = __filename.endsWith('.ts') ? 'ts' : 'js';
 export default new DataSource({
   type: 'mysql',
   ...MYSQL_UTC_OPTIONS,
+  ...mysqlSslOptions(),
   host: process.env.DB_HOST ?? 'localhost',
   port: parseInt(process.env.DB_PORT ?? '3306', 10),
   username: process.env.DB_USERNAME ?? 'gai',

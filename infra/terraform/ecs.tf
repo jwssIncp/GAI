@@ -79,6 +79,8 @@ resource "aws_ecs_task_definition" "backend" {
         # CloudFront -> ALB -> task: trust exactly these two proxy hops for req.ip
         # (rate limiting and audit IPs). The ALB only accepts CloudFront.
         { name = "TRUST_PROXY_HOPS", value = "2" },
+        # TLS to RDS (CA bundle shipped with mysql2); mirrored in .github/scripts/prepare-document-task.cjs.
+        { name = "DB_SSL", value = "amazon-rds" },
         # Swagger UI/JSON only outside production.
         { name = "SWAGGER_ENABLED", value = var.environment == "production" ? "false" : "true" }
       ]
