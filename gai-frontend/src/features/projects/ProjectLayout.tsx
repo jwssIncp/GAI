@@ -1,6 +1,6 @@
 import { dashboardReturn, navigationHref } from "./navigationContext";
 import { activeProjectTabId, groupOfTab, projectTabGroups, type ProjectTab } from "./projectNavigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { ErrorState } from "@/components/base/States";
@@ -51,11 +51,17 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
     .filter((group) => group.tabs.length > 0);
   const activeTabId = activeProjectTabId(projectId, location.pathname, location.hash);
   const activeGroup = groupOfTab(groups, activeTabId);
+  // Grupo cuja primeira aba visível sai do workspace (↗): o clique só o seleciona e mostra
+  // suas abas, sem navegar. A seleção vale apenas para a localização atual.
+  const locationKey = location.pathname + location.search + location.hash;
+  const [selection, setSelection] = useState<{ groupId: string; at: string } | null>(null);
+  const selectedGroup = selection && selection.at === locationKey ? groups.find((group) => group.id === selection.groupId) ?? null : null;
+  const shownGroup = selectedGroup ?? activeGroup;
 
   useEffect(() => {
     scrollIntoStrip(groupStrip.current);
     scrollIntoStrip(tabStrip.current);
-  }, [location.pathname, location.search, location.hash]);
+  }, [location.pathname, location.search, location.hash, shownGroup?.id]);
 
   return (
     <div className="sticky top-[76px] z-20 mx-auto w-full max-w-[1560px] px-4 pt-4 sm:px-6 lg:px-8 xl:px-10">
@@ -66,31 +72,49 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
         <div ref={groupStrip} role="group" aria-label="Grupos do projeto" className="flex gap-1.5 overflow-x-auto">
           {groups.map((group) => {
             const active = group.id === activeGroup?.id;
+            const shown = group.id === shownGroup?.id;
+            const className = cn(
+              "inline-flex min-h-10 shrink-0 items-center rounded-lg px-3.5 text-sm font-semibold transition",
+              shown
+                ? "bg-primary-subtle text-primary-text shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            );
+            if (group.tabs[0].external) {
+              return (
+                <button
+                  key={group.id}
+                  type="button"
+                  aria-expanded={shown}
+                  aria-controls="project-group-tabs"
+                  aria-current={active ? "true" : undefined}
+                  onClick={() => setSelection({ groupId: group.id, at: locationKey })}
+                  className={className}
+                >
+                  {group.label}
+                </button>
+              );
+            }
             return (
               <Link
                 key={group.id}
                 to={href(group.tabs[0])}
                 aria-current={active ? "true" : undefined}
-                className={cn(
-                  "inline-flex min-h-10 shrink-0 items-center rounded-lg px-3.5 text-sm font-semibold transition",
-                  active
-                    ? "bg-primary-subtle text-primary-text shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
+                className={className}
               >
                 {group.label}
               </Link>
             );
           })}
         </div>
-        {activeGroup ? (
+        {shownGroup ? (
           <div
             ref={tabStrip}
+            id="project-group-tabs"
             role="group"
-            aria-label={`Abas de ${activeGroup.label}`}
+            aria-label={`Abas de ${shownGroup.label}`}
             className="flex gap-1 overflow-x-auto border-t border-border px-0.5 pt-1"
           >
-            {activeGroup.tabs.map((tab) => {
+            {shownGroup.tabs.map((tab) => {
               const active = tab.id === activeTabId;
               return (
                 <Link

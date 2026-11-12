@@ -217,6 +217,37 @@ describe("Production project route tree: persistent navigation", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("selects a group whose first visible tab leaves the workspace without navigating", async () => {
+    const finance = {
+      ...admin,
+      permissions: ["projects:read", "payments:read", "receivables:read", "cash-flow:read", "dre:read"].map(
+        (key) => ({ key, scope: "ORGANIZATION" as const }),
+      ),
+    };
+    const router = setup("/app/projects/31/summary", finance);
+    const nav = await screen.findByRole("navigation", { name: "Abas do projeto" });
+    const group = within(nav).getByRole("button", { name: "Financeiro" });
+    expect(group).toHaveAttribute("aria-expanded", "false");
+    expect(within(nav).queryByRole("link", { name: "Pagamentos e despesas" })).not.toBeInTheDocument();
+    await userEvent.click(group);
+    expect(router.state.location.pathname).toBe("/app/projects/31/summary");
+    expect(group).toHaveAttribute("aria-expanded", "true");
+    const tabs = within(nav).getByRole("group", { name: "Abas de Financeiro" });
+    expect(within(tabs).getAllByRole("link").map((link) => link.textContent)).toEqual([
+      "Recebíveis",
+      "Fluxo de caixa",
+      "DRE Gerencial",
+    ]);
+    expect(within(tabs).getByRole("link", { name: "Recebíveis" })).toHaveAttribute(
+      "href",
+      "/app/finance/receivables?project_id=31",
+    );
+    await act(() => router.navigate("/app/projects/31/dashboard"));
+    expect(await screen.findByRole("heading", { name: "Dashboard · 31" })).toBeInTheDocument();
+    expect(within(nav).getByRole("button", { name: "Financeiro" })).toHaveAttribute("aria-expanded", "false");
+    expect(within(nav).getByRole("group", { name: "Abas de Visão geral" })).toBeInTheDocument();
+  });
+
   it("hides unauthorized tabs and guards direct navigation even for an administrative label with incomplete effective grants", async () => {
     const user = {
       ...admin,

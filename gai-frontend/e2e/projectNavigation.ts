@@ -12,8 +12,12 @@ export function projectTabLink(page: Page, group: string, tab: string): Locator 
     .getByRole("link", { name: tab, exact: true });
 }
 
-/** Abre o grupo (que leva à sua primeira aba visível) e depois a aba pedida. */
+/** Abre/seleciona o grupo e depois a aba pedida. */
 export async function openProjectTab(page: Page, group: string, tab: string) {
-  await projectNav(page).getByRole("link", { name: group, exact: true }).click();
+  // O grupo é um link (abre sua 1ª aba) ou, se a 1ª aba visível for ↗, um botão que só o seleciona.
+  await projectNav(page)
+    .getByRole("group", { name: "Grupos do projeto" })
+    .getByText(group, { exact: true })
+    .click();
   await projectTabLink(page, group, tab).click();
 }
