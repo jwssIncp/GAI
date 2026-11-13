@@ -423,15 +423,7 @@ export function FinanceSettingsPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Parâmetros financeiros</h2>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            Valores usados nos cálculos financeiros da organização: impostos, comissões, diária
-            padrão, custos fixos, listas e limites de anexo. Nenhum cálculo usa valor fixo no
-            sistema: sem versão vigente, as telas que dependem destes parâmetros pedem a configuração.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-start justify-end gap-3">
         {canUpdate && !draft && base ? (
           <Button type="button" onClick={() => setDraft(base.values)}>
             Nova versão

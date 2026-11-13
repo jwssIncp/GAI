@@ -184,3 +184,10 @@ export function computeRemuneration(input: {
 
 /** Exibição com vírgula decimal. */
 export const decimalBr = (value: string) => value.replace(".", ",");
+
+/** "1415.00" → "1.415,00" (milhar com ponto, decimal com vírgula), para campos de valor. */
+export function moneyBr(value: string): string {
+  if (!value) return "";
+  const [whole, fraction = "00"] = value.split(".");
+  return `${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},${fraction.padEnd(2, "0").slice(0, 2)}`;
+}

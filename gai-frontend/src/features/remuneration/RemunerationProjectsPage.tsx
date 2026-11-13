@@ -36,11 +36,10 @@ export function RemunerationProjectsPage() {
   const data = query.data;
   const limit = data?.parameters.technician_expense_alert_pct ?? null;
 
-  const cell = "whitespace-nowrap border-b px-3 py-3 tabular-nums";
+  const cell = "whitespace-nowrap border-b px-2.5 py-3 tabular-nums";
   return (
     <div className="grid gap-4">
       <div>
-        <h2 className="text-lg font-semibold">Remuneração dos técnicos por projeto</h2>
         <p className="max-w-3xl text-sm text-muted-foreground">
           Despesas de inventariantes = soma do valor final dos lançamentos, sem cancelados. % Desp. técnicos = despesas de
           inventariantes ÷ valor do contrato; % Contrato líquido = despesas de inventariantes ÷ (contrato − despesas não
@@ -73,19 +72,27 @@ export function RemunerationProjectsPage() {
       ) : data ? (
         <div className="premium-panel">
           <div className="overflow-x-auto" role="region" aria-label="Remuneração por projeto" tabIndex={0}>
-            <table className="w-full min-w-[1150px] border-separate border-spacing-0 text-left text-sm">
+            <table className="w-full min-w-[960px] border-separate border-spacing-0 text-left text-sm">
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
-                  {["Projeto", "Qtde téc.", "Valor do contrato", "Desp. não reembolsáveis", "Valor líquido", "Desp. inventariantes", "% Desp. técnicos", "% Contrato líquido", "Status", "Escopo"].map((h) => (
-                    <th key={h} scope="col" className="whitespace-nowrap border-b px-3 py-3 font-semibold">{h}</th>
+                  <th scope="col" className="sticky left-0 z-10 whitespace-nowrap border-b bg-muted px-3 py-3 font-semibold">Projeto</th>
+                  {[["Téc.","Inventariantes vinculados (sem Despesas gerais)"],["Contrato","Valor do contrato"],["Não reemb.","Despesas não reembolsáveis"],["Líquido","Valor líquido do contrato"],["Inventariantes","Despesas de inventariantes"],["% Técnicos","% de despesas de técnicos sobre o contrato"],["% Líquido","% sobre o contrato líquido"],["Status","Status do projeto"],["Escopo","Escopo do contrato"]].map(([label, full]) => (
+                    <th key={label} scope="col" title={full} className="whitespace-nowrap border-b px-2.5 py-3 font-semibold">
+                      {label}
+                      <span className="sr-only"> ({full})</span>
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {data.items.map((row: RemunerationProjectRow) => (
                   <tr key={row.id} className="hover:bg-primary/[0.05]">
-                    <td className="border-b px-3 py-3 font-medium">
-                      <Link className="text-primary-text hover:underline" to={`/app/projects/${row.id}/finance/remuneration`}>
+                    <td className="sticky left-0 z-10 max-w-[13rem] border-b bg-card px-3 py-3 font-medium shadow-[12px_0_12px_-12px_hsl(var(--foreground)/0.25)]">
+                      <Link
+                        className="block truncate text-primary-text hover:underline"
+                        title={row.name}
+                        to={`/app/projects/${row.id}/finance/remuneration`}
+                      >
                         {row.name}
                       </Link>
                     </td>
@@ -102,9 +109,9 @@ export function RemunerationProjectsPage() {
                     <td className={cell}>{formatMoney(row.agents_cost)}</td>
                     <td className={cell}><Percent value={row.technician_pct} alert={row.technician_pct_alert} limit={limit} /></td>
                     <td className={cell}><Percent value={row.net_pct} alert={row.net_pct_alert} limit={limit} /></td>
-                    <td className="whitespace-nowrap border-b px-3 py-3">{row.status_label}</td>
-                    <td className="border-b px-3 py-3">
-                      <div className="flex flex-wrap gap-1">
+                    <td className="whitespace-nowrap border-b px-2.5 py-3">{row.status_label}</td>
+                    <td className="border-b px-2.5 py-3">
+                      <div className="flex min-w-[7rem] flex-wrap gap-1">
                         {row.scope.length
                           ? row.scope.map((s) => (
                               <span key={s} className="rounded-full bg-muted px-2 py-0.5 text-xs">{s}</span>

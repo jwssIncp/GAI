@@ -20,8 +20,7 @@ export function ReceivablesPage() {
   });
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Recebíveis</h2>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         {hasPermission("receivables:edit") && (
           <span className="inline-flex rounded-lg bg-primary px-4 py-2 text-primary-foreground">
             <Link

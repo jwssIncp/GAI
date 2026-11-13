@@ -20,11 +20,6 @@ export function CashFlowPage() {
   });
   return (
     <div className="grid gap-4">
-      <h2 className="text-lg font-semibold">Fluxo de caixa</h2>
-      <p className="text-sm text-muted-foreground">
-        Movimentos conhecidos e obrigações abertas. Resultado do período não é
-        saldo bancário.
-      </p>
       <FinanceFilters cash />
       {q.isLoading ? (
         <LoadingState />

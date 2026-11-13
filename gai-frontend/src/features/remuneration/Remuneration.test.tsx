@@ -146,7 +146,11 @@ describe("Remuneração do projeto (Tela B)", () => {
     const table = within(screen.getByRole("region", { name: "Lançamentos de remuneração" }));
     expect(table.getByText("Informar")).toBeInTheDocument();
     expect(table.getByTitle("Valor informado manualmente")).toHaveTextContent("manual");
-    expect(table.getByTitle("Data real de pagamento")).toHaveTextContent("21/11/2026pago");
+    expect(table.getByTitle("Data real de pagamento")).toHaveTextContent("21/11/2026");
+    expect(table.getByRole("columnheader", { name: "Pago em" })).toBeInTheDocument();
+    expect(table.getByRole("columnheader", { name: "Previsto" })).toBeInTheDocument();
+    for (const name of ["Editar lançamento de Ana Souza", "Aprovar lançamento de Ana Souza", "Excluir lançamento de Ana Souza"])
+      expect(table.getByLabelText(name)).toHaveAttribute("title", name);
     expect(table.getByText(/A lançar: vinculado ao projeto, sem nenhum lançamento/)).toBeInTheDocument();
   });
 
@@ -207,6 +211,7 @@ describe("Remuneração do projeto (Tela B)", () => {
     await u.type(form.getByLabelText("Data prevista de pagamento"), "2026-11-20");
     await u.click(form.getByLabelText("Informar o total manualmente"));
     expect(form.getByText(/Valor informado manualmente/)).toBeInTheDocument();
+    expect(form.getByLabelText("Total (R$)")).toHaveValue("1.415,00"); // separador de milhar
     await u.click(form.getByRole("button", { name: "Lançar" }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
     expect(mocks.create.mock.calls[0][1]).toEqual(

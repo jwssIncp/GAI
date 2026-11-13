@@ -128,35 +128,22 @@ beforeEach(() => {
   });
 });
 describe("Financial navigation through real nested routes", () => {
-  it("navigates list → detail → cash → list with persistent financial navigation", async () => {
+  it("navegação só pelo menu lateral: sem barra de abas, título da própria tela", async () => {
     mount("/app/finance/receivables?project_id=25");
-    const nav = screen.getByRole("navigation", {
-      name: "Navegação financeira",
-    });
-    fireEvent.click(
-      await screen.findByRole("link", { name: "SINTETICO navegação" }),
-    );
+    expect(screen.getByRole("heading", { level: 1, name: "Recebíveis" })).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Navegação financeira" })).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("link", { name: "SINTETICO navegação" }));
     await screen.findByRole("heading", { name: "SINTETICO navegação" });
     expect(screen.getByTestId("location")).toHaveTextContent("project_id=25");
     fireEvent.click(screen.getByRole("button", { name: "Histórico" }));
     expect(screen.getByTestId("location")).toHaveTextContent("tab=history");
     expect(screen.getByTestId("location")).toHaveTextContent("project_id=25");
-    fireEvent.click(screen.getByRole("link", { name: "Fluxo de caixa" }));
+  });
+  it("fluxo de caixa mantém o filtro de projeto da URL e mostra o próprio título", async () => {
+    mount("/app/finance/cash-flow?project_id=25");
+    expect(screen.getByRole("heading", { level: 1, name: "Fluxo de caixa" })).toBeInTheDocument();
     await screen.findByText("Projeção parcial");
     expect(financeApi.cash).toHaveBeenCalledWith({ project_id: "25" });
-    expect(
-      screen.getByRole("navigation", { name: "Navegação financeira" }),
-    ).toBe(nav);
-    fireEvent.click(screen.getByRole("link", { name: "Recebíveis" }));
-    await screen.findByRole("link", { name: "SINTETICO navegação" });
-  });
-  it("keeps project filter when switching financial tabs directly", async () => {
-    mount("/app/finance/receivables?project_id=25");
-    await screen.findByRole("link", { name: "SINTETICO navegação" });
-    fireEvent.click(screen.getByRole("link", { name: "Fluxo de caixa" }));
-    await waitFor(() =>
-      expect(financeApi.cash).toHaveBeenCalledWith({ project_id: "25" }),
-    );
   });
   it("hides creation for a read-only custom profile", async () => {
     grants.delete("receivables:edit");

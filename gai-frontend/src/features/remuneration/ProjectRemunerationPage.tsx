@@ -195,64 +195,65 @@ export function ProjectRemunerationPage() {
             <table className="w-full min-w-[980px] border-separate border-spacing-0 text-left text-sm">
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
-                  {["Inventariante", "UF", "Período", "Previsto", "Dias", "Diária", "Adicional", "Total", "Descontos", "Final", "Status"].map((h) => (
-                    <th key={h} scope="col" className="whitespace-nowrap border-b px-2.5 py-2.5 font-semibold">{h}</th>
+                  {["Inventariante / UF", "Período / dias", "Previsto", "Pago em", "Diária", "Adicional", "Total", "Descontos", "Final", "Status"].map((h) => (
+                    <th key={h} scope="col" className="whitespace-nowrap border-b px-2 py-2.5 font-semibold">{h}</th>
                   ))}
-                  <th scope="col" className="whitespace-nowrap border-b px-2.5 py-2.5 font-semibold md:sticky md:right-0 md:bg-muted">Ações</th>
+                  <th scope="col" className="whitespace-nowrap border-b px-2 py-2.5 font-semibold md:sticky md:right-0 md:bg-muted">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {data.items.map((item) => (
                   <tr key={item.id} className="hover:bg-primary/[0.05]">
-                    <td className="max-w-[9rem] border-b px-2.5 py-2.5 font-medium">{item.field_agent_name}</td>
-                    <td className="border-b px-2.5 py-2.5">{item.state ?? "—"}</td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5">
+                    <td className="max-w-[10rem] border-b px-2 py-2.5 font-medium">
+                      {item.field_agent_name}
+                      <span className="block text-xs font-normal text-muted-foreground">UF {item.state ?? "—"}</span>
+                    </td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5">
                       <span className="flex flex-col leading-tight">
                         <span>{civil(item.start_date)}</span>
-                        <span className="text-xs text-muted-foreground">a {civil(item.end_date)}</span>
+                        <span className="text-xs text-muted-foreground">a {civil(item.end_date)} · {item.days} {item.days === 1 ? "dia" : "dias"}</span>
                       </span>
                     </td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5">
-                      {item.status === "paid" ? (
-                        <span title="Data real de pagamento" className="flex flex-col leading-tight">
-                          {civil(item.payment_date)}
-                          <span className="text-xs text-muted-foreground">pago</span>
-                        </span>
-                      ) : item.expected_payment_date ? (
+                    <td className="whitespace-nowrap border-b px-2 py-2.5">
+                      {item.expected_payment_date ? (
                         civil(item.expected_payment_date)
+                      ) : item.status === "paid" || item.status === "cancelled" ? (
+                        "—"
                       ) : (
                         <span className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive">Informar</span>
                       )}
                     </td>
-                    <td className="border-b px-2.5 py-2.5 tabular-nums">{item.days}</td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 tabular-nums">{formatMoney(item.daily_rate)}</td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 tabular-nums">{formatMoney(item.additional_amount)}</td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 tabular-nums">
+                    <td className="whitespace-nowrap border-b px-2 py-2.5" title={item.payment_date ? "Data real de pagamento" : undefined}>
+                      {item.status === "paid" ? civil(item.payment_date) : ""}
+                    </td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.daily_rate)}</td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.additional_amount)}</td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">
                       {formatMoney(item.total_amount)}
                       {item.total_manual ? <span className="mt-0.5 block w-fit rounded bg-warning/15 px-1.5 text-xs font-semibold text-warning" title="Valor informado manualmente">manual</span> : null}
                     </td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 tabular-nums">{formatMoney(item.discount_amount)}</td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 font-semibold tabular-nums">{formatMoney(item.final_amount)}</td>
-                    <td className="border-b px-2.5 py-2.5"><StatusBadge value={item.status} /></td>
-                    <td className="whitespace-nowrap border-b px-2.5 py-2.5 md:sticky md:right-0 md:bg-card">
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.discount_amount)}</td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 font-semibold tabular-nums">{formatMoney(item.final_amount)}</td>
+                    <td className="border-b px-2 py-2.5"><StatusBadge value={item.status} /></td>
+                    <td className="whitespace-nowrap border-b px-2 py-2.5 md:sticky md:right-0 md:bg-card">
                       <div className="flex gap-0.5">
                         {hasPermission("payments:update") && item.status === "pending" ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Editar lançamento de ${item.field_agent_name}`} onClick={() => { save.reset(); setForm({ mode: "edit", item }); }}><Pencil size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Editar lançamento de ${item.field_agent_name}`} aria-label={`Editar lançamento de ${item.field_agent_name}`} onClick={() => { save.reset(); setForm({ mode: "edit", item }); }}><Pencil size={16} /></Button>
                         ) : null}
                         {requireApproval && hasPermission("payments:approve") && item.status === "pending" ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Aprovar lançamento de ${item.field_agent_name}`} aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:mark-as-paid") && canPay(item) ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); setAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Registrar pagamento de ${item.field_agent_name}`} aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); setAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:reopen") && item.status === "approved" ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); setAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Reabrir para edição o lançamento de ${item.field_agent_name}`} aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); setAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:cancel") && (item.status === "pending" || item.status === "approved") ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Cancelar lançamento de ${item.field_agent_name}`} aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:delete") && (item.status === "pending" || item.status === "cancelled") ? (
-                          <Button type="button" variant="ghost" className="size-8" aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Excluir lançamento de ${item.field_agent_name}`} aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
                         ) : null}
                       </div>
                     </td>
@@ -260,10 +261,12 @@ export function ProjectRemunerationPage() {
                 ))}
                 {data.to_launch.map((agent) => (
                   <tr key={`a-lancar-${agent.field_agent_id}`} className="text-muted-foreground">
-                    <td className="border-b px-2.5 py-2.5 font-medium">{agent.name}</td>
-                    <td className="border-b px-2.5 py-2.5">{agent.state ?? "—"}</td>
-                    <td colSpan={9} className="border-b px-2.5 py-2.5 italic">A lançar: vinculado ao projeto, sem nenhum lançamento.</td>
-                    <td className="border-b px-2.5 py-2.5 md:sticky md:right-0 md:bg-card">
+                    <td className="max-w-[10rem] border-b px-2 py-2.5 font-medium">
+                      {agent.name}
+                      <span className="block text-xs font-normal text-muted-foreground">UF {agent.state ?? "—"}</span>
+                    </td>
+                    <td colSpan={9} className="border-b px-2 py-2.5 italic">A lançar: vinculado ao projeto, sem nenhum lançamento.</td>
+                    <td className="border-b px-2 py-2.5 md:sticky md:right-0 md:bg-card">
                       {hasPermission("payments:create") ? (
                         <Button type="button" variant="soft" onClick={() => { save.reset(); setForm({ mode: "create", preset: { field_agent_id: agent.field_agent_id, state: agent.state } }); }}>
                           Lançar
@@ -275,10 +278,10 @@ export function ProjectRemunerationPage() {
               </tbody>
               <tfoot>
                 <tr className="font-semibold">
-                  <td colSpan={7} className="px-2.5 py-2.5">Total ({data.totals.count} lançamento(s); cancelados fora da soma)</td>
-                  <td className="whitespace-nowrap px-2.5 py-2.5 tabular-nums">{formatMoney(data.totals.total_amount)}</td>
-                  <td className="whitespace-nowrap px-2.5 py-2.5 tabular-nums">{formatMoney(data.totals.discount_amount)}</td>
-                  <td className="whitespace-nowrap px-2.5 py-2.5 tabular-nums">{formatMoney(data.totals.final_amount)}</td>
+                  <td colSpan={6} className="px-2 py-2.5">Total ({data.totals.count} lançamento(s); cancelados fora da soma)</td>
+                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.total_amount)}</td>
+                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.discount_amount)}</td>
+                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.final_amount)}</td>
                   <td colSpan={2} />
                 </tr>
               </tfoot>

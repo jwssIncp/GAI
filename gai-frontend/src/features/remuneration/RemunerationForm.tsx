@@ -7,7 +7,7 @@ import { BRAZILIAN_STATES } from "@/features/field-agents/brazilianStates";
 import {
   computeRemuneration,
   daysInclusive,
-  decimalBr,
+  moneyBr,
   normalizeMoney,
   type ProjectRemuneration,
   type RemunerationInput,
@@ -39,11 +39,11 @@ export function RemunerationForm({
     start_date: initial?.start_date ?? "",
     end_date: initial?.end_date ?? "",
     expected_payment_date: initial?.expected_payment_date ?? "",
-    daily_rate: decimalBr(initial?.daily_rate ?? data.parameters.default_daily_rate ?? ""),
-    additional_amount: decimalBr(initial?.additional_amount ?? "0.00"),
+    daily_rate: moneyBr(initial?.daily_rate ?? data.parameters.default_daily_rate ?? ""),
+    additional_amount: moneyBr(initial?.additional_amount ?? "0.00"),
     total_manual: initial?.total_manual ?? false,
-    total_amount: decimalBr(initial?.total_manual ? initial.total_amount : ""),
-    discount_amount: decimalBr(initial?.discount_amount ?? "0.00"),
+    total_amount: moneyBr(initial?.total_manual ? initial.total_amount : ""),
+    discount_amount: moneyBr(initial?.discount_amount ?? "0.00"),
     notes: initial?.notes ?? "",
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -133,7 +133,7 @@ export function RemunerationForm({
             setDraft((d) => ({
               ...d,
               total_manual: event.target.checked,
-              total_amount: event.target.checked && preview ? decimalBr(preview.total) : d.total_amount,
+              total_amount: event.target.checked && preview ? moneyBr(preview.total) : d.total_amount,
             }))
           }
         />
