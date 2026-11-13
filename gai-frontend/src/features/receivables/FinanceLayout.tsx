@@ -13,6 +13,10 @@ const PAGES: Record<string, [title: string, description: string]> = {
     "Pagamento de inventariantes",
     "Diárias de todos os projetos: em aberto, atrasadas e pagas. A baixa é gravada nos próprios lançamentos.",
   ],
+  expenses: [
+    "Despesas",
+    "Despesas por projeto: a reembolsar, reembolsáveis e não reembolsáveis, com o financeiro concluído ou não.",
+  ],
   parameters: [
     "Parâmetros financeiros",
     "Valores usados nos cálculos financeiros da organização: impostos, comissões, diária padrão, custos fixos, listas e limites de anexo. Nenhum cálculo usa valor fixo no sistema: sem versão vigente, as telas que dependem destes parâmetros pedem a configuração.",

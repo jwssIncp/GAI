@@ -22,7 +22,7 @@ export class FakeStorage implements StorageSigner {
   private authorized = new Map<string, PresignedUrlInput>();
   private objects = new Map<
     string,
-    { sizeBytes: number; checksum: string; mimeType: string }
+    { sizeBytes: number; checksum: string; mimeType: string; content?: Buffer }
   >();
   private key(input: PresignedUrlInput) {
     return `/${input.bucket}/${input.path}`;
@@ -46,6 +46,7 @@ export class FakeStorage implements StorageSigner {
       sizeBytes: number;
       checksum: string;
       mimeType: string;
+      content: Buffer;
     }> = {},
   ) {
     const key = new URL(url).pathname;
@@ -76,6 +77,15 @@ export class FakeStorage implements StorageSigner {
         message: 'Object metadata mismatch',
       });
     return { sizeBytes: object.sizeBytes, checksum: object.checksum };
+  }
+  async readObject(input: PresignedUrlInput) {
+    const object = this.objects.get(this.key(input));
+    if (!object)
+      throw new NotFoundException({
+        code: 'STORAGE_OBJECT_NOT_FOUND',
+        message: 'Stored object not found',
+      });
+    return object.content ?? Buffer.from(`conteudo de teste ${input.path}`);
   }
   async createDownloadUrl(input: PresignedUrlInput) {
     const object = this.objects.get(this.key(input));

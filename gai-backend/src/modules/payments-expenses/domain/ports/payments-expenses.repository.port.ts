@@ -77,9 +77,21 @@ export interface PaymentsExpensesRepository {
   listExpenses(
     params: ListExpensesParams,
   ): Promise<{ items: Expense[]; total: number }>;
+  /**
+   * Grava a despesa e a auditoria numa transação. Despesa nova recebe o próximo
+   * código sequencial do projeto. `installments`: lista = substitui as parcelas;
+   * null = remove; ausente = mantém as que existem (parcelas editadas preservadas).
+   */
   saveExpenseWithAudit(
     expense: Expense,
     audit: PaymentExpenseAuditEntry,
+    extras?: {
+      installments?: Array<{
+        number: number;
+        due_date: string;
+        amount: string;
+      }> | null;
+    },
   ): Promise<Expense>;
   findAttachmentById(id: number): Promise<ExpenseAttachment | null>;
   listAttachments(expenseId: number): Promise<ExpenseAttachment[]>;

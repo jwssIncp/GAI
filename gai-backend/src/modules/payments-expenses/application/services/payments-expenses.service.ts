@@ -32,6 +32,7 @@ import {
 } from '../../domain/remuneration.formulas';
 import { FinanceSettingsService } from '../../../finance-settings/finance-settings.service';
 import { RemunerationService } from './remuneration.service';
+import { ExpenseRulesService } from './expense-rules.service';
 import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
 import { ExpenseAttachmentStatus } from '../../domain/enums/expense-attachment-status.enum';
 import { ExpenseStatus } from '../../domain/enums/expense-status.enum';
@@ -83,6 +84,7 @@ export class PaymentsExpensesService {
     private readonly logger: PinoLogger,
     private readonly financeSettings: FinanceSettingsService,
     private readonly remuneration: RemunerationService,
+    private readonly expenseRules: ExpenseRulesService,
   ) {
     this.logger.setContext(PaymentsExpensesService.name);
   }
@@ -328,14 +330,21 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<ExpenseResponseDto> {
     const project = await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
     const fieldAgentId = await this.resolveExpenseAgent(
       project.organizationId,
       projectId,
       dto.field_agent_id ?? null,
       actor,
     );
+    const { fields, installments } = await this.expenseRules.classify(
+      project.organizationId,
+      projectId,
+      dto,
+    );
     const now = new Date();
     const expense = new Expense({
+      ...fields,
       id: 0,
       organizationId: project.organizationId,
       projectId,
@@ -358,13 +367,22 @@ export class PaymentsExpensesService {
       updatedAt: now,
       deletedAt: null,
     });
-    const saved = await this.repo.saveExpenseWithAudit(expense, {
-      organizationId: project.organizationId,
-      projectId,
-      operation: PaymentExpenseAuditOperation.CREATE_EXPENSE,
-      performedBy: actor.id,
-      changes: { status: { before: null, after: ExpenseStatus.PENDING } },
-    });
+    const saved = await this.repo.saveExpenseWithAudit(
+      expense,
+      {
+        organizationId: project.organizationId,
+        projectId,
+        operation: PaymentExpenseAuditOperation.CREATE_EXPENSE,
+        performedBy: actor.id,
+        changes: {
+          status: { before: null, after: ExpenseStatus.PENDING },
+          ...(installments
+            ? { installments: { before: null, after: installments } }
+            : {}),
+        },
+      },
+      installments === undefined ? {} : { installments },
+    );
     return ExpenseResponseDto.fromDomain(saved);
   }
   async listExpenses(
@@ -411,6 +429,8 @@ export class PaymentsExpensesService {
   ): Promise<ExpenseResponseDto> {
     const expense = await this.findExpense(projectId, id, actor);
     await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
+    await this.expenseRules.assertNotBilled(expense.reimbursementBatchId);
     const fieldAgentId = await this.resolveExpenseAgent(
       expense.organizationId,
       projectId,
@@ -418,8 +438,15 @@ export class PaymentsExpensesService {
       actor,
     );
     const expenseDate = this.requiredDate(dto.expense_date, 'expense_date');
+    const { fields, installments } = await this.expenseRules.classify(
+      expense.organizationId,
+      projectId,
+      dto,
+      expense.toProps(),
+    );
     const changes = this.expenseRule(() =>
       expense.updateFields({
+        ...fields,
         fieldAgentId,
         description: this.scope.cleanText(dto.description) ?? dto.description,
         reason: this.scope.cleanText(dto.reason) ?? null,
@@ -429,15 +456,54 @@ export class PaymentsExpensesService {
         updatedById: actor.id,
       }),
     );
-    const saved = await this.repo.saveExpenseWithAudit(expense, {
-      organizationId: expense.organizationId,
-      projectId,
-      expenseId: expense.id,
-      operation: PaymentExpenseAuditOperation.UPDATE_EXPENSE,
-      performedBy: actor.id,
-      changes,
-    });
+    if (installments !== undefined)
+      changes.installments = { before: null, after: installments };
+    const saved = await this.repo.saveExpenseWithAudit(
+      expense,
+      {
+        organizationId: expense.organizationId,
+        projectId,
+        expenseId: expense.id,
+        operation: PaymentExpenseAuditOperation.UPDATE_EXPENSE,
+        performedBy: actor.id,
+        changes,
+      },
+      installments === undefined ? {} : { installments },
+    );
     return ExpenseResponseDto.fromDomain(saved);
+  }
+  /**
+   * Reabrir despesa aprovada para edição (D-D): permissão própria, justificativa,
+   * auditoria; bloqueado em competência fechada da DRE, em lote já faturado e
+   * com o financeiro do projeto concluído.
+   */
+  async reopenExpense(
+    projectId: number,
+    id: number,
+    dto: ReopenPaymentDto,
+    actor: PaymentsExpensesActorContext,
+  ): Promise<ExpenseResponseDto> {
+    const expense = await this.findExpense(projectId, id, actor);
+    await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
+    await this.expenseRules.assertNotBilled(expense.reimbursementBatchId);
+    await this.expenseRules.assertDreOpen(expense.organizationId, id);
+    const changes = this.expenseRule(() =>
+      expense.reopen(actor.id, new Date()),
+    );
+    return ExpenseResponseDto.fromDomain(
+      await this.repo.saveExpenseWithAudit(expense, {
+        organizationId: expense.organizationId,
+        projectId,
+        expenseId: expense.id,
+        operation: PaymentExpenseAuditOperation.REOPEN_EXPENSE,
+        performedBy: actor.id,
+        changes: {
+          ...changes,
+          reason: { before: null, after: dto.reason.trim() },
+        },
+      }),
+    );
   }
   async approveExpense(
     projectId: number,

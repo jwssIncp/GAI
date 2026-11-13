@@ -87,8 +87,51 @@ describe('Remuneração: lista de projetos (doc 06 §2.1)', () => {
     [
       ExpenseEntity,
       [
-        { projectId: 1, amount: '2000.00', status: 'approved' },
-        { projectId: 1, amount: '500.00', status: 'rejected' },
+        // Etapa 4: vale o tipo real de cada despesa, não o do contrato.
+        {
+          projectId: 1,
+          amount: '2000.00',
+          status: 'approved',
+          expenseType: 'non_reimbursable',
+        },
+        {
+          projectId: 1,
+          amount: '500.00',
+          status: 'rejected',
+          expenseType: 'non_reimbursable',
+        },
+        {
+          projectId: 1,
+          amount: '700.00',
+          status: 'paid',
+          expenseType: 'reimbursable',
+        },
+        {
+          projectId: 1,
+          amount: '300.00',
+          status: 'pending',
+          expenseType: null,
+        },
+        {
+          projectId: 1,
+          amount: '900.00',
+          status: 'approved',
+          expenseType: 'non_reimbursable',
+          deletedAt: new Date(),
+        },
+        // Contrato "por conta do cliente", mas a despesa foi classificada como da empresa.
+        {
+          projectId: 2,
+          amount: '150.00',
+          status: 'approved',
+          expenseType: 'non_reimbursable',
+        },
+        {
+          projectId: 2,
+          amount: '400.00',
+          status: 'approved',
+          expenseType: 'reimbursable',
+        },
       ],
     ],
     [
@@ -122,7 +165,8 @@ describe('Remuneração: lista de projetos (doc 06 §2.1)', () => {
     expect(alfa).toMatchObject({
       technicians: 2, // ativos e concluídos, sem duplicar; inativo e excluído fora; sem "Despesas gerais"
       contract_value: '10000.00',
-      non_reimbursable_expenses: '2000.00', // rejeitada fora
+      non_reimbursable_expenses: '2000.00', // rejeitada, excluída, reembolsável e não classificada fora
+      unclassified_expenses: 1,
       net_contract_value: '8000.00',
       agents_cost: '3200.00', // cancelado fora (D-L)
       technician_pct: '32.00',
@@ -134,19 +178,21 @@ describe('Remuneração: lista de projetos (doc 06 §2.1)', () => {
     });
   });
 
-  it('despesas por conta do cliente = 0 não reembolsáveis; sem informação = não classificado', async () => {
+  it('o tipo da despesa decide, não o contrato; sem despesas = 0', async () => {
     const { items } = await service(tables).projects({}, actor);
     const beta = items.find((row) => row.name === 'Beta')!;
     expect(beta).toMatchObject({
-      non_reimbursable_expenses: '0.00',
+      non_reimbursable_expenses: '150.00', // contrato do cliente, despesa da empresa
+      net_contract_value: '19850.00',
       technician_pct: '5.00',
       technician_pct_alert: false,
+      unclassified_expenses: 0,
     });
     const gama = items.find((row) => row.name === 'Gama')!;
     expect(gama).toMatchObject({
-      non_reimbursable_expenses: null,
-      net_contract_value: null,
-      net_pct: null,
+      non_reimbursable_expenses: '0.00',
+      net_contract_value: '5000.00',
+      net_pct: null, // sem custo de inventariantes
     });
     const delta = items.find((row) => row.name === 'Delta')!;
     expect(delta.contract_value).toBe('8000.00'); // contrato cancelado fora

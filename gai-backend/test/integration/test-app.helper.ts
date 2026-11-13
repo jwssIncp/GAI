@@ -85,6 +85,12 @@ import { InventoryPendingIssueEntity } from '../../src/modules/inventory-pending
 import { PaymentsExpensesModule } from '../../src/modules/payments-expenses/payments-expenses.module';
 import { ExpenseAttachmentEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/expense.entity';
+import { FinanceSettingsVersionEntity } from '../../src/modules/finance-settings/finance-settings.entity';
+import {
+  ExpenseAdvanceEntity,
+  ExpenseReimbursementBatchEntity,
+  ProjectFinancialClosureEntity,
+} from '../../src/modules/payments-expenses/infrastructure/persistence/expense-parity.entities';
 import { FieldAgentPaymentEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/payment-expense-audit-log.entity';
 import { ImportSessionsModule } from '../../src/modules/import-sessions/import-sessions.module';
@@ -214,6 +220,9 @@ export async function createTestApp(
           InventoryPendingIssueAuditLogEntity,
           FieldAgentPaymentEntity,
           ExpenseEntity,
+          ExpenseAdvanceEntity,
+          ExpenseReimbursementBatchEntity,
+          ProjectFinancialClosureEntity,
           ExpenseAttachmentEntity,
           PaymentExpenseAuditLogEntity,
           ...EXPENSE_ACCOUNTABILITY_ENTITIES,
@@ -226,6 +235,7 @@ export async function createTestApp(
           ...DRE_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
+          FinanceSettingsVersionEntity,
           ImportSessionEntity,
           ImportPayloadEntity,
           ImportPayloadErrorEntity,

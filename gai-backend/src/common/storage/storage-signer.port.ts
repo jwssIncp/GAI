@@ -30,4 +30,9 @@ export interface StorageSigner {
   createUploadUrl(input: PresignedUrlInput): Promise<PresignedUrlResult>;
   createDownloadUrl(input: PresignedUrlInput): Promise<PresignedUrlResult>;
   verifyUpload(input: VerifyUploadInput): Promise<VerifiedStorageObject>;
+  /**
+   * Lê o conteúdo de um objeto já confirmado (ex.: ZIP de comprovantes),
+   * conferindo tamanho e checksum SHA-256 quando informado.
+   */
+  readObject(input: PresignedUrlInput): Promise<Buffer>;
 }

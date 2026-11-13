@@ -78,6 +78,11 @@ import { InventoryPendingIssueEntity } from './modules/inventory-pending-issues/
 import { PaymentsExpensesModule } from './modules/payments-expenses/payments-expenses.module';
 import { ExpenseAttachmentEntity } from './modules/payments-expenses/infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from './modules/payments-expenses/infrastructure/persistence/expense.entity';
+import {
+  ExpenseAdvanceEntity,
+  ExpenseReimbursementBatchEntity,
+  ProjectFinancialClosureEntity,
+} from './modules/payments-expenses/infrastructure/persistence/expense-parity.entities';
 import { FieldAgentPaymentEntity } from './modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from './modules/payments-expenses/infrastructure/persistence/payment-expense-audit-log.entity';
 import { ImportSessionsModule } from './modules/import-sessions/import-sessions.module';
@@ -169,6 +174,9 @@ import { UsersModule } from './modules/users/users.module';
           InventoryPendingIssueAuditLogEntity,
           FieldAgentPaymentEntity,
           ExpenseEntity,
+          ExpenseAdvanceEntity,
+          ExpenseReimbursementBatchEntity,
+          ProjectFinancialClosureEntity,
           ExpenseAttachmentEntity,
           PaymentExpenseAuditLogEntity,
           ImportSessionEntity,

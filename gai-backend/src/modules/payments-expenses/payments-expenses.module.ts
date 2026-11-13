@@ -15,6 +15,15 @@ import { PaymentsExpensesService } from './application/services/payments-expense
 import { PAYMENTS_EXPENSES_REPOSITORY } from './domain/ports/payments-expenses.repository.port';
 import { ExpenseAttachmentEntity } from './infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from './infrastructure/persistence/expense.entity';
+import {
+  ExpenseAdvanceEntity,
+  ExpenseReimbursementBatchEntity,
+  ProjectFinancialClosureEntity,
+} from './infrastructure/persistence/expense-parity.entities';
+import { ExpenseRulesService } from './application/services/expense-rules.service';
+import { ProjectExpensesService } from './application/services/project-expenses.service';
+import { ExpenseTransferService } from './application/services/expense-transfer.service';
+import { ProjectExpensesController } from './presentation/project-expenses.controller';
 import { FieldAgentPaymentEntity } from './infrastructure/persistence/field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from './infrastructure/persistence/payment-expense-audit-log.entity';
 import { TypeOrmPaymentsExpensesRepository } from './infrastructure/persistence/typeorm-payments-expenses.repository';
@@ -25,6 +34,9 @@ import { PaymentsExpensesController } from './presentation/payments-expenses.con
     TypeOrmModule.forFeature([
       FieldAgentPaymentEntity,
       ExpenseEntity,
+      ExpenseAdvanceEntity,
+      ExpenseReimbursementBatchEntity,
+      ProjectFinancialClosureEntity,
       ExpenseAttachmentEntity,
       PaymentExpenseAuditLogEntity,
     ]),
@@ -37,12 +49,16 @@ import { PaymentsExpensesController } from './presentation/payments-expenses.con
     PaymentsExpensesController,
     RemunerationController,
     FieldAgentPaymentsController,
+    ProjectExpensesController,
   ],
   providers: [
     RemunerationService,
     FieldAgentPaymentsService,
     PaymentsExpensesScopeService,
     PaymentsExpensesService,
+    ExpenseRulesService,
+    ProjectExpensesService,
+    ExpenseTransferService,
     {
       provide: PAYMENTS_EXPENSES_REPOSITORY,
       useClass: TypeOrmPaymentsExpensesRepository,

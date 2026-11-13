@@ -102,6 +102,17 @@ export class ExpenseResponseDto {
     nullable: true,
   })
   metadata!: JsonRecord | null;
+  @ApiPropertyOptional({ nullable: true }) expense_type!: string | null;
+  @ApiPropertyOptional({ nullable: true }) reason_code!: string | null;
+  @ApiPropertyOptional({ nullable: true }) payment_method!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  invoiced_payment_date!: string | null;
+  @ApiPropertyOptional({ nullable: true }) deposited_amount!: string | null;
+  @ApiPropertyOptional({ nullable: true }) project_sequence!: number | null;
+  @ApiPropertyOptional({ nullable: true }) rejection_reason!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  reimbursement_batch_id!: number | null;
+  @ApiPropertyOptional({ nullable: true }) reopened_at!: string | null;
   @ApiProperty() created_at!: string;
   @ApiProperty() updated_at!: string;
   static fromDomain(e: Expense): ExpenseResponseDto {
@@ -117,6 +128,15 @@ export class ExpenseResponseDto {
       amount: x.amount,
       status: x.status,
       metadata: x.metadata,
+      expense_type: x.expenseType ?? null,
+      reason_code: x.reasonCode ?? null,
+      payment_method: x.paymentMethod ?? null,
+      invoiced_payment_date: x.invoicedPaymentDate ?? null,
+      deposited_amount: x.depositedAmount ?? null,
+      project_sequence: x.projectSequence ?? null,
+      rejection_reason: x.rejectionReason ?? null,
+      reimbursement_batch_id: x.reimbursementBatchId ?? null,
+      reopened_at: x.reopenedAt ? x.reopenedAt.toISOString() : null,
       created_at: x.createdAt.toISOString(),
       updated_at: x.updatedAt.toISOString(),
     };

@@ -16,6 +16,7 @@ import {
 } from '../../domain/ports/payments-expenses.repository.port';
 import { ExpenseAttachmentEntity } from './expense-attachment.entity';
 import { ExpenseEntity } from './expense.entity';
+import { ExpenseInstallmentEntity } from '../../../expense-accountabilities/expense-accountability.entity';
 import { FieldAgentPaymentEntity } from './field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from './payment-expense-audit-log.entity';
 
@@ -218,16 +219,66 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
   async saveExpenseWithAudit(
     expense: Expense,
     audit: PaymentExpenseAuditEntry,
+    extras: {
+      installments?: Array<{
+        number: number;
+        due_date: string;
+        amount: string;
+      }> | null;
+    } = {},
   ): Promise<Expense> {
-    return this.expenseRepo.manager.transaction(async (manager) => {
-      const saved = await manager
-        .getRepository(ExpenseEntity)
-        .save(this.toExpenseEntity(expense));
-      await manager
-        .getRepository(PaymentExpenseAuditLogEntity)
-        .save({ ...audit, expenseId: audit.expenseId ?? saved.id });
-      return this.toExpense(saved);
-    });
+    // Código sequencial por projeto: o índice único (projeto, código) resolve a
+    // corrida entre duas gravações simultâneas; a perdedora tenta de novo.
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await this.expenseRepo.manager.transaction(async (manager) => {
+          const entity = this.toExpenseEntity(expense);
+          if (!entity.id && entity.projectSequence == null) {
+            const row = await manager
+              .getRepository(ExpenseEntity)
+              .createQueryBuilder('expense')
+              .withDeleted()
+              .select('MAX(expense.projectSequence)', 'max')
+              .where('expense.projectId = :projectId', {
+                projectId: entity.projectId,
+              })
+              .getRawOne<{ max: number | string | null }>();
+            entity.projectSequence = Number(row?.max ?? 0) + 1;
+          }
+          const saved = await manager.getRepository(ExpenseEntity).save(entity);
+          if (extras.installments !== undefined) {
+            const installments = manager.getRepository(
+              ExpenseInstallmentEntity,
+            );
+            await installments.delete({ expenseId: saved.id });
+            if (extras.installments?.length)
+              await installments.save(
+                extras.installments.map((line) =>
+                  installments.create({
+                    organizationId: saved.organizationId,
+                    projectId: saved.projectId,
+                    expenseId: saved.id,
+                    installmentNumber: line.number,
+                    installmentCount: extras.installments!.length,
+                    dueDate: line.due_date,
+                    amount: line.amount,
+                    origin: null,
+                  }),
+                ),
+              );
+          }
+          await manager
+            .getRepository(PaymentExpenseAuditLogEntity)
+            .save({ ...audit, expenseId: audit.expenseId ?? saved.id });
+          return this.toExpense(saved);
+        });
+      } catch (error) {
+        const duplicate = /duplicate|unique/i.test(
+          String((error as Error)?.message),
+        );
+        if (!duplicate || attempt >= 3 || expense.id > 0) throw error;
+      }
+    }
   }
   async findAttachmentById(id: number): Promise<ExpenseAttachment | null> {
     const entity = await this.attachmentRepo
@@ -278,8 +329,9 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
   }
   private toExpenseEntity(p: Expense): ExpenseEntity {
     const x = p.toProps();
-    const e = this.expenseRepo.create(x as Partial<ExpenseEntity>);
+    const e = this.expenseRepo.create(x as unknown as Partial<ExpenseEntity>);
     e.expenseDate = this.dateKey(x.expenseDate) as unknown as Date;
+    e.invoicedPaymentDate = (x.invoicedPaymentDate ?? null) as unknown as Date;
     if (x.id > 0) e.id = x.id;
     else delete (e as Partial<ExpenseEntity>).id;
     return e;
@@ -326,6 +378,18 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
       fieldAgentId: e.fieldAgentId === null ? null : Number(e.fieldAgentId),
       amount: this.money(e.amount),
       expenseDate: this.date(e.expenseDate),
+      depositedAmount:
+        e.depositedAmount == null ? null : this.money(e.depositedAmount),
+      projectSequence:
+        e.projectSequence == null ? null : Number(e.projectSequence),
+      reimbursementBatchId:
+        e.reimbursementBatchId == null ? null : Number(e.reimbursementBatchId),
+      reopenedById: e.reopenedById == null ? null : Number(e.reopenedById),
+      reopenedAt: this.nullDate(e.reopenedAt ?? null),
+      invoicedPaymentDate:
+        e.invoicedPaymentDate == null
+          ? null
+          : this.dateKey(this.date(e.invoicedPaymentDate)),
       createdAt: this.date(e.createdAt),
       updatedAt: this.date(e.updatedAt),
       deletedAt: this.nullDate(e.deletedAt),

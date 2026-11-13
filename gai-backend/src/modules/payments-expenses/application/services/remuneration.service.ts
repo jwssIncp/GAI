@@ -14,6 +14,7 @@ import { DreEntry, DrePeriod } from '../../../managerial-dre/dre.entity';
 import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
+import { COUNTED_EXPENSE } from '../../domain/expense.formulas';
 import {
   fromCents,
   percentOf,
@@ -40,7 +41,7 @@ const civil = (value: Date | string | null | undefined) =>
       ? value.toISOString().slice(0, 10)
       : String(value).slice(0, 10);
 /** Decimal do banco (texto no MySQL, número no SQLite) para "0.00", sem ponto flutuante. */
-const money = (value: string | number | null | undefined): string => {
+export const money = (value: string | number | null | undefined): string => {
   const match = /^(\d+)(?:\.(\d*))?$/.exec(String(value ?? 0).trim());
   if (!match) throw new Error(`Valor monetário inválido: ${String(value)}`);
   return fromCents(
@@ -49,7 +50,7 @@ const money = (value: string | number | null | undefined): string => {
 };
 
 /** Status do projeto na lista da Remuneração (mapeado dos status do GAI) e ordem do doc 06 §2.1. */
-const PROJECT_STATUS: Record<string, { label: string; rank: number }> = {
+export const PROJECT_STATUS: Record<string, { label: string; rank: number }> = {
   active: { label: 'Em andamento', rank: 0 },
   draft: { label: 'Em preparação', rank: 1 },
   paused: { label: 'Pausado', rank: 2 },
@@ -58,7 +59,7 @@ const PROJECT_STATUS: Record<string, { label: string; rank: number }> = {
   cancelled: { label: 'Cancelado', rank: 4 },
   archived: { label: 'Arquivado', rank: 4 },
 };
-const OPEN_PROJECT = ['draft', 'active', 'paused'];
+export const OPEN_PROJECT = ['draft', 'active', 'paused'];
 
 /**
  * Leituras da Remuneração (doc 06 §2): lista de projetos da organização
@@ -319,19 +320,15 @@ export class RemunerationService {
           s + toCents(money(c.data.current_value ?? c.data.original_value)),
         0n,
       );
-      // Até a etapa 4 (tipo por despesa), a classificação vem do contrato:
-      // "despesas de campo por conta da empresa" = não reembolsáveis.
-      const payers = new Set(
-        live.map((c) => c.data.expenses_paid_by).filter(Boolean),
-      );
+      // Etapa 4: vale o tipo real de cada despesa (não o do contrato). Despesas
+      // antigas sem tipo ("não classificada") não entram e são contadas à parte.
       const projectExpenses = (expensesBy.get(id) ?? []).filter(
-        (e) => !['cancelled', 'rejected'].includes(e.status),
+        (e) => COUNTED_EXPENSE(e.status) && !e.deletedAt,
       );
-      const nonReimbursable = payers.has('company')
-        ? projectExpenses.reduce((s, e) => s + toCents(money(e.amount)), 0n)
-        : payers.has('client')
-          ? 0n
-          : null;
+      const nonReimbursable: bigint | null = projectExpenses
+        .filter((e) => e.expenseType === 'non_reimbursable')
+        .reduce((s, e) => s + toCents(money(e.amount)), 0n);
+      const unclassified = projectExpenses.filter((e) => !e.expenseType).length;
       // Despesas de inventariantes: Σ (total − descontos) sem cancelados (D-L).
       const agentsCost = (paymentsBy.get(id) ?? [])
         .filter((p) => p.status !== PaymentStatus.CANCELLED)
@@ -377,6 +374,7 @@ export class RemunerationService {
         contract_value: fromCents(contractValue),
         non_reimbursable_expenses:
           nonReimbursable === null ? null : fromCents(nonReimbursable),
+        unclassified_expenses: unclassified,
         net_contract_value: net === null ? null : fromCents(net),
         agents_cost: fromCents(agentsCost),
         technician_pct: technicianPct,

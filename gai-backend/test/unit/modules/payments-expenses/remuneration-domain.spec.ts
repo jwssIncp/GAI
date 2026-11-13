@@ -198,6 +198,7 @@ describe('Remuneração: criação valida tudo antes de gravar (nada de registro
       { setContext: jest.fn() } as never,
       {} as never,
       {} as never,
+      {} as never,
     );
   }
   const actor = { id: 9, systemRoles: [], organizationId: 1 };
@@ -319,6 +320,7 @@ describe('Remuneração: reabrir respeita competência fechada na DRE (D-D)', ()
         { setContext: jest.fn() } as never,
         {} as never,
         remuneration as never,
+        {} as never,
       ),
     };
   }

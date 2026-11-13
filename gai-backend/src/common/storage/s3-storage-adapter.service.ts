@@ -246,6 +246,42 @@ export class S3StorageAdapterService
     }));
   }
 
+  async readObject(input: PresignedUrlInput): Promise<Buffer> {
+    this.validate(input);
+    return this.operation(async () => {
+      const object = await this.s3().send(
+        new GetObjectCommand({ Bucket: input.bucket, Key: input.path }),
+      );
+      if (!object.Body)
+        throw new ConflictException({
+          code: 'STORAGE_EMPTY_RESPONSE',
+          message: 'Object body unavailable',
+        });
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const part of object.Body as AsyncIterable<Uint8Array>) {
+        size += part.length;
+        if (size > input.sizeBytes || size > this.configuration().maxBytes)
+          throw new ConflictException({
+            code: 'STORAGE_SIZE_MISMATCH',
+            message: 'Stored object size differs from the authorized upload',
+          });
+        chunks.push(Buffer.from(part));
+      }
+      const content = Buffer.concat(chunks);
+      const expected = sha256Hex(input.checksum);
+      if (
+        expected &&
+        createHash('sha256').update(content).digest('hex') !== expected
+      )
+        throw new ConflictException({
+          code: 'STORAGE_CHECKSUM_MISMATCH',
+          message: 'Object integrity mismatch',
+        });
+      return content;
+    });
+  }
+
   private async inspect(
     input: PresignedUrlInput,
   ): Promise<VerifiedStorageObject> {

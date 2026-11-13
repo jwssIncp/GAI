@@ -15,6 +15,7 @@ const resources: Record<string, string> = {
   payments: 'Pagamentos', expenses: 'Despesas', 'expense-accountabilities': 'Prestações de contas', 'expense-installments': 'Parcelas de despesas',
   receivables: 'Recebíveis', 'cash-flow': 'Fluxo de caixa', finance: 'Financeiro', dre: 'DRE gerencial',
   'finance-settings': 'Parâmetros financeiros', 'field-agent-documents': 'Documentos dos inventariantes',
+  'expense-advances': 'Adiantamentos de despesas', 'reimbursement-batches': 'Lotes de reembolso ao cliente', 'project-finance': 'Financeiro do projeto',
   budgets: 'Orçamentos', contracts: 'Contratos', 'commercial-indicators': 'Indicadores comerciais',
   documents: 'Documentos', 'technical-reports': 'Laudos técnicos',
   'import-sessions': 'Sessões de importação', 'import-payloads': 'Dados de importação', 'import-files': 'Arquivos de importação', 'import-errors': 'Erros de importação', 'export-jobs': 'Exportações',
@@ -39,6 +40,13 @@ const resourceActions: Record<string, string> = {
   'field-agent-documents:read': 'Consultar e baixar',
   'field-agent-documents:remove': 'Remover',
   'finance-settings:update': 'Criar nova versão',
+  'expenses:delete': 'Excluir',
+  'expenses:export-zip': 'Exportar ZIP com comprovantes',
+  'reimbursement-batches:create': 'Prestar conta (incluir no lote)',
+  'reimbursement-batches:close': 'Faturar ao cliente',
+  'reimbursement-batches:reopen': 'Reabrir ou cancelar lote',
+  'project-finance:close': 'Concluir financeiro',
+  'project-finance:reopen': 'Reabrir financeiro',
 };
 export const resourceName = (resource: string) => resources[resource] ?? 'Outras funcionalidades';
 export const actionName = (action: string, resource?: string) =>
@@ -49,7 +57,7 @@ export function permissionArea(resource: string) {
   if (['projects', 'project-preparation', 'contracts', 'commercial-indicators', 'budgets'].includes(resource)) return 'Projetos e contratos';
   if (resource.startsWith('import-') || resource === 'export-jobs') return 'Importações e exportações';
   if (['documents', 'technical-reports'].includes(resource)) return 'Documentos e laudos';
-  if (['payments', 'expenses', 'expense-accountabilities', 'expense-installments', 'receivables', 'cash-flow', 'finance', 'dre', 'finance-settings'].includes(resource)) return 'Financeiro';
+  if (['payments', 'expenses', 'expense-accountabilities', 'expense-installments', 'expense-advances', 'reimbursement-batches', 'project-finance', 'receivables', 'cash-flow', 'finance', 'dre', 'finance-settings'].includes(resource)) return 'Financeiro';
   if (['field-agents', 'field-agent-documents', 'project-field-agents', 'field-coordination', 'inventory-items', 'inventory-item-images', 'inventory-sessions', 'inventory-rounds', 'inventory-observations'].includes(resource)) return 'Inventário e campo';
   return 'Patrimônio e avaliações';
 }

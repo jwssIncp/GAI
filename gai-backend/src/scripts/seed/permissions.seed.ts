@@ -890,6 +890,34 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 4: despesas, adiantamentos, lotes de reembolso e conclusão.
+for (const [key, description] of [
+  ['expenses:delete', 'Despesas: excluir lançamento (exclusão lógica)'],
+  ['expenses:import', 'Despesas: importar lista (Excel/CSV)'],
+  ['expenses:export-zip', 'Despesas: exportar ZIP com comprovantes'],
+  ['expenses:reopen', 'Despesas: reabrir lançamento aprovado para edição'],
+  ['expense-advances:read', 'Adiantamentos: consultar'],
+  ['expense-advances:create', 'Adiantamentos: lançar'],
+  ['expense-advances:update', 'Adiantamentos: editar'],
+  ['expense-advances:delete', 'Adiantamentos: excluir'],
+  ['reimbursement-batches:read', 'Lotes de reembolso: consultar'],
+  [
+    'reimbursement-batches:create',
+    'Lotes de reembolso: criar e incluir despesas (prestar conta)',
+  ],
+  ['reimbursement-batches:close', 'Lotes de reembolso: faturar ao cliente'],
+  ['reimbursement-batches:reopen', 'Lotes de reembolso: reabrir ou cancelar'],
+  ['project-finance:close', 'Financeiro do projeto: concluir'],
+  ['project-finance:reopen', 'Financeiro do projeto: reabrir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
 // Paridade financeira, etapa 1: parâmetros financeiros e cadastro de inventariantes.
 for (const [key, description] of [
   ['finance-settings:read', 'Parâmetros financeiros: consultar'],

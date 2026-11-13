@@ -48,7 +48,7 @@ describe("Menu lateral por módulo", () => {
 
   // Itens visíveis antes da Etapa 2 (ordem antiga), por perfil. O conjunto deve ser o mesmo,
   // mais os itens novos acrescentados depois (paridade financeira, etapa 1: Parâmetros financeiros).
-  const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes"];
+  const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes", "Despesas"];
   it.each([
     ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
     ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
@@ -74,6 +74,7 @@ describe("Menu lateral por módulo", () => {
       "DRE Gerencial",
       "Remuneração",
       "Pagamento de inventariantes",
+      "Despesas",
       "Parâmetros financeiros",
       "Usuários",
       "Perfis e acessos",
@@ -96,6 +97,7 @@ describe("Menu lateral por módulo", () => {
       ["/app/finance/dre", ["dre:read"]],
       ["/app/finance/remuneration", ["payments:read"]],
       ["/app/finance/field-agent-payments", ["payments:read"]],
+      ["/app/finance/expenses", ["expenses:read"]],
       ["/app/finance/parameters", ["finance-settings:read"]],
       ["/app/organizations", ["organizations:read"]],
       ["/app/users", ["users:read"]],

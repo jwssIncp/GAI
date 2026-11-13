@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BadgeDollarSign, HandCoins, Building2, ContactRound, FileSpreadsheet, FolderKanban, Landmark, LayoutDashboard, ShieldCheck, SlidersHorizontal, Users, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BadgeDollarSign, HandCoins, ReceiptText, Building2, ContactRound, FileSpreadsheet, FolderKanban, Landmark, LayoutDashboard, ShieldCheck, SlidersHorizontal, Users, Wallet } from 'lucide-react';
 
 // Menu lateral por módulo (seção). A ordem do array é preservada: o Dashboard usa os
 // primeiros itens permitidos como "acesso rápido"; o Sidebar agrupa por seção.
@@ -14,6 +14,7 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
   {label:'DRE Gerencial',to:'/app/finance/dre',icon:FileSpreadsheet,permissions:['dre:read'],section:'finance'},
   { label: 'Remuneração', to: '/app/finance/remuneration', icon: BadgeDollarSign, permissions: ['payments:read'], section: 'finance' },
   { label: 'Pagamento de inventariantes', to: '/app/finance/field-agent-payments', icon: HandCoins, permissions: ['payments:read'], section: 'finance' },
+  { label: 'Despesas', to: '/app/finance/expenses', icon: ReceiptText, permissions: ['expenses:read'], section: 'finance' },
   { label: 'Parâmetros financeiros', to: '/app/finance/parameters', icon: SlidersHorizontal, permissions: ['finance-settings:read'], section: 'finance' },
   { label: 'Organizações', to: '/app/organizations', icon: Landmark, permissions: ['organizations:read'], section: 'management' },
   { label: 'Usuários', to: '/app/users', icon: Users, permissions: ['users:read'], section: 'management' },
