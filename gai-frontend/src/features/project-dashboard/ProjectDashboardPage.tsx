@@ -12,7 +12,7 @@ import {
   Warehouse,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
 import { PageContainer } from '@/components/base/PageContainer';
@@ -74,13 +74,6 @@ export function ProjectDashboardPage() {
 
   return (
     <PageContainer>
-      <div className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-panel">
-        <Link className="text-primary hover:text-primary-text hover:underline" to="/app/projects">Projetos</Link>
-        <span>/</span>
-        {query.data ? <Link className="text-primary hover:text-primary-text hover:underline" to={`/app/projects/${projectId}/summary`}>{query.data.project.name}</Link> : <span>Projeto</span>}
-        <span>/</span>
-        <span>Dashboard</span>
-      </div>
       <PageHeader
         title={query.data ? `Dashboard · ${query.data.project.name}` : 'Dashboard do projeto'}
         description="Progresso do inventário, ritmo recente, distribuição operacional e cobertura geográfica em uma visão única."

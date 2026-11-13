@@ -65,7 +65,7 @@ const label: Record<string, string> = {
   rejected: 'Rejeitado',
   matched: 'Conciliado',
   divergent: 'Divergente',
-  not_found: 'Nao encontrado',
+  not_found: 'Não encontrado',
   ignored: 'Ignorado',
   processing: 'Processando',
   receiving: 'Recebendo',
@@ -75,13 +75,13 @@ const label: Record<string, string> = {
   finished_with_errors: 'Finalizado com erros',
   duplicated: 'Duplicado',
   open: 'Aberto',
-  in_review: 'Em revisao',
+  in_review: 'Em revisão',
   resolved: 'Resolvido',
   evaluated: 'Avaliado',
   low: 'Baixa',
-  medium: 'Media',
+  medium: 'Média',
   high: 'Alta',
-  critical: 'Critica',
+  critical: 'Crítica',
 };
 
 export function StatusBadge({ value }: { value?: string | null }) {

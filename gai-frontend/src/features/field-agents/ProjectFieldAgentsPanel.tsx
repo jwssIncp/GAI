@@ -89,13 +89,13 @@ export function ProjectFieldAgentsPanel({
       await remove.mutateAsync(removeTarget.id);
       setRemoveTarget(null);
       toast({
-        title: "Vinculo removido",
-        description: "O historico do inventariante foi preservado.",
+        title: "Vínculo removido",
+        description: "O histórico do inventariante foi preservado.",
         tone: "success",
       });
     } catch (error) {
       toast({
-        title: "Nao foi possivel remover",
+        title: "Não foi possível remover",
         description: projectFieldAgentError(error),
         tone: "error",
       });
@@ -103,7 +103,7 @@ export function ProjectFieldAgentsPanel({
   }
 
   return (
-    <section id="inventariantes" className="grid scroll-mt-44 gap-4">
+    <section id="inventariantes" className="grid scroll-mt-52 gap-4">
       <div className="flex flex-col gap-3 border-t pt-6 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-lg font-semibold">Inventariantes do projeto</h2>
@@ -119,7 +119,7 @@ export function ProjectFieldAgentsPanel({
       </div>
       {!mutable ? (
         <p className="rounded-xl border border-warning/25 bg-warning-subtle/40 p-3 text-sm text-muted-foreground">
-          O status atual mantem os vinculos de inventariantes somente para
+          O status atual mantem os vínculos de inventariantes somente para
           consulta.
         </p>
       ) : null}
@@ -130,7 +130,7 @@ export function ProjectFieldAgentsPanel({
           role="alert"
           className="rounded-xl border border-warning/25 bg-warning-subtle/40 p-3 text-sm text-muted-foreground"
         >
-          Voce possui permissao para vincular, mas precisa de
+          Você possui permissão para vincular, mas precisa de
           `field-agents:read` para selecionar um inventariante.
         </p>
       ) : null}
@@ -197,14 +197,14 @@ export function ProjectFieldAgentsPanel({
                 ),
               },
               {
-                header: "Acoes",
+                header: "Ações",
                 cell: (item) => (
                   <div className="flex items-center gap-1">
                     {canUpdate ? (
                       <Button
                         type="button"
                         variant="ghost"
-                        aria-label="Editar vinculo"
+                        aria-label="Editar vínculo"
                         onClick={() => setEditing(item)}
                       >
                         <Pencil size={16} />
@@ -214,7 +214,7 @@ export function ProjectFieldAgentsPanel({
                       <Button
                         type="button"
                         variant="ghost"
-                        aria-label="Remover vinculo"
+                        aria-label="Remover vínculo"
                         onClick={() => setRemoveTarget(item)}
                       >
                         <Trash2 size={16} />
@@ -254,7 +254,7 @@ export function ProjectFieldAgentsPanel({
         <DrawerForm
           open={Boolean(editing)}
           onOpenChange={(open) => !open && setEditing(null)}
-          title="Editar vinculo"
+          title="Editar vínculo"
         >
           {editing ? (
             <ProjectFieldAgentEditForm
@@ -275,8 +275,8 @@ export function ProjectFieldAgentsPanel({
           onOpenChange={(open) =>
             !open && !remove.isPending && setRemoveTarget(null)
           }
-          title="Remover vinculo"
-          description="Remover este inventariante do projeto? O historico sera preservado."
+          title="Remover vínculo"
+          description="Remover este inventariante do projeto? O histórico será preservado."
           busy={remove.isPending}
           onConfirm={() => void removeAssignment()}
         />
@@ -302,7 +302,7 @@ function ProjectFieldAgentIdentity({
       </span>
     );
   if (query.isError || !query.data)
-    return <span className="font-medium">Inventariante indisponivel</span>;
+    return <span className="font-medium">Inventariante indisponível</span>;
   return (
     <div className="font-medium">
       {query.data.name}
@@ -356,7 +356,7 @@ function ProjectFieldAgentForm({
             form.setError("root", {
               message: projectFieldAgentError(
                 error,
-                "Nao foi possivel criar o vinculo",
+                "Não foi possível criar o vínculo",
               ),
             });
         }
@@ -383,10 +383,10 @@ function ProjectFieldAgentForm({
         label="Papel no projeto"
         error={form.formState.errors.role?.message}
       >
-        <Input placeholder="Ex.: Lider de campo" {...form.register("role")} />
+        <Input placeholder="Ex.: Líder de campo" {...form.register("role")} />
       </FormField>
       <FormField
-        label="Inicio"
+        label="Início"
         error={form.formState.errors.start_date?.message}
       >
         <Input type="date" {...form.register("start_date")} />
@@ -395,7 +395,7 @@ function ProjectFieldAgentForm({
         <Input type="date" {...form.register("end_date")} />
       </FormField>
       <FormField
-        label="Observacoes"
+        label="Observações"
         error={form.formState.errors.notes?.message}
       >
         <Input {...form.register("notes")} />
@@ -451,7 +451,7 @@ function ProjectFieldAgentEditForm({
           form.setError("root", {
             message: projectFieldAgentError(
               error,
-              "Nao foi possivel atualizar o vinculo",
+              "Não foi possível atualizar o vínculo",
             ),
           });
         }
@@ -474,7 +474,7 @@ function ProjectFieldAgentEditForm({
         </select>
       </FormField>
       <FormField
-        label="Inicio"
+        label="Início"
         error={form.formState.errors.start_date?.message}
       >
         <Input type="date" {...form.register("start_date")} />
@@ -483,7 +483,7 @@ function ProjectFieldAgentEditForm({
         <Input type="date" {...form.register("end_date")} />
       </FormField>
       <FormField
-        label="Observacoes"
+        label="Observações"
         error={form.formState.errors.notes?.message}
       >
         <Input {...form.register("notes")} />
@@ -507,7 +507,7 @@ function projectFieldAgentError(error: unknown, fallback = "Tente novamente.") {
     error instanceof ApiError &&
     error.code === "PROJECT_STATUS_BLOCKS_OPERATION"
   ) {
-    return "O status atual mantem os vinculos somente para consulta.";
+    return "O status atual mantem os vínculos somente para consulta.";
   }
   return error instanceof Error ? error.message : fallback;
 }

@@ -83,7 +83,7 @@ export const projectRoute: RouteObject = {
           element: (
             <PlaceholderPage
               title="Project Area"
-              dependency="Abas preparadas; os fluxos profundos entram na proxima rodada."
+              dependency="Abas preparadas; os fluxos profundos entram na próxima rodada."
             />
           ),
         },

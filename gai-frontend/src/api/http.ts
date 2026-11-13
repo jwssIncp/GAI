@@ -66,10 +66,10 @@ export async function uploadToPresignedUrl(url: string, file: File, onProgress?:
         onProgress?.(100);
         resolve();
       } else {
-        reject(new Error('Nao foi possivel enviar o arquivo.'));
+        reject(new Error('Não foi possível enviar o arquivo.'));
       }
     };
-    request.onerror = () => reject(new Error('Nao foi possivel enviar o arquivo.'));
+    request.onerror = () => reject(new Error('Não foi possível enviar o arquivo.'));
     request.send(file);
   });
 }

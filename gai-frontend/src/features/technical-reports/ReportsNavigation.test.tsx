@@ -243,7 +243,7 @@ describe("Project technical report navigation and editing", () => {
       target: { value: "SINTETICO Modelo de teste" },
     });
     fireEvent.change(screen.getByLabelText("Justificativa"), {
-      target: { value: "Teste sintetico de configuracao" },
+      target: { value: "Teste sintetico de configuração" },
     });
     fireEvent.click(
       screen.getByRole("checkbox", {
@@ -264,7 +264,7 @@ describe("Project technical report navigation and editing", () => {
             professional_registration_required: false,
           }),
         }),
-        "Teste sintetico de configuracao",
+        "Teste sintetico de configuração",
       ),
     );
   });

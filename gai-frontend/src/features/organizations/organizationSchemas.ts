@@ -11,7 +11,7 @@ const optionalEmail = z
   .string()
   .trim()
   .transform((value) => (value ? value : undefined))
-  .pipe(z.string().email('Informe um email valido').optional());
+  .pipe(z.string().email('Informe um email válido').optional());
 
 const optionalPhone = z
   .string()

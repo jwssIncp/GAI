@@ -28,9 +28,9 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
     if (validation) return;
     try {
       const batch = await upload.mutateAsync(file);
-      setFeedback(`Importacao #${batch.id} registrada com status ${batch.status}.`);
+      setFeedback(`Importação #${batch.id} registrada com status ${batch.status}.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel importar o arquivo.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível importar o arquivo.');
     }
   }
 
@@ -42,10 +42,10 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
     { header: 'Falhas', cell: (batch) => batch.failed_rows },
     { header: 'Atualizado em', cell: (batch) => formatDateTime(batch.updated_at) },
     {
-      header: 'Acoes',
+      header: 'Ações',
       cell: (batch) => (
         <PermissionGate permissions={['inventory-accounting-items:export-errors']}>
-          <Button type="button" variant="ghost" aria-label="Visualizar erros da importacao" disabled={!batch.failed_rows} onClick={() => setErrorsBatch(batch)}>
+          <Button type="button" variant="ghost" aria-label="Visualizar erros da importação" disabled={!batch.failed_rows} onClick={() => setErrorsBatch(batch)}>
             <Eye size={16} />
           </Button>
         </PermissionGate>
@@ -57,30 +57,30 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
     <section className="grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Importacoes</h2>
-          <p className="text-sm text-muted-foreground">Historico de arquivos XLSX processados pelo backend.</p>
+          <h2 className="text-lg font-semibold">Importações</h2>
+          <p className="text-sm text-muted-foreground">Histórico de arquivos XLSX processados pelo backend.</p>
         </div>
         <PermissionGate permissions={['inventory-accounting-items:import']}>
           <Button type="button" onClick={() => setImportOpen(true)}><FileSpreadsheet size={17} /> Importar XLSX</Button>
         </PermissionGate>
       </div>
-      {imports.isLoading ? <LoadingState label="Carregando importacoes" /> : imports.isError ? <ErrorState message={(imports.error as Error).message} onRetry={() => imports.refetch()} /> : data?.items.length ? (
+      {imports.isLoading ? <LoadingState label="Carregando importações" /> : imports.isError ? <ErrorState message={(imports.error as Error).message} onRetry={() => imports.refetch()} /> : data?.items.length ? (
         <DataTable columns={columns} items={data.items} getKey={(batch) => batch.id} />
-      ) : <EmptyState title="Nenhuma importacao registrada" description="Importe um XLSX para carregar a base contabil do projeto." />}
+      ) : <EmptyState title="Nenhuma importação registrada" description="Importe um XLSX para carregar a base contábil do projeto." />}
 
-      <ModalForm open={importOpen} onOpenChange={setImportOpen} title="Importar base contabil XLSX">
+      <ModalForm open={importOpen} onOpenChange={setImportOpen} title="Importar base contábil XLSX">
         <div className="grid gap-4">
           <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
             <p className="font-medium text-foreground">Colunas esperadas</p>
-            <p className="mt-2">placa, descricao_01, descricao_conta_contabil, localizacao, data_aquisicao, valor_aquisicao, cod_base, status, codigo_investor, obs_1, obs_2, placa_nova_inventario, descricao_inventario, localizacao_inventario.</p>
+            <p className="mt-2">placa, descrição_01, descrição_conta_contábil, localização, data_aquisição, valor_aquisição, cod_base, status, código_investor, obs_1, obs_2, placa_nova_inventário, descrição_inventário, localização_inventário.</p>
           </div>
-          <FileUpload aria-label="Selecionar XLSX contabil" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={handleFile} disabled={upload.isPending} />
+          <FileUpload aria-label="Selecionar XLSX contábil" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={handleFile} disabled={upload.isPending} />
           {upload.isPending ? <LoadingState label="Enviando arquivo" /> : null}
           {feedback ? <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">{feedback}</p> : null}
         </div>
       </ModalForm>
 
-      <ModalForm open={Boolean(errorsBatch)} onOpenChange={(open) => !open && setErrorsBatch(null)} title={`Erros da importacao ${errorsBatch ? `#${errorsBatch.id}` : ''}`}>
+      <ModalForm open={Boolean(errorsBatch)} onOpenChange={(open) => !open && setErrorsBatch(null)} title={`Erros da importação ${errorsBatch ? `#${errorsBatch.id}` : ''}`}>
         {errors.isLoading ? <LoadingState label="Carregando erros" /> : errors.isError ? <ErrorState message={(errors.error as Error).message} /> : errors.data?.items.length ? (
           <div className="grid max-h-[60vh] gap-2 overflow-auto">
             {errors.data.items.map((error) => (
@@ -92,7 +92,7 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
               </div>
             ))}
           </div>
-        ) : <EmptyState title="Sem erros registrados" description="O backend nao retornou erros para este batch." />}
+        ) : <EmptyState title="Sem erros registrados" description="O backend não retornou erros para este batch." />}
       </ModalForm>
     </section>
   );

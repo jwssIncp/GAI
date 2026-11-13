@@ -7,13 +7,13 @@ export const importPayloadStatuses = ['received', 'processing', 'processed', 'pa
 export const importFileTypes = ['raw_payload', 'raw_backup', 'image', 'other'] as const;
 
 export const importSessionTypeLabels: Record<(typeof importSessionTypes)[number], string> = {
-  mobile_sync: 'Sincronizacao mobile',
-  inventory_items_import: 'Importacao de itens',
-  accounting_items_import: 'Importacao contabil',
-  images_import: 'Importacao de imagens',
+  mobile_sync: 'Sincronização mobile',
+  inventory_items_import: 'Importação de itens',
+  accounting_items_import: 'Importação contábil',
+  images_import: 'Importação de imagens',
   raw_backup_import: 'Backup bruto',
-  incremental_sync: 'Sincronizacao incremental',
-  physical_observations_import: 'Observacoes fisicas (XLSX)',
+  incremental_sync: 'Sincronização incremental',
+  physical_observations_import: 'Observações físicas (XLSX)',
 };
 
 export const importSessionSourceLabels: Record<(typeof importSessionSources)[number], string> = {
@@ -21,7 +21,7 @@ export const importSessionSourceLabels: Record<(typeof importSessionSources)[num
   web_admin: 'Web admin',
   api_client: 'Cliente API',
   system: 'Sistema',
-  migration: 'Migracao',
+  migration: 'Migração',
 };
 
 export const importSessionStatusLabels: Record<(typeof importSessionStatuses)[number], string> = {
@@ -49,7 +49,7 @@ export const importSessionFormSchema = z.object({
 });
 
 export const importPayloadFormSchema = z.object({
-  payload_number: z.string().min(1, 'Informe o numero').transform(Number).pipe(z.number().int().min(1)),
+  payload_number: z.string().min(1, 'Informe o número').transform(Number).pipe(z.number().int().min(1)),
   idempotency_key: z.string().trim().min(1, 'Informe a chave idempotente').max(128),
   checksum: z.string().trim().transform((value) => (value ? value : undefined)).optional(),
   payload_json: z.string().trim().min(2, 'Informe o JSON').refine((value) => {
@@ -59,7 +59,7 @@ export const importPayloadFormSchema = z.object({
     } catch {
       return false;
     }
-  }, 'JSON deve ser valido e conter items[]'),
+  }, 'JSON deve ser válido e conter items[]'),
 });
 
 export type ImportSessionFormValues = z.input<typeof importSessionFormSchema>;

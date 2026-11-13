@@ -45,7 +45,7 @@ export function ProgressCard({ label, value }: { label: string; value: number })
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted shadow-inner" aria-hidden="true">
         <div className="h-full rounded-full bg-premium-gradient shadow-[0_0_16px_hsl(var(--primary)/0.45)] transition-all duration-700 ease-out" style={{ width: `${normalized}%` }} />
       </div>
-      <span className="sr-only">{normalized}% concluido</span>
+      <span className="sr-only">{normalized}% concluído</span>
     </div>
   );
 }

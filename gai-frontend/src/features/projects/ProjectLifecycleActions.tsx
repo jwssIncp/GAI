@@ -13,9 +13,9 @@ const actionConfig: Record<ProjectLifecycleAction, { label: string; icon: ReactN
   activate: { label: 'Ativar', icon: <Play size={16} />, success: 'Projeto ativado com sucesso.' },
   pause: { label: 'Pausar', icon: <CirclePause size={16} />, success: 'Projeto pausado com sucesso.' },
   resume: { label: 'Retomar', icon: <Play size={16} />, success: 'Projeto retomado com sucesso.' },
-  finish: { label: 'Finalizar', icon: <CheckCircle2 size={16} />, confirm: 'Finalizar o projeto encerra as operacoes. Confirme apenas depois de revisar importacoes e pendencias abertas.', success: 'Projeto finalizado com sucesso.' },
-  cancel: { label: 'Cancelar', icon: <Ban size={16} />, confirm: 'Cancelar o projeto bloqueia novas operacoes e preserva o historico existente.', success: 'Projeto cancelado com sucesso.' },
-  archive: { label: 'Arquivar', icon: <Archive size={16} />, confirm: 'Arquivar torna o projeto somente leitura e preserva seu historico.', success: 'Projeto arquivado com sucesso.' },
+  finish: { label: 'Finalizar', icon: <CheckCircle2 size={16} />, confirm: 'Finalizar o projeto encerra as operações. Confirme apenas depois de revisar importações e pendências abertas.', success: 'Projeto finalizado com sucesso.' },
+  cancel: { label: 'Cancelar', icon: <Ban size={16} />, confirm: 'Cancelar o projeto bloqueia novas operações e preserva o histórico existente.', success: 'Projeto cancelado com sucesso.' },
+  archive: { label: 'Arquivar', icon: <Archive size={16} />, confirm: 'Arquivar torna o projeto somente leitura e preserva seu histórico.', success: 'Projeto arquivado com sucesso.' },
 };
 
 export function ProjectLifecycleActions({ project, compact = false }: { project: Project; compact?: boolean }) {
@@ -60,7 +60,7 @@ export function ProjectLifecycleActions({ project, compact = false }: { project:
       <ConfirmDialog
         open={Boolean(confirming)}
         onOpenChange={(open) => !open && !mutation.isPending && setConfirming(null)}
-        title={config?.label ?? 'Confirmar acao'}
+        title={config?.label ?? 'Confirmar ação'}
         description={config?.confirm ?? ''}
         busy={mutation.isPending}
         onConfirm={() => confirming && void run(confirming)}
@@ -70,22 +70,22 @@ export function ProjectLifecycleActions({ project, compact = false }: { project:
 }
 
 function lifecycleErrorFeedback(error: unknown) {
-  if (!(error instanceof ApiError)) return { title: 'Nao foi possivel atualizar', description: error instanceof Error ? error.message : 'Tente novamente.' };
-  if (error.status === 403) return { title: 'Sem permissao', description: 'Seu acesso nao permite executar esta acao.' };
-  if (error.status === 404) return { title: 'Projeto nao encontrado', description: 'O projeto nao esta mais disponivel.' };
+  if (!(error instanceof ApiError)) return { title: 'Não foi possível atualizar', description: error instanceof Error ? error.message : 'Tente novamente.' };
+  if (error.status === 403) return { title: 'Sem permissão', description: 'Seu acesso não permite executar esta ação.' };
+  if (error.status === 404) return { title: 'Projeto não encontrado', description: 'O projeto não está mais disponível.' };
   if (error.status === 409) {
     const details = isRecord(error.rawDetails) ? error.rawDetails : undefined;
     const operations = Array.isArray(details?.operations) ? details.operations : [];
     const operationText = operations
       .filter(isRecord)
-      .map((operation) => `${String(operation.type ?? 'operacao')}: ${String(operation.count ?? 0)}`)
+      .map((operation) => `${String(operation.type ?? 'operação')}: ${String(operation.count ?? 0)}`)
       .join(', ');
     return {
-      title: error.code === 'PROJECT_HAS_OPEN_OPERATIONS' ? 'Projeto possui operacoes abertas' : 'Acao indisponivel',
+      title: error.code === 'PROJECT_HAS_OPEN_OPERATIONS' ? 'Projeto possui operações abertas' : 'Ação indisponível',
       description: operationText ? `${error.message} ${operationText}.` : error.message,
     };
   }
-  return { title: 'Nao foi possivel atualizar', description: error.message };
+  return { title: 'Não foi possível atualizar', description: error.message };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

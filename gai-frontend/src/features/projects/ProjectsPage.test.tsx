@@ -164,7 +164,7 @@ describe("Project registration and management", () => {
     renderPage();
     await fillGeneral();
     expect(
-      screen.queryByRole("combobox", { name: "Organizacao" }),
+      screen.queryByRole("combobox", { name: "Organização" }),
     ).not.toBeInTheDocument();
     await review();
     await userEvent.click(
@@ -399,7 +399,7 @@ describe("Project registration and management", () => {
     ).toBeInTheDocument();
     await screen.findByRole("option", { name: "Organização Alpha" });
     await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Organizacao" }),
+      screen.getByRole("combobox", { name: "Organização" }),
       "1",
     );
     await fillGeneral();
@@ -410,7 +410,7 @@ describe("Project registration and management", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Voltar" }));
     await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Organizacao" }),
+      screen.getByRole("combobox", { name: "Organização" }),
       "2",
     );
     expect(screen.getByLabelText("Empresa contratante")).toHaveValue("");
@@ -498,7 +498,7 @@ describe("Project registration and management", () => {
     renderPage("/app/projects/new", platform);
     await screen.findByRole("option", { name: "Organização Alpha" });
     await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Organizacao" }),
+      screen.getByRole("combobox", { name: "Organização" }),
       "1",
     );
     await screen.findByRole("option", { name: "Empresa Alpha" });
@@ -514,7 +514,7 @@ describe("Project registration and management", () => {
       ),
     );
     await userEvent.selectOptions(
-      screen.getByRole("combobox", { name: "Organizacao" }),
+      screen.getByRole("combobox", { name: "Organização" }),
       "2",
     );
     await waitFor(() =>

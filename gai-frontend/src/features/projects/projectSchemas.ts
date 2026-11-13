@@ -4,13 +4,13 @@ import { projectTypeLabels } from "./projectFields";
 const optionalText = z
   .string()
   .trim()
-  .max(5000, "Descricao deve ter no maximo 5000 caracteres");
+  .max(5000, "Descrição deve ter no máximo 5000 caracteres");
 const optionalDate = z
   .string()
   .trim()
   .refine(
     (value) => value === "" || z.string().date().safeParse(value).success,
-    "Use uma data valida",
+    "Use uma data válida",
   );
 
 const projectFields = {
@@ -46,7 +46,7 @@ const projectFields = {
     .string()
     .trim()
     .min(2, "Nome deve ter pelo menos 2 caracteres")
-    .max(255, "Nome deve ter no maximo 255 caracteres"),
+    .max(255, "Nome deve ter no máximo 255 caracteres"),
   description: optionalText,
   start_date: optionalDate,
   end_date: optionalDate,
@@ -77,7 +77,7 @@ export const projectCreateFormSchema = projectFormFields.superRefine(
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["organization_id"],
-        message: "Selecione a organizacao",
+        message: "Selecione a organização",
       });
     }
     if (!isPositiveInteger(value.company_id)) {

@@ -242,7 +242,7 @@ describe('OrganizationsPage', () => {
   it('paginação chama API com page/page_size', async () => {
     mocks.list.mockResolvedValue(page([organization], { total_items: 30, total_pages: 2 }));
     renderWithProviders(<OrganizationsPage />);
-    await userEvent.click(await screen.findByLabelText('Proxima pagina'));
+    await userEvent.click(await screen.findByLabelText('Próxima página'));
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2, page_size: 20 })));
   });
 

@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 import { writeFile } from "node:fs/promises";
 const expect = baseExpect.configure({ timeout: 15000 });
 test.skip(
@@ -82,10 +83,7 @@ test("ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes", asy
       preview_hash: preview.preview_hash,
     });
   await page.goto("/app/projects/" + project + "/summary");
-  await page
-    .getByRole("link", { name: "DRE Gerencial", exact: true })
-    .last()
-    .click();
+  await openProjectTab(page, "Financeiro", "DRE Gerencial");
   await expect(page).toHaveURL(new RegExp("project_id=" + project));
   const nav = page.getByRole("navigation", { name: "Navegação da DRE" });
   await nav.getByRole("link", { name: "Plano de contas" }).click();

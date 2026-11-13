@@ -80,7 +80,7 @@ export function FieldAgentSelect({
       {query.isError ? (
         <div className="flex items-center justify-between gap-3">
           <p role="alert" className="text-xs text-destructive">
-            Nao foi possivel carregar os inventariantes.
+            Não foi possível carregar os inventariantes.
           </p>
           <Button
             type="button"
@@ -104,7 +104,7 @@ export function FieldAgentSelect({
             Anterior
           </Button>
           <span>
-            Pagina {page} de {data.totalPages}
+            Página {page} de {data.totalPages}
           </span>
           <Button
             type="button"
@@ -113,7 +113,7 @@ export function FieldAgentSelect({
             disabled={page >= data.totalPages}
             onClick={() => setPage((current) => current + 1)}
           >
-            Proxima
+            Próxima
           </Button>
         </div>
       ) : null}

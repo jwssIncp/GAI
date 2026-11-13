@@ -33,8 +33,8 @@ export type AccountingItemFormValues = z.input<typeof accountingItemFormSchema>;
 export function validateAccountingImportFile(file: File) {
   const nameOk = file.name.toLowerCase().endsWith('.xlsx');
   const typeOk = !file.type || file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  if (!nameOk || !typeOk) return 'Envie um arquivo .xlsx valido.';
-  if (file.size < 1) return 'Arquivo vazio nao pode ser importado.';
-  if (file.size > 20 * 1024 * 1024) return 'Arquivo deve ter no maximo 20 MB.';
+  if (!nameOk || !typeOk) return 'Envie um arquivo .xlsx válido.';
+  if (file.size < 1) return 'Arquivo vazio não pode ser importado.';
+  if (file.size > 20 * 1024 * 1024) return 'Arquivo deve ter no máximo 20 MB.';
   return null;
 }

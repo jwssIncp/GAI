@@ -34,15 +34,15 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Placa"><Input {...form.register('plate')} /></FormField>
         <FormField label="Número de série contábil" error={form.formState.errors.serial_number?.message}><Input maxLength={100} {...form.register('serial_number')} /></FormField>
-        <FormField label="Codigo base"><Input {...form.register('base_code')} /></FormField>
-        <FormField label="Codigo investor"><Input {...form.register('investor_code')} /></FormField>
-        <FormField label="Localizacao"><Input {...form.register('location')} /></FormField>
+        <FormField label="Código base"><Input {...form.register('base_code')} /></FormField>
+        <FormField label="Código investor"><Input {...form.register('investor_code')} /></FormField>
+        <FormField label="Localização"><Input {...form.register('location')} /></FormField>
       </div>
-      <FormField label="Descricao"><Input {...form.register('description')} /></FormField>
-      <FormField label="Conta contabil"><Input {...form.register('accounting_account_description')} /></FormField>
+      <FormField label="Descrição"><Input {...form.register('description')} /></FormField>
+      <FormField label="Conta contábil"><Input {...form.register('accounting_account_description')} /></FormField>
       <div className="grid gap-4 md:grid-cols-3">
-        <FormField label="Data de aquisicao"><DateInput {...form.register('acquisition_date')} /></FormField>
-        <FormField label="Valor de aquisicao" error={form.formState.errors.acquisition_value?.message}><MoneyInput {...form.register('acquisition_value')} /></FormField>
+        <FormField label="Data de aquisição"><DateInput {...form.register('acquisition_date')} /></FormField>
+        <FormField label="Valor de aquisição" error={form.formState.errors.acquisition_value?.message}><MoneyInput {...form.register('acquisition_value')} /></FormField>
         <FormField label="Status">
           <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('status')}>
             {accountingItemStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
@@ -54,11 +54,11 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
         <FormField label="Obs. 2"><Input {...form.register('note_2')} /></FormField>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Placa nova inventario"><Input {...form.register('new_inventory_plate')} /></FormField>
-        <FormField label="Localizacao inventario"><Input {...form.register('inventory_location')} /></FormField>
+        <FormField label="Placa nova inventário"><Input {...form.register('new_inventory_plate')} /></FormField>
+        <FormField label="Localização inventário"><Input {...form.register('inventory_location')} /></FormField>
       </div>
-      <FormField label="Descricao inventario"><Input {...form.register('inventory_description')} /></FormField>
-      <Button loading={busy}>Atualizar item contabil</Button>
+      <FormField label="Descrição inventário"><Input {...form.register('inventory_description')} /></FormField>
+      <Button loading={busy}>Atualizar item contábil</Button>
     </form>
   );
 }

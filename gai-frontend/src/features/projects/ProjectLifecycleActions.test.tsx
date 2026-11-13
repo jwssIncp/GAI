@@ -75,7 +75,7 @@ describe('ProjectLifecycleActions', () => {
   it('respeita available_actions, a permissao informada pelo backend e detalha blockers 409', async () => {
     mocks.finish.mockRejectedValue(new ApiError(409, {
       code: 'PROJECT_HAS_OPEN_OPERATIONS',
-      message: 'Existem operacoes em aberto.',
+      message: 'Existem operações em aberto.',
       details: { operations: [{ type: 'import_sessions', count: 2 }, { type: 'pending_issues', count: 1 }] },
     }));
     renderActions(['projects:finish-approved']);
@@ -87,7 +87,7 @@ describe('ProjectLifecycleActions', () => {
 
     await waitFor(() => expect(mocks.finish).toHaveBeenCalledWith(10));
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Projeto possui operacoes abertas',
+      title: 'Projeto possui operações abertas',
       description: expect.stringContaining('import_sessions: 2'),
       tone: 'error',
     }));
@@ -107,8 +107,8 @@ describe('ProjectLifecycleActions', () => {
     renderActions(['projects:pause']);
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Sem permissao',
-      description: 'Seu acesso nao permite executar esta acao.',
+      title: 'Sem permissão',
+      description: 'Seu acesso não permite executar esta ação.',
     })));
   });
 
@@ -117,8 +117,8 @@ describe('ProjectLifecycleActions', () => {
     renderActions(['projects:pause']);
     await userEvent.click(screen.getByRole('button', { name: 'Pausar' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Projeto nao encontrado',
-      description: 'O projeto nao esta mais disponivel.',
+      title: 'Projeto não encontrado',
+      description: 'O projeto não está mais disponível.',
     })));
   });
 });

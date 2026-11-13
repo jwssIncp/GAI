@@ -34,7 +34,7 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
   async function handleFile(file: File) {
     setFeedback(null);
     if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
-      setFeedback('Formato nao permitido. Envie PDF, JPEG, PNG ou WEBP.');
+      setFeedback('Formato não permitido. Envie PDF, JPEG, PNG ou WEBP.');
       return;
     }
     if (file.size < 1 || file.size > MAX_SIZE_BYTES) {
@@ -46,7 +46,7 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
       await upload.mutateAsync(file);
       setFeedback('Comprovante enviado com sucesso.');
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel enviar o comprovante.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível enviar o comprovante.');
     } finally {
       setProgress(null);
     }
@@ -58,7 +58,7 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
       const response = await download.mutateAsync(attachment.id);
       setDownloadLink({ url: response.download_url, attachment: response.attachment });
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Nao foi possivel gerar o acesso temporario.');
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível gerar o acesso temporário.');
     }
   }
 
@@ -73,7 +73,7 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">Comprovantes</h3>
-          <p className="text-sm text-muted-foreground">Despesa #{expense.id}. Arquivos protegidos por URL temporaria.</p>
+          <p className="text-sm text-muted-foreground">Despesa #{expense.id}. Arquivos protegidos por URL temporária.</p>
         </div>
         <PermissionGate permissions={['expenses:upload-attachment']}>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
@@ -123,12 +123,12 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
           ))}
         </div>
       ) : (
-        <EmptyState title="Nenhum comprovante anexado" description="Envie recibos ou comprovantes para apoiar a aprovacao da despesa." />
+        <EmptyState title="Nenhum comprovante anexado" description="Envie recibos ou comprovantes para apoiar a aprovação da despesa." />
       )}
       <ModalForm open={Boolean(downloadLink)} onOpenChange={(open) => !open && setDownloadLink(null)} title={downloadLink?.attachment.original_name ?? 'Comprovante'}>
         {downloadLink ? (
           <div className="grid gap-3">
-            <p className="text-sm text-muted-foreground">Acesso temporario gerado pelo backend.</p>
+            <p className="text-sm text-muted-foreground">Acesso temporário gerado pelo backend.</p>
             <a className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90" href={downloadLink.url} target="_blank" rel="noreferrer">
               Abrir comprovante
             </a>

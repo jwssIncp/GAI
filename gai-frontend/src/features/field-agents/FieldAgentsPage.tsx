@@ -99,7 +99,7 @@ export function FieldAgentsPage() {
     { header: "Status", cell: (item) => <StatusBadge value={item.status} /> },
     { header: "Criado em", cell: (item) => formatDate(item.created_at) },
     {
-      header: "Acoes",
+      header: "Ações",
       cell: (item) => (
         <div className="flex items-center gap-1">
           <Button

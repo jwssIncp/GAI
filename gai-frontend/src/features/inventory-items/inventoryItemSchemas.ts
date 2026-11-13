@@ -5,12 +5,12 @@ const optionalMoney = z
   .string()
   .trim()
   .transform((value) => (value ? value.replace(',', '.') : undefined))
-  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Valor deve ter ate 2 casas decimais').optional());
+  .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Valor deve ter até 2 casas decimais').optional());
 const optionalYear = z
   .string()
   .trim()
   .transform((value) => (value ? Number(value) : undefined))
-  .pipe(z.number().int().min(1900, 'Ano minimo 1900').max(2100, 'Ano maximo 2100').optional());
+  .pipe(z.number().int().min(1900, 'Ano mínimo 1900').max(2100, 'Ano máximo 2100').optional());
 
 export const inventoryItemFormSchema = z.object({
   external_item_id: optionalText,
@@ -20,7 +20,7 @@ export const inventoryItemFormSchema = z.object({
   unit_text: optionalText,
   address_text: optionalText,
   location_text: optionalText,
-  description: z.string().trim().min(1, 'Informe a descricao do item').optional(),
+  description: z.string().trim().min(1, 'Informe a descrição do item').optional(),
   brand: optionalText,
   model: optionalText,
   serial_number: optionalText,

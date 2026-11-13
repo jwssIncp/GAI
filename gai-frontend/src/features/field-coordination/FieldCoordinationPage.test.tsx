@@ -226,9 +226,16 @@ describe("Field coordination UI", () => {
     expect(screen.getByText("Verificar campo")).toBeInTheDocument();
     expect(screen.getByText(/Todas as tarefas aplicáveis/)).toBeInTheDocument();
     const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
-    await userEvent.click(within(nav).getByRole("link", { name: "Itens" }));
+    // Navegação em dois níveis: o grupo Inventário abre sua primeira aba visível (Itens e avaliação).
+    await userEvent.click(within(nav).getByRole("link", { name: "Inventário" }));
     expect(
       await screen.findByRole("heading", { name: "Itens do mesmo projeto" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: "Itens e avaliação" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("heading", { name: "Itens do mesmo projeto" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
       nav,

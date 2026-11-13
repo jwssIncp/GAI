@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test, expect } from "@playwright/test";
+import { openProjectTab, projectTabLink } from "./projectNavigation";
 
 // Opt-in: uses the actual local API and existing synthetic projects; never mocks requests.
 test.skip(
@@ -45,28 +46,28 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   await nav.waitFor();
   await page.waitForLoadState("networkidle");
   const handle = await nav.elementHandle();
-  const transitions: Array<[string, string]> = [
-    ["Itens", "inventory-items"],
-    ["Financeiro", "finance"],
-    ["Pendências", "pending-issues"],
-    ["Dashboard", "dashboard"],
-    ["Base contábil", "accounting-items"],
-    ["Unidades", "summary#unidades"],
-    ["Configurações", "summary#configuracoes"],
-    ["Visão geral", "summary"],
-    ["Preparação", "preparation/kickoff"],
-    ["Itens", "inventory-items"],
-    ["Inventário", "inventory/sessions"],
-    ["Imagens", "inventory-items?view=images"],
-    ["Inventariantes", "summary#inventariantes"],
-    ["Prestações", "finance/accountabilities"],
-    ["Importações", "import-sessions"],
-    ["Exportações", "export-jobs"],
-    ["Preparação", "preparation/kickoff"],
+  // Navegação em dois níveis: grupo › aba. A aba "Imagens" foi removida (abria a mesma tela de Itens).
+  const transitions: Array<[string, string, string]> = [
+    ["Inventário", "Itens e avaliação", "inventory-items"],
+    ["Financeiro", "Pagamentos e despesas", "finance"],
+    ["Inventário", "Pendências", "pending-issues"],
+    ["Visão geral", "Dashboard", "dashboard"],
+    ["Contábil e laudo", "Base contábil", "accounting-items"],
+    ["Visão geral", "Unidades", "summary#unidades"],
+    ["Visão geral", "Configurações", "summary#configuracoes"],
+    ["Visão geral", "Resumo", "summary"],
+    ["Campo", "Preparação", "preparation/kickoff"],
+    ["Inventário", "Itens e avaliação", "inventory-items"],
+    ["Inventário", "Sessões e conciliação", "inventory/sessions"],
+    ["Campo", "Equipe de campo", "summary#inventariantes"],
+    ["Financeiro", "Prestações", "finance/accountabilities"],
+    ["Visão geral", "Importações", "import-sessions"],
+    ["Visão geral", "Exportações", "export-jobs"],
+    ["Campo", "Preparação", "preparation/kickoff"],
   ];
-  for (const [label, suffix] of transitions) {
-    const link = nav.getByRole("link", { name: label, exact: true });
-    await link.click();
+  for (const [group, label, suffix] of transitions) {
+    await openProjectTab(page, group, label);
+    const link = projectTabLink(page, group, label);
     await expect(page).toHaveURL((process.env.GAI_E2E_BASE_URL ?? "http://localhost:5173") + root + suffix);
     await page.waitForLoadState("networkidle");
     await expect(link).toHaveAttribute("aria-current", "page");
@@ -96,6 +97,11 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
     steps.push(label + ": " + page.url());
     console.info("Navigation passed:", label, suffix);
   }
+  // A URL antiga da aba Imagens continua válida e abre Itens.
+  await page.goto(root + "inventory-items?view=images");
+  await expect(projectTabLink(page, "Inventário", "Itens e avaliação")).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Imagens", exact: true })).toHaveCount(0);
+  await openProjectTab(page, "Campo", "Preparação");
   await page
     .getByRole("link", { name: "Checklist do Cliente", exact: true })
     .click();
@@ -122,22 +128,18 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   });
 
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const [label, suffix] of [
-    ["Unidades", "summary#unidades"],
-    ["Configurações", "summary#configuracoes"],
-    ["Itens", "inventory-items"],
-    ["Preparação", "preparation/kickoff"],
-    ["Dashboard", "dashboard"],
+  for (const [group, label, suffix] of [
+    ["Visão geral", "Unidades", "summary#unidades"],
+    ["Visão geral", "Configurações", "summary#configuracoes"],
+    ["Inventário", "Itens e avaliação", "inventory-items"],
+    ["Campo", "Preparação", "preparation/kickoff"],
+    ["Visão geral", "Dashboard", "dashboard"],
   ]) {
-    await nav.getByRole("link", { name: label, exact: true }).click();
+    await openProjectTab(page, group, label);
     await expect(page).toHaveURL((process.env.GAI_E2E_BASE_URL ?? "http://localhost:5173") + root + suffix);
     await page.waitForLoadState("networkidle");
-    await expect(
-      nav.getByRole("link", { name: label, exact: true }),
-    ).toHaveAttribute("aria-current", "page");
-    await expect(
-      nav.getByRole("link", { name: label, exact: true }),
-    ).toBeInViewport();
+    await expect(projectTabLink(page, group, label)).toHaveAttribute("aria-current", "page");
+    await expect(projectTabLink(page, group, label)).toBeInViewport();
   }
   await expect(page.getByRole("heading", { name: /^Dashboard/ })).toBeVisible();
   await expect(page.getByText("Calculando indicadores do projeto", { exact: true })).toHaveCount(0);
@@ -162,7 +164,7 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
     "data-project-id",
     secondary,
   );
-  await nav.getByRole("link", { name: "Itens", exact: true }).click();
+  await openProjectTab(page, "Inventário", "Itens e avaliação");
   await expect(page).toHaveURL(
     new RegExp(`/projects/${secondary}/inventory-items$`),
   );

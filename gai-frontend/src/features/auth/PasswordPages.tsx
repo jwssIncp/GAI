@@ -23,7 +23,7 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const form = useForm<{ email: string }>({
     resolver: zodResolver(
-      z.object({ email: z.string().email("Email invalido") }),
+      z.object({ email: z.string().email("Email inválido") }),
     ),
   });
   return (
@@ -57,7 +57,7 @@ export function ForgotPasswordPage() {
           />
         </FormField>
         <Button size="lg" loading={form.formState.isSubmitting}>
-          Enviar instrucoes
+          Enviar instruções
         </Button>
       </form>
       {error && (
@@ -85,7 +85,7 @@ export function ResetPasswordPage() {
     defaultValues: { token: params.get("token") ?? "" },
     resolver: zodResolver(
       z.object({
-        token: z.string().min(1, "Token obrigatorio"),
+        token: z.string().min(1, "Token obrigatório"),
         new_password: z
           .string()
           .refine(
@@ -168,8 +168,8 @@ export function ResetPasswordPage() {
 export function SessionExpiredPage() {
   return (
     <Message
-      title="Sessao expirada"
-      text="Entre novamente para continuar com seguranca."
+      title="Sessão expirada"
+      text="Entre novamente para continuar com segurança."
     />
   );
 }
@@ -177,7 +177,7 @@ export function AccessDeniedPage() {
   return (
     <Message
       title="Acesso negado"
-      text="Voce nao tem permissao para acessar este recurso."
+      text="Você não tem permissão para acessar este recurso."
     />
   );
 }

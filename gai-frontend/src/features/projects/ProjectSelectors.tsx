@@ -34,7 +34,7 @@ export function OrganizationSelect(props: BaseSelectorProps) {
   return (
     <PagedSelect
       {...props}
-      label="Organizacao"
+      label="Organização"
       search={search}
       onSearch={(value) => { setSearch(value); setPage(1); }}
       page={page}
@@ -78,7 +78,7 @@ export function CompanySelect({ organizationId, ...props }: BaseSelectorProps & 
       loading={query.isLoading}
       error={query.isError}
       options={options.map((item) => ({ id: item.id, label: item.name }))}
-      emptyLabel={enabled ? 'Nenhuma empresa ativa encontrada' : 'Selecione a organizacao primeiro'}
+      emptyLabel={enabled ? 'Nenhuma empresa ativa encontrada' : 'Selecione a organização primeiro'}
     />
   );
 }
@@ -109,7 +109,7 @@ export function CompanyUnitSelect({ companyId, excludedIds = [], ...props }: Bas
       loading={query.isLoading}
       error={query.isError}
       options={items.map((item) => ({ id: item.id, label: item.code ? `${item.name} (${item.code})` : item.name }))}
-      emptyLabel={enabled ? 'Nenhuma unidade ativa disponivel' : 'Empresa nao vinculada'}
+      emptyLabel={enabled ? 'Nenhuma unidade ativa disponível' : 'Empresa não vinculada'}
     />
   );
 }
@@ -128,7 +128,7 @@ function PagedSelect({
   loading,
   error,
   options,
-  emptyLabel = 'Nenhuma opcao encontrada',
+  emptyLabel = 'Nenhuma opção encontrada',
 }: BaseSelectorProps & {
   label: string;
   search: string;
@@ -151,15 +151,15 @@ function PagedSelect({
         disabled={disabled}
       />
       <select className={selectClassName} aria-label={label} value={value} onChange={(event) => onChange(event.target.value)} disabled={disabled || loading || error} required={required}>
-        <option value="">{loading ? 'Carregando...' : error ? 'Erro ao carregar opcoes' : options.length ? 'Selecione' : emptyLabel}</option>
+        <option value="">{loading ? 'Carregando...' : error ? 'Erro ao carregar opções' : options.length ? 'Selecione' : emptyLabel}</option>
         {options.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
       </select>
-      {error ? <p role="alert" className="text-xs text-destructive">Nao foi possivel carregar as opcoes.</p> : null}
+      {error ? <p role="alert" className="text-xs text-destructive">Não foi possível carregar as opções.</p> : null}
       {totalPages > 1 ? (
         <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
           <Button type="button" variant="secondary" size="sm" disabled={disabled || page <= 1} onClick={() => onPage(page - 1)}>Anterior</Button>
-          <span>Pagina {page} de {totalPages}</span>
-          <Button type="button" variant="secondary" size="sm" disabled={disabled || page >= totalPages} onClick={() => onPage(page + 1)}>Proxima</Button>
+          <span>Página {page} de {totalPages}</span>
+          <Button type="button" variant="secondary" size="sm" disabled={disabled || page >= totalPages} onClick={() => onPage(page + 1)}>Próxima</Button>
         </div>
       ) : null}
     </div>

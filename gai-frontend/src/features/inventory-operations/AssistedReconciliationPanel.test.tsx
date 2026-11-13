@@ -136,7 +136,7 @@ describe("Assisted review integrated panel", () => {
     expect(screen.getByText("Registro contábil original")).toBeInTheDocument();
     await userEvent.type(
       screen.getByLabelText("Justificativa"),
-      "Conferencia humana concluida",
+      "Conferencia humana concluída",
     );
     await userEvent.click(
       screen.getByRole("button", { name: "Registrar decisão" }),
@@ -150,7 +150,7 @@ describe("Assisted review integrated panel", () => {
           revision: 1,
           source_hash: run.sourceHash,
           action: "approved",
-          reason: "Conferencia humana concluida",
+          reason: "Conferencia humana concluída",
           command_key: expect.any(String),
         }),
       ),
@@ -174,7 +174,7 @@ describe("Assisted review integrated panel", () => {
     );
     await userEvent.type(
       screen.getByLabelText("Justificativa"),
-      "Conferencia humana concluida",
+      "Conferencia humana concluída",
     );
     expect(
       screen.getByRole("button", { name: "Registrar decisão" }),
@@ -187,7 +187,7 @@ describe("Assisted review integrated panel", () => {
         {
           id: 1,
           action: "rejected",
-          reason: "Descricao incompativel revisada",
+          reason: "Descrição incompativel revisada",
           actorId: 2,
           revision: 2,
           createdAt: "2026-10-27T12:00:00Z",
@@ -202,7 +202,7 @@ describe("Assisted review integrated panel", () => {
       await screen.findByRole("button", { name: "Comparar e revisar" }),
     );
     expect(
-      await screen.findByText("Descricao incompativel revisada"),
+      await screen.findByText("Descrição incompativel revisada"),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Registrar decisão" }),

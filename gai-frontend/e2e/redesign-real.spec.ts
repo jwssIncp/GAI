@@ -1,4 +1,5 @@
 import { runtimePassword } from './runtime-credentials';
+import { projectNav, projectTabLink } from './projectNavigation';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -219,12 +220,12 @@ test.describe('redesign behaviour', () => {
     await expect(drawer).not.toBeVisible();
     await expect(page.getByRole('status').filter({ hasText: 'Projeto criado' })).toBeVisible();
     await page.getByPlaceholder('Buscar projeto', { exact: true }).fill(prefix);
-    await expect(page.getByText(/Pagina 1 de 2/)).toBeVisible();
-    await page.getByRole('button', { name: 'Proxima pagina' }).click();
+    await expect(page.getByText(/Página 1 de 2/)).toBeVisible();
+    await page.getByRole('button', { name: 'Próxima página' }).click();
     await expect(page).toHaveURL(/page=2/);
     await page.reload();
-    await expect(page.getByText(/Pagina 2 de 2/)).toBeVisible();
-    await page.getByRole('button', { name: 'Pagina anterior' }).click();
+    await expect(page.getByText(/Página 2 de 2/)).toBeVisible();
+    await page.getByRole('button', { name: 'Página anterior' }).click();
     const cancel = page.getByRole('button', { name: 'Cancelar', exact: true }).first();
     await cancel.click();
     await expect(page.getByRole('dialog', { name: 'Cancelar', exact: true })).toBeVisible();
@@ -263,7 +264,8 @@ test.describe('redesign behaviour', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
     await expect(page).toHaveURL(root + 'summary' + context);
-    await expect(page.getByRole('navigation', { name: 'Abas do projeto' }).getByRole('link', { name: 'Visão geral', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(projectNav(page).getByRole('link', { name: 'Visão geral', exact: true })).toHaveAttribute('aria-current', 'true');
+    await expect(projectTabLink(page, 'Visão geral', 'Resumo')).toHaveAttribute('aria-current', 'page');
     await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Projetos', exact: true }).click();
     await expect(page).toHaveURL(/\/app\/projects/);
     await page.goBack();

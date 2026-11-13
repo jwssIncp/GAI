@@ -89,7 +89,7 @@ function OperationalDashboardPage() {
             </section>
           ) : null}
         </>
-      ) : <EmptyState title="Nenhum indicador disponivel" description="Seu perfil ainda nao possui permissoes para visualizar indicadores operacionais." />}
+      ) : <EmptyState title="Nenhum indicador disponível" description="Seu perfil ainda não possui permissões para visualizar indicadores operacionais." />}
     </PageContainer>
   );
 }

@@ -6,6 +6,9 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { navigationHref } from '@/features/projects/navigationContext';
 import { useToast } from '@/components/ui/toast-context';
+import { usePermissions } from '@/features/auth/usePermissions';
+import { useProject } from '@/features/projects/projectQueries';
+import { projectBreadcrumbSteps } from '@/features/projects/projectNavigation';
 
 const breadcrumbLabels: Record<string, string> = {
   'technical-reports': 'Laudos',
@@ -30,7 +33,7 @@ const breadcrumbLabels: Record<string, string> = {
   entries:'Classificações',
   accounts:'Plano de contas',
   periods:'Competências',
-  receivables:'Contas a receber',
+  receivables:'Recebíveis',
   'cash-flow':'Fluxo de caixa',
   new:'Novo',
   'import-sessions': 'Importações',
@@ -45,21 +48,64 @@ const breadcrumbLabels: Record<string, string> = {
   accountabilities: 'Prestações',
 };
 
-export function Breadcrumbs() {
-  const location = useLocation();
-  const parts = location.pathname.split('/').filter(Boolean).slice(1);
+type Crumb = { label: string; to?: string };
+
+// No mobile (< sm) mostra só os dois últimos itens (ex.: "Visão geral › Resumo"), sem seta antes
+// do primeiro item visível; a aba atual tem prioridade e o grupo é truncado se faltar espaço.
+// No desktop mostra a trilha toda.
+function BreadcrumbList({ crumbs }: { crumbs: Crumb[] }) {
   return (
-    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
-      {parts.length ? parts.map((part, index) => (
-        <li key={`${part}-${index}`} className={`items-center gap-1 ${index < parts.length - 1 ? 'hidden sm:inline-flex' : 'inline-flex min-w-0'}`}>
-          {index ? <ChevronRight className="shrink-0 text-topbar-muted" size={12} aria-hidden="true" /> : null}
-          {index < parts.length - 1 && (['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents'].includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part))) ?
-            <Link className="rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)}>{/^\d+$/.test(part) ? `#${part}` : breadcrumbLabels[part]}</Link> :
-            <span aria-current={index === parts.length - 1 ? 'page' : undefined} className={index === parts.length - 1 ? 'truncate font-semibold text-topbar-foreground' : ''}>{/^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' '))}</span>}
-        </li>
-      )) : 'Visão geral'}
+    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap">
+      {crumbs.map((crumb, index) => {
+        const last = index === crumbs.length - 1;
+        const firstOnMobile = index === crumbs.length - 2;
+        return (
+          <li key={`${crumb.label}-${index}`} className={`items-center gap-1 ${last ? 'inline-flex min-w-0 shrink-0 max-w-[70%] sm:max-w-none sm:shrink' : firstOnMobile ? 'inline-flex min-w-0 shrink' : 'hidden sm:inline-flex'}`}>
+            {index ? <ChevronRight className={`shrink-0 text-topbar-muted ${firstOnMobile ? 'hidden sm:block' : ''}`} size={12} aria-hidden="true" /> : null}
+            {crumb.to && !last ?
+              <Link className="truncate rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={crumb.to}>{crumb.label}</Link> :
+              <span aria-current={last ? 'page' : undefined} className={last ? 'truncate font-semibold text-topbar-foreground' : 'truncate'}>{crumb.label}</span>}
+          </li>
+        );
+      })}
     </ol></nav>
   );
+}
+
+// Dentro do workspace: Projetos › <nome do projeto> › <grupo> › <aba> [› detalhe], com os
+// mesmos nomes da navegação em dois níveis. Sem permissão de leitura do projeto, mostra #id.
+function ProjectBreadcrumbs({ projectId }: { projectId: string }) {
+  const location = useLocation();
+  const { hasPermission } = usePermissions();
+  const canRead = hasPermission('projects:read');
+  const project = useProject(canRead ? Number(projectId) : undefined);
+  const root = `/app/projects/${projectId}/`;
+  const name = canRead && project.data && String(project.data.id) === projectId ? project.data.name : `#${projectId}`;
+  const crumbs: Crumb[] = [
+    { label: 'Projetos', to: navigationHref('/app/projects', location.search) },
+    { label: name, to: navigationHref(root + 'summary', location.search) },
+    ...projectBreadcrumbSteps(projectId, location.pathname, location.hash).map((step) => ({
+      label: step.label,
+      to: step.to ? navigationHref(root + step.to, location.search) : undefined,
+    })),
+  ];
+  return <BreadcrumbList crumbs={crumbs} />;
+}
+
+export function Breadcrumbs() {
+  const location = useLocation();
+  const projectId = location.pathname.match(/^\/app\/projects\/([1-9]\d*)\/./)?.[1];
+  if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
+  const parts = location.pathname.split('/').filter(Boolean).slice(1);
+  if (!parts.length) return <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">Visão geral</ol></nav>;
+  const linkable = ['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents'];
+  const crumbs: Crumb[] = parts.map((part, index) => ({
+    label: /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
+    to: index < parts.length - 1 && (linkable.includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part)))
+      ? navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)
+      : undefined,
+  }));
+  return <BreadcrumbList crumbs={crumbs} />;
 }
 
 export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNavigation: () => void; navigationOpen?: boolean }) {
@@ -91,7 +137,7 @@ export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNav
             <Button variant="secondary" className="h-11 rounded-xl border-white/10 bg-white/[0.06] p-1.5 pr-2 text-topbar-foreground shadow-none hover:border-primary/35 hover:bg-white/[0.1] sm:pr-3" aria-label={`Menu do usuário ${user?.login ?? 'Usuário'}`}>
               <span className="grid size-8 place-items-center rounded-lg bg-premium-gradient text-[0.6875rem] font-extrabold text-primary-foreground shadow-glow">{initials}</span>
               <span className="hidden min-w-0 text-left sm:block">
-                <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuario'}</span>
+                <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuário'}</span>
                 <span className="block max-w-32 truncate text-[0.625rem] font-medium text-topbar-muted">{organizationLabel}</span>
               </span>
               <ChevronDown className="text-topbar-muted" size={14} />

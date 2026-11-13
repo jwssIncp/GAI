@@ -55,7 +55,7 @@ const issue: InventoryPendingIssue = {
   status: 'open',
   severity: 'high',
   title: 'Placa divergente',
-  description: 'Placa fisica difere da base contabil',
+  description: 'Placa física difere da base contábil',
   old_value: { plate: 'OLD-1' },
   new_value: { plate: 'NEW-1' },
   resolution_notes: null,
@@ -107,7 +107,7 @@ describe('ProjectPendingIssuesPage', () => {
   it('renderiza listagem de pendencias', async () => {
     renderPage();
     expect(await screen.findByText('Placa divergente')).toBeInTheDocument();
-    expect(screen.getAllByText('Divergencia de placa').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Divergência de placa').length).toBeGreaterThan(0);
   });
 
   it('renderiza loading', () => {
@@ -123,22 +123,22 @@ describe('ProjectPendingIssuesPage', () => {
   });
 
   it('renderiza erro', async () => {
-    mocks.list.mockRejectedValue(new Error('Falha nas pendencias'));
+    mocks.list.mockRejectedValue(new Error('Falha nas pendências'));
     renderPage();
-    expect(await screen.findByText('Falha nas pendencias')).toBeInTheDocument();
+    expect(await screen.findByText('Falha nas pendências')).toBeInTheDocument();
   });
 
   it('oculta criar e gerar sem permissao', async () => {
     renderPage(noPermissions);
     await screen.findByText('Placa divergente');
-    expect(screen.queryByRole('button', { name: /nova pendencia/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /gerar pendencias/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /nova pendência/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /gerar pendências/i })).not.toBeInTheDocument();
   });
 
   it('filtros chamam API com parametros corretos', async () => {
     renderPage();
-    await userEvent.selectOptions(await screen.findByLabelText('Filtrar pendencia por status'), 'open');
-    await userEvent.selectOptions(screen.getByLabelText('Filtrar pendencia por severidade'), 'high');
+    await userEvent.selectOptions(await screen.findByLabelText('Filtrar pendência por status'), 'open');
+    await userEvent.selectOptions(screen.getByLabelText('Filtrar pendência por severidade'), 'high');
     await userEvent.type(screen.getByPlaceholderText('Placa'), 'PAT');
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ status: 'open', severity: 'high', plate: 'PAT' })));
   });
@@ -146,51 +146,51 @@ describe('ProjectPendingIssuesPage', () => {
   it('pagina usando page/page_size', async () => {
     mocks.list.mockResolvedValue(page([issue], { total_items: 30, total_pages: 2 }));
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Proxima pagina'));
+    await userEvent.click(await screen.findByLabelText('Próxima página'));
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ page: 2, page_size: 20 })));
   });
 
   it('detalhe renderiza dados principais', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Visualizar pendencia'));
-    expect(await screen.findByText(/Pendencia #41/)).toBeInTheDocument();
+    await userEvent.click(await screen.findByLabelText('Visualizar pendência'));
+    expect(await screen.findByText(/Pendência #41/)).toBeInTheDocument();
     expect(screen.getByText('Item inventariado #11')).toBeInTheDocument();
   });
 
   it('formulario de criacao valida campos obrigatorios', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /nova pendencia/i }));
-    await userEvent.clear(screen.getByLabelText('Titulo'));
-    await userEvent.click(screen.getByRole('button', { name: /salvar pendencia/i }));
-    expect(await screen.findByText('Informe o titulo')).toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: /nova pendência/i }));
+    await userEvent.clear(screen.getByLabelText('Título'));
+    await userEvent.click(screen.getByRole('button', { name: /salvar pendência/i }));
+    expect(await screen.findByText('Informe o título')).toBeInTheDocument();
   });
 
   it('resolver exige observacoes', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Resolver pendencia'));
-    await userEvent.click(screen.getByRole('button', { name: /resolver pendencia/i }));
-    expect(await screen.findByText('Informe as observacoes da resolucao')).toBeInTheDocument();
+    await userEvent.click(await screen.findByLabelText('Resolver pendência'));
+    await userEvent.click(screen.getByRole('button', { name: /resolver pendência/i }));
+    expect(await screen.findByText('Informe as observações da resolução')).toBeInTheDocument();
   });
 
   it('ignora pendencia com motivo opcional', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Ignorar pendencia'));
-    await userEvent.type(screen.getByLabelText('Motivo ou observacao'), 'Nao aplicavel');
-    await userEvent.click(screen.getByRole('button', { name: /ignorar pendencia/i }));
-    await waitFor(() => expect(mocks.ignore).toHaveBeenCalledWith(10, 41, { resolution_notes: 'Nao aplicavel' }));
+    await userEvent.click(await screen.findByLabelText('Ignorar pendência'));
+    await userEvent.type(screen.getByLabelText('Motivo ou observação'), 'Não aplicavel');
+    await userEvent.click(screen.getByRole('button', { name: /ignorar pendência/i }));
+    await waitFor(() => expect(mocks.ignore).toHaveBeenCalledWith(10, 41, { resolution_notes: 'Não aplicavel' }));
   });
 
   it('cancela com confirmacao', async () => {
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Cancelar pendencia'));
+    await userEvent.click(await screen.findByLabelText('Cancelar pendência'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.cancel).toHaveBeenCalledWith(10, 41));
   });
 
   it('gera pendencias automaticamente', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /gerar pendencias/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /gerar pendências/i }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
-    expect(await screen.findByText('Geracao concluida: 3 criada(s), 1 ignorada(s).')).toBeInTheDocument();
+    expect(await screen.findByText('Geração concluída: 3 criada(s), 1 ignorada(s).')).toBeInTheDocument();
   });
 });

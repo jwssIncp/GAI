@@ -1,4 +1,5 @@
 import { test, expect as baseExpect } from "@playwright/test";
+import { openProjectTab } from "./projectNavigation";
 import { createRequire } from "node:module";
 const XLSX = createRequire(import.meta.url)(
   "../../gai-backend/node_modules/xlsx",
@@ -64,10 +65,7 @@ test("ORG_ADMIN manages contracts/amendments, refreshes history and exports filt
   const p = (await createProject("A")).id,
     p2 = (await createProject("B")).id;
   await page.goto(`/app/projects/${p}/summary`);
-  await page
-    .getByRole("navigation", { name: "Abas do projeto" })
-    .getByRole("link", { name: "Contratos", exact: true })
-    .click();
+  await openProjectTab(page, "Comercial", "Contratos");
   await page.getByRole("button", { name: "Novo contrato" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Número do contrato").fill(number);
@@ -125,9 +123,8 @@ test("ORG_ADMIN manages contracts/amendments, refreshes history and exports filt
   await dialog.getByLabel("Justificativa").fill("Revisão documental sintética");
   await dialog.getByRole("button", { name: "Salvar contrato" }).click();
   await expect(page.getByText(`Contrato ${number} · versão 3`)).toBeVisible();
-  const nav = page.getByRole("navigation", { name: "Abas do projeto" });
-  await nav.getByRole("link", { name: "Visão geral", exact: true }).click();
-  await nav.getByRole("link", { name: "Contratos", exact: true }).click();
+  await openProjectTab(page, "Visão geral", "Resumo");
+  await openProjectTab(page, "Comercial", "Contratos");
   await expect(page.locator("[data-project-id]")).toHaveAttribute(
     "data-project-id",
     String(p),

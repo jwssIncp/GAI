@@ -31,7 +31,7 @@ export function LoginPage() {
     } catch (err) {
       const apiError = err as ApiError;
       if (apiError.code === 'ACCOUNT_LOCKED' || apiError.status === 423) navigate('/account-locked');
-      else setError(apiError.message || 'Credenciais invalidas');
+      else setError(apiError.message || 'Credenciais inválidas');
     }
   }
 

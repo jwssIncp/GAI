@@ -65,23 +65,16 @@ export function ProjectSummaryPage() {
 
   return (
     <PageContainer>
-      <div className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-panel backdrop-blur">
-        <Link className="text-primary transition hover:text-primary-text hover:underline" to="/app/projects">Projetos</Link>
-        <span className="text-border">/</span>
-        <span className="font-semibold text-foreground">{title}</span>
-        <span className="text-border">/</span>
-        <span>Visao geral</span>
-      </div>
       <PageHeader
         title={title}
-        description="Workspace operacional do projeto, com indicadores consolidados pelo backend e atalhos para os modulos de campo."
+        description="Workspace operacional do projeto, com indicadores consolidados pelo backend e atalhos para os módulos de campo."
         action={projectData ? <ProjectActions project={projectData} /> : null}
       />
       {project.isLoading || dashboard.isLoading ? <LoadingState label="Carregando workspace do projeto" /> : null}
       {project.isError ? <ProjectError error={project.error} onRetry={() => project.refetch()} /> : null}
       {!project.isError && dashboard.isError ? <ProjectError error={dashboard.error} onRetry={() => dashboard.refetch()} /> : null}
       {!project.isLoading && !dashboard.isLoading && !project.isError && !dashboard.isError && !projectData && !data ? (
-        <EmptyState title="Projeto nao encontrado" description="O projeto solicitado nao existe ou nao esta disponivel para este usuario." />
+        <EmptyState title="Projeto não encontrado" description="O projeto solicitado não existe ou não está disponível para este usuário." />
       ) : null}
       {projectData ? <ProjectRegistrationDetails project={projectData} /> : null}
       {projectData && data ? <ProjectWorkspace project={projectData} summary={data} /> : null}
@@ -121,12 +114,12 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
           <span className="text-xs font-semibold text-muted-foreground">Status: {projectStatusLabels[project.status] ?? project.status}</span>
         </div>
         <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
-          {project.description || 'Projeto sem descricao cadastrada.'}
+          {project.description || 'Projeto sem descrição cadastrada.'}
         </p>
         <dl className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
           <ProjectContextInfo project={project} />
-          <Info label="Inicio" value={formatProjectDate(project.start_date)} />
-          <Info label="Termino" value={formatProjectDate(project.end_date)} />
+          <Info label="Início" value={formatProjectDate(project.start_date)} />
+          <Info label="Término" value={formatProjectDate(project.end_date)} />
           <Info label="Criado em" value={formatDateTime(project.created_at)} />
           <Info label="Atualizado em" value={formatDateTime(project.updated_at)} />
           <Info label="Avaliados" value={`${summary.inventory.evaluated_items}/${summary.inventory.total_items}`} />
@@ -138,9 +131,9 @@ function ProjectHero({ project, summary }: { project: Project; summary: ProjectS
           <p className="eyebrow">Pulso do projeto</p>
           <p className="mt-1.5 text-sm font-bold">Saude operacional</p>
         </div>
-        <ProgressCard label="Inventario avaliado" value={Number(summary.inventory.progress_percentage ?? 0)} />
+        <ProgressCard label="Inventário avaliado" value={Number(summary.inventory.progress_percentage ?? 0)} />
         <p className="text-sm leading-6 text-muted-foreground">
-          {summary.inventory.pending_items} itens pendentes, {summary.pending_issues.open_pending_issues} pendencias abertas e {summary.images.total_images} imagens registradas.
+          {summary.inventory.pending_items} itens pendentes, {summary.pending_issues.open_pending_issues} pendências abertas e {summary.images.total_images} imagens registradas.
         </p>
       </div>
     </section>
@@ -170,11 +163,11 @@ function MetricGrid({ summary }: { summary: ProjectSummary }) {
       <MetricCard label="Total de itens" value={summary.inventory.total_items} hint={`${summary.inventory.evaluated_items} avaliados`} icon={<ListChecks size={18} />} />
       <MetricCard label="Itens pendentes" value={summary.inventory.pending_items} hint={`${summary.inventory.divergent_items} divergentes`} />
       <MetricCard label="Imagens" value={summary.images.total_images} hint={`${summary.images.pending_upload_images} pendentes de upload`} icon={<Image size={18} />} />
-      <MetricCard label="Base contabil" value={summary.accounting.total_accounting_items} hint={`${summary.accounting.matched_accounting_items} conciliados`} icon={<FileSpreadsheet size={18} />} />
-      <MetricCard label="Pendencias abertas" value={summary.pending_issues.open_pending_issues} hint={`${summary.pending_issues.critical_pending_issues} criticas`} icon={<AlertTriangle size={18} />} />
-      <MetricCard label="Financeiro total" value={financial ? formatMoney(financial.financial_total_amount) : 'Pendente'} hint={financial ? `${financial.pending_payments} pagamentos pendentes` : 'Metrica pendente no backend ou nao solicitada.'} icon={<CircleDollarSign size={18} />} />
-      <MetricCard label="Importacoes em processamento" value={imports?.processing_import_sessions ?? 'Pendente'} hint={imports ? `${imports.failed_import_sessions} com falha` : 'Metrica pendente no backend ou nao solicitada.'} icon={<FileUp size={18} />} />
-      <MetricCard label="Exportacoes concluidas" value={exports?.finished_export_jobs ?? 0} hint={exports ? `${exports.failed_export_jobs} com falha` : 'Nenhum job registrado.'} icon={<FileDown size={18} />} />
+      <MetricCard label="Base contábil" value={summary.accounting.total_accounting_items} hint={`${summary.accounting.matched_accounting_items} conciliados`} icon={<FileSpreadsheet size={18} />} />
+      <MetricCard label="Pendências abertas" value={summary.pending_issues.open_pending_issues} hint={`${summary.pending_issues.critical_pending_issues} críticas`} icon={<AlertTriangle size={18} />} />
+      <MetricCard label="Financeiro total" value={financial ? formatMoney(financial.financial_total_amount) : 'Pendente'} hint={financial ? `${financial.pending_payments} pagamentos pendentes` : 'Métrica pendente no backend ou não solicitada.'} icon={<CircleDollarSign size={18} />} />
+      <MetricCard label="Importações em processamento" value={imports?.processing_import_sessions ?? 'Pendente'} hint={imports ? `${imports.failed_import_sessions} com falha` : 'Métrica pendente no backend ou não solicitada.'} icon={<FileUp size={18} />} />
+      <MetricCard label="Exportações concluídas" value={exports?.finished_export_jobs ?? 0} hint={exports ? `${exports.failed_export_jobs} com falha` : 'Nenhum job registrado.'} icon={<FileDown size={18} />} />
     </div>
   );
 }
@@ -194,7 +187,7 @@ function ProjectProgress({ project, summary }: { project: Project; summary: Proj
         <ProgressCard label="Itens avaliados" value={Number(summary.inventory.progress_percentage ?? 0)} />
         <p className="rounded-xl border border-border/60 bg-muted/35 p-3 text-sm leading-6 text-muted-foreground">
           Status operacional: <span className="font-medium text-foreground">{projectStatusLabels[project.status] ?? project.status}</span>.
-          {locked ? ' Acoes operacionais devem ser revisadas antes de continuar.' : ' Projeto apto para operacao conforme permissoes do usuario.'}
+          {locked ? ' Ações operacionais devem ser revisadas antes de continuar.' : ' Projeto apto para operação conforme permissões do usuário.'}
         </p>
       </div>
     </section>
@@ -207,7 +200,7 @@ function OperationalAlerts({ alerts }: { alerts: Alert[] }) {
       <section className="premium-panel p-5 sm:p-6">
         <p className="eyebrow">Monitoramento</p>
         <h2 className="mt-2 text-lg font-bold tracking-tight">Alertas operacionais</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Nenhum alerta operacional disponivel com as metricas atuais.</p>
+        <p className="mt-2 text-sm text-muted-foreground">Nenhum alerta operacional disponível com as métricas atuais.</p>
       </section>
     );
   }
@@ -237,30 +230,30 @@ function QuickActions({ project }: { project: Project }) {
   const locked = lockedStatuses.includes(project.status);
   const actions = [
     { label: 'Novo item', to: `/app/projects/${project.id}/inventory-items?new=1`, permissions: ['inventory-items:create'], icon: <Plus size={18} /> },
-    { label: 'Nova sessao de inventario', to: `/app/projects/${project.id}/inventory/sessions`, permissions: ['inventory-sessions:create'], icon: <Plus size={18} /> },
-    { label: 'Importar base contabil', to: `/app/projects/${project.id}/accounting-items?import=1`, permissions: ['inventory-accounting-items:import'], icon: <FileSpreadsheet size={18} /> },
-    { label: 'Gerar pendencias', to: `/app/projects/${project.id}/pending-issues?generate=1`, permissions: ['inventory-pending-issues:generate'], icon: <AlertTriangle size={18} /> },
+    { label: 'Nova sessão de inventário', to: `/app/projects/${project.id}/inventory/sessions`, permissions: ['inventory-sessions:create'], icon: <Plus size={18} /> },
+    { label: 'Importar base contábil', to: `/app/projects/${project.id}/accounting-items?import=1`, permissions: ['inventory-accounting-items:import'], icon: <FileSpreadsheet size={18} /> },
+    { label: 'Gerar pendências', to: `/app/projects/${project.id}/pending-issues?generate=1`, permissions: ['inventory-pending-issues:generate'], icon: <AlertTriangle size={18} /> },
     { label: 'Nova despesa', to: `/app/projects/${project.id}/finance?tab=expenses&new=1`, permissions: ['expenses:create'], icon: <CircleDollarSign size={18} /> },
     { label: 'Novo pagamento', to: `/app/projects/${project.id}/finance?tab=payments&new=1`, permissions: ['payments:create'], icon: <CircleDollarSign size={18} /> },
-    { label: 'Nova exportacao', to: `/app/projects/${project.id}/export-jobs?new=1`, permissions: ['export-jobs:create'], icon: <FileDown size={18} /> },
-    { label: 'Nova importacao', to: `/app/projects/${project.id}/import-sessions?new=1`, permissions: ['import-sessions:create'], icon: <FileUp size={18} /> },
+    { label: 'Nova exportação', to: `/app/projects/${project.id}/export-jobs?new=1`, permissions: ['export-jobs:create'], icon: <FileDown size={18} /> },
+    { label: 'Nova importação', to: `/app/projects/${project.id}/import-sessions?new=1`, permissions: ['import-sessions:create'], icon: <FileUp size={18} /> },
     { label: 'Vincular inventariante', to: '#inventariantes', permissions: ['project-field-agents:assign'], icon: <UserPlus size={18} /> },
   ];
   return (
     <section className="grid gap-4">
       <div>
         <p className="eyebrow">Produtividade</p>
-        <h2 className="mt-2 text-lg font-bold tracking-tight">Acoes rapidas</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{locked ? 'Projeto bloqueado operacionalmente; atalhos ficam sinalizados.' : 'Atalhos respeitam permissoes e levam aos fluxos existentes.'}</p>
+        <h2 className="mt-2 text-lg font-bold tracking-tight">Ações rápidas</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{locked ? 'Projeto bloqueado operacionalmente; atalhos ficam sinalizados.' : 'Atalhos respeitam permissões e levam aos fluxos existentes.'}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map((action) => (
           <PermissionGate key={action.label} permissions={action.permissions}>
-            <button type="button" className="group flex min-h-24 items-center gap-3 rounded-xl border border-border/70 bg-card/80 p-4 text-left shadow-panel transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-subtle hover:shadow-elevated disabled:cursor-not-allowed disabled:opacity-50" disabled={locked && action.label !== 'Nova exportacao'} onClick={() => navigate(action.to)}>
+            <button type="button" className="group flex min-h-24 items-center gap-3 rounded-xl border border-border/70 bg-card/80 p-4 text-left shadow-panel transition duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-subtle hover:shadow-elevated disabled:cursor-not-allowed disabled:opacity-50" disabled={locked && action.label !== 'Nova exportação'} onClick={() => navigate(action.to)}>
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent text-accent-foreground transition group-hover:scale-105">{action.icon}</span>
               <span>
                 <span className="block text-sm font-semibold">{action.label}</span>
-                <span className="mt-1 block text-xs text-muted-foreground">Abrir modulo</span>
+                <span className="mt-1 block text-xs text-muted-foreground">Abrir módulo</span>
               </span>
             </button>
           </PermissionGate>
@@ -272,20 +265,20 @@ function QuickActions({ project }: { project: Project }) {
 
 function ModuleSummary({ projectId, summary }: { projectId: number; summary: ProjectSummary }) {
   const modules = [
-    { title: 'Itens inventariados', description: `${summary.inventory.pending_items} pendentes, ${summary.inventory.divergent_items} divergentes e ${summary.inventory.not_found_items} nao encontrados.`, to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
-    { title: 'Inventario operacional', description: 'Sessoes, rodadas, observacoes, reinventarios e conciliacoes versionadas.', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
-    { title: 'Base contabil', description: `${summary.accounting.total_accounting_items} itens, ${summary.accounting.matched_accounting_items} conciliados e ${summary.accounting.divergent_accounting_items} divergentes.`, to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
-    { title: 'Pendencias', description: `${summary.pending_issues.open_pending_issues} abertas, ${summary.pending_issues.resolved_pending_issues} resolvidas e ${summary.pending_issues.critical_pending_issues} criticas.`, to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
-    { title: 'Financeiro', description: summary.financial ? `${formatMoney(summary.financial.financial_total_amount)} em pagamentos e despesas.` : 'Resumo financeiro nao retornado pelo dashboard.', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
-    { title: 'Prestacao de contas', description: 'Despesas elegiveis, fechamento e parcelas com total do backend.', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
-    { title: 'Importacoes', description: summary.imports ? `${summary.imports.total_import_sessions} sessoes, ${summary.imports.processing_import_sessions} em processamento e ${summary.imports.failed_import_sessions} com falha.` : 'Resumo de importacoes nao retornado pelo dashboard.', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
-    { title: 'Exportacoes', description: summary.exports ? `${summary.exports.total_export_jobs} jobs, ${summary.exports.finished_export_jobs} concluidos e ${summary.exports.failed_export_jobs} com falha.` : 'Nenhuma exportacao registrada.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
+    { title: 'Itens inventariados', description: `${summary.inventory.pending_items} pendentes, ${summary.inventory.divergent_items} divergentes e ${summary.inventory.not_found_items} não encontrados.`, to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
+    { title: 'Inventário operacional', description: 'Sessões, rodadas, observações, reinventarios e conciliações versionadas.', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
+    { title: 'Base contábil', description: `${summary.accounting.total_accounting_items} itens, ${summary.accounting.matched_accounting_items} conciliados e ${summary.accounting.divergent_accounting_items} divergentes.`, to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
+    { title: 'Pendências', description: `${summary.pending_issues.open_pending_issues} abertas, ${summary.pending_issues.resolved_pending_issues} resolvidas e ${summary.pending_issues.critical_pending_issues} críticas.`, to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
+    { title: 'Financeiro', description: summary.financial ? `${formatMoney(summary.financial.financial_total_amount)} em pagamentos e despesas.` : 'Resumo financeiro não retornado pelo dashboard.', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
+    { title: 'Prestação de contas', description: 'Despesas elegíveis, fechamento e parcelas com total do backend.', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
+    { title: 'Importações', description: summary.imports ? `${summary.imports.total_import_sessions} sessões, ${summary.imports.processing_import_sessions} em processamento e ${summary.imports.failed_import_sessions} com falha.` : 'Resumo de importações não retornado pelo dashboard.', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
+    { title: 'Exportações', description: summary.exports ? `${summary.exports.total_export_jobs} jobs, ${summary.exports.finished_export_jobs} concluídos e ${summary.exports.failed_export_jobs} com falha.` : 'Nenhuma exportação registrada.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
   ];
   return (
     <section className="grid gap-4">
       <div>
         <p className="eyebrow">Módulos conectados</p>
-        <h2 className="mt-2 text-lg font-bold tracking-tight">Resumo por modulo</h2>
+        <h2 className="mt-2 text-lg font-bold tracking-tight">Resumo por módulo</h2>
       </div>
       <div className="grid gap-3 lg:grid-cols-2">
         {modules.map((module) => (
@@ -306,12 +299,12 @@ function ModuleSummary({ projectId, summary }: { projectId: number; summary: Pro
 
 function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activity'] }) {
   const rows = [
-    { label: 'Ultimo item criado', value: activity?.last_inventory_item_created_at },
-    { label: 'Ultimo item atualizado', value: activity?.last_inventory_item_updated_at },
-    { label: 'Ultima importacao finalizada', value: activity?.last_import_finished_at },
-    { label: 'Ultima exportacao finalizada', value: activity?.last_export_finished_at },
-    { label: 'Ultima pendencia criada', value: activity?.last_pending_issue_created_at },
-    { label: 'Ultimo pagamento atualizado', value: activity?.last_payment_updated_at },
+    { label: 'Último item criado', value: activity?.last_inventory_item_created_at },
+    { label: 'Último item atualizado', value: activity?.last_inventory_item_updated_at },
+    { label: 'Última importação finalizada', value: activity?.last_import_finished_at },
+    { label: 'Última exportação finalizada', value: activity?.last_export_finished_at },
+    { label: 'Última pendência criada', value: activity?.last_pending_issue_created_at },
+    { label: 'Último pagamento atualizado', value: activity?.last_payment_updated_at },
   ];
   const hasAny = rows.some((row) => row.value);
   return (
@@ -332,10 +325,10 @@ function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activi
 function ProjectSettings({ project }: { project: Project }) {
   const settings = project.settings && Object.keys(project.settings).length ? project.settings : null;
   return (
-    <section id="configuracoes" className="premium-panel scroll-mt-44 p-5 sm:p-6">
-      <p className="eyebrow">Configuracoes</p>
-      <h2 className="mt-2 text-lg font-bold tracking-tight">Configuracoes operacionais</h2>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">Nenhuma configuracao operacional suportada pode ser alterada nesta versao.</p>
+    <section id="configuracoes" className="premium-panel scroll-mt-52 p-5 sm:p-6">
+      <p className="eyebrow">Configurações</p>
+      <h2 className="mt-2 text-lg font-bold tracking-tight">Configurações operacionais</h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">Nenhuma configuração operacional suportada pode ser alterada nesta versão.</p>
       {settings ? (
         <details className="mt-4 rounded-xl border border-border/60 bg-muted/25 p-4">
           <summary className="cursor-pointer text-sm font-semibold">Dados legados somente para consulta</summary>
@@ -349,25 +342,25 @@ function ProjectSettings({ project }: { project: Project }) {
 function buildAlerts(project: Project, summary: ProjectSummary): Alert[] {
   const alerts: Alert[] = [];
   if (summary.pending_issues.critical_pending_issues > 0) {
-    alerts.push({ title: 'Pendencias criticas', description: `${summary.pending_issues.critical_pending_issues} pendencia(s) critica(s) exigem revisao.`, tone: 'danger' });
+    alerts.push({ title: 'Pendências críticas', description: `${summary.pending_issues.critical_pending_issues} pendência(s) crítica(s) exigem revisão.`, tone: 'danger' });
   }
   if ((summary.imports?.failed_import_sessions ?? 0) > 0) {
-    alerts.push({ title: 'Importacoes com falha', description: `${summary.imports?.failed_import_sessions ?? 0} sessao(oes) de importacao falharam.`, tone: 'warning' });
+    alerts.push({ title: 'Importações com falha', description: `${summary.imports?.failed_import_sessions ?? 0} sessão(ões) de importação falharam.`, tone: 'warning' });
   }
   if ((summary.exports?.failed_export_jobs ?? 0) > 0) {
-    alerts.push({ title: 'Exportacoes com falha', description: `${summary.exports?.failed_export_jobs ?? 0} exportacao(oes) falharam.`, tone: 'warning' });
+    alerts.push({ title: 'Exportações com falha', description: `${summary.exports?.failed_export_jobs ?? 0} exportação(ões) falharam.`, tone: 'warning' });
   }
   if ((summary.financial?.pending_payments ?? 0) > 0) {
     alerts.push({ title: 'Pagamentos pendentes', description: `${summary.financial?.pending_payments ?? 0} pagamento(s) pendente(s) no financeiro.`, tone: 'info' });
   }
   if (summary.field_agents.total_field_agents === 0) {
-    alerts.push({ title: 'Projeto sem inventariantes', description: 'Vincule inventariantes antes de iniciar a execucao em campo.', tone: 'warning' });
+    alerts.push({ title: 'Projeto sem inventariantes', description: 'Vincule inventariantes antes de iniciar a execução em campo.', tone: 'warning' });
   }
   if (summary.inventory.total_items === 0) {
     alerts.push({ title: 'Projeto sem itens', description: 'Nenhum item inventariado foi registrado para este projeto.', tone: 'warning' });
   }
   if (summary.accounting.total_accounting_items === 0) {
-    alerts.push({ title: 'Base contabil nao importada', description: 'A base contabil ainda nao possui itens para conciliacao.', tone: 'info' });
+    alerts.push({ title: 'Base contábil não importada', description: 'A base contábil ainda não possui itens para conciliação.', tone: 'info' });
   }
   if (lockedStatuses.includes(project.status)) {
     alerts.push({ title: 'Projeto bloqueado operacionalmente', description: `Status atual: ${projectStatusLabels[project.status] ?? project.status}.`, tone: 'warning' });
@@ -376,9 +369,9 @@ function buildAlerts(project: Project, summary: ProjectSummary): Alert[] {
 }
 
 function ProjectError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
-  const message = error instanceof Error ? error.message : 'Nao foi possivel carregar o workspace do projeto.';
+  const message = error instanceof Error ? error.message : 'Não foi possível carregar o workspace do projeto.';
   if (message.includes('404') || message.toLowerCase().includes('not_found')) {
-    return <EmptyState title="Projeto nao encontrado" description="O backend retornou NOT_FOUND para este projeto." />;
+    return <EmptyState title="Projeto não encontrado" description="O backend retornou NOT_FOUND para este projeto." />;
   }
   return <ErrorState message={message} onRetry={onRetry} />;
 }
@@ -408,8 +401,8 @@ function ProjectContextInfo({ project }: { project: Project }) {
   });
   return (
     <>
-      <Info label="Empresa vinculada" value={project.company_id ? company.data?.name ?? 'Empresa vinculada' : 'Nao vinculada'} />
-      <Info label="Organizacao" value={organization.data?.trade_name || organization.data?.legal_name || (canReadOrganization ? 'Carregando organizacao' : 'Sua organizacao')} />
+      <Info label="Empresa vinculada" value={project.company_id ? company.data?.name ?? 'Empresa vinculada' : 'Não vinculada'} />
+      <Info label="Organização" value={organization.data?.trade_name || organization.data?.legal_name || (canReadOrganization ? 'Carregando organização' : 'Sua organização')} />
     </>
   );
 }
