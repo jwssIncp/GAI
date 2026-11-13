@@ -47,6 +47,7 @@ const row = (id: number, patch: Partial<ConsolidatedRow> = {}): ConsolidatedRow 
   final_amount: "925.00",
   status: "approved",
   overdue: false,
+  no_expected: false,
   ...patch,
 });
 const facet = (total: number, options: Array<[string, string, number]> = []) => ({
@@ -68,11 +69,13 @@ const data = (): Consolidated => ({
     open_next_month: "300.00",
     overdue: "500.00",
     overdue_count: 1,
+    no_expected: "150.00",
+    no_expected_count: 1,
   },
   facets: {
     project_id: facet(6, [["10", "Alfa", 4], ["11", "Beta", 2]]),
     field_agent_id: facet(6, [["100", "Ana", 4], ["101", "Bruno", 2]]),
-    status: facet(6, [["open", "Em aberto (pendente e aprovado)", 3], ["paid", "Pago", 2]]),
+    status: facet(6, [["open", "Em aberto", 3], ["paid", "Pago", 2]]),
     expected_month: facet(5, [["2026-11", "2026-11", 3]]),
     paid_month: facet(2, [["2026-11", "2026-11", 1]]),
     expected_date: facet(5),
@@ -84,6 +87,7 @@ const data = (): Consolidated => ({
     subtotal: { final: "500.00", paid: "200.00", open: "300.00" },
   },
   items: [
+    row(7, { no_expected: true, expected_payment_date: null, final_amount: "150.00", field_agent_name: "Carla" }),
     row(2, { overdue: true, expected_payment_date: "2026-11-10", final_amount: "500.00" }),
     row(1, { status: "pending" }),
     row(3, { status: "paid", payment_date: "2026-11-02", final_amount: "1000.00" }),
@@ -110,6 +114,33 @@ describe("Pagamento de inventariantes", () => {
     expect(kpis.getByText("1 lançamento(s) com previsão vencida")).toBeInTheDocument();
   });
 
+  it("diária antiga sem previsão: KPI 'Sem previsão' filtra, linha mostra 'Informar' que abre a data prevista", async () => {
+    const u = userEvent.setup();
+    mocks.changeDate.mockResolvedValue({ ok: true });
+    mount();
+    const kpis = within(await screen.findByRole("region", { name: "Indicadores do pagamento de inventariantes" }));
+    const card = kpis.getByRole("button", { name: /Sem previsão/ });
+    expect(card).toHaveTextContent("R$ 150,00");
+    expect(card).toHaveTextContent("1 em aberto sem data prevista");
+    expect(card).toHaveAttribute("aria-pressed", "false");
+    await u.click(card);
+    await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ no_expected: true, status: "open" })));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Sem previsão/ })).toHaveAttribute("aria-pressed", "true"));
+    await u.click(screen.getByRole("button", { name: "Informar a data prevista de Carla" }));
+    const dialog = within(await screen.findByRole("dialog"));
+    expect(dialog.getByText("Informar data prevista")).toBeInTheDocument();
+    await u.type(dialog.getByLabelText("Data prevista de pagamento"), "2026-11-25");
+    await u.click(dialog.getByRole("button", { name: "Salvar data" }));
+    await waitFor(() => expect(mocks.changeDate).toHaveBeenCalledWith(7, { kind: "expected", date: "2026-11-25" }));
+  });
+
+  it("status: rótulo curto 'Em aberto' com a explicação na dica", async () => {
+    mount();
+    const status = await screen.findByLabelText("Filtrar por status");
+    await within(status).findByRole("option", { name: "Em aberto (3)" });
+    expect(status.getAttribute("title")).toMatch(/pendentes e aprovados ainda não pagos/);
+  });
+
   it("filtros em cascata com 'todos (N)' e contagem por opção; resumo filtra pelo inventariante", async () => {
     const u = userEvent.setup();
     mount();
@@ -129,13 +160,13 @@ describe("Pagamento de inventariantes", () => {
     const u = userEvent.setup();
     mount();
     await u.click(await screen.findByLabelText("Selecionar todos os exibidos"));
-    expect(screen.getByRole("button", { name: /Pagar selecionados \(1\)/ })).toBeEnabled(); // só o aprovado
+    expect(screen.getByRole("button", { name: /Pagar selecionados \(2\)/ })).toBeEnabled(); // só os aprovados (inclui o antigo sem previsão)
     expect(screen.getByRole("button", { name: /Voltar para em aberto \(1\)/ })).toBeEnabled(); // só o pago
     await u.click(screen.getByRole("button", { name: /Pagar selecionados/ }));
     const dialog = within(screen.getByRole("dialog"));
     expect(dialog.getByLabelText(/Hoje \(13\/11\/2026\)/)).toBeChecked();
     await u.click(dialog.getByRole("button", { name: "Registrar pagamento" }));
-    await waitFor(() => expect(mocks.pay).toHaveBeenCalledWith({ ids: [2], date_mode: "today" }));
+    await waitFor(() => expect(mocks.pay).toHaveBeenCalledWith({ ids: [7, 2], date_mode: "today" }));
   });
 
   it("uma data para todos e uma data por lançamento", async () => {
@@ -143,17 +174,17 @@ describe("Pagamento de inventariantes", () => {
     mocks.list.mockResolvedValue({ ...data(), require_approval: false });
     mount();
     await u.click(await screen.findByLabelText("Selecionar todos os exibidos"));
-    await u.click(screen.getByRole("button", { name: /Pagar selecionados \(2\)/ }));
+    await u.click(screen.getByRole("button", { name: /Pagar selecionados \(3\)/ }));
     let dialog = within(screen.getByRole("dialog"));
     await u.click(dialog.getByLabelText("Uma data para todos"));
     const all = dialog.getByLabelText("Data para todos");
     await u.clear(all);
     await u.type(all, "2026-11-15");
     await u.click(dialog.getByRole("button", { name: "Registrar pagamento" }));
-    await waitFor(() => expect(mocks.pay).toHaveBeenLastCalledWith({ ids: [2, 1], date_mode: "chosen", payment_date: "2026-11-15" }));
+    await waitFor(() => expect(mocks.pay).toHaveBeenLastCalledWith({ ids: [7, 2, 1], date_mode: "chosen", payment_date: "2026-11-15" }));
 
     await u.click(await screen.findByLabelText("Selecionar todos os exibidos"));
-    await u.click(screen.getByRole("button", { name: /Pagar selecionados \(2\)/ }));
+    await u.click(screen.getByRole("button", { name: /Pagar selecionados \(3\)/ }));
     dialog = within(screen.getByRole("dialog"));
     await u.click(dialog.getByLabelText("Uma data por lançamento"));
     const first = dialog.getAllByLabelText(/Data do pagamento de Ana em Alfa/)[0];
@@ -161,7 +192,7 @@ describe("Pagamento de inventariantes", () => {
     await u.type(first, "2026-11-11");
     await u.click(dialog.getByRole("button", { name: "Registrar pagamento" }));
     await waitFor(() =>
-      expect(mocks.pay).toHaveBeenLastCalledWith({ ids: [2, 1], date_mode: "individual", dates: { "2": "2026-11-11", "1": "2026-11-13" } }),
+      expect(mocks.pay).toHaveBeenLastCalledWith({ ids: [7, 2, 1], date_mode: "individual", dates: { "7": "2026-11-13", "2": "2026-11-11", "1": "2026-11-13" } }),
     );
   });
 

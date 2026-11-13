@@ -172,7 +172,7 @@ const plural = (count: number, singular: string, pluralForm: string) => `${count
  * (o mesmo que a Visão geral já busca). Quem chama deve exibir apenas os alertas das abas
  * que o usuário pode ver, para não revelar dados de abas sem permissão.
  */
-export type ProjectAlertAccess = { approvePayments: boolean; approveExpenses: boolean };
+export type ProjectAlertAccess = { approvePayments: boolean; approveExpenses: boolean; reschedulePayments?: boolean };
 
 export function projectTabAlerts(
   summary: ProjectSummary,
@@ -217,16 +217,21 @@ export function projectTabAlerts(
   if (summary.project.status === "active" && summary.field_agents.active_field_agents === 0) {
     alerts["field-team"] = { severity: "warning", description: "Projeto ativo sem inventariante vinculado" };
   }
-  // Só para quem pode aprovar, contando apenas o que a pessoa pode aprovar.
-  if (summary.financial && (access.approvePayments || access.approveExpenses)) {
+  // Cada pessoa vê só o que pode resolver: aprovar (payments:approve) ou informar a
+  // previsão das diárias antigas em aberto sem data prevista (payments:reschedule).
+  if (summary.financial && (access.approvePayments || access.approveExpenses || access.reschedulePayments)) {
     const payments = access.approvePayments ? summary.financial.pending_payments : 0;
+    const noExpected = access.reschedulePayments ? (summary.financial.payments_without_expected_date ?? 0) : 0;
     const expenses = access.approveExpenses ? summary.financial.pending_expenses : 0;
     // Cada aba alerta só o que é dela: diárias em Remuneração, despesas em Despesas.
-    if (payments > 0)
+    if (payments + noExpected > 0)
       alerts.remuneration = {
-        count: payments,
+        count: payments + noExpected,
         severity: "warning",
-        description: plural(payments, "diária aguardando sua aprovação", "diárias aguardando sua aprovação"),
+        description: [
+          payments ? plural(payments, "diária aguardando sua aprovação", "diárias aguardando sua aprovação") : null,
+          noExpected ? plural(noExpected, "diária em aberto sem data prevista", "diárias em aberto sem data prevista") : null,
+        ].filter(Boolean).join("; "),
       };
     if (expenses > 0)
       alerts.finance = {

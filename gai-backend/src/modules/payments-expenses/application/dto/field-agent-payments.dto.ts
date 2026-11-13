@@ -1,8 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsIn,
   IsInt,
   IsObject,
@@ -26,6 +27,13 @@ export class ConsolidatedPaymentsQueryDto {
   @IsOptional() @IsString() @Matches(MONTH) paid_month?: string;
   @IsOptional() @IsString() @Matches(DATE) expected_date?: string;
   @IsOptional() @IsString() @Matches(DATE) payment_date?: string;
+  /** Só os em aberto sem data prevista: ?no_expected=true */
+  @IsOptional()
+  @Transform(
+    ({ value }: { value: unknown }) => value === true || value === 'true',
+  )
+  @IsBoolean()
+  no_expected?: boolean;
 }
 
 export class PaymentIdsDto {

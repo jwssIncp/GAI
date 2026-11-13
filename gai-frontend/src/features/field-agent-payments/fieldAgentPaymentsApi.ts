@@ -10,6 +10,8 @@ export type ConsolidatedFilters = {
   paid_month?: string;
   expected_date?: string;
   payment_date?: string;
+  /** Só os em aberto sem data prevista (lançamentos antigos). */
+  no_expected?: boolean;
 };
 
 export type ConsolidatedRow = {
@@ -32,7 +34,11 @@ export type ConsolidatedRow = {
   final_amount: string;
   status: "pending" | "approved" | "paid" | "cancelled";
   overdue: boolean;
+  /** Em aberto sem data prevista: entra no topo e pede "Informar". */
+  no_expected: boolean;
 };
+
+export type FacetKey = Exclude<keyof ConsolidatedFilters, "no_expected">;
 
 export type Facet = { total: number; options: Array<{ value: string; label: string; count: number }> };
 
@@ -51,8 +57,10 @@ export type Consolidated = {
     open_next_month: string;
     overdue: string;
     overdue_count: number;
+    no_expected: string;
+    no_expected_count: number;
   };
-  facets: Record<keyof ConsolidatedFilters, Facet>;
+  facets: Record<FacetKey, Facet>;
   summary: {
     rows: Array<{ field_agent_id: number; name: string; entries: number; days: number; final: string; paid: string; open: string }>;
     show_all: boolean;

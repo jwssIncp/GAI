@@ -72,7 +72,11 @@ const divergentWithoutIssues: ProjectSummary = {
   inventory: { ...clean.inventory, divergent_items: 2 },
   accounting: { ...clean.accounting, not_found_accounting_items: 3 },
 };
-const approver = (keys: string[]) => ({ approvePayments: keys.includes("payments:approve"), approveExpenses: keys.includes("expenses:approve") });
+const approver = (keys: string[]) => ({
+  approvePayments: keys.includes("payments:approve"),
+  approveExpenses: keys.includes("expenses:approve"),
+  reschedulePayments: keys.includes("payments:reschedule"),
+});
 
 describe("Regras dos alertas ⚠ v1 revisadas (somente dados de /projects/:id/dashboard)", () => {
   it("não gera alerta para um projeto sem problemas", () => {
@@ -107,6 +111,22 @@ describe("Regras dos alertas ⚠ v1 revisadas (somente dados de /projects/:id/da
     expect(expenses.remuneration).toBeUndefined();
     const both = projectTabAlerts(withProblems, approver(["payments:approve", "expenses:approve"]));
     expect([both.remuneration?.count, both.finance?.count]).toEqual([1, 2]);
+  });
+
+  it("diárias antigas em aberto sem data prevista alertam Remuneração para quem pode reagendar", () => {
+    const old = { ...clean, financial: { ...clean.financial!, pending_payments: 1, payments_without_expected_date: 3 } };
+    expect(projectTabAlerts(old, approver(["payments:approve"])).remuneration?.count).toBe(1);
+    expect(projectTabAlerts(old, approver(["payments:reschedule"])).remuneration).toEqual({
+      count: 3,
+      severity: "warning",
+      description: "3 diárias em aberto sem data prevista",
+    });
+    expect(projectTabAlerts(old, approver(["payments:approve", "payments:reschedule"])).remuneration).toEqual({
+      count: 4,
+      severity: "warning",
+      description: "1 diária aguardando sua aprovação; 3 diárias em aberto sem data prevista",
+    });
+    expect(projectTabAlerts(old, approver([])).remuneration).toBeUndefined();
   });
 
   it("equipe só alerta com projeto ativo; financeiro/importações/exportações ausentes não geram alerta", () => {

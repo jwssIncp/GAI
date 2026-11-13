@@ -132,7 +132,48 @@ describe('Pagamento de inventariantes: KPIs (doc 06 §4.1 + atraso)', () => {
       open_next_month: '300.00',
       overdue: '500.00', // previsão 10/11 < hoje e em aberto
       overdue_count: 1,
+      no_expected: '0.00',
+      no_expected_count: 0,
     });
+  });
+
+  it('diária antiga sem previsão: KPI próprio, no topo da lista e filtro; nada de previsão automática', async () => {
+    const withLegacy = [
+      ...data,
+      row(7, {
+        status: 'approved',
+        expectedPaymentDate: null,
+        finalAmount: '150.00',
+      }),
+    ];
+    const s = service(withLegacy).s;
+    const all = await s.list({}, actor);
+    expect([all.kpis.no_expected, all.kpis.no_expected_count]).toEqual([
+      '150.00',
+      1,
+    ]);
+    const legacy = all.items.find((i) => i.id === 7)!;
+    expect([
+      legacy.no_expected,
+      legacy.overdue,
+      legacy.expected_payment_date,
+    ]).toEqual([true, false, null]);
+    // Sem previsão e atrasados no topo (sem previsão antes), depois os demais em aberto.
+    expect(all.items.map((i) => i.id)).toEqual([7, 2, 1, 4, 6, 3, 5]);
+    expect(
+      (await s.list({ no_expected: true }, actor as never)).items.map(
+        (i) => i.id,
+      ),
+    ).toEqual([7]);
+    // Pago sem previsão (histórico) não conta como pendência.
+    const paidLegacy = await service([
+      row(8, {
+        status: 'paid',
+        expectedPaymentDate: null,
+        paymentDate: '2026-07-01',
+      }),
+    ]).s.list({}, actor);
+    expect(paidLegacy.kpis.no_expected_count).toBe(0);
   });
 });
 
@@ -149,7 +190,7 @@ describe('Pagamento de inventariantes: facetas, resumo e ordem', () => {
     expect(facets.field_agent_id.total).toBe(6); // o próprio filtro não se restringe
     expect(facets.status.options[0]).toEqual({
       value: 'open',
-      label: 'Em aberto (pendente e aprovado)',
+      label: 'Em aberto',
       count: 1,
     });
   });

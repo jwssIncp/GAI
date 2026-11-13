@@ -42,6 +42,8 @@ export interface ConsolidatedFilters {
   paid_month?: string;
   expected_date?: string;
   payment_date?: string;
+  /** Só os em aberto sem data prevista (lançamentos anteriores à obrigatoriedade). */
+  no_expected?: boolean;
 }
 
 export type PayDateMode = 'today' | 'chosen' | 'individual';
@@ -94,6 +96,8 @@ export interface ConsolidatedRow {
   final_amount: string;
   status: PaymentStatus;
   overdue: boolean;
+  /** Em aberto e sem data prevista: precisa "Informar" (não há previsão automática). */
+  no_expected: boolean;
 }
 
 /**
@@ -178,6 +182,7 @@ export class FieldAgentPaymentsService {
         status: p.status,
         // Atraso: previsão anterior a hoje e ainda em aberto (decisão 7).
         overdue: OPEN.has(p.status) && expected !== null && expected < today,
+        no_expected: OPEN.has(p.status) && expected === null,
       };
     });
   }
@@ -210,6 +215,8 @@ export class FieldAgentPaymentsService {
     if (on('expected_date') && row.expected_payment_date !== f.expected_date)
       return false;
     if (on('payment_date') && row.payment_date !== f.payment_date) return false;
+    if (skip !== 'no_expected' && f.no_expected && !row.no_expected)
+      return false;
     return true;
   }
 
@@ -232,6 +239,7 @@ export class FieldAgentPaymentsService {
     const open = rows.filter((r) => OPEN.has(r.status));
     const paid = rows.filter((r) => r.status === PaymentStatus.PAID);
     const overdue = rows.filter((r) => r.overdue);
+    const noExpected = rows.filter((r) => r.no_expected);
     const kpis = {
       reference_month: month,
       total: sum(valid),
@@ -252,6 +260,8 @@ export class FieldAgentPaymentsService {
       ),
       overdue: sum(overdue),
       overdue_count: overdue.length,
+      no_expected: sum(noExpected),
+      no_expected_count: noExpected.length,
     };
 
     // Facetas em cascata: cada filtro lista o que sobra com os OUTROS filtros aplicados.
@@ -298,7 +308,7 @@ export class FieldAgentPaymentsService {
         options: [
           {
             value: 'open',
-            label: 'Em aberto (pendente e aprovado)',
+            label: 'Em aberto',
             count: openCount,
           },
           ...statusFacet.options,
@@ -370,12 +380,15 @@ export class FieldAgentPaymentsService {
     const subtotal = (key: 'final' | 'paid' | 'open') =>
       fromCents(summary.reduce((s, a) => s + toCents(a[key]), 0n));
 
-    // Em aberto primeiro; dentro do grupo, previsão mais antiga primeiro.
+    // Ordem: sem previsão e atrasados no topo; depois os demais em aberto; depois o resto.
+    // Dentro do grupo, previsão mais antiga primeiro (sem previsão antes de todas).
+    const rank = (r: ConsolidatedRow) =>
+      r.no_expected || r.overdue ? 0 : OPEN.has(r.status) ? 1 : 2;
     const items = [...rows].sort(
       (a, b) =>
-        Number(!OPEN.has(a.status)) - Number(!OPEN.has(b.status)) ||
-        (a.expected_payment_date ?? '9999').localeCompare(
-          b.expected_payment_date ?? '9999',
+        rank(a) - rank(b) ||
+        (a.expected_payment_date ?? '0000').localeCompare(
+          b.expected_payment_date ?? '0000',
         ) ||
         a.id - b.id,
     );
@@ -534,8 +547,9 @@ export class FieldAgentPaymentsService {
           : this.date(dto.dates?.[String(id)], `Data do lançamento #${id}`);
     if (dto.date_mode === 'chosen')
       this.date(dto.payment_date, 'Data do pagamento');
-    return this.each(dto.ids, (id) =>
-      this.mutate(id, actor, (payment) => ({
+    return this.each(dto.ids, async (id) => {
+      await this.assertOpenPeriod(organizationId, id);
+      return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.MARK_PAYMENT_AS_PAID,
         changes: payment.markAsPaid(
           actor.id,
@@ -543,23 +557,25 @@ export class FieldAgentPaymentsService {
           dateFor(id),
           requireApproval,
         ),
-      })),
-    );
+      }));
+    });
+  }
+
+  /** Lançamento classificado na DRE em competência fechada não muda (pagar, voltar, reagendar). */
+  private async assertOpenPeriod(organizationId: number, id: number) {
+    const closed = await this.remuneration.closedPeriodsFor(organizationId, id);
+    if (closed.length)
+      throw new ConflictException({
+        code: 'DRE_PERIOD_CLOSED',
+        message: `Classificado na DRE em competência fechada (${closed.join(', ')}).`,
+      });
   }
 
   /** Voltar para em aberto (D-C), com permissão própria; bloqueado em competência fechada da DRE. */
   async revert(ids: number[], actor: PaymentsExpensesActorContext) {
     const organizationId = this.organization(actor);
     return this.each(ids, async (id) => {
-      const closed = await this.remuneration.closedPeriodsFor(
-        organizationId,
-        id,
-      );
-      if (closed.length)
-        throw new ConflictException({
-          code: 'DRE_PERIOD_CLOSED',
-          message: `Classificado na DRE em competência fechada (${closed.join(', ')}).`,
-        });
+      await this.assertOpenPeriod(organizationId, id);
       return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.REVERT_PAYMENT,
         changes: payment.revertPayment(actor.id),
@@ -578,17 +594,7 @@ export class FieldAgentPaymentsService {
       dto.date,
       dto.kind === 'payment' ? 'Data de pagamento' : 'Data prevista',
     );
-    if (dto.kind === 'payment') {
-      const closed = await this.remuneration.closedPeriodsFor(
-        organizationId,
-        id,
-      );
-      if (closed.length)
-        throw new ConflictException({
-          code: 'DRE_PERIOD_CLOSED',
-          message: `Classificado na DRE em competência fechada (${closed.join(', ')}).`,
-        });
-    }
+    await this.assertOpenPeriod(organizationId, id);
     try {
       await this.mutate(id, actor, (payment) =>
         dto.kind === 'payment'

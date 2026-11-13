@@ -17,6 +17,7 @@ import {
   type BatchResult,
   type Consolidated,
   type ConsolidatedFilters,
+  type FacetKey,
   type ConsolidatedRow,
 } from "./fieldAgentPaymentsApi";
 
@@ -50,17 +51,28 @@ type Dialog =
   | { kind: "date"; row: ConsolidatedRow }
   | null;
 
-function Kpi({ label, value, hint, alert }: { label: string; value: string; hint?: string; alert?: boolean }) {
-  return (
-    <div className={`rounded-lg border bg-card p-3 ${alert ? "border-destructive/50" : ""}`}>
+type KpiProps = { label: string; value: string; hint?: string; alert?: boolean; active?: boolean; onClick?: () => void };
+
+function Kpi({ label, value, hint, alert, active, onClick }: KpiProps) {
+  const body = (
+    <>
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-lg font-semibold tabular-nums ${alert ? "text-destructive" : ""}`}>{value}</p>
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-    </div>
+    </>
+  );
+  const cls = `rounded-lg border bg-card p-3 text-left ${alert ? "border-destructive/50" : ""} ${active ? "ring-2 ring-primary" : ""}`;
+  if (!onClick) return <div className={cls}>{body}</div>;
+  return (
+    <button type="button" className={`${cls} hover:bg-primary/[0.05]`} aria-pressed={Boolean(active)} onClick={onClick}>
+      {body}
+    </button>
   );
 }
 
-const FILTERS: Array<{ key: keyof ConsolidatedFilters; label: string; format?: (v: string) => string }> = [
+const STATUS_HINT = "Em aberto = pendentes e aprovados ainda não pagos. Pendente: aguarda aprovação. Aprovado: liberado para pagar.";
+
+const FILTERS: Array<{ key: FacetKey; label: string; format?: (v: string) => string }> = [
   { key: "project_id", label: "Projeto" },
   { key: "field_agent_id", label: "Inventariante" },
   { key: "status", label: "Status" },
@@ -135,6 +147,17 @@ export function FieldAgentPaymentsPage() {
           <Kpi label="Em aberto" value={formatMoney(data.kpis.open)} hint="Pendente e aprovado" />
           <Kpi label="Inventariantes" value={String(data.kpis.field_agents)} />
           <Kpi label="Em atraso" value={formatMoney(data.kpis.overdue)} hint={`${data.kpis.overdue_count} lançamento(s) com previsão vencida`} alert={data.kpis.overdue_count > 0} />
+          <Kpi
+            label="Sem previsão"
+            value={formatMoney(data.kpis.no_expected)}
+            hint={`${data.kpis.no_expected_count} em aberto sem data prevista${filters.no_expected ? " · filtrando" : " · clique para filtrar"}`}
+            alert={data.kpis.no_expected_count > 0}
+            active={Boolean(filters.no_expected)}
+            onClick={() => {
+              setSelected([]);
+              setFilters((f) => ({ ...f, no_expected: f.no_expected ? undefined : true }));
+            }}
+          />
           <Kpi label={`Previsto em ${monthBr(data.kpis.reference_month)}`} value={formatMoney(data.kpis.expected_in_month)} />
           <Kpi label={`Pago em ${monthBr(data.kpis.reference_month)}`} value={formatMoney(data.kpis.paid_in_month)} />
           <Kpi label={`Em aberto em ${monthBr(data.kpis.reference_month)}`} value={formatMoney(data.kpis.open_in_month)} />
@@ -149,7 +172,7 @@ export function FieldAgentPaymentsPage() {
             <select
               key={key}
               aria-label={`Filtrar por ${label.toLowerCase()}`}
-              title={label}
+              title={key === "status" ? STATUS_HINT : label}
               className="h-10 max-w-[14rem] rounded-md border bg-background px-3 text-sm"
               value={filters[key] === undefined ? "" : String(filters[key])}
               onChange={(e) => setFilter(key, e.target.value)}
@@ -244,7 +267,7 @@ export function FieldAgentPaymentsPage() {
                 </thead>
                 <tbody>
                   {visible.map((r) => (
-                    <tr key={r.id} className={r.overdue ? "bg-destructive/[0.06]" : "hover:bg-primary/[0.05]"}>
+                    <tr key={r.id} className={r.overdue || r.no_expected ? "bg-destructive/[0.06]" : "hover:bg-primary/[0.05]"}>
                       <td className="border-b px-2 py-2">
                         <input
                           type="checkbox"
@@ -268,7 +291,25 @@ export function FieldAgentPaymentsPage() {
                           </span>
                         </td>
                       ) : null}
-                      <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(r.expected_payment_date) || "—"}</td>
+                      <td className="whitespace-nowrap border-b px-2 py-2">
+                        {r.no_expected ? (
+                          hasPermission("payments:reschedule") ? (
+                            <button
+                              type="button"
+                              className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive hover:bg-destructive/25"
+                              title={`Informar a data prevista de ${r.field_agent_name}`}
+                              aria-label={`Informar a data prevista de ${r.field_agent_name}`}
+                              onClick={() => setDialog({ kind: "date", row: r })}
+                            >
+                              Informar
+                            </button>
+                          ) : (
+                            <span className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive" title="Sem data prevista">Informar</span>
+                          )
+                        ) : (
+                          civilBr(r.expected_payment_date) || "—"
+                        )}
+                      </td>
                       <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(r.payment_date)}</td>
                       {show("Dias") ? <td className="border-b px-2 py-2 tabular-nums">{r.days}</td> : null}
                       {show("Diária") ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(r.daily_rate)}</td> : null}
@@ -461,7 +502,7 @@ function DateDialog({ row, onClose, onDone }: { row: ConsolidatedRow; onClose: (
   const save = useMutation({ mutationFn: () => fieldAgentPaymentsApi.changeDate(row.id, { kind, date }), onSuccess: onDone });
   const label = kind === "payment" ? "Data de pagamento" : "Data prevista de pagamento";
   return (
-    <ModalForm open onOpenChange={(open) => !open && onClose()} title={kind === "payment" ? "Editar data de pagamento" : "Editar data prevista"}>
+    <ModalForm open onOpenChange={(open) => !open && onClose()} title={kind === "payment" ? "Editar data de pagamento" : row.expected_payment_date ? "Editar data prevista" : "Informar data prevista"}>
       <form
         className="grid gap-4"
         onSubmit={(e) => {

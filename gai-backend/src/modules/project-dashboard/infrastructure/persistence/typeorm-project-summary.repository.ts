@@ -657,6 +657,7 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
       | 'paid_payments'
       | 'cancelled_payments'
       | 'total_payment_amount'
+      | 'payments_without_expected_date'
     >
   > {
     const row = await this.payments
@@ -680,9 +681,15 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
           PaymentStatus.CANCELLED,
         ),
         `COALESCE(SUM(CASE WHEN payment.status <> :cancelledPayment THEN payment.final_amount ELSE 0 END), 0) AS total_payment_amount`,
+        // Em aberto e sem data prevista (lançamentos anteriores à obrigatoriedade).
+        `COALESCE(SUM(CASE WHEN payment.status IN (:...openPayment) AND payment.expected_payment_date IS NULL THEN 1 ELSE 0 END), 0) AS payments_without_expected_date`,
       ])
       .where('payment.project_id = :projectId', { projectId })
       .setParameter('cancelledPayment', PaymentStatus.CANCELLED)
+      .setParameter('openPayment', [
+        PaymentStatus.PENDING,
+        PaymentStatus.APPROVED,
+      ])
       .getRawOne<RawRow>();
 
     return {
@@ -692,6 +699,10 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
       paid_payments: this.number(row, 'paid_payments'),
       cancelled_payments: this.number(row, 'cancelled_payments'),
       total_payment_amount: this.money(row?.total_payment_amount),
+      payments_without_expected_date: this.number(
+        row,
+        'payments_without_expected_date',
+      ),
     };
   }
 

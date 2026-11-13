@@ -422,6 +422,8 @@ export type ProjectFieldAgentsSummary = {
 export type ProjectFinancialSummary = {
   total_payments: number;
   pending_payments: number;
+  /** Diárias em aberto (pendente/aprovado) sem data prevista — lançamentos antigos. */
+  payments_without_expected_date?: number;
   approved_payments: number;
   paid_payments: number;
   cancelled_payments: number;
