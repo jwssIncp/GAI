@@ -67,32 +67,53 @@ const description = (element: HTMLElement) => {
   return id ? document.getElementById(id)?.textContent ?? "" : "";
 };
 
-describe("Regras dos alertas ⚠ v1 (somente dados de /projects/:id/dashboard)", () => {
+const divergentWithoutIssues: ProjectSummary = {
+  ...clean,
+  inventory: { ...clean.inventory, divergent_items: 2 },
+  accounting: { ...clean.accounting, not_found_accounting_items: 3 },
+};
+const approver = (keys: string[]) => ({ approvePayments: keys.includes("payments:approve"), approveExpenses: keys.includes("expenses:approve") });
+
+describe("Regras dos alertas ⚠ v1 revisadas (somente dados de /projects/:id/dashboard)", () => {
   it("não gera alerta para um projeto sem problemas", () => {
-    expect(projectTabAlerts(clean)).toEqual({});
+    expect(projectTabAlerts(clean, approver(["payments:approve", "expenses:approve"]))).toEqual({});
   });
 
-  it("gera um alerta por aba com o motivo, usando só o payload do dashboard", () => {
+  it("com pendências geradas, Itens e Base contábil não alertam (a ação está em Pendências)", () => {
     const alerts = projectTabAlerts(withProblems);
-    expect(Object.keys(alerts).sort()).toEqual(["accounting-items", "exports", "field-team", "finance", "imports", "inventory-items", "pending-issues"]);
+    expect(Object.keys(alerts).sort()).toEqual(["exports", "field-team", "imports", "pending-issues"]);
     expect(alerts["pending-issues"]).toEqual({ count: 5, severity: "danger", description: "5 pendências abertas ou em revisão, 1 crítica ou alta" });
-    expect(alerts["field-team"]?.count).toBeUndefined();
-    expect(alerts["inventory-items"]?.description).toBe("2 itens divergentes, 1 imagem com envio pendente");
-    expect(alerts["field-team"]?.description).toBe("Projeto ativo sem inventariante vinculado");
-    expect(alerts.finance?.description).toBe("1 pagamento aguardando aprovação, 2 despesas aguardando aprovação");
+    expect(alerts["field-team"]).toEqual({ severity: "warning", description: "Projeto ativo sem inventariante vinculado" });
+  });
+
+  it("opção B: divergências sem nenhuma pendência gerada alertam Itens e Base contábil", () => {
+    const alerts = projectTabAlerts(divergentWithoutIssues);
+    expect(alerts["inventory-items"]).toEqual({ count: 2, severity: "warning", description: "2 itens divergentes, sem pendência gerada" });
+    expect(alerts["accounting-items"]).toEqual({ count: 3, severity: "warning", description: "3 itens contábeis não encontrados, sem pendência gerada" });
+  });
+
+  it("imagens com envio pendente não geram alerta (estado transitório)", () => {
+    expect(projectTabAlerts({ ...clean, images: { ...clean.images, pending_upload_images: 4 } })).toEqual({});
+  });
+
+  it("financeiro só para quem aprova, contando só o que a pessoa pode aprovar", () => {
+    expect(projectTabAlerts(withProblems).finance).toBeUndefined();
+    expect(projectTabAlerts(withProblems, approver(["payments:approve"])).finance).toEqual({ count: 1, severity: "warning", description: "1 pagamento aguardando sua aprovação" });
+    expect(projectTabAlerts(withProblems, approver(["expenses:approve"])).finance?.count).toBe(2);
+    expect(projectTabAlerts(withProblems, approver(["payments:approve", "expenses:approve"])).finance?.count).toBe(3);
   });
 
   it("equipe só alerta com projeto ativo; financeiro/importações/exportações ausentes não geram alerta", () => {
     const paused = projectTabAlerts({ ...withProblems, project: { ...withProblems.project, status: "paused" } as ProjectSummary["project"] });
     expect(paused["field-team"]).toBeUndefined();
-    const partial = projectTabAlerts({ ...withProblems, financial: null, imports: null, exports: null });
+    const partial = projectTabAlerts({ ...withProblems, financial: null, imports: null, exports: null }, approver(["payments:approve"]));
     expect(partial.finance).toBeUndefined();
     expect(partial.imports).toBeUndefined();
     expect(partial.exports).toBeUndefined();
   });
 
   it("pendências sem críticas/altas é aviso, não perigo", () => {
-    expect(projectTabAlerts({ ...clean, pending_issues: { ...zeroIssues, open_pending_issues: 2 } })["pending-issues"]?.severity).toBe("warning");
+    expect(projectTabAlerts({ ...clean, pending_issues: { ...zeroIssues, total_pending_issues: 2, open_pending_issues: 2 } })["pending-issues"]?.severity).toBe("warning");
   });
 });
 
@@ -103,43 +124,45 @@ describe("Exibição dos alertas no grupo e na aba", () => {
   });
 
   it("mostra ⚠ no grupo (1º nível) e na aba (2º nível), sem mudar o nome acessível", async () => {
-    const nav = renderAt("/app/projects/10/pending-issues", user(everything));
+    const nav = renderAt("/app/projects/10/pending-issues", user([...everything, "payments:approve"]));
     const tab = await nav.findByRole("link", { name: "Pendências" });
-    expect(await nav.findByRole("link", { name: "Pendências" })).toHaveAttribute("aria-describedby");
+    await vi.waitFor(() => expect(tab).toHaveAttribute("aria-describedby"));
     expect(description(tab)).toBe("Atenção: 5 pendências abertas ou em revisão, 1 crítica ou alta");
     const group = nav.getByRole("link", { name: "Inventário" });
-    expect(description(group)).toContain("Pendências: 5 pendências");
-    expect(description(group)).toContain("Itens e avaliação: 2 itens divergentes");
-    expect(nav.getByRole("link", { name: "Financeiro" })).toHaveAttribute("aria-describedby");
+    expect(description(group)).toBe("Atenção: Pendências: 5 pendências abertas ou em revisão, 1 crítica ou alta");
+    expect(description(nav.getByRole("link", { name: "Financeiro" }))).toBe("Atenção: Pagamentos e despesas: 1 pagamento aguardando sua aprovação");
     expect(nav.getByRole("link", { name: "Campo" })).toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Contábil e laudo" })).toHaveAttribute("aria-describedby");
-    // Sessões e conciliação não tem alerta.
+    expect(nav.getByRole("link", { name: "Contábil e laudo" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Itens e avaliação" })).not.toHaveAttribute("aria-describedby");
+  });
+
+  it("sem permissão de aprovar, o grupo Financeiro não alerta", async () => {
+    const nav = renderAt("/app/projects/10/finance", user(everything));
+    await vi.waitFor(() => expect(nav.getByRole("link", { name: "Inventário" })).toHaveAttribute("aria-describedby"));
+    expect(nav.getByRole("link", { name: "Financeiro" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Pagamentos e despesas" }).textContent).toBe("Pagamentos e despesas");
   });
 
   it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user(everything));
     const tab = await nav.findByRole("link", { name: "Pendências" });
     await vi.waitFor(() => expect(tab.textContent).toBe("Pendências5"));
-    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação3");
-    expect(nav.getByRole("link", { name: "Sessões e conciliação" }).textContent).toBe("Sessões e conciliação");
+    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação");
     expect(nav.getByRole("link", { name: "Inventário" }).textContent).toBe("Inventário");
-    expect(nav.getByRole("link", { name: "Financeiro" }).textContent).toBe("Financeiro");
   });
 
   it("não revela dados de abas sem permissão: perfil de campo não vê alerta financeiro nem contábil", async () => {
+    dashboard.mockResolvedValue({ ...divergentWithoutIssues, financial: { ...clean.financial!, pending_payments: 4 } });
     renderAt("/app/projects/10/inventory-items", user(["projects:read", "inventory-items:read", "inventory-sessions:read", "field-coordination:read"]));
     await screen.findByRole("link", { name: "Itens e avaliação" });
-    await vi.waitFor(() => expect(dashboard).toHaveBeenCalled());
     const nav = within(screen.getByRole("navigation", { name: "Abas do projeto" }));
     await vi.waitFor(() => expect(nav.getByRole("link", { name: "Itens e avaliação" })).toHaveAttribute("aria-describedby"));
-    const groupDescription = description(nav.getByRole("link", { name: "Inventário" }));
-    expect(groupDescription).toContain("Itens e avaliação");
-    // Sem inventory-pending-issues:read, o grupo não menciona pendências.
-    expect(groupDescription).not.toMatch(/pendência/i);
-    const navText = screen.getByRole("navigation", { name: "Abas do projeto" }).textContent ?? "";
+    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação2");
+    expect(description(nav.getByRole("link", { name: "Inventário" }))).toBe("Atenção: Itens e avaliação: 2 itens divergentes, sem pendência gerada");
+    const hidden = document.querySelector('[aria-label="Abas do projeto"] [hidden]')?.textContent ?? "";
+    const navText = (screen.getByRole("navigation", { name: "Abas do projeto" }).textContent ?? "") + hidden;
     expect(navText).not.toMatch(/pagamento|despesa|contábil|importaç|exportaç|inventariante vinculado/i);
-    // Campo: só Coordenação de campo é visível e ela não tem alerta; a equipe (sem permissão) não alerta o grupo.
     expect(nav.getByRole("link", { name: "Campo" })).not.toHaveAttribute("aria-describedby");
   });
 

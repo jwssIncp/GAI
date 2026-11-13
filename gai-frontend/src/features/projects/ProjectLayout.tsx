@@ -64,7 +64,7 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
   // e o alerta do grupo considera apenas as abas visíveis dele.
   const canReadProject = hasPermission("projects:read");
   const dashboard = useProjectDashboard(canReadProject ? Number(projectId) : undefined);
-  const allAlerts = dashboard.data && String(dashboard.data.project?.id) === projectId ? projectTabAlerts(dashboard.data) : {};
+  const allAlerts = dashboard.data && String(dashboard.data.project?.id) === projectId ? projectTabAlerts(dashboard.data, { approvePayments: hasPermission("payments:approve"), approveExpenses: hasPermission("expenses:approve") }) : {};
   const alertOf = (tab: ProjectTab): ProjectTabAlert | undefined => allAlerts[tab.id];
   const groupAlert = (group: (typeof groups)[number]) => {
     const tabs = group.tabs.filter((tab) => alertOf(tab));

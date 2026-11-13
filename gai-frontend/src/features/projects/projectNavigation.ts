@@ -170,8 +170,16 @@ const plural = (count: number, singular: string, pluralForm: string) => `${count
  * (o mesmo que a Visão geral já busca). Quem chama deve exibir apenas os alertas das abas
  * que o usuário pode ver, para não revelar dados de abas sem permissão.
  */
-export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string, ProjectTabAlert>> {
+export type ProjectAlertAccess = { approvePayments: boolean; approveExpenses: boolean };
+
+export function projectTabAlerts(
+  summary: ProjectSummary,
+  access: ProjectAlertAccess = { approvePayments: false, approveExpenses: false },
+): Partial<Record<string, ProjectTabAlert>> {
   const alerts: Partial<Record<string, ProjectTabAlert>> = {};
+  // Opção B (revisão da Etapa 3): divergências de itens/base contábil só alertam enquanto o
+  // projeto não tem nenhuma pendência gerada — a ação esperada é "Gerar pendências".
+  const noIssuesGenerated = summary.pending_issues.total_pending_issues === 0;
   const issues = summary.pending_issues;
   const open = issues.open_pending_issues + issues.in_review_pending_issues;
   if (open > 0) {
@@ -184,40 +192,40 @@ export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string
   }
   const inventory = summary.inventory;
   const itemProblems = inventory.divergent_items + inventory.not_found_items + inventory.duplicated_items;
-  const pendingUploads = summary.images.pending_upload_images;
-  if (itemProblems > 0 || pendingUploads > 0) {
+  if (itemProblems > 0 && noIssuesGenerated) {
     const parts = [
       inventory.divergent_items ? plural(inventory.divergent_items, "item divergente", "itens divergentes") : null,
       inventory.not_found_items ? plural(inventory.not_found_items, "item não encontrado", "itens não encontrados") : null,
       inventory.duplicated_items ? plural(inventory.duplicated_items, "item duplicado", "itens duplicados") : null,
-      pendingUploads ? plural(pendingUploads, "imagem com envio pendente", "imagens com envio pendente") : null,
     ].filter(Boolean);
-    alerts["inventory-items"] = { count: itemProblems + pendingUploads, severity: itemProblems > 0 ? "danger" : "warning", description: parts.join(", ") };
+    alerts["inventory-items"] = { count: itemProblems, severity: "warning", description: `${parts.join(", ")}, sem pendência gerada` };
   }
   const accounting = summary.accounting;
   const accountingProblems = accounting.divergent_accounting_items + accounting.not_found_accounting_items;
-  if (accountingProblems > 0) {
+  if (accountingProblems > 0 && noIssuesGenerated) {
     alerts["accounting-items"] = {
       count: accountingProblems,
-      severity: "danger",
+      severity: "warning",
       description: [
         accounting.divergent_accounting_items ? plural(accounting.divergent_accounting_items, "item contábil divergente", "itens contábeis divergentes") : null,
         accounting.not_found_accounting_items ? plural(accounting.not_found_accounting_items, "item contábil não encontrado", "itens contábeis não encontrados") : null,
-      ].filter(Boolean).join(", "),
+      ].filter(Boolean).join(", ") + ", sem pendência gerada",
     };
   }
   if (summary.project.status === "active" && summary.field_agents.active_field_agents === 0) {
     alerts["field-team"] = { severity: "warning", description: "Projeto ativo sem inventariante vinculado" };
   }
-  if (summary.financial) {
-    const pending = summary.financial.pending_payments + summary.financial.pending_expenses;
-    if (pending > 0) {
+  // Só para quem pode aprovar, contando apenas o que a pessoa pode aprovar.
+  if (summary.financial && (access.approvePayments || access.approveExpenses)) {
+    const payments = access.approvePayments ? summary.financial.pending_payments : 0;
+    const expenses = access.approveExpenses ? summary.financial.pending_expenses : 0;
+    if (payments + expenses > 0) {
       alerts.finance = {
-        count: pending,
+        count: payments + expenses,
         severity: "warning",
         description: [
-          summary.financial.pending_payments ? plural(summary.financial.pending_payments, "pagamento aguardando aprovação", "pagamentos aguardando aprovação") : null,
-          summary.financial.pending_expenses ? plural(summary.financial.pending_expenses, "despesa aguardando aprovação", "despesas aguardando aprovação") : null,
+          payments ? plural(payments, "pagamento aguardando sua aprovação", "pagamentos aguardando sua aprovação") : null,
+          expenses ? plural(expenses, "despesa aguardando sua aprovação", "despesas aguardando sua aprovação") : null,
         ].filter(Boolean).join(", "),
       };
     }
