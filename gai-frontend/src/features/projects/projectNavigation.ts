@@ -1,3 +1,5 @@
+import type { ProjectSummary } from "@/types/api";
+
 // Estrutura de navegação do workspace do projeto em dois níveis (grupo › aba).
 // Só organiza a apresentação: caminhos e permissões são exatamente os das rotas
 // existentes em router/projectRoutes.tsx. Nenhuma URL nova é criada aqui.
@@ -156,4 +158,71 @@ export function projectBreadcrumbSteps(projectId: string, pathname: string, hash
   }
   const tabPath = tab.path.split("#")[0];
   return [{ label: group.label }, { label: tab.label, to: details.length ? tabPath : undefined }, ...details];
+}
+
+export type ProjectTabAlert = { severity: "danger" | "warning"; description: string };
+
+const plural = (count: number, singular: string, pluralForm: string) => `${count} ${count === 1 ? singular : pluralForm}`;
+
+/**
+ * Alertas ⚠ v1 por aba, calculados SOMENTE a partir do payload de GET /projects/:id/dashboard
+ * (o mesmo que a Visão geral já busca). Quem chama deve exibir apenas os alertas das abas
+ * que o usuário pode ver, para não revelar dados de abas sem permissão.
+ */
+export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string, ProjectTabAlert>> {
+  const alerts: Partial<Record<string, ProjectTabAlert>> = {};
+  const issues = summary.pending_issues;
+  const open = issues.open_pending_issues + issues.in_review_pending_issues;
+  if (open > 0) {
+    const severe = issues.critical_pending_issues + issues.high_pending_issues;
+    alerts["pending-issues"] = {
+      severity: severe > 0 ? "danger" : "warning",
+      description: `${plural(open, "pendência aberta ou em revisão", "pendências abertas ou em revisão")}${severe ? `, ${plural(severe, "crítica ou alta", "críticas ou altas")}` : ""}`,
+    };
+  }
+  const inventory = summary.inventory;
+  const itemProblems = inventory.divergent_items + inventory.not_found_items + inventory.duplicated_items;
+  const pendingUploads = summary.images.pending_upload_images;
+  if (itemProblems > 0 || pendingUploads > 0) {
+    const parts = [
+      inventory.divergent_items ? plural(inventory.divergent_items, "item divergente", "itens divergentes") : null,
+      inventory.not_found_items ? plural(inventory.not_found_items, "item não encontrado", "itens não encontrados") : null,
+      inventory.duplicated_items ? plural(inventory.duplicated_items, "item duplicado", "itens duplicados") : null,
+      pendingUploads ? plural(pendingUploads, "imagem com envio pendente", "imagens com envio pendente") : null,
+    ].filter(Boolean);
+    alerts["inventory-items"] = { severity: itemProblems > 0 ? "danger" : "warning", description: parts.join(", ") };
+  }
+  const accounting = summary.accounting;
+  const accountingProblems = accounting.divergent_accounting_items + accounting.not_found_accounting_items;
+  if (accountingProblems > 0) {
+    alerts["accounting-items"] = {
+      severity: "danger",
+      description: [
+        accounting.divergent_accounting_items ? plural(accounting.divergent_accounting_items, "item contábil divergente", "itens contábeis divergentes") : null,
+        accounting.not_found_accounting_items ? plural(accounting.not_found_accounting_items, "item contábil não encontrado", "itens contábeis não encontrados") : null,
+      ].filter(Boolean).join(", "),
+    };
+  }
+  if (summary.project.status === "active" && summary.field_agents.active_field_agents === 0) {
+    alerts["field-team"] = { severity: "warning", description: "Projeto ativo sem inventariante vinculado" };
+  }
+  if (summary.financial) {
+    const pending = summary.financial.pending_payments + summary.financial.pending_expenses;
+    if (pending > 0) {
+      alerts.finance = {
+        severity: "warning",
+        description: [
+          summary.financial.pending_payments ? plural(summary.financial.pending_payments, "pagamento aguardando aprovação", "pagamentos aguardando aprovação") : null,
+          summary.financial.pending_expenses ? plural(summary.financial.pending_expenses, "despesa aguardando aprovação", "despesas aguardando aprovação") : null,
+        ].filter(Boolean).join(", "),
+      };
+    }
+  }
+  if (summary.imports && summary.imports.failed_import_sessions > 0) {
+    alerts.imports = { severity: "danger", description: plural(summary.imports.failed_import_sessions, "importação com falha", "importações com falha") };
+  }
+  if (summary.exports && summary.exports.failed_export_jobs > 0) {
+    alerts.exports = { severity: "danger", description: plural(summary.exports.failed_export_jobs, "exportação com falha", "exportações com falha") };
+  }
+  return alerts;
 }
