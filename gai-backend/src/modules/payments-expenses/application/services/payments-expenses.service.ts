@@ -234,6 +234,16 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
     const project = await this.getProject(projectId, actor, false);
+    // Mesma regra da tela consolidada: não paga o que está em competência fechada da DRE.
+    const closed = await this.remuneration.closedPeriodsFor(
+      project.organizationId,
+      id,
+    );
+    if (closed.length)
+      throw new ConflictException({
+        code: 'DRE_PERIOD_CLOSED',
+        message: `Lançamento classificado na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
+      });
     // Decisão D-A: com "exigir aprovação", só aprovados são pagos. Sem parâmetros
     // vigentes, mantém o comportamento anterior do GAI (pendente ou aprovado).
     let requireApproval = false;
