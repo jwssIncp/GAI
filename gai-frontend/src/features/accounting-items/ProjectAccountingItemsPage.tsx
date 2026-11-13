@@ -20,9 +20,11 @@ import { AccountingItemForm } from './AccountingItemForm';
 import { accountingItemStatuses } from './accountingItemSchemas';
 import { useChangeAccountingItemStatus, useProjectAccountingItems, useUpdateAccountingItem } from './accountingItemsQueries';
 import type { InventoryAccountingItem, InventoryAccountingItemStatus } from '@/types/api';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 export function ProjectAccountingItemsPage() {
   const projectId = Number(useParams().projectId);
+  const projectLabel = useProjectLabel(projectId);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<InventoryAccountingItemStatus | ''>('');
@@ -84,7 +86,7 @@ export function ProjectAccountingItemsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Base contábil" description={`Projeto #${projectId}. Itens patrimoniais importados da base contábil.`} />
+      <PageHeader title="Base contábil" description={`${projectLabel}. Itens patrimoniais importados da base contábil.`} />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>

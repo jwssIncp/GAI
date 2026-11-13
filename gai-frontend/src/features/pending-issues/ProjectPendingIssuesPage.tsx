@@ -42,9 +42,11 @@ import {
   useUpdatePendingIssue,
 } from './pendingIssuesQueries';
 import type { InventoryPendingIssue, InventoryPendingIssueSeverity, InventoryPendingIssueStatus, InventoryPendingIssueType } from '@/types/api';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 export function ProjectPendingIssuesPage() {
   const projectId = Number(useParams().projectId);
+  const projectLabel = useProjectLabel(projectId);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<InventoryPendingIssueStatus | ''>('');
@@ -117,7 +119,7 @@ export function ProjectPendingIssuesPage() {
     <PageContainer>
       <PageHeader
         title="Pendências"
-        description={`Projeto #${projectId}. Divergências, furos de placa e pendências patrimoniais.`}
+        description={`${projectLabel}. Divergências, furos de placa e pendências patrimoniais.`}
         action={(
           <div className="flex gap-2">
             {hasPermission('inventory-pending-issues:generate') ? <Button type="button" variant="secondary" onClick={() => setGenerateOpen(true)}><RefreshCw size={17} /> Gerar pendências</Button> : null}

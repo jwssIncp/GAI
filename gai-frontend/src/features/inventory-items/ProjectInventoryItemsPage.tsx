@@ -21,12 +21,14 @@ import { inventoryItemStatuses } from './inventoryItemSchemas';
 import { useChangeInventoryItemStatus, useCreateInventoryItem, useProjectInventoryItems, useUpdateInventoryItem } from './inventoryItemsQueries';
 import type { InventoryItem, InventoryItemStatus } from '@/types/api';
 import { ValuationBatchPanel,type BatchSelectionState } from './ValuationBatchPanel';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 export function ProjectInventoryItemsPage() {
   const projectId = Number(useParams().projectId);
   return <InventoryItemsWorkspace key={projectId} projectId={projectId}/>;
 }
 function InventoryItemsWorkspace({projectId}:{projectId:number}) {
+  const projectLabel = useProjectLabel(projectId);
   const [selection,setSelection]=useState<BatchSelectionState>({contract:{kind:'ids',ids:[]},ids:[]});
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -95,7 +97,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
     <PageContainer>
       <PageHeader
         title="Itens inventariados"
-        description={`Projeto #${projectId}. Itens patrimoniais registrados no inventário.`}
+        description={`${projectLabel}. Itens patrimoniais registrados no inventário.`}
         action={hasPermission('inventory-items:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo item</Button> : null}
       />
       <div className="flex gap-2 border-b pb-3 text-sm">

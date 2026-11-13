@@ -50,6 +50,7 @@ import {
 } from './importSessionsQueries';
 import type { ImportFile, ImportFileType, ImportPayload, ImportPayloadError, ImportSession, ImportSessionStatus } from '@/types/api';
 import { createIdempotencyKey } from '@/features/inventory-operations/idempotency';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 const ALLOWED_FILE_TYPES = [
   'application/json',
@@ -74,6 +75,7 @@ function formatBytes(value?: number | null) {
 
 export function ProjectImportSessionsPage() {
   const projectId = Number(useParams().projectId);
+  const projectLabel = useProjectLabel(projectId);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<ImportSessionStatus | ''>('');
   const [createOpen, setCreateOpen] = useState(false);
@@ -116,7 +118,7 @@ export function ProjectImportSessionsPage() {
     <PageContainer>
       <PageHeader
         title="Importações"
-        description={`Projeto #${projectId}. Sessões de sincronização, payloads, erros e arquivos brutos.`}
+        description={`${projectLabel}. Sessões de sincronização, payloads, erros e arquivos brutos.`}
         action={hasPermission('import-sessions:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Nova importação</Button> : null}
       />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">

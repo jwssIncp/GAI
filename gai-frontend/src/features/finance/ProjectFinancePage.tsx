@@ -49,11 +49,13 @@ import {
 } from './financeQueries';
 import { PaymentForm } from './PaymentForm';
 import type { Expense, ExpenseStatus, FieldAgent, FieldAgentPayment, PaymentStatus } from '@/types/api';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 type Tab = 'payments' | 'expenses';
 
 export function ProjectFinancePage() {
   const projectId = Number(useParams().projectId);
+  const projectLabel = useProjectLabel(projectId);
   const [searchParams, setSearchParams] = useSearchParams();
   const tab: Tab = searchParams.get('tab') === 'expenses' ? 'expenses' : 'payments';
   function setTab(value: Tab) {
@@ -66,7 +68,7 @@ export function ProjectFinancePage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Financeiro do projeto" description={`Projeto #${projectId}. Pagamentos de inventariantes, despesas e comprovantes.`} />
+      <PageHeader title="Financeiro do projeto" description={`${projectLabel}. Pagamentos de inventariantes, despesas e comprovantes.`} />
       <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
         <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>

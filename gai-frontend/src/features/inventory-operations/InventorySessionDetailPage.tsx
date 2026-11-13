@@ -40,6 +40,7 @@ import {
   useRunReconciliation,
   useStartInventorySession,
 } from './inventoryOperationsQueries';
+import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
 const initialRoundParams = { page: 1, page_size: 20, status: undefined, type: undefined } as const;
 const reconciliationLabels: Record<ReconciliationStatus, string> = { matched: 'Compatível', physical_surplus: 'Sobra física', accounting_surplus: 'Sobra contábil', duplicate: 'Duplicidade', plate_divergence: 'Placa divergente' };
@@ -47,6 +48,7 @@ const roundKindLabels: Record<InventoryRoundKind, string> = { initial: 'Inicial'
 
 export function InventorySessionDetailPage() {
   const projectId = Number(useParams().projectId);
+  const projectLabel = useProjectLabel(projectId);
   const sessionId = Number(useParams().sessionId);
   const session = useInventorySession(projectId, sessionId);
   const initialRounds = useInventoryRounds(projectId, sessionId, initialRoundParams);
@@ -78,7 +80,7 @@ export function InventorySessionDetailPage() {
   }
 
   return <PageContainer>
-    <PageHeader title={item.name} description={`Sessão #${item.id}. Projeto #${projectId}.`} />
+    <PageHeader title={item.name} description={`Sessão #${item.id}. ${projectLabel}.`} />
     <div className="flex flex-wrap gap-2 border-b pb-3 text-sm"><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory/sessions`}>Sessões</Link><span className="text-muted-foreground">/ Detalhe</span></div>
     <section className="premium-panel grid gap-3 p-5 sm:grid-cols-4">
       <Info label="Status" value={<StatusBadge value={item.status} />} />
