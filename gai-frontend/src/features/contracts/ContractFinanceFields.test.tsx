@@ -129,8 +129,13 @@ describe("Contrato: campos financeiros", () => {
     const count = within(dialog).getByLabelText("Número de parcelas");
     await user.clear(count);
     await user.type(count, "3");
-    expect(within(dialog).getByLabelText("Percentual da parcela 1")).toHaveValue("33.33");
-    expect(within(dialog).getByLabelText("Percentual da parcela 3")).toHaveValue("33.34");
+    expect(within(dialog).getByLabelText("Percentual da parcela 1")).toHaveValue("33,33");
+    expect(within(dialog).getByLabelText("Percentual da parcela 3")).toHaveValue("33,34");
+    expect(within(dialog).getByText(/Soma: 100,00%/)).toBeInTheDocument();
+    const second = within(dialog).getByLabelText("Percentual da parcela 2");
+    await user.clear(second);
+    await user.type(second, "33.33");
+    expect(second).toHaveValue("33,33");
     expect(within(dialog).getByText(/Soma: 100,00%/)).toBeInTheDocument();
 
     const first = within(dialog).getByLabelText("Percentual da parcela 1");

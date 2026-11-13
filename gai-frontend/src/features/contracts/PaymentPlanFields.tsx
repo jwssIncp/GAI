@@ -84,7 +84,8 @@ export function PaymentPlanFields({
                   inputMode="decimal"
                   required
                   aria-label={`Percentual da parcela ${index + 1}`}
-                  value={value}
+                  // Exibe com vírgula decimal (33,33); aceita vírgula ou ponto; guarda com ponto.
+                  value={value.replace(".", ",")}
                   onChange={(event) => {
                     const next = [...percentages];
                     next[index] = event.target.value.replace(",", ".");
