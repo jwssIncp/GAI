@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { uploadToPresignedUrl } from '@/api/http';
 import { fieldAgentsApi, projectFieldAgentsApi } from '@/api/endpoints';
 import { projectKeys } from '@/features/projects/projectQueries';
 import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, FieldAgentListParams, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
@@ -88,5 +89,49 @@ export function useUpdateProjectFieldAgent(projectId: number) {
       queryClient.invalidateQueries({ queryKey: ['project-field-agents', projectId] }),
       queryClient.invalidateQueries({ queryKey: projectKeys.dashboard(projectId) }),
     ]),
+  });
+}
+
+export function useFieldAgentSummary() {
+  return useQuery({ queryKey: [...fieldAgentKeys.all, 'summary'] as const, queryFn: fieldAgentsApi.summary });
+}
+
+export function useBatchDeleteFieldAgents() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: number[]) => fieldAgentsApi.batchDelete(ids),
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentKeys.all }),
+  });
+}
+
+export const fieldAgentDocumentKeys = {
+  list: (id: number) => [...fieldAgentKeys.all, 'documents', id] as const,
+};
+
+export function useFieldAgentDocuments(id: number, enabled = true) {
+  return useQuery({ queryKey: fieldAgentDocumentKeys.list(id), queryFn: () => fieldAgentsApi.documents(id), enabled });
+}
+
+export function useUploadFieldAgentDocument(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const response = await fieldAgentsApi.documentUploadUrl(id, {
+        original_name: file.name,
+        mime_type: file.type || 'application/octet-stream',
+        size_bytes: file.size,
+      });
+      await uploadToPresignedUrl(response.upload_url, file);
+      return fieldAgentsApi.confirmDocument(id, response.document.id, { size_bytes: file.size });
+    },
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentDocumentKeys.list(id) }),
+  });
+}
+
+export function useRemoveFieldAgentDocument(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (documentId: number) => fieldAgentsApi.removeDocument(id, documentId),
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentDocumentKeys.list(id) }),
   });
 }

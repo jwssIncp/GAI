@@ -18,6 +18,48 @@ export const contractStatuses: Record<string, string> = {
   cancelled: "Cancelado",
   archived: "Arquivado",
 };
+export type Payer = "client" | "company";
+export const payerLabel: Record<Payer, string> = {
+  client: "Cliente (reembolsável)",
+  company: "Empresa (não reembolsável)",
+};
+export type ContractPaymentPlan = {
+  mode: "equal" | "percentages";
+  installments: number;
+  percentages?: string[] | null;
+};
+/** Divisão igual em centésimos; o resto vai para a última parcela (ex.: 33,33 / 33,33 / 33,34). */
+export function equalPercentages(count: number): string[] {
+  const n = Math.max(1, Math.trunc(count));
+  const base = Math.floor(10000 / n);
+  return Array.from({ length: n }, (_, index) => {
+    const cents = index === n - 1 ? 10000 - base * (n - 1) : base;
+    return (cents / 100).toFixed(2);
+  });
+}
+/** Soma dos percentuais em centésimos (inteiros, sem erro de ponto flutuante); inválido = NaN. */
+export function percentSumCents(values: string[]): number {
+  return values.reduce((sum, value) => {
+    const match = /^(\d{1,3})(?:\.(\d{1,2}))?$/.exec(value.trim());
+    if (!match) return Number.NaN;
+    return sum + Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
+  }, 0);
+}
+/** Monta a forma de pagamento a partir do formulário; vazio = não informada. */
+export function paymentPlanFromForm(
+  mode: string,
+  installments: string,
+  percentages: string[],
+): ContractPaymentPlan | null {
+  if (!mode) return null;
+  const count = Number(installments || "1");
+  if (mode === "equal") return { mode: "equal", installments: count };
+  return {
+    mode: "percentages",
+    installments: count,
+    percentages: percentages.map((item) => item.trim().replace(",", ".")),
+  };
+}
 export interface ContractData {
   number: string;
   company_id: number;
@@ -29,6 +71,13 @@ export interface ContractData {
   contracting_type: string | null;
   segment: string | null;
   commercial_origin: string | null;
+  /** Código da origem comercial (lista dos parâmetros financeiros). */
+  commercial_origin_code?: string | null;
+  /** Despesas reembolsáveis por conta de. */
+  expenses_paid_by?: Payer | null;
+  /** Plaquetas por conta de. */
+  tags_paid_by?: Payer | null;
+  payment_plan?: ContractPaymentPlan | null;
   recurring: boolean | null;
   services: string[];
   estimated_assets: number | null;
@@ -42,6 +91,7 @@ export interface ContractSnapshot extends ContractData {
   current_scope: string | null;
   company_name: string;
   company_state: string | null;
+  amendment_installments?: Record<string, number>;
 }
 export interface Contract {
   id: number;

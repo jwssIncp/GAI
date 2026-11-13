@@ -14,6 +14,7 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 
 export const CONTRACT_STATUSES = [
@@ -25,6 +26,21 @@ export const CONTRACT_STATUSES = [
   'archived',
 ] as const;
 export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
+export const PAYER_OPTIONS = ['client', 'company'] as const;
+export type Payer = (typeof PAYER_OPTIONS)[number];
+export const PAYMENT_PLAN_MODES = ['equal', 'percentages'] as const;
+/** Forma de pagamento do contrato (base das parcelas a receber). */
+export class ContractPaymentPlanDto {
+  @IsIn(PAYMENT_PLAN_MODES) mode!: (typeof PAYMENT_PLAN_MODES)[number];
+  @Type(() => Number) @IsInt() @Min(1) @Max(60) installments!: number;
+  /** Só no modo "percentages": um percentual por parcela, somando 100. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(60)
+  @IsString({ each: true })
+  @Matches(/^\d{1,3}(\.\d{1,2})?$/, { each: true })
+  percentages?: string[] | null;
+}
 export class ContractDataDto {
   @IsString() @MinLength(1) @MaxLength(100) number!: string;
   @Type(() => Number) @IsInt() @Min(1) company_id!: number;
@@ -48,6 +64,19 @@ export class ContractDataDto {
   @IsOptional() @IsString() @MaxLength(120) segment?: string | null;
   @IsOptional() @IsString() @MaxLength(120) commercial_origin?: string | null;
   @IsOptional() @IsBoolean() recurring?: boolean | null;
+  /** Código da origem comercial (lista configurável nos parâmetros financeiros). */
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-z0-9_]{2,40}$/)
+  commercial_origin_code?: string | null;
+  /** Despesas reembolsáveis por conta de: cliente ou empresa (padrão das despesas). */
+  @IsOptional() @IsIn(PAYER_OPTIONS) expenses_paid_by?: Payer | null;
+  /** Plaquetas por conta de: cliente ou empresa. */
+  @IsOptional() @IsIn(PAYER_OPTIONS) tags_paid_by?: Payer | null;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ContractPaymentPlanDto)
+  payment_plan?: ContractPaymentPlanDto | null;
   @IsArray()
   @ArrayUnique()
   @ArrayMaxSize(50)
@@ -87,5 +116,9 @@ export class AmendmentDto extends ContractCommandDto {
   ends_on?: string | null;
   @IsOptional() @IsString() @MinLength(1) @MaxLength(10000) scope?:
     | string
+    | null;
+  /** Número de parcelas do valor do aditivo (só com alteração de valor). */
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(60) installments?:
+    | number
     | null;
 }

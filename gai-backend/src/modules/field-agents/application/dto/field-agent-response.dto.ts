@@ -26,6 +26,9 @@ export class FieldAgentResponseDto {
   @ApiPropertyOptional({ nullable: true })
   document!: string | null;
 
+  @ApiPropertyOptional({ nullable: true, description: 'UF (sigla)' })
+  state!: string | null;
+
   @ApiProperty({ enum: FieldAgentStatus })
   status!: FieldAgentStatus;
 
@@ -54,6 +57,7 @@ export class FieldAgentResponseDto {
       email: fieldAgent.email,
       phone: fieldAgent.phone,
       document: fieldAgent.document,
+      state: fieldAgent.state,
       status: fieldAgent.status,
       metadata: fieldAgent.metadata,
       created_at: fieldAgent.createdAt.toISOString(),

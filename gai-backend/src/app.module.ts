@@ -8,6 +8,8 @@ import { RECEIVABLE_ENTITIES } from './modules/receivables/receivable.entity';
 import { ReceivablesModule } from './modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from './modules/budgets/budget.entity';
 import { BudgetsModule } from './modules/budgets/budgets.module';
+import { FinanceSettingsModule } from './modules/finance-settings/finance-settings.module';
+import { FinanceSettingsVersionEntity } from './modules/finance-settings/finance-settings.entity';
 import { CONTRACT_ENTITIES } from './modules/contracts/contract.entity';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { ASSISTED_ENTITIES } from './modules/assisted-reconciliation/assisted.entity';
@@ -54,6 +56,7 @@ import { OrganizationEntity } from './modules/organizations/infrastructure/persi
 import { FieldAgentsModule } from './modules/field-agents/field-agents.module';
 import { FieldAgentAuditLogEntity } from './modules/field-agents/infrastructure/persistence/field-agent-audit-log.entity';
 import { FieldAgentEntity } from './modules/field-agents/infrastructure/persistence/field-agent.entity';
+import { FieldAgentDocumentEntity } from './modules/field-agents/infrastructure/persistence/field-agent-document.entity';
 import { ProjectFieldAgentEntity } from './modules/field-agents/infrastructure/persistence/project-field-agent.entity';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import {
@@ -151,6 +154,7 @@ import { UsersModule } from './modules/users/users.module';
           ProjectEntity,
           ProjectAuditLogEntity,
           FieldAgentEntity,
+          FieldAgentDocumentEntity,
           ProjectFieldAgentEntity,
           FieldAgentAuditLogEntity,
           InventoryItemEntity,
@@ -184,6 +188,7 @@ import { UsersModule } from './modules/users/users.module';
           ...DRE_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
+          FinanceSettingsVersionEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -223,6 +228,7 @@ import { UsersModule } from './modules/users/users.module';
     ContractsModule,
     BudgetsModule,
     ReceivablesModule,
+    FinanceSettingsModule,
     ManagerialDreModule,
     TechnicalReportsModule,
     DocumentsModule,

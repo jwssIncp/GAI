@@ -4,9 +4,16 @@ import { EmptyState } from './States';
 
 export type Column<T> = {
   header: string;
+  /** Conteúdo do cabeçalho quando não é só texto (ex.: caixa de seleção). `header` continua sendo a chave. */
+  headerContent?: ReactNode;
+  /** Fixa a coluna na borda direita a partir do tablet (ex.: Ações sempre visível ao rolar a tabela). */
+  sticky?: 'right';
   cell: (item: T) => ReactNode;
   className?: string;
 };
+
+const stickyHead = 'md:sticky md:right-0 md:z-10 md:bg-muted';
+const stickyCell = 'md:sticky md:right-0 md:z-10 md:bg-card md:shadow-[-12px_0_12px_-12px_hsl(var(--foreground)/0.25)]';
 
 export function DataTable<T>({ columns, items, getKey, caption = 'Registros' }: { columns: Column<T>[]; items: T[]; getKey: (item: T) => string | number; caption?: string }) {
   if (!items.length) return <EmptyState />;
@@ -17,12 +24,12 @@ export function DataTable<T>({ columns, items, getKey, caption = 'Registros' }: 
         <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-muted text-xs text-muted-foreground">
-            <tr>{columns.map((column) => <th scope="col" key={column.header} className={cn('border-b border-border px-5 py-4 font-semibold first:pl-6 last:pr-6', column.className)}>{column.header}</th>)}</tr>
+            <tr>{columns.map((column) => <th scope="col" key={column.header} className={cn('border-b border-border px-5 py-4 font-semibold first:pl-6 last:pr-6', column.className, column.sticky === 'right' && stickyHead)}>{column.headerContent ?? column.header}</th>)}</tr>
           </thead>
           <tbody className="[&>tr:last-child>td]:border-b-0">
             {items.map((item) => (
               <tr key={getKey(item)} className="group transition-colors duration-150 hover:bg-primary/[0.07] focus-within:bg-primary/[0.07]">
-                {columns.map((column) => <td key={column.header} className={cn('border-b border-border/55 px-5 py-4 align-middle text-foreground/90 first:pl-6 last:pr-6', column.className)}>{column.cell(item)}</td>)}
+                {columns.map((column) => <td key={column.header} className={cn('border-b border-border/55 px-5 py-4 align-middle text-foreground/90 first:pl-6 last:pr-6', column.className, column.sticky === 'right' && stickyCell)}>{column.cell(item)}</td>)}
               </tr>
             ))}
           </tbody>

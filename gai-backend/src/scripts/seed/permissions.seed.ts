@@ -868,3 +868,23 @@ for (const key of [
     scope: PermissionScope.ORGANIZATION,
     description: 'Laudos tecnicos: ' + key.split(':')[1],
   });
+
+// Paridade financeira, etapa 1: parâmetros financeiros e cadastro de inventariantes.
+for (const [key, description] of [
+  ['finance-settings:read', 'Parâmetros financeiros: consultar'],
+  ['finance-settings:update', 'Parâmetros financeiros: criar nova versão'],
+  ['field-agents:export', 'Exportar inventariantes'],
+  [
+    'field-agent-documents:read',
+    'Documentos do inventariante: consultar e baixar',
+  ],
+  ['field-agent-documents:upload', 'Documentos do inventariante: anexar'],
+  ['field-agent-documents:remove', 'Documentos do inventariante: remover'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });

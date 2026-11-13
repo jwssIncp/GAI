@@ -296,6 +296,23 @@ export const fieldAgentsApi = {
   block: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/block`).then((r) => r.data),
   unblock: (id: number) => api.post<FieldAgent>(`/field-agents/${id}/unblock`).then((r) => r.data),
   delete: (id: number) => api.delete<void>(`/field-agents/${id}`).then((r) => r.data),
+  summary: () => api.get<import('@/types/api').FieldAgentSummary>('/field-agents/summary').then((r) => r.data),
+  exportFile: (params: Omit<FieldAgentListParams, 'page' | 'page_size'>) =>
+    api.get<Blob>('/field-agents/export', { params, responseType: 'blob' }).then((r) => r.data),
+  financialUsage: (ids: number[]) =>
+    api.get<import('@/types/api').FieldAgentFinancialUsage[]>('/field-agents/financial-usage', { params: { ids: ids.join(',') } }).then((r) => r.data),
+  batchDelete: (ids: number[]) =>
+    api.post<import('@/types/api').FieldAgentBatchDeleteResult>('/field-agents/batch-delete', { ids }).then((r) => r.data),
+  documents: (id: number) =>
+    api.get<import('@/types/api').FieldAgentDocument[]>(`/field-agents/${id}/documents`).then((r) => r.data),
+  documentUploadUrl: (id: number, payload: { original_name: string; mime_type: string; size_bytes: number }) =>
+    api.post<{ document: import('@/types/api').FieldAgentDocument; upload_url: string; expires_in_seconds: number }>(`/field-agents/${id}/documents/upload-url`, payload).then((r) => r.data),
+  confirmDocument: (id: number, documentId: number, payload: { size_bytes: number }) =>
+    api.post<import('@/types/api').FieldAgentDocument>(`/field-agents/${id}/documents/${documentId}/confirm-upload`, payload).then((r) => r.data),
+  documentDownloadUrl: (id: number, documentId: number) =>
+    api.post<{ download_url: string }>(`/field-agents/${id}/documents/${documentId}/download-url`).then((r) => r.data),
+  removeDocument: (id: number, documentId: number) =>
+    api.post<import('@/types/api').FieldAgentDocument>(`/field-agents/${id}/documents/${documentId}/remove`).then((r) => r.data),
 };
 
 export const projectFieldAgentsApi = {

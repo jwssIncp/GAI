@@ -13,6 +13,7 @@ function makeFieldAgent(status = FieldAgentStatus.ACTIVE): FieldAgent {
     email: null,
     phone: null,
     document: null,
+    state: null,
     status,
     metadata: null,
     createdAt: now,

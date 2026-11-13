@@ -34,6 +34,7 @@ import { OrganizationEntity } from '../../../organizations/infrastructure/persis
 @Index('idx_field_agents_organization_status', ['organizationId', 'status'])
 @Index('idx_field_agents_user_id', ['userId'])
 @Index('idx_field_agents_name', ['name'])
+@Index('idx_field_agents_org_state', ['organizationId', 'state'])
 @Index('uq_field_agents_org_email', ['organizationId', 'email'], {
   unique: true,
 })
@@ -73,6 +74,10 @@ export class FieldAgentEntity {
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   document!: string | null;
+
+  /** UF (sigla). Nula nos cadastros anteriores à paridade financeira. */
+  @Column({ type: 'varchar', length: 2, nullable: true })
+  state!: string | null;
 
   @Column({ type: 'varchar', length: 20, default: FieldAgentStatus.ACTIVE })
   status!: FieldAgentStatus;

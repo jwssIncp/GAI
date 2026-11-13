@@ -1,7 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayUnique,
+  IsArray,
   IsEmail,
+  IsIn,
   IsInt,
   IsObject,
   IsOptional,
@@ -11,6 +15,10 @@ import {
   MinLength,
 } from 'class-validator';
 import { JsonRecord } from '../../domain/entities/field-agent';
+import {
+  BRAZILIAN_STATES,
+  normalizeState,
+} from '../../domain/validation/brazilian-states';
 import {
   IsBrazilianDocument,
   IsBrazilianPhone,
@@ -56,6 +64,12 @@ export class CreateFieldAgentDto {
   @IsBrazilianDocument()
   document?: string | null;
 
+  @ApiPropertyOptional({ enum: BRAZILIAN_STATES, nullable: true })
+  @Transform(({ value }) => normalizeState(value))
+  @IsOptional()
+  @IsIn(BRAZILIAN_STATES, { message: 'UF inválida.' })
+  state?: string | null;
+
   @ApiPropertyOptional({
     type: 'object',
     additionalProperties: true,
@@ -64,4 +78,18 @@ export class CreateFieldAgentDto {
   @IsOptional()
   @IsObject()
   metadata?: JsonRecord | null;
+
+  @ApiPropertyOptional({
+    type: [Number],
+    description:
+      'Projetos a vincular já no cadastro (mesma transação; mesmas regras do vínculo pelo projeto).',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  @ArrayUnique()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  project_ids?: number[];
 }

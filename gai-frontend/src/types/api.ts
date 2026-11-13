@@ -479,6 +479,7 @@ export type FieldAgentListParams = PageParams & {
   deletion?: 'current' | 'deleted';
   exclude_project_id?: number;
   status?: FieldAgentStatus;
+  state?: string;
   search?: string;
 };
 
@@ -596,6 +597,8 @@ export type FieldAgent = {
   email?: string | null;
   phone?: string | null;
   document?: string | null;
+  /** UF (sigla). */
+  state?: string | null;
   status: FieldAgentStatus;
   metadata?: Record<string, unknown> | null;
   created_at: string;
@@ -609,10 +612,35 @@ export type CreateFieldAgentRequest = {
   email?: string | null;
   phone?: string | null;
   document?: string | null;
+  state?: string | null;
   metadata?: Record<string, unknown> | null;
+  /** Projetos vinculados já no cadastro (mesma transação). */
+  project_ids?: number[];
 };
 
-export type UpdateFieldAgentRequest = Partial<CreateFieldAgentRequest>;
+export type UpdateFieldAgentRequest = Partial<Omit<CreateFieldAgentRequest, 'project_ids'>>;
+export type FieldAgentSummary = {
+  total: number;
+  states_count: number;
+  without_state: number;
+  states: Array<{ state: string; count: number }>;
+};
+export type FieldAgentFinancialUsage = { id: number; name: string; payments: number; expenses: number };
+export type FieldAgentBatchDeleteResult = {
+  deleted: number;
+  failed: number;
+  results: Array<{ id: number; deleted: boolean; message?: string }>;
+};
+export type FieldAgentDocument = {
+  id: number;
+  field_agent_id: number;
+  original_name: string;
+  mime_type: string;
+  size_bytes: number;
+  status: 'pending_upload' | 'uploaded' | 'removed';
+  uploaded_by_id: number | null;
+  created_at: string;
+};
 export type FieldAgentAccount = { id: number; full_name: string | null; login: string; email: string; status: UserStatus };
 export type FieldAgentProject = { id: number; project_id: number; project_name: string; role: string | null; status: ProjectFieldAgentStatus; start_date: string | null; end_date: string | null };
 export type FieldAgentHistory = { id: number; operation: string; created_at: string; performed_by_name: string; changes: Record<string, { before: unknown; after: unknown }> };

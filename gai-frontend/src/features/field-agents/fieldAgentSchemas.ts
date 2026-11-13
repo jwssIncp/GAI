@@ -5,6 +5,7 @@ import {
   normalizeDocument,
   normalizePhone,
 } from "./brazilianContact";
+import { BRAZILIAN_STATES } from "./brazilianStates";
 const text = (max: number) =>
   z
     .string()
@@ -52,6 +53,18 @@ export function makeFieldAgentSchema(legacyDocument?: string | null) {
               : normalizeDocument(value)
             : null,
         ),
+      state: z
+        .string()
+        .trim()
+        .default("")
+        .transform((value) => value.toUpperCase())
+        .refine(
+          (value) =>
+            !value ||
+            (BRAZILIAN_STATES as readonly string[]).includes(value),
+          "UF inválida",
+        )
+        .transform((value) => value || null),
       user_id: z
         .string()
         .transform((value) => (value ? Number(value) : null))

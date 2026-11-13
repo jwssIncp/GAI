@@ -22,6 +22,11 @@ import { FieldAgentAuditLogEntity } from './infrastructure/persistence/field-age
 import { FieldAgentEntity } from './infrastructure/persistence/field-agent.entity';
 import { ProjectFieldAgentEntity } from './infrastructure/persistence/project-field-agent.entity';
 import { TypeOrmFieldAgentRepository } from './infrastructure/persistence/typeorm-field-agent.repository';
+import { ConfiguredStorageSignerService } from '../../common/storage/configured-storage-signer.service';
+import { STORAGE_SIGNER } from '../../common/storage/storage-signer.port';
+import { FinanceSettingsModule } from '../finance-settings/finance-settings.module';
+import { FieldAgentRecordsService } from './application/services/field-agent-records.service';
+import { FieldAgentDocumentEntity } from './infrastructure/persistence/field-agent-document.entity';
 import { FieldAgentsController } from './presentation/field-agents.controller';
 import { ProjectFieldAgentsController } from './presentation/project-field-agents.controller';
 
@@ -32,8 +37,10 @@ import { ProjectFieldAgentsController } from './presentation/project-field-agent
       FieldAgentEntity,
       ProjectFieldAgentEntity,
       FieldAgentAuditLogEntity,
+      FieldAgentDocumentEntity,
       UserEntity,
     ]),
+    FinanceSettingsModule,
     AuthModule,
     OrganizationsModule,
     ProjectsModule,
@@ -41,6 +48,8 @@ import { ProjectFieldAgentsController } from './presentation/project-field-agent
   controllers: [FieldAgentsController, ProjectFieldAgentsController],
   providers: [
     FieldAgentManagementService,
+    FieldAgentRecordsService,
+    { provide: STORAGE_SIGNER, useClass: ConfiguredStorageSignerService },
     FieldAgentScopeService,
     CreateFieldAgentUseCase,
     DeleteFieldAgentUseCase,

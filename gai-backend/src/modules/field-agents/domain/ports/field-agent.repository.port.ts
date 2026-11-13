@@ -9,6 +9,7 @@ export interface ListFieldAgentsParams {
   pageSize: number;
   organizationId?: number;
   status?: FieldAgentStatus;
+  state?: string;
   search?: string;
   deleted?: boolean;
   excludeProjectId?: number;
@@ -61,9 +62,14 @@ export interface FieldAgentRepository {
   listAssignments(
     params: ListProjectFieldAgentsParams,
   ): Promise<{ items: ProjectFieldAgent[]; total: number }>;
+  /**
+   * Grava o inventariante com auditoria. Em um cadastro novo, `initialProjectIds`
+   * cria os vínculos ativos na mesma transação (tudo ou nada).
+   */
   saveFieldAgentWithAudit(
     fieldAgent: FieldAgent,
     audit: FieldAgentAuditEntry,
+    initialProjectIds?: number[],
   ): Promise<FieldAgent>;
   saveAssignmentWithAudit(
     assignment: ProjectFieldAgent,

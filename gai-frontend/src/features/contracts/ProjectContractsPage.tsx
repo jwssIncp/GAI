@@ -10,11 +10,16 @@ import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { usePermissions } from "@/features/auth/usePermissions";
+import { financeSettingsApi } from "@/features/finance-settings/financeSettingsApi";
+import { PaymentPlanFields } from "./PaymentPlanFields";
 import {
   contractsApi,
   contractDate,
   contractMoney,
   contractStatuses,
+  paymentPlanFromForm,
+  payerLabel,
+  type Payer,
   type Contract,
   type ContractData,
   type ContractDetail,
@@ -73,6 +78,9 @@ function ContractsWorkspace({ p }: { p: number }) {
           value_delta: nullable("value_delta"),
           ends_on: nullable("amend_ends_on"),
           scope: nullable("amend_scope"),
+          installments: text("amend_installments")
+            ? Number(text("amend_installments"))
+            : null,
         });
       const data: ContractData = {
         number: text("number"),
@@ -84,7 +92,17 @@ function ContractsWorkspace({ p }: { p: number }) {
         currency: text("currency"),
         contracting_type: nullable("contracting_type"),
         segment: nullable("segment"),
-        commercial_origin: nullable("commercial_origin"),
+        // Texto livre antigo: não aparece mais no formulário, mas é preservado como está.
+        commercial_origin:
+          modal === "create" ? null : (row?.data.commercial_origin ?? null),
+        commercial_origin_code: nullable("commercial_origin_code"),
+        expenses_paid_by: nullable("expenses_paid_by") as Payer | null,
+        tags_paid_by: nullable("tags_paid_by") as Payer | null,
+        payment_plan: paymentPlanFromForm(
+          text("plan_mode"),
+          text("plan_installments"),
+          values.getAll("plan_pct").map(String),
+        ),
         recurring:
           text("recurring") === "" ? null : text("recurring") === "true",
         services: text("services")
@@ -284,6 +302,16 @@ function ContractsWorkspace({ p }: { p: number }) {
                   placeholder="100.25"
                 />
               </Field>
+              <Field label="Parcelas do valor do aditivo">
+                <input
+                  className={inputClass}
+                  name="amend_installments"
+                  type="number"
+                  min="1"
+                  max="60"
+                  placeholder="1"
+                />
+              </Field>
               <Field label="Novo fim da vigência">
                 <input
                   className={inputClass}
@@ -338,6 +366,15 @@ function ContractsWorkspace({ p }: { p: number }) {
 }
 function ContractFields({ row }: { row?: Contract }) {
   const d = row?.data;
+  const { hasPermission } = usePermissions();
+  const settings = useQuery({
+    queryKey: ["finance-settings"],
+    queryFn: financeSettingsApi.overview,
+    enabled: hasPermission("finance-settings:read"),
+  });
+  const origins = settings.data?.current?.values.commercial_origins ?? [];
+  const currentOrigin = d?.commercial_origin_code ?? "";
+  const [originCode, setOriginCode] = useState(currentOrigin);
   const frozen = (key: keyof ContractData) =>
     !!d && !(d.status === "draft" && d[key] == null);
   return (
@@ -400,7 +437,6 @@ function ContractFields({ row }: { row?: Contract }) {
         [
           ["contracting_type", "Tipo de contratação"],
           ["segment", "Segmento"],
-          ["commercial_origin", "Origem comercial"],
         ] as const
       ).map(([key, label]) => (
         <Field key={key} label={label}>
@@ -412,6 +448,57 @@ function ContractFields({ row }: { row?: Contract }) {
           />
         </Field>
       ))}
+      <Field label="Origem comercial">
+        <select
+          aria-label="Origem comercial"
+          className={inputClass}
+          name="commercial_origin_code"
+          value={originCode}
+          onChange={(event) => setOriginCode(event.target.value)}
+        >
+          <option value="">Não informada</option>
+          {currentOrigin && !origins.some((o) => o.code === currentOrigin) ? (
+            <option value={currentOrigin}>{currentOrigin}</option>
+          ) : null}
+          {origins.map((origin) => (
+            <option key={origin.code} value={origin.code}>
+              {origin.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+      {d?.commercial_origin && !originCode ? (
+        <p className="text-sm text-muted-foreground" role="note">
+          Origem registrada anteriormente: {d.commercial_origin}
+        </p>
+      ) : null}
+      {(
+        [
+          ["expenses_paid_by", "Despesas de campo por conta de"],
+          ["tags_paid_by", "Plaquetas por conta de"],
+        ] as const
+      ).map(([key, label]) => (
+        <Field key={key} label={label}>
+          <select
+            aria-label={label}
+            className={inputClass}
+            name={key}
+            defaultValue={d?.[key] ?? ""}
+          >
+            <option value="">Não informado</option>
+            {(Object.keys(payerLabel) as Payer[]).map((payer) => (
+              <option key={payer} value={payer}>
+                {payerLabel[payer]}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ))}
+      <PaymentPlanFields
+        initial={d?.payment_plan}
+        inputClass={inputClass}
+        Field={Field}
+      />
       <Field label="Recorrência">
         <select
           aria-label="Recorrência"

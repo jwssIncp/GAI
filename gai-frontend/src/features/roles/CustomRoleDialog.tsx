@@ -38,7 +38,7 @@ function RoleEditor({ organizationId, role, permissions, onClose }: { organizati
   });
   const groups = new Map<string, Permission[]>();
   for (const permission of permissions) {
-    const text = `${resourceName(permission.resource)} ${actionName(permission.action)} ${permission.description}`.toLocaleLowerCase('pt-BR');
+    const text = `${resourceName(permission.resource)} ${actionName(permission.action, permission.resource)} ${permission.description}`.toLocaleLowerCase('pt-BR');
     if (!text.includes(search.toLocaleLowerCase('pt-BR'))) continue;
     const area = permissionArea(permission.resource);
     groups.set(area, [...(groups.get(area) ?? []), permission]);
@@ -54,7 +54,7 @@ function RoleEditor({ organizationId, role, permissions, onClose }: { organizati
         <summary className="cursor-pointer rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring">{area} <span className="text-muted-foreground">({entries.filter((permission) => selected.includes(permission.id)).length}/{entries.length})</span></summary>
         <div className="mt-4 grid gap-2">{entries.map((permission) => <label key={permission.id} className="flex min-w-0 items-start gap-3 rounded-lg p-2 text-sm hover:bg-muted/60">
           <input type="checkbox" className="mt-1 size-4 shrink-0 accent-primary" checked={selected.includes(permission.id)} onChange={(event) => setSelected((current) => event.target.checked ? [...current, permission.id] : current.filter((id) => id !== permission.id))} />
-          <span className="min-w-0"><span className="block font-medium">{resourceName(permission.resource)} · {actionName(permission.action)}</span>{permission.description && <span className="block break-words text-xs leading-5 text-muted-foreground">{permission.description}</span>}</span>
+          <span className="min-w-0"><span className="block font-medium">{resourceName(permission.resource)} · {actionName(permission.action, permission.resource)}</span>{permission.description && <span className="block break-words text-xs leading-5 text-muted-foreground">{permission.description}</span>}</span>
         </label>)}</div>
       </details>)}
       {!groups.size && <p className="text-sm text-muted-foreground">Nenhuma funcionalidade encontrada.</p>}

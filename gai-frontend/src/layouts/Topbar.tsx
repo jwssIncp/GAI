@@ -35,6 +35,7 @@ const breadcrumbLabels: Record<string, string> = {
   periods:'Competências',
   receivables:'Recebíveis',
   'cash-flow':'Fluxo de caixa',
+  parameters: 'Parâmetros financeiros',
   new:'Novo',
   'import-sessions': 'Importações',
   'export-jobs': 'Exportações',

@@ -11,6 +11,7 @@ import { ReceivablesPage } from "@/features/receivables/ReceivablesPage";
 import { ReceivableForm } from "@/features/receivables/ReceivableForm";
 import { ReceivableDetailPage } from "@/features/receivables/ReceivableDetailPage";
 import { CashFlowPage } from "@/features/receivables/CashFlowPage";
+import { FinanceSettingsPage } from "@/features/finance-settings/FinanceSettingsPage";
 import { projectRoute } from "./projectRoutes";
 import { BudgetLayout } from "@/features/budgets/BudgetLayout";
 import { BudgetsPage } from "@/features/budgets/BudgetsPage";
@@ -159,6 +160,12 @@ export const router = createBrowserRouter([
               {
                 element: <ProtectedRoute permissions={["cash-flow:read"]} />,
                 children: [{ path: "cash-flow", element: <CashFlowPage /> }],
+              },
+              {
+                element: <ProtectedRoute permissions={["finance-settings:read"]} />,
+                children: [
+                  { path: "parameters", element: <FinanceSettingsPage /> },
+                ],
               },
             ],
           },

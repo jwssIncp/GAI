@@ -10,6 +10,7 @@ export interface FieldAgentProps {
   email: string | null;
   phone: string | null;
   document: string | null;
+  state: string | null;
   status: FieldAgentStatus;
   metadata: JsonRecord | null;
   createdAt: Date;
@@ -52,6 +53,10 @@ export class FieldAgent {
     return this.props.document;
   }
 
+  get state(): string | null {
+    return this.props.state;
+  }
+
   get status(): FieldAgentStatus {
     return this.props.status;
   }
@@ -82,6 +87,7 @@ export class FieldAgent {
     email?: string | null;
     phone?: string | null;
     document?: string | null;
+    state?: string | null;
     metadata?: JsonRecord | null;
   }): Record<string, { before: unknown; after: unknown }> {
     const changes: Record<string, { before: unknown; after: unknown }> = {};
@@ -103,6 +109,9 @@ export class FieldAgent {
     });
     this.applyChange(changes, 'document', fields.document, (value) => {
       this.props.document = value;
+    });
+    this.applyChange(changes, 'state', fields.state, (value) => {
+      this.props.state = value;
     });
     this.applyChange(changes, 'metadata', fields.metadata, (value) => {
       this.props.metadata = value;
@@ -182,6 +191,7 @@ export class FieldAgent {
       email: 'email',
       phone: 'phone',
       document: 'document',
+      state: 'state',
       metadata: 'metadata',
     };
     return map[key] ?? 'name';

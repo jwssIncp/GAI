@@ -1,5 +1,9 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import type { ContractDataDto, ContractStatus } from './contract.dto';
+import type {
+  ContractDataDto,
+  ContractPaymentPlanDto,
+  ContractStatus,
+} from './contract.dto';
 import { isCivilDate } from '../../common/validation/civil-date';
 export function invalid(message: string): never {
   throw new BadRequestException({ code: 'CONTRACT_INVALID', message });
@@ -19,6 +23,31 @@ export function money(value: bigint): string {
   const abs = value < 0n ? -value : value;
   return `${value < 0n ? '-' : ''}${abs / 100n}.${String(abs % 100n).padStart(2, '0')}`;
 }
+/** Forma de pagamento: no modo "percentages", um percentual por parcela, somando 100. */
+export function normalizePaymentPlan(
+  plan: ContractPaymentPlanDto | null | undefined,
+): ContractPaymentPlanDto | null {
+  if (!plan) return null;
+  if (plan.mode === 'equal')
+    return {
+      mode: 'equal',
+      installments: plan.installments,
+      percentages: null,
+    };
+  const percentages = plan.percentages ?? [];
+  if (percentages.length !== plan.installments)
+    invalid('Informe um percentual para cada parcela.');
+  const scaled = percentages.map((value) => cents(value));
+  if (scaled.some((value) => value <= 0n))
+    invalid('Cada parcela precisa de um percentual maior que zero.');
+  if (scaled.reduce((sum, value) => sum + value, 0n) !== 10000n)
+    invalid('Os percentuais das parcelas precisam somar 100%.');
+  return {
+    mode: 'percentages',
+    installments: plan.installments,
+    percentages: scaled.map((value) => money(value)),
+  };
+}
 export function normalizeContract(input: ContractDataDto): ContractDataDto {
   if (!input.number.trim()) invalid('Informe o número do contrato.');
   const data: ContractDataDto = {
@@ -33,6 +62,10 @@ export function normalizeContract(input: ContractDataDto): ContractDataDto {
     contracting_type: input.contracting_type?.trim() || null,
     segment: input.segment?.trim() || null,
     commercial_origin: input.commercial_origin?.trim() || null,
+    commercial_origin_code: input.commercial_origin_code ?? null,
+    expenses_paid_by: input.expenses_paid_by ?? null,
+    tags_paid_by: input.tags_paid_by ?? null,
+    payment_plan: normalizePaymentPlan(input.payment_plan),
     recurring: input.recurring ?? null,
     services: [
       ...new Set(input.services.map((s) => s.trim()).filter(Boolean)),
