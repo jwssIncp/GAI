@@ -41,9 +41,9 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
   async listPayments(
     params: ListPaymentsParams,
   ): Promise<{ items: FieldAgentPayment[]; total: number }> {
+    // Excluídos (exclusão lógica) não entram mais na lista (doc 07 §9, item 16).
     const qb = this.paymentRepo
       .createQueryBuilder('payment')
-      .withDeleted()
       .where('payment.organizationId = :organizationId', params)
       .andWhere('payment.projectId = :projectId', params);
     if (params.fieldAgentId)
@@ -126,7 +126,6 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
   ): Promise<PaymentSummary> {
     const qb = this.paymentRepo
       .createQueryBuilder('payment')
-      .withDeleted()
       .where('payment.organizationId = :organizationId', { organizationId })
       .andWhere('payment.projectId = :projectId', { projectId })
       .select('COUNT(*)', 'total_count');
@@ -270,6 +269,9 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
     e.paymentDate = x.paymentDate
       ? (this.dateKey(x.paymentDate) as unknown as Date)
       : null;
+    e.expectedPaymentDate = x.expectedPaymentDate
+      ? (this.dateKey(x.expectedPaymentDate) as unknown as Date)
+      : null;
     if (x.id > 0) e.id = x.id;
     else delete (e as Partial<FieldAgentPaymentEntity>).id;
     return e;
@@ -300,11 +302,16 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
       dailyRate: this.money(e.dailyRate),
       additionalAmount: this.money(e.additionalAmount),
       dailyTotal: this.money(e.dailyTotal),
+      totalAmount: this.money(e.totalAmount ?? '0'),
+      totalManual: Boolean(e.totalManual),
       discountAmount: this.money(e.discountAmount),
       finalAmount: this.money(e.finalAmount),
       startDate: this.date(e.startDate),
       endDate: this.date(e.endDate),
       paymentDate: this.nullDate(e.paymentDate),
+      expectedPaymentDate: this.nullDate(e.expectedPaymentDate ?? null),
+      reopenedById: e.reopenedById == null ? null : Number(e.reopenedById),
+      reopenedAt: this.nullDate(e.reopenedAt ?? null),
       createdAt: this.date(e.createdAt),
       updatedAt: this.date(e.updatedAt),
       deletedAt: this.nullDate(e.deletedAt),

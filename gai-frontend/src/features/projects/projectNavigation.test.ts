@@ -16,7 +16,10 @@ const previousTabs: Array<[path: string, permissions: string[]]> = [
   ["accounting-items", ["inventory-accounting-items:read"]],
   ["pending-issues", ["inventory-pending-issues:read"]],
   ["summary#inventariantes", ["projects:read", "project-field-agents:read"]],
-  ["finance", ["payments:read", "expenses:read"]],
+  // Paridade financeira, etapa 2 (decisão D-H): "Pagamentos e despesas" virou
+  // "Remuneração" (diárias) e "Despesas"; ?tab=payments redireciona para Remuneração.
+  ["finance", ["expenses:read"]],
+  ["finance/remuneration", ["payments:read"]],
   ["/app/finance/dre?project_id=7", ["dre:read"]],
   ["/app/finance/receivables?project_id=7", ["receivables:read"]],
   ["/app/finance/cash-flow?project_id=7", ["cash-flow:read"]],
@@ -70,6 +73,7 @@ describe("Navegação do projeto em dois níveis", () => {
     ["/app/projects/7/inventory-items", "", "inventory-items", "inventory"],
     ["/app/projects/7/technical-reports/templates/3", "", "technical-reports", "accounting"],
     ["/app/projects/7/finance", "", "finance", "finance"],
+    ["/app/projects/7/finance/remuneration", "", "remuneration", "finance"],
     ["/app/projects/7/finance/accountabilities", "", "accountabilities", "finance"],
     ["/app/projects/7/import-sessions", "", "imports", "overview"],
     ["/app/projects/7/export-jobs", "", "exports", "overview"],

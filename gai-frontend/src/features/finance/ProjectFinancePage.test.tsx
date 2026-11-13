@@ -141,15 +141,16 @@ function page<T>(items: T[], overrides: Partial<PaginatedItems<T>> = {}): Pagina
   return { items, page: 1, page_size: 20, total_items: items.length, total_pages: items.length ? 1 : 0, ...overrides };
 }
 
-function renderPage(user: CurrentUser = admin) {
+function renderPage(user: CurrentUser = admin, path = '/app/projects/20/finance') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = { user, accessToken: 'token', expiresAt: '2099-01-01T00:00:00.000Z', bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
   return render(
     <QueryClientProvider client={client}>
       <AuthContext.Provider value={auth}>
-        <MemoryRouter initialEntries={['/app/projects/20/finance']}>
+        <MemoryRouter initialEntries={[path]}>
           <Routes>
             <Route path="/app/projects/:projectId/finance" element={<ProjectFinancePage />} />
+            <Route path="/app/projects/:projectId/finance/remuneration" element={<p>Remuneração (destino do redirecionamento)</p>} />
           </Routes>
         </MemoryRouter>
       </AuthContext.Provider>
@@ -183,48 +184,26 @@ describe('ProjectFinancePage', () => {
     mocks.uploadToPresignedUrl.mockResolvedValue(undefined);
   });
 
-  it('renderiza resumo e listagem de pagamentos', async () => {
-    renderPage();
-    expect(await screen.findByText('R$ 320,00')).toBeInTheDocument();
-    expect(await screen.findByText('Pagamento #10')).toBeInTheDocument();
+  it('?tab=payments (endereço antigo) redireciona para Remuneração', async () => {
+    renderPage(admin, '/app/projects/20/finance?tab=payments');
+    expect(await screen.findByText('Remuneração (destino do redirecionamento)')).toBeInTheDocument();
   });
 
-  it('filtra pagamentos com parametros reais', async () => {
+  it('a aba Despesas mostra só as despesas, sem a lista de diárias', async () => {
     renderPage();
-    await userEvent.selectOptions(await screen.findByLabelText('Filtrar pagamento por status'), 'pending');
-    await userEvent.type(screen.getByPlaceholderText('UF/Estado'), 'SP');
-    await waitFor(() => expect(mocks.paymentsList).toHaveBeenLastCalledWith(20, expect.objectContaining({ status: 'pending', state: 'SP' })));
-  });
-
-  it('valida formulario de pagamento', async () => {
-    renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /novo pagamento/i }));
-    await userEvent.click(screen.getByRole('button', { name: /criar pagamento/i }));
-    expect(await screen.findByText('Selecione o inventariante')).toBeInTheDocument();
-  });
-
-  it('aprova pagamento com permissao', async () => {
-    renderPage();
-    await userEvent.click(await screen.findByLabelText('Aprovar pagamento'));
-    await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
-    await waitFor(() => expect(mocks.paymentApprove).toHaveBeenCalledWith(20, 10));
-  });
-
-  it('oculta criacao para usuario sem permissao', async () => {
-    renderPage(noPermissions);
-    await screen.findByText('Pagamento #10');
-    expect(screen.queryByRole('button', { name: /novo pagamento/i })).not.toBeInTheDocument();
-  });
-
-  it('renderiza despesas em aba dedicada', async () => {
-    renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     expect(await screen.findByText('Almoco em campo')).toBeInTheDocument();
+    expect(screen.queryByText('Pagamento #10')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Despesas' })).toBeInTheDocument();
+  });
+
+  it('oculta criação de despesa para usuário sem permissão', async () => {
+    renderPage(noPermissions);
+    await screen.findByText('Almoco em campo');
+    expect(screen.queryByRole('button', { name: /nova despesa/i })).not.toBeInTheDocument();
   });
 
   it('valida formulario de despesa', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     await userEvent.click(await screen.findByRole('button', { name: /nova despesa/i }));
     await userEvent.click(screen.getByRole('button', { name: /criar despesa/i }));
     expect(await screen.findByText('Descreva a despesa')).toBeInTheDocument();
@@ -232,7 +211,6 @@ describe('ProjectFinancePage', () => {
 
   it('rejeita despesa com motivo obrigatorio', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     await userEvent.click(await screen.findByLabelText('Rejeitar despesa'));
     await userEvent.click(screen.getByRole('button', { name: /rejeitar despesa/i }));
     expect(await screen.findByText('Informe o motivo da rejeição')).toBeInTheDocument();
@@ -243,7 +221,6 @@ describe('ProjectFinancePage', () => {
 
   it('envia comprovante usando upload-url e confirm-upload', async () => {
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
     await userEvent.click(await screen.findByLabelText('Comprovantes da despesa'));
     const file = new File(['conteúdo'], 'novo.pdf', { type: 'application/pdf' });
     await userEvent.upload(await screen.findByLabelText('Enviar comprovante'), file);

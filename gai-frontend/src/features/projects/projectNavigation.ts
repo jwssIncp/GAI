@@ -73,7 +73,8 @@ export function projectTabGroups(projectId: string): ProjectTabGroup[] {
       id: "finance",
       label: "Financeiro",
       tabs: [
-        { id: "finance", label: "Pagamentos e despesas", path: "finance", permissions: ["payments:read", "expenses:read"] },
+        { id: "remuneration", label: "Remuneração", path: "finance/remuneration", permissions: ["payments:read"] },
+        { id: "finance", label: "Despesas", path: "finance", permissions: ["expenses:read"] },
         { id: "accountabilities", label: "Prestações", path: "finance/accountabilities", permissions: ["expense-accountabilities:read"] },
         { id: "receivables", label: "Recebíveis", path: `/app/finance/receivables?project_id=${projectId}`, permissions: ["receivables:read"], external: true, hint: "Abre Recebíveis (fora do projeto), filtrado por este projeto." },
         { id: "cash-flow", label: "Fluxo de caixa", path: `/app/finance/cash-flow?project_id=${projectId}`, permissions: ["cash-flow:read"], external: true, hint: "Abre Fluxo de caixa (fora do projeto), filtrado por este projeto." },
@@ -108,6 +109,7 @@ export function activeProjectTabId(projectId: string, pathname: string, hash: st
     "accounting-items": "accounting-items",
     contracts: "contracts",
     finance: "finance",
+    "finance/remuneration": "remuneration",
     "finance/accountabilities": "accountabilities",
   };
   if (exact[rest]) return exact[rest];
@@ -219,16 +221,19 @@ export function projectTabAlerts(
   if (summary.financial && (access.approvePayments || access.approveExpenses)) {
     const payments = access.approvePayments ? summary.financial.pending_payments : 0;
     const expenses = access.approveExpenses ? summary.financial.pending_expenses : 0;
-    if (payments + expenses > 0) {
-      alerts.finance = {
-        count: payments + expenses,
+    // Cada aba alerta só o que é dela: diárias em Remuneração, despesas em Despesas.
+    if (payments > 0)
+      alerts.remuneration = {
+        count: payments,
         severity: "warning",
-        description: [
-          payments ? plural(payments, "pagamento aguardando sua aprovação", "pagamentos aguardando sua aprovação") : null,
-          expenses ? plural(expenses, "despesa aguardando sua aprovação", "despesas aguardando sua aprovação") : null,
-        ].filter(Boolean).join(", "),
+        description: plural(payments, "diária aguardando sua aprovação", "diárias aguardando sua aprovação"),
       };
-    }
+    if (expenses > 0)
+      alerts.finance = {
+        count: expenses,
+        severity: "warning",
+        description: plural(expenses, "despesa aguardando sua aprovação", "despesas aguardando sua aprovação"),
+      };
   }
   if (summary.imports && summary.imports.failed_import_sessions > 0) {
     alerts.imports = { count: summary.imports.failed_import_sessions, severity: "danger", description: plural(summary.imports.failed_import_sessions, "importação com falha", "importações com falha") };

@@ -26,6 +26,7 @@ describe('Civil dates and UTC instants (real MySQL)', () => {
     field_agent_id: agent,
     start_date: day,
     end_date: day,
+    expected_payment_date: day,
     daily_rate: '1.00',
   });
   const counts = async () =>

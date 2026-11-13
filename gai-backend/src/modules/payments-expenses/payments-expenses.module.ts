@@ -3,6 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfiguredStorageSignerService } from '../../common/storage/configured-storage-signer.service';
 import { STORAGE_SIGNER } from '../../common/storage/storage-signer.port';
 import { AuthModule } from '../auth/auth.module';
+import { FinanceSettingsModule } from '../finance-settings/finance-settings.module';
+import { RemunerationService } from './application/services/remuneration.service';
+import { RemunerationController } from './presentation/remuneration.controller';
 import { FieldAgentsModule } from '../field-agents/field-agents.module';
 import { ProjectsModule } from '../projects/projects.module';
 import { PaymentsExpensesScopeService } from './application/services/payments-expenses-scope.service';
@@ -26,9 +29,11 @@ import { PaymentsExpensesController } from './presentation/payments-expenses.con
     AuthModule,
     ProjectsModule,
     FieldAgentsModule,
+    FinanceSettingsModule,
   ],
-  controllers: [PaymentsExpensesController],
+  controllers: [PaymentsExpensesController, RemunerationController],
   providers: [
+    RemunerationService,
     PaymentsExpensesScopeService,
     PaymentsExpensesService,
     {

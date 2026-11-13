@@ -869,6 +869,19 @@ for (const key of [
     description: 'Laudos tecnicos: ' + key.split(':')[1],
   });
 
+// Paridade financeira, etapa 2: Remuneração (excluir e reabrir lançamento).
+for (const [key, description] of [
+  ['payments:delete', 'Remuneração: excluir lançamento (exclusão lógica)'],
+  ['payments:reopen', 'Remuneração: reabrir lançamento aprovado para edição'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'payments',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
 // Paridade financeira, etapa 1: parâmetros financeiros e cadastro de inventariantes.
 for (const [key, description] of [
   ['finance-settings:read', 'Parâmetros financeiros: consultar'],

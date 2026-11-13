@@ -340,6 +340,7 @@ describe('Field-agent reform security and lifecycle', () => {
       state: 'SP',
       start_date: '2026-07-01',
       end_date: '2026-07-03',
+      expected_payment_date: '2026-07-10',
       daily_rate: '100.00',
     }).expect(201);
     await post(`/projects/${projectId}/expenses`, {

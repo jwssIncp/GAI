@@ -96,11 +96,17 @@ describe("Regras dos alertas ⚠ v1 revisadas (somente dados de /projects/:id/da
     expect(projectTabAlerts({ ...clean, images: { ...clean.images, pending_upload_images: 4 } })).toEqual({});
   });
 
-  it("financeiro só para quem aprova, contando só o que a pessoa pode aprovar", () => {
+  it("financeiro só para quem aprova: diárias em Remuneração, despesas em Despesas", () => {
     expect(projectTabAlerts(withProblems).finance).toBeUndefined();
-    expect(projectTabAlerts(withProblems, approver(["payments:approve"])).finance).toEqual({ count: 1, severity: "warning", description: "1 pagamento aguardando sua aprovação" });
-    expect(projectTabAlerts(withProblems, approver(["expenses:approve"])).finance?.count).toBe(2);
-    expect(projectTabAlerts(withProblems, approver(["payments:approve", "expenses:approve"])).finance?.count).toBe(3);
+    expect(projectTabAlerts(withProblems).remuneration).toBeUndefined();
+    const payments = projectTabAlerts(withProblems, approver(["payments:approve"]));
+    expect(payments.remuneration).toEqual({ count: 1, severity: "warning", description: "1 diária aguardando sua aprovação" });
+    expect(payments.finance).toBeUndefined();
+    const expenses = projectTabAlerts(withProblems, approver(["expenses:approve"]));
+    expect(expenses.finance).toEqual({ count: 2, severity: "warning", description: "2 despesas aguardando sua aprovação" });
+    expect(expenses.remuneration).toBeUndefined();
+    const both = projectTabAlerts(withProblems, approver(["payments:approve", "expenses:approve"]));
+    expect([both.remuneration?.count, both.finance?.count]).toEqual([1, 2]);
   });
 
   it("equipe só alerta com projeto ativo; financeiro/importações/exportações ausentes não geram alerta", () => {
@@ -130,7 +136,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
     expect(description(tab)).toBe("Atenção: 5 pendências abertas ou em revisão, 1 crítica ou alta");
     const group = nav.getByRole("link", { name: "Inventário" });
     expect(description(group)).toBe("Atenção: Pendências: 5 pendências abertas ou em revisão, 1 crítica ou alta");
-    expect(description(nav.getByRole("link", { name: "Financeiro" }))).toBe("Atenção: Pagamentos e despesas: 1 pagamento aguardando sua aprovação");
+    expect(description(nav.getByRole("link", { name: "Financeiro" }))).toBe("Atenção: Remuneração: 1 diária aguardando sua aprovação");
     expect(nav.getByRole("link", { name: "Campo" })).toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Contábil e laudo" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
@@ -141,7 +147,8 @@ describe("Exibição dos alertas no grupo e na aba", () => {
     const nav = renderAt("/app/projects/10/finance", user(everything));
     await vi.waitFor(() => expect(nav.getByRole("link", { name: "Inventário" })).toHaveAttribute("aria-describedby"));
     expect(nav.getByRole("link", { name: "Financeiro" })).not.toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Pagamentos e despesas" }).textContent).toBe("Pagamentos e despesas");
+    expect(nav.getByRole("link", { name: "Remuneração" }).textContent).toBe("Remuneração");
+    expect(nav.getByRole("link", { name: "Despesas" }).textContent).toBe("Despesas");
   });
 
   it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {

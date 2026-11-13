@@ -39,6 +39,9 @@ vi.mock("@/features/projects/ProjectSummaryPage", () => ({
 vi.mock("@/features/inventory-items/ProjectInventoryItemsPage", () => ({
   ProjectInventoryItemsPage: () => <Probe title="Itens" />,
 }));
+vi.mock("@/features/remuneration/ProjectRemunerationPage", () => ({
+  ProjectRemunerationPage: () => <Probe title="Remuneração" />,
+}));
 vi.mock("@/features/finance/ProjectFinancePage", () => ({
   ProjectFinancePage: () => <Probe title="Financeiro" />,
 }));
@@ -134,7 +137,8 @@ describe("Production project route tree: persistent navigation", () => {
     const wrapper = nav.closest("[data-project-id]");
     for (const [group, label, suffix, heading] of [
       ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
-      ["Financeiro", "Pagamentos e despesas", "finance", "Financeiro"],
+      ["Financeiro", "Remuneração", "finance/remuneration", "Remuneração"],
+      ["Financeiro", "Despesas", "finance", "Financeiro"],
       ["Inventário", "Pendências", "pending-issues", "Pendências"],
       ["Visão geral", "Dashboard", "dashboard", "Dashboard"],
       ["Contábil e laudo", "Base contábil", "accounting-items", "Contábil"],
@@ -220,7 +224,9 @@ describe("Production project route tree: persistent navigation", () => {
   it("selects a group whose first visible tab leaves the workspace without navigating", async () => {
     const finance = {
       ...admin,
-      permissions: ["projects:read", "payments:read", "receivables:read", "cash-flow:read", "dre:read"].map(
+      // Sem payments:read/expenses:read: as abas internas (Remuneração, Despesas) ficam ocultas
+      // e a primeira aba visível do grupo é externa.
+      permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read"].map(
         (key) => ({ key, scope: "ORGANIZATION" as const }),
       ),
     };
@@ -228,7 +234,7 @@ describe("Production project route tree: persistent navigation", () => {
     const nav = await screen.findByRole("navigation", { name: "Abas do projeto" });
     const group = within(nav).getByRole("button", { name: "Financeiro" });
     expect(group).toHaveAttribute("aria-expanded", "false");
-    expect(within(nav).queryByRole("link", { name: "Pagamentos e despesas" })).not.toBeInTheDocument();
+    expect(within(nav).queryByRole("link", { name: "Remuneração" })).not.toBeInTheDocument();
     await userEvent.click(group);
     expect(router.state.location.pathname).toBe("/app/projects/31/summary");
     expect(group).toHaveAttribute("aria-expanded", "true");

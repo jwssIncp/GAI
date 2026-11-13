@@ -303,12 +303,14 @@ export class CashFlowService {
             overdue: false,
           });
         else if (pmt.status === PaymentStatus.APPROVED) {
-          if (pmt.paymentDate)
+          // Previsão: data prevista (etapa 2); lançamentos antigos guardavam em payment_date.
+          const expectedOn = pmt.expectedPaymentDate ?? pmt.paymentDate;
+          if (expectedOn)
             rows.push({
               ...base,
               view: 'expected',
-              on: date(pmt.paymentDate),
-              overdue: date(pmt.paymentDate) < today,
+              on: date(expectedOn),
+              overdue: date(expectedOn) < today,
             });
           else undatedPayments++;
         }

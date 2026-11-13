@@ -1,12 +1,11 @@
 import { FieldAgentSelect } from '@/features/field-agents/FieldAgentSelect';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2, CreditCard, Eye, FileText, Pencil, Plus, Receipt, XCircle } from 'lucide-react';
+import { CheckCircle2, CreditCard, Eye, Pencil, Plus, Receipt, XCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
-import { MetricCard } from '@/components/base/Cards';
 import { DataTable, type Column } from '@/components/base/DataTable';
 import { DateInput } from '@/components/base/Inputs';
 import { FilterPanel } from '@/components/base/FilterPanel';
@@ -21,169 +20,43 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog, DrawerForm, ModalForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { usePermissions } from '@/features/auth/usePermissions';
-import { cn } from '@/utils/cn';
 import { formatDate, formatDateTime, formatMoney } from '@/utils/format';
 import { ExpenseAttachmentsPanel } from './ExpenseAttachmentsPanel';
 import { ExpenseForm } from './ExpenseForm';
 import {
   expenseStatusLabels,
   expenseStatuses,
-  paidDateSchema,
-  paymentStatusLabels,
-  paymentStatuses,
   rejectExpenseSchema,
-  type PaidDateValues,
   type RejectExpenseValues,
 } from './financeSchemas';
 import {
   useCreateExpense,
-  useCreatePayment,
   useExpenseAction,
   useExpenses,
   useFinanceFieldAgents,
-  usePaymentAction,
-  usePayments,
-  usePaymentSummary,
   useUpdateExpense,
-  useUpdatePayment,
 } from './financeQueries';
-import { PaymentForm } from './PaymentForm';
-import type { Expense, ExpenseStatus, FieldAgent, FieldAgentPayment, PaymentStatus } from '@/types/api';
+import type { Expense, ExpenseStatus, FieldAgent } from '@/types/api';
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
-type Tab = 'payments' | 'expenses';
-
+/**
+ * Projeto › Financeiro › Despesas. A remuneração (diárias) passou para a aba
+ * própria (etapa 2 da paridade); o endereço antigo ?tab=payments redireciona.
+ */
 export function ProjectFinancePage() {
   const projectId = Number(useParams().projectId);
   const projectLabel = useProjectLabel(projectId);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tab: Tab = searchParams.get('tab') === 'expenses' ? 'expenses' : 'payments';
-  function setTab(value: Tab) {
-    const next = new URLSearchParams(searchParams);
-    next.set('tab', value);
-    setSearchParams(next);
-  }
+  const [searchParams] = useSearchParams();
   const fieldAgents = useFinanceFieldAgents();
   const agents = fieldAgents.data?.items ?? [];
+  if (searchParams.get('tab') === 'payments')
+    return <Navigate to={`/app/projects/${projectId}/finance/remuneration`} replace />;
 
   return (
     <PageContainer>
-      <PageHeader title="Financeiro do projeto" description={`${projectLabel}. Pagamentos de inventariantes, despesas e comprovantes.`} />
-      <PaymentSummaryCards projectId={projectId} />
-      <div className="flex w-fit gap-1 rounded-xl border border-border/70 bg-muted/45 p-1.5 shadow-inner" role="group" aria-label="Visões financeiras">
-        <button type="button" aria-pressed={tab === 'payments'} className={tabClass(tab === 'payments')} onClick={() => setTab('payments')}>Pagamentos</button>
-        <button type="button" aria-pressed={tab === 'expenses'} className={tabClass(tab === 'expenses')} onClick={() => setTab('expenses')}>Despesas</button>
-      </div>
-      {tab === 'payments' ? <PaymentsTab projectId={projectId} fieldAgents={agents} /> : <ExpensesTab projectId={projectId} fieldAgents={agents} />}
+      <PageHeader title="Despesas" description={`${projectLabel}. Despesas do projeto e comprovantes.`} />
+      <ExpensesTab projectId={projectId} fieldAgents={agents} />
     </PageContainer>
-  );
-}
-
-function tabClass(active: boolean) {
-  return cn('inline-flex h-9 items-center rounded-lg px-4 text-sm font-semibold transition', active ? 'bg-card text-primary shadow-panel' : 'text-muted-foreground hover:bg-card/50 hover:text-foreground');
-}
-
-function PaymentSummaryCards({ projectId }: { projectId: number }) {
-  const summary = usePaymentSummary(projectId);
-  if (summary.isLoading) return <LoadingState label="Carregando resumo financeiro" />;
-  if (summary.isError) return <ErrorState message={(summary.error as Error).message} onRetry={() => summary.refetch()} />;
-  const data = summary.data;
-  return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-      <MetricCard label="Pendentes" value={formatMoney(data?.total_pending)} icon={<Receipt size={18} />} />
-      <MetricCard label="Aprovados" value={formatMoney(data?.total_approved)} icon={<CheckCircle2 size={18} />} />
-      <MetricCard label="Pagos" value={formatMoney(data?.total_paid)} icon={<CreditCard size={18} />} />
-      <MetricCard label="Cancelados" value={formatMoney(data?.total_cancelled)} icon={<XCircle size={18} />} />
-      <MetricCard label="Registros" value={data?.total_count ?? 0} icon={<FileText size={18} />} />
-    </div>
-  );
-}
-
-function PaymentsTab({ projectId, fieldAgents }: { projectId: number; fieldAgents: FieldAgent[] }) {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<PaymentStatus | ''>('');
-  const [fieldAgentId, setFieldAgentId] = useState('');
-  const [state, setState] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [paymentDate, setPaymentDate] = useState('');
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editing, setEditing] = useState<FieldAgentPayment | null>(null);
-  const [viewing, setViewing] = useState<FieldAgentPayment | null>(null);
-  const [approving, setApproving] = useState<FieldAgentPayment | null>(null);
-  const [paying, setPaying] = useState<FieldAgentPayment | null>(null);
-  const [canceling, setCanceling] = useState<FieldAgentPayment | null>(null);
-  const { hasPermission } = usePermissions();
-  const params = useMemo(() => ({
-    page,
-    page_size: 20,
-    search: search || undefined,
-    status: status || undefined,
-    field_agent_id: fieldAgentId ? Number(fieldAgentId) : undefined,
-    state: state || undefined,
-    start_date: startDate || undefined,
-    end_date: endDate || undefined,
-    payment_date: paymentDate || undefined,
-  }), [endDate, fieldAgentId, page, paymentDate, search, startDate, state, status]);
-  const query = usePayments(projectId, params);
-  const create = useCreatePayment(projectId);
-  const update = useUpdatePayment(projectId);
-  const approve = usePaymentAction(projectId, 'approve');
-  const markPaid = usePaymentAction(projectId, 'mark-as-paid');
-  const cancel = usePaymentAction(projectId, 'cancel');
-  const data = query.data ? normalizePage(query.data) : null;
-  const columns: Column<FieldAgentPayment>[] = [
-    { header: 'Inventariante', cell: (payment) => <div className="font-medium">#{payment.field_agent_id}<div className="text-xs text-muted-foreground">Pagamento #{payment.id}</div></div> },
-    { header: 'Período', cell: (payment) => `${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}` },
-    { header: 'Dias', cell: (payment) => payment.days },
-    { header: 'Diária', cell: (payment) => formatMoney(payment.daily_rate) },
-    { header: 'Total', cell: (payment) => <span className="font-medium">{formatMoney(payment.final_amount)}</span> },
-    { header: 'Status', cell: (payment) => <StatusBadge value={payment.status} /> },
-    { header: 'Pago em', cell: (payment) => formatDate(payment.payment_date) },
-    { header: 'Ações', cell: (payment) => (
-      <div className="flex items-center gap-1">
-        <Button type="button" variant="ghost" aria-label="Visualizar pagamento" onClick={() => setViewing(payment)}><Eye size={16} /></Button>
-        <PermissionGate permissions={['payments:update']}><Button type="button" variant="ghost" aria-label="Editar pagamento" disabled={payment.status === 'paid' || payment.status === 'cancelled'} onClick={() => setEditing(payment)}><Pencil size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['payments:approve']}><Button type="button" variant="ghost" aria-label="Aprovar pagamento" disabled={payment.status !== 'pending'} onClick={() => setApproving(payment)}><CheckCircle2 size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['payments:mark-as-paid']}><Button type="button" variant="ghost" aria-label="Marcar pagamento como pago" disabled={payment.status !== 'approved'} onClick={() => setPaying(payment)}><CreditCard size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['payments:cancel']}><Button type="button" variant="ghost" aria-label="Cancelar pagamento" disabled={payment.status === 'paid' || payment.status === 'cancelled'} onClick={() => setCanceling(payment)}><XCircle size={16} /></Button></PermissionGate>
-      </div>
-    ) },
-  ];
-
-  return (
-    <>
-      <FilterPanel>
-        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar pagamento" />
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as PaymentStatus | ''); setPage(1); }} aria-label="Filtrar pagamento por status">
-          <option value="">Todos status</option>
-          {paymentStatuses.map((item) => <option key={item} value={item}>{paymentStatusLabels[item]}</option>)}
-        </select>
-        <AgentSelect value={fieldAgentId} onChange={(value) => { setFieldAgentId(value); setPage(1); }} agents={fieldAgents} />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={state} onChange={(event) => { setState(event.target.value); setPage(1); }} placeholder="UF/Estado" />
-        <DateInput aria-label="Início do pagamento" value={startDate} onChange={(event) => { setStartDate(event.target.value); setPage(1); }} />
-        <DateInput aria-label="Fim do pagamento" value={endDate} onChange={(event) => { setEndDate(event.target.value); setPage(1); }} />
-        <DateInput aria-label="Data de pagamento" value={paymentDate} onChange={(event) => { setPaymentDate(event.target.value); setPage(1); }} />
-      </FilterPanel>
-      {hasPermission('payments:create') ? <div className="flex justify-end"><Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo pagamento</Button></div> : null}
-      {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => query.refetch()} /> : data ? (
-        <>
-          <DataTable columns={columns} items={data.items} getKey={(payment) => payment.id} />
-          <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
-        </>
-      ) : null}
-      <DrawerForm open={createOpen} onOpenChange={setCreateOpen} title="Novo pagamento">
-        <PaymentForm fieldAgents={fieldAgents} busy={create.isPending} onSubmit={(payload) => create.mutate(payload, { onSuccess: () => setCreateOpen(false) })} />
-      </DrawerForm>
-      <DrawerForm open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)} title="Editar pagamento">
-        {editing ? <PaymentForm initial={editing} fieldAgents={fieldAgents} busy={update.isPending} onSubmit={(payload) => update.mutate({ id: editing.id, payload }, { onSuccess: () => setEditing(null) })} /> : null}
-      </DrawerForm>
-      <PaymentDetailDrawer payment={viewing} onOpenChange={(open) => !open && setViewing(null)} />
-      <ConfirmDialog open={Boolean(approving)} onOpenChange={(open) => !open && setApproving(null)} title="Aprovar pagamento" description={`Aprovar pagamento #${approving?.id ?? ''}?`} onConfirm={() => approving && approve.mutate({ id: approving.id }, { onSuccess: () => setApproving(null) })} />
-      <MarkPaymentPaidModal payment={paying} busy={markPaid.isPending} onOpenChange={(open) => !open && setPaying(null)} onSubmit={(payload) => paying && markPaid.mutate({ id: paying.id, payload }, { onSuccess: () => setPaying(null) })} />
-      <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && setCanceling(null)} title="Cancelar pagamento" description={`Cancelar pagamento #${canceling?.id ?? ''}?`} onConfirm={() => canceling && cancel.mutate({ id: canceling.id }, { onSuccess: () => setCanceling(null) })} />
-    </>
   );
 }
 
@@ -283,26 +156,6 @@ function AgentSelect({ value, onChange, agents }: { value: string; onChange: (va
   );
 }
 
-function PaymentDetailDrawer({ payment, onOpenChange }: { payment: FieldAgentPayment | null; onOpenChange: (open: boolean) => void }) {
-  return (
-    <DrawerForm open={Boolean(payment)} onOpenChange={onOpenChange} title="Detalhes do pagamento">
-      {payment ? (
-        <dl className="grid gap-3 text-sm">
-          <Detail label="Status" value={<StatusBadge value={payment.status} />} />
-          <Detail label="Período" value={`${formatDate(payment.start_date)} - ${formatDate(payment.end_date)}`} />
-          <Detail label="Dias" value={payment.days} />
-          <Detail label="Diária" value={formatMoney(payment.daily_rate)} />
-          <Detail label="Total diário" value={formatMoney(payment.daily_total)} />
-          <Detail label="Adicional" value={formatMoney(payment.additional_amount)} />
-          <Detail label="Desconto" value={formatMoney(payment.discount_amount)} />
-          <Detail label="Final" value={formatMoney(payment.final_amount)} />
-          <Detail label="Observações" value={payment.notes ?? '-'} />
-        </dl>
-      ) : null}
-    </DrawerForm>
-  );
-}
-
 function ExpenseDetailDrawer({ expense, onOpenChange }: { expense: Expense | null; onOpenChange: (open: boolean) => void }) {
   return (
     <DrawerForm open={Boolean(expense)} onOpenChange={onOpenChange} title="Detalhes da despesa">
@@ -326,20 +179,6 @@ function Detail({ label, value }: { label: string; value: ReactNode }) {
       <dt className="text-xs uppercase text-muted-foreground">{label}</dt>
       <dd className="mt-1 font-medium">{value}</dd>
     </div>
-  );
-}
-
-function MarkPaymentPaidModal({ payment, busy, onOpenChange, onSubmit }: { payment: FieldAgentPayment | null; busy: boolean; onOpenChange: (open: boolean) => void; onSubmit: (payload: { payment_date?: string }) => void }) {
-  const form = useForm<PaidDateValues>({ resolver: zodResolver(paidDateSchema), values: { payment_date: '' } });
-  return (
-    <ModalForm open={Boolean(payment)} onOpenChange={onOpenChange} title="Marcar pagamento como pago">
-      <form className="grid gap-4" onSubmit={form.handleSubmit((values) => onSubmit(paidDateSchema.parse(values)))}>
-        <FormField label="Data de pagamento">
-          <DateInput {...form.register('payment_date')} />
-        </FormField>
-        <Button loading={busy}>Confirmar pagamento</Button>
-      </form>
-    </ModalForm>
   );
 }
 

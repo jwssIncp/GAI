@@ -17,15 +17,22 @@ export class PaymentResponseDto {
   @ApiPropertyOptional({ nullable: true }) state!: string | null;
   @ApiProperty() start_date!: string;
   @ApiProperty() end_date!: string;
+  /** Data real de pagamento (só em lançamentos pagos). */
   @ApiPropertyOptional({ nullable: true }) payment_date!: string | null;
+  @ApiPropertyOptional({ nullable: true }) expected_payment_date!:
+    | string
+    | null;
   @ApiProperty() days!: number;
   @ApiProperty() daily_rate!: string;
   @ApiProperty() additional_amount!: string;
   @ApiProperty() daily_total!: string;
+  @ApiProperty() total_amount!: string;
+  @ApiProperty() total_manual!: boolean;
   @ApiProperty() discount_amount!: string;
   @ApiProperty() final_amount!: string;
   @ApiProperty({ enum: PaymentStatus }) status!: PaymentStatus;
   @ApiPropertyOptional({ nullable: true }) notes!: string | null;
+  @ApiPropertyOptional({ nullable: true }) reopened_at!: string | null;
   @ApiPropertyOptional({
     type: 'object',
     additionalProperties: true,
@@ -45,14 +52,19 @@ export class PaymentResponseDto {
       start_date: x.startDate.toISOString().slice(0, 10),
       end_date: x.endDate.toISOString().slice(0, 10),
       payment_date: x.paymentDate?.toISOString().slice(0, 10) ?? null,
+      expected_payment_date:
+        x.expectedPaymentDate?.toISOString().slice(0, 10) ?? null,
       days: x.days,
       daily_rate: x.dailyRate,
       additional_amount: x.additionalAmount,
       daily_total: x.dailyTotal,
+      total_amount: x.totalAmount,
+      total_manual: x.totalManual,
       discount_amount: x.discountAmount,
       final_amount: x.finalAmount,
       status: x.status,
       notes: x.notes,
+      reopened_at: x.reopenedAt?.toISOString() ?? null,
       metadata: x.metadata,
       created_at: x.createdAt.toISOString(),
       updated_at: x.updatedAt.toISOString(),

@@ -23,6 +23,7 @@ export function FinanceLayout() {
           ["Recebíveis", "/app/finance/receivables", "receivables:read"],
           ["Fluxo de caixa", "/app/finance/cash-flow", "cash-flow:read"],
           ["DRE Gerencial", "/app/finance/dre", "dre:read"],
+          ["Remuneração", "/app/finance/remuneration", "payments:read"],
           ["Parâmetros financeiros", "/app/finance/parameters", "finance-settings:read"],
         ]
           .filter((t) => hasPermission(t[2]))

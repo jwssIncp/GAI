@@ -24,6 +24,7 @@ import { InventorySessionDetailPage } from "@/features/inventory-operations/Inve
 import { ProjectAccountingItemsPage } from "@/features/accounting-items/ProjectAccountingItemsPage";
 import { ProjectPendingIssuesPage } from "@/features/pending-issues/ProjectPendingIssuesPage";
 import { ProjectFinancePage } from "@/features/finance/ProjectFinancePage";
+import { ProjectRemunerationPage } from "@/features/remuneration/ProjectRemunerationPage";
 import { ProjectAccountabilitiesPage } from "@/features/accountabilities/ProjectAccountabilitiesPage";
 
 export const projectRoute: RouteObject = {
@@ -143,9 +144,15 @@ export const projectRoute: RouteObject = {
     },
     {
       element: (
-        <ProtectedRoute permissions={["payments:read", "expenses:read"]} />
+        <ProtectedRoute permissions={["expenses:read"]} />
       ),
       children: [{ path: "finance", element: <ProjectFinancePage /> }],
+    },
+    {
+      element: <ProtectedRoute permissions={["payments:read"]} />,
+      children: [
+        { path: "finance/remuneration", element: <ProjectRemunerationPage /> },
+      ],
     },
     {
       element: (

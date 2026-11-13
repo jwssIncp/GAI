@@ -2,7 +2,11 @@ import { IsCivilDate } from '../../../../common/validation/civil-date';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
+  IsIn,
   IsInt,
+  MaxLength,
+  MinLength,
   IsObject,
   IsOptional,
   IsString,
@@ -31,15 +35,32 @@ export class PaymentInputDto {
   @IsString()
   @IsCivilDate()
   end_date!: string;
-  @ApiPropertyOptional({ format: 'date', nullable: true })
+  /** Compatibilidade: clientes antigos mandavam a previsão em payment_date. */
+  @ApiPropertyOptional({ format: 'date', nullable: true, deprecated: true })
   @IsOptional()
   @IsString()
   @IsCivilDate()
   payment_date?: string | null;
+  /** Data PREVISTA de pagamento (obrigatória). A data real só é gravada na baixa. */
+  @ApiPropertyOptional({ format: 'date' })
+  @IsOptional()
+  @IsString()
+  @IsCivilDate()
+  expected_payment_date?: string | null;
   @ApiProperty({ pattern: MONEY_PATTERN.source })
   @IsString()
   @Matches(MONEY_PATTERN)
   daily_rate!: string;
+  /** Total informado à mão (substitui dias × diária + adicional). */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  total_manual?: boolean;
+  @ApiPropertyOptional({ pattern: MONEY_PATTERN.source })
+  @IsOptional()
+  @IsString()
+  @Matches(MONEY_PATTERN)
+  total_amount?: string | null;
   @ApiPropertyOptional({ pattern: MONEY_PATTERN.source })
   @IsOptional()
   @IsString()
@@ -62,6 +83,31 @@ export class PaymentInputDto {
   @IsOptional()
   @IsObject()
   metadata?: JsonRecord | null;
+}
+
+export class ReopenPaymentDto {
+  @ApiProperty({ minLength: 5 })
+  @IsString()
+  @MinLength(5)
+  @MaxLength(2000)
+  reason!: string;
+}
+
+export class RemunerationQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) field_agent_id?: number;
+  @IsOptional() @IsString() state?: string;
+  @IsOptional()
+  @IsIn(['open', 'paid', 'cancelled', 'all'])
+  status_group?: 'open' | 'paid' | 'cancelled' | 'all';
+}
+
+export class RemunerationProjectsQueryDto {
+  @IsOptional() @IsString() search?: string;
+  @IsOptional()
+  @Type(() => String)
+  @IsIn(['true', 'false'])
+  only_open?: string;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(2000) year?: number;
 }
 
 export class ExpenseInputDto {

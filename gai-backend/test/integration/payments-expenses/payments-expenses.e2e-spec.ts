@@ -88,6 +88,7 @@ describe('Payments & Expenses (e2e)', () => {
         state: 'SP',
         start_date: '2026-07-01',
         end_date: '2026-07-03',
+        expected_payment_date: '2026-07-10',
         daily_rate: '100.00',
         additional_amount: '50.00',
         discount_amount: '20.00',
@@ -95,6 +96,10 @@ describe('Payments & Expenses (e2e)', () => {
       .expect(201);
     const payment = paymentResponse.body as PaymentBody;
     expect(payment.daily_total).toBe('300.00');
+    // Etapa 2 da paridade: total = dias × diária + adicional; final = total − descontos.
+    expect((payment as unknown as { total_amount: string }).total_amount).toBe(
+      '350.00',
+    );
     expect(payment.final_amount).toBe('330.00');
 
     await request(app.getHttpServer())

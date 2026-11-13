@@ -59,6 +59,7 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
     field_agent_id: agent,
     start_date: '2026-10-28',
     end_date: '2026-10-28',
+    expected_payment_date: '2026-11-05',
     daily_rate: rate,
   });
   const paymentUrl = (f: any, p: any) =>

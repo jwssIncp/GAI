@@ -63,7 +63,7 @@ for (const width of [1440, 390]) for (const reader of [false, true]) {
     await page.reload();
     await expect(page.getByRole('link', { name: 'Retornar ao dashboard da organização' })).toBeVisible();
     const projectNav = () => page.getByRole('navigation', { name: 'Abas do projeto' });
-    const tabGroups: Record<string, [string, string]> = { Contratos: ['Comercial', 'Contratos'], Laudos: ['Contábil e laudo', 'Laudos'], 'Visão geral': ['Visão geral', 'Resumo'], Itens: ['Inventário', 'Itens e avaliação'], Orçamentos: ['Comercial', 'Orçamentos'], Financeiro: ['Financeiro', 'Pagamentos e despesas'], 'DRE Gerencial': ['Financeiro', 'DRE Gerencial'], Recebíveis: ['Financeiro', 'Recebíveis'], 'Fluxo de caixa': ['Financeiro', 'Fluxo de caixa'], 'Coordenação de Campo': ['Campo', 'Coordenação de campo'], Inventário: ['Inventário', 'Sessões e conciliação'], Preparação: ['Campo', 'Preparação'] };
+    const tabGroups: Record<string, [string, string]> = { Contratos: ['Comercial', 'Contratos'], Laudos: ['Contábil e laudo', 'Laudos'], 'Visão geral': ['Visão geral', 'Resumo'], Itens: ['Inventário', 'Itens e avaliação'], Orçamentos: ['Comercial', 'Orçamentos'], Financeiro: ['Financeiro', 'Despesas'], Remuneração: ['Financeiro', 'Remuneração'], 'DRE Gerencial': ['Financeiro', 'DRE Gerencial'], Recebíveis: ['Financeiro', 'Recebíveis'], 'Fluxo de caixa': ['Financeiro', 'Fluxo de caixa'], 'Coordenação de Campo': ['Campo', 'Coordenação de campo'], Inventário: ['Inventário', 'Sessões e conciliação'], Preparação: ['Campo', 'Preparação'] };
     const tab = (label: string) => openProjectTab(page, ...(tabGroups[label] ?? (() => { throw new Error('Aba sem grupo mapeado: ' + label); })()));
     for (const label of ['Contratos', 'Laudos']) {
       await tab(label);
