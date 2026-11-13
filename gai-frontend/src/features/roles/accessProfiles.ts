@@ -13,7 +13,7 @@ const resources: Record<string, string> = {
   'asset-valuations': 'Avaliações patrimoniais', reconciliations: 'Conciliação patrimonial',
   'assisted-reconciliation': 'Conciliação assistida', consolidations: 'Consolidação de evidências', 'plate-history': 'Histórico de placas',
   payments: 'Pagamentos', expenses: 'Despesas', 'expense-accountabilities': 'Prestações de contas', 'expense-installments': 'Parcelas de despesas',
-  receivables: 'Contas a receber', 'cash-flow': 'Fluxo de caixa', finance: 'Financeiro', dre: 'DRE gerencial',
+  receivables: 'Recebíveis', 'cash-flow': 'Fluxo de caixa', finance: 'Financeiro', dre: 'DRE gerencial',
   budgets: 'Orçamentos', contracts: 'Contratos', 'commercial-indicators': 'Indicadores comerciais',
   documents: 'Documentos', 'technical-reports': 'Laudos técnicos',
   'import-sessions': 'Sessões de importação', 'import-payloads': 'Dados de importação', 'import-files': 'Arquivos de importação', 'import-errors': 'Erros de importação', 'export-jobs': 'Exportações',
