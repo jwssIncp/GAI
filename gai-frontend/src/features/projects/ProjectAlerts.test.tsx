@@ -75,7 +75,8 @@ describe("Regras dos alertas ⚠ v1 (somente dados de /projects/:id/dashboard)",
   it("gera um alerta por aba com o motivo, usando só o payload do dashboard", () => {
     const alerts = projectTabAlerts(withProblems);
     expect(Object.keys(alerts).sort()).toEqual(["accounting-items", "exports", "field-team", "finance", "imports", "inventory-items", "pending-issues"]);
-    expect(alerts["pending-issues"]).toEqual({ severity: "danger", description: "5 pendências abertas ou em revisão, 1 crítica ou alta" });
+    expect(alerts["pending-issues"]).toEqual({ count: 5, severity: "danger", description: "5 pendências abertas ou em revisão, 1 crítica ou alta" });
+    expect(alerts["field-team"]?.count).toBeUndefined();
     expect(alerts["inventory-items"]?.description).toBe("2 itens divergentes, 1 imagem com envio pendente");
     expect(alerts["field-team"]?.description).toBe("Projeto ativo sem inventariante vinculado");
     expect(alerts.finance?.description).toBe("1 pagamento aguardando aprovação, 2 despesas aguardando aprovação");
@@ -114,6 +115,16 @@ describe("Exibição dos alertas no grupo e na aba", () => {
     expect(nav.getByRole("link", { name: "Contábil e laudo" })).toHaveAttribute("aria-describedby");
     // Sessões e conciliação não tem alerta.
     expect(nav.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
+  });
+
+  it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {
+    const nav = renderAt("/app/projects/10/pending-issues", user(everything));
+    const tab = await nav.findByRole("link", { name: "Pendências" });
+    await vi.waitFor(() => expect(tab.textContent).toBe("Pendências5"));
+    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação3");
+    expect(nav.getByRole("link", { name: "Sessões e conciliação" }).textContent).toBe("Sessões e conciliação");
+    expect(nav.getByRole("link", { name: "Inventário" }).textContent).toBe("Inventário");
+    expect(nav.getByRole("link", { name: "Financeiro" }).textContent).toBe("Financeiro");
   });
 
   it("não revela dados de abas sem permissão: perfil de campo não vê alerta financeiro nem contábil", async () => {

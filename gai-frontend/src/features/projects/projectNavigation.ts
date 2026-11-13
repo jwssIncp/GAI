@@ -160,7 +160,8 @@ export function projectBreadcrumbSteps(projectId: string, pathname: string, hash
   return [{ label: group.label }, { label: tab.label, to: details.length ? tabPath : undefined }, ...details];
 }
 
-export type ProjectTabAlert = { severity: "danger" | "warning"; description: string };
+/** count: quantidade exibida ao lado do ⚠ na aba (ausente quando a regra não é uma contagem). */
+export type ProjectTabAlert = { severity: "danger" | "warning"; description: string; count?: number };
 
 const plural = (count: number, singular: string, pluralForm: string) => `${count} ${count === 1 ? singular : pluralForm}`;
 
@@ -176,6 +177,7 @@ export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string
   if (open > 0) {
     const severe = issues.critical_pending_issues + issues.high_pending_issues;
     alerts["pending-issues"] = {
+      count: open,
       severity: severe > 0 ? "danger" : "warning",
       description: `${plural(open, "pendência aberta ou em revisão", "pendências abertas ou em revisão")}${severe ? `, ${plural(severe, "crítica ou alta", "críticas ou altas")}` : ""}`,
     };
@@ -190,12 +192,13 @@ export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string
       inventory.duplicated_items ? plural(inventory.duplicated_items, "item duplicado", "itens duplicados") : null,
       pendingUploads ? plural(pendingUploads, "imagem com envio pendente", "imagens com envio pendente") : null,
     ].filter(Boolean);
-    alerts["inventory-items"] = { severity: itemProblems > 0 ? "danger" : "warning", description: parts.join(", ") };
+    alerts["inventory-items"] = { count: itemProblems + pendingUploads, severity: itemProblems > 0 ? "danger" : "warning", description: parts.join(", ") };
   }
   const accounting = summary.accounting;
   const accountingProblems = accounting.divergent_accounting_items + accounting.not_found_accounting_items;
   if (accountingProblems > 0) {
     alerts["accounting-items"] = {
+      count: accountingProblems,
       severity: "danger",
       description: [
         accounting.divergent_accounting_items ? plural(accounting.divergent_accounting_items, "item contábil divergente", "itens contábeis divergentes") : null,
@@ -210,6 +213,7 @@ export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string
     const pending = summary.financial.pending_payments + summary.financial.pending_expenses;
     if (pending > 0) {
       alerts.finance = {
+        count: pending,
         severity: "warning",
         description: [
           summary.financial.pending_payments ? plural(summary.financial.pending_payments, "pagamento aguardando aprovação", "pagamentos aguardando aprovação") : null,
@@ -219,10 +223,10 @@ export function projectTabAlerts(summary: ProjectSummary): Partial<Record<string
     }
   }
   if (summary.imports && summary.imports.failed_import_sessions > 0) {
-    alerts.imports = { severity: "danger", description: plural(summary.imports.failed_import_sessions, "importação com falha", "importações com falha") };
+    alerts.imports = { count: summary.imports.failed_import_sessions, severity: "danger", description: plural(summary.imports.failed_import_sessions, "importação com falha", "importações com falha") };
   }
   if (summary.exports && summary.exports.failed_export_jobs > 0) {
-    alerts.exports = { severity: "danger", description: plural(summary.exports.failed_export_jobs, "exportação com falha", "exportações com falha") };
+    alerts.exports = { count: summary.exports.failed_export_jobs, severity: "danger", description: plural(summary.exports.failed_export_jobs, "exportação com falha", "exportações com falha") };
   }
   return alerts;
 }

@@ -169,6 +169,8 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
                 >
                   {tab.label}
                   {alert ? <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" /> : null}
+                  {/* Quantidade só na aba (no grupo, apenas o ⚠). aria-hidden: a descrição já informa o número. */}
+                  {alert?.count ? <span aria-hidden="true" className="tabular-nums font-semibold">{alert.count}</span> : null}
                   {tab.external ? <ArrowUpRight size={13} strokeWidth={2} aria-hidden="true" className="opacity-70" /> : null}
                 </Link>
               );
