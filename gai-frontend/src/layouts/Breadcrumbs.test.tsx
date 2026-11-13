@@ -82,6 +82,19 @@ describe("Breadcrumbs do workspace do projeto", () => {
     expect(get).not.toHaveBeenCalled();
   });
 
+  it("no mobile mostra só os dois últimos itens e não mostra seta antes do primeiro visível", () => {
+    const crumbs = renderAt("/app/projects/10/summary", user(["projects:read"]));
+    const items = crumbs.getAllByRole("listitem");
+    expect(items.map((item) => item.textContent)).toEqual(["Projetos", "Center Norte", "Visão geral", "Resumo"]);
+    // Itens anteriores ficam ocultos abaixo de sm; "Visão geral › Resumo" fica visível.
+    expect(items[0].className).toContain("hidden sm:inline-flex");
+    expect(items[1].className).toContain("hidden sm:inline-flex");
+    expect(items[2].className).not.toContain("hidden sm:inline-flex");
+    expect(items[2].querySelector("svg")?.getAttribute("class")).toContain("hidden sm:block");
+    expect(items[3].className).not.toContain("hidden");
+    expect(items[3].querySelector("svg")?.getAttribute("class")).not.toContain("hidden");
+  });
+
   it("mantém a trilha atual fora do projeto", () => {
     const crumbs = renderAt("/app/finance/dre/accounts", user(["dre:read"]));
     expect(crumbs.getAllByRole("listitem").map((item) => item.textContent)).toEqual([

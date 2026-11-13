@@ -65,13 +65,6 @@ export function ProjectSummaryPage() {
 
   return (
     <PageContainer>
-      <div className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-border/70 bg-card/60 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-panel backdrop-blur">
-        <Link className="text-primary transition hover:text-primary-text hover:underline" to="/app/projects">Projetos</Link>
-        <span className="text-border">/</span>
-        <span className="font-semibold text-foreground">{title}</span>
-        <span className="text-border">/</span>
-        <span>Visão geral</span>
-      </div>
       <PageHeader
         title={title}
         description="Workspace operacional do projeto, com indicadores consolidados pelo backend e atalhos para os módulos de campo."

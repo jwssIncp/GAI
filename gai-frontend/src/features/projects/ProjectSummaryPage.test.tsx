@@ -110,10 +110,10 @@ describe('ProjectSummaryPage workspace', () => {
     mocks.projectUnitsList.mockResolvedValue({ items: [] });
   });
 
-  it('renderiza workspace com breadcrumbs, cabecalho e metricas reais', async () => {
+  it('renderiza workspace com cabecalho e metricas reais, sem breadcrumb proprio (o do topo e o unico)', async () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Projeto Alpha' })).toBeInTheDocument();
-    expect(screen.getByText('Projetos')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Projetos' })).not.toBeInTheDocument();
     expect(screen.getByText('Inventário da filial SP')).toBeInTheDocument();
     expect(await screen.findByText('Empresa Alpha')).toBeInTheDocument();
     expect(screen.getByText('Total de itens')).toBeInTheDocument();

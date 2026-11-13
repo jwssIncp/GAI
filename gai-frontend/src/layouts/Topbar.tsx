@@ -50,17 +50,21 @@ const breadcrumbLabels: Record<string, string> = {
 
 type Crumb = { label: string; to?: string };
 
+// No mobile (< sm) mostra só os dois últimos itens (ex.: "Visão geral › Resumo"), sem seta antes
+// do primeiro item visível; a aba atual tem prioridade e o grupo é truncado se faltar espaço.
+// No desktop mostra a trilha toda.
 function BreadcrumbList({ crumbs }: { crumbs: Crumb[] }) {
   return (
-    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap">
       {crumbs.map((crumb, index) => {
         const last = index === crumbs.length - 1;
+        const firstOnMobile = index === crumbs.length - 2;
         return (
-          <li key={`${crumb.label}-${index}`} className={`items-center gap-1 ${last ? 'inline-flex min-w-0' : 'hidden sm:inline-flex'}`}>
-            {index ? <ChevronRight className="shrink-0 text-topbar-muted" size={12} aria-hidden="true" /> : null}
+          <li key={`${crumb.label}-${index}`} className={`items-center gap-1 ${last ? 'inline-flex min-w-0 shrink-0 max-w-[70%] sm:max-w-none sm:shrink' : firstOnMobile ? 'inline-flex min-w-0 shrink' : 'hidden sm:inline-flex'}`}>
+            {index ? <ChevronRight className={`shrink-0 text-topbar-muted ${firstOnMobile ? 'hidden sm:block' : ''}`} size={12} aria-hidden="true" /> : null}
             {crumb.to && !last ?
-              <Link className="rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={crumb.to}>{crumb.label}</Link> :
-              <span aria-current={last ? 'page' : undefined} className={last ? 'truncate font-semibold text-topbar-foreground' : ''}>{crumb.label}</span>}
+              <Link className="truncate rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={crumb.to}>{crumb.label}</Link> :
+              <span aria-current={last ? 'page' : undefined} className={last ? 'truncate font-semibold text-topbar-foreground' : 'truncate'}>{crumb.label}</span>}
           </li>
         );
       })}
@@ -93,18 +97,15 @@ export function Breadcrumbs() {
   const projectId = location.pathname.match(/^\/app\/projects\/([1-9]\d*)\/./)?.[1];
   if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
   const parts = location.pathname.split('/').filter(Boolean).slice(1);
-  return (
-    <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
-      {parts.length ? parts.map((part, index) => (
-        <li key={`${part}-${index}`} className={`items-center gap-1 ${index < parts.length - 1 ? 'hidden sm:inline-flex' : 'inline-flex min-w-0'}`}>
-          {index ? <ChevronRight className="shrink-0 text-topbar-muted" size={12} aria-hidden="true" /> : null}
-          {index < parts.length - 1 && (['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents'].includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part))) ?
-            <Link className="rounded px-1 py-1 hover:text-topbar-foreground hover:underline" to={navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)}>{/^\d+$/.test(part) ? `#${part}` : breadcrumbLabels[part]}</Link> :
-            <span aria-current={index === parts.length - 1 ? 'page' : undefined} className={index === parts.length - 1 ? 'truncate font-semibold text-topbar-foreground' : ''}>{/^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' '))}</span>}
-        </li>
-      )) : 'Visão geral'}
-    </ol></nav>
-  );
+  if (!parts.length) return <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">Visão geral</ol></nav>;
+  const linkable = ['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents'];
+  const crumbs: Crumb[] = parts.map((part, index) => ({
+    label: /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
+    to: index < parts.length - 1 && (linkable.includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part)))
+      ? navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)
+      : undefined,
+  }));
+  return <BreadcrumbList crumbs={crumbs} />;
 }
 
 export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNavigation: () => void; navigationOpen?: boolean }) {
