@@ -1,6 +1,6 @@
 import { Ban, CheckCircle2, Eye, Flag, Play, Plus, RefreshCw } from 'lucide-react';
 import { FormEvent, type ReactNode, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
 import { FilterPanel } from '@/components/base/FilterPanel';
@@ -81,7 +81,6 @@ export function InventorySessionDetailPage() {
 
   return <PageContainer>
     <PageHeader title={item.name} description={`Sessão #${item.id}. ${projectLabel}.`} />
-    <div className="flex flex-wrap gap-2 border-b pb-3 text-sm"><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory/sessions`}>Sessões</Link><span className="text-muted-foreground">/ Detalhe</span></div>
     <section className="premium-panel grid gap-3 p-5 sm:grid-cols-4">
       <Info label="Status" value={<StatusBadge value={item.status} />} />
       <Info label="Rodada atual" value={currentRound ? <span className="inline-flex items-center gap-2">Rodada {currentRound.round_number} <StatusBadge value="ATIVA" /></span> : '-'} />

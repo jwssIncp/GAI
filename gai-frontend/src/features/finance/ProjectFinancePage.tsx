@@ -4,7 +4,7 @@ import { CheckCircle2, CreditCard, Eye, FileText, Pencil, Plus, Receipt, XCircle
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { MetricCard } from '@/components/base/Cards';
 import { DataTable, type Column } from '@/components/base/DataTable';
@@ -69,13 +69,6 @@ export function ProjectFinancePage() {
   return (
     <PageContainer>
       <PageHeader title="Financeiro do projeto" description={`${projectLabel}. Pagamentos de inventariantes, despesas e comprovantes.`} />
-      <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/pending-issues`}>Pendências</Link>
-        <span className="text-muted-foreground">/ Financeiro</span>
-        <PermissionGate permissions={['expense-accountabilities:read']}><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/finance/accountabilities`}>Prestação de contas</Link></PermissionGate>
-      </div>
       <PaymentSummaryCards projectId={projectId} />
       <div className="flex w-fit gap-1 rounded-xl border border-border/70 bg-muted/45 p-1.5 shadow-inner" role="group" aria-label="Visões financeiras">
         <button type="button" aria-pressed={tab === 'payments'} className={tabClass(tab === 'payments')} onClick={() => setTab('payments')}>Pagamentos</button>

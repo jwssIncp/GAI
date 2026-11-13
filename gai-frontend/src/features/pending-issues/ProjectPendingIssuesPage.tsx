@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { CheckCircle2, Eye, Pencil, Plus, RefreshCw, ShieldAlert, XCircle } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
 import { FilterPanel } from '@/components/base/FilterPanel';
@@ -127,12 +127,6 @@ export function ProjectPendingIssuesPage() {
           </div>
         )}
       />
-      <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/accounting-items`}>Base contábil</Link>
-        <span className="text-muted-foreground">/ Pendências</span>
-      </div>
       <FilterPanel>
         <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar pendência" />
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryPendingIssueStatus | ''); setPage(1); }} aria-label="Filtrar pendência por status">

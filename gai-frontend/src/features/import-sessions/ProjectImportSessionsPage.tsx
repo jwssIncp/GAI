@@ -3,7 +3,7 @@ import { CheckCircle2, Eye, FileDown, FileUp, Plus, RefreshCw, Send, XCircle } f
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { DataTable, type Column } from '@/components/base/DataTable';
@@ -121,12 +121,6 @@ export function ProjectImportSessionsPage() {
         description={`${projectLabel}. Sessões de sincronização, payloads, erros e arquivos brutos.`}
         action={hasPermission('import-sessions:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Nova importação</Button> : null}
       />
-      <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/inventory-items`}>Itens inventariados</Link>
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/accounting-items`}>Base contábil</Link>
-        <span className="text-muted-foreground">/ Importações</span>
-      </div>
       <FilterPanel>
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" disabled aria-label="Filtrar importação por tipo">
           <option>Todos os tipos</option>

@@ -35,7 +35,6 @@ export function ProjectInventorySessionsPage() {
   return (
     <PageContainer>
       <PageHeader title="Sessões de inventário" description="Campanhas, rodadas e histórico imutável de observações." />
-      <div className="flex flex-wrap gap-2 border-b pb-3 text-sm"><Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link><span className="text-muted-foreground">/ Inventário</span></div>
       <FilterPanel>
         <select aria-label="Filtrar sessão por status" className="h-10 rounded-md border bg-background px-3 text-sm" value={status} onChange={(event) => { setStatus(event.target.value as InventorySessionStatus | ''); setPage(1); }}>
           <option value="">Todos os status</option><option value="draft">Rascunho</option><option value="active">Ativa</option><option value="finished">Finalizada</option><option value="cancelled">Cancelada</option>

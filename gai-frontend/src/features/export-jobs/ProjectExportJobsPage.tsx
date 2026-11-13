@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Download, FileSpreadsheet, RefreshCw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { ApiError } from '@/api/http';
 import { DataTable, type Column } from '@/components/base/DataTable';
@@ -114,10 +114,6 @@ export function ProjectExportJobsPage() {
         description="Gere e acompanhe arquivos XLSX do projeto sem expor caminhos internos de armazenamento."
         action={hasPermission('export-jobs:create') && availableTypes.length > 0 ? <Button type="button" onClick={() => updateParams({ new: 1 }, false)}><FileSpreadsheet size={17} /> Nova exportação</Button> : null}
       />
-      <div className="flex flex-wrap gap-2 border-b pb-3 text-sm">
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
-        <span className="text-muted-foreground">/ Exportações</span>
-      </div>
       <FilterPanel>
         <SearchInput value={search} onChange={(value) => updateParams({ search: value, page: 1 })} placeholder="Buscar exportação" />
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={type ?? ''} onChange={(event) => updateParams({ type: event.target.value, page: 1 })} aria-label="Filtrar exportação por tipo">
