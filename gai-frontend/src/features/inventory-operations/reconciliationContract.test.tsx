@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
@@ -46,7 +46,7 @@ describe('reconciliation wire contract and cache', () => {
     vi.spyOn(inventoryOperationsApi, 'reconcile').mockRejectedValue(error);
     const { client, hook, own } = setup();
     await act(async () => { await expect(hook.result.current.mutateAsync(undefined)).rejects.toBe(error); });
-    expect(hook.result.current.error).toBe(error);
+    await waitFor(() => expect(hook.result.current.error).toBe(error));
     expect(client.getQueryState(own)?.isInvalidated).toBe(false);
     client.clear();
   });
