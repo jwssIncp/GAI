@@ -63,7 +63,7 @@ describe('FieldAgentPayment domain', () => {
           ...makePayment().toProps(),
           endDate: new Date('2026-06-30T00:00:00.000Z'),
         }),
-    ).toThrow('end_date cannot be earlier than start_date');
+    ).toThrow('A data final não pode ser anterior à data inicial.');
   });
   it('preserves direct settlement of a pending payment and records its amount', () => {
     const payment = makePayment();

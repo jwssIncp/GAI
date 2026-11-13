@@ -9,6 +9,10 @@ const PAGES: Record<string, [title: string, description: string]> = {
   "cash-flow": ["Fluxo de caixa", "Movimentos conhecidos e obrigações abertas. Resultado do período não é saldo bancário."],
   dre: ["DRE Gerencial", "Resultado por competência explícita, com cobertura das fontes e histórico. Não é DRE contábil oficial."],
   remuneration: ["Remuneração", "Remuneração dos técnicos por projeto."],
+  "field-agent-payments": [
+    "Pagamento de inventariantes",
+    "Diárias de todos os projetos: em aberto, atrasadas e pagas. A baixa é gravada nos próprios lançamentos.",
+  ],
   parameters: [
     "Parâmetros financeiros",
     "Valores usados nos cálculos financeiros da organização: impostos, comissões, diária padrão, custos fixos, listas e limites de anexo. Nenhum cálculo usa valor fixo no sistema: sem versão vigente, as telas que dependem destes parâmetros pedem a configuração.",

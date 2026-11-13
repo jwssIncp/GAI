@@ -37,6 +37,7 @@ const breadcrumbLabels: Record<string, string> = {
   'cash-flow':'Fluxo de caixa',
   parameters: 'Parâmetros financeiros',
   remuneration: 'Remuneração',
+  'field-agent-payments': 'Pagamento de inventariantes',
   new:'Novo',
   'import-sessions': 'Importações',
   'export-jobs': 'Exportações',

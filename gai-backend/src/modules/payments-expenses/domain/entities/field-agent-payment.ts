@@ -235,6 +235,75 @@ export class FieldAgentPayment {
     return { deleted_at: { before: null, after: now } };
   }
 
+  /**
+   * Voltar para em aberto (decisão D-C): desfaz a baixa, limpando só a data de
+   * pagamento e quem pagou; a previsão é preservada. Volta para "aprovado" se o
+   * lançamento tinha sido aprovado; senão (pago direto, sem exigência), "pendente".
+   */
+  revertPayment(
+    actorId: number,
+  ): Record<string, { before: unknown; after: unknown }> {
+    if (this.props.status !== PaymentStatus.PAID)
+      throw new PaymentStateConflict(
+        'Só lançamentos pagos podem voltar para em aberto.',
+      );
+    const target = this.props.approvedById
+      ? PaymentStatus.APPROVED
+      : PaymentStatus.PENDING;
+    const changes = this.statusChange(target);
+    changes.payment_date = { before: this.props.paymentDate, after: null };
+    changes.paid_by_id = { before: this.props.paidById, after: null };
+    changes.paid_at = { before: this.props.paidAt, after: null };
+    this.props.paymentDate = null;
+    this.props.paidById = null;
+    this.props.paidAt = null;
+    this.props.updatedById = actorId;
+    return changes;
+  }
+
+  /** Alterar a data real de um lançamento pago (não muda valores nem status). */
+  changePaymentDate(
+    actorId: number,
+    paymentDate: Date,
+  ): Record<string, { before: unknown; after: unknown }> {
+    if (this.props.status !== PaymentStatus.PAID)
+      throw new PaymentStateConflict(
+        'Só lançamentos pagos têm data de pagamento.',
+      );
+    this.assertDates(this.props.startDate, this.props.endDate, paymentDate);
+    const changes = {
+      payment_date: { before: this.props.paymentDate, after: paymentDate },
+    };
+    this.props.paymentDate = paymentDate;
+    this.props.updatedById = actorId;
+    return changes;
+  }
+
+  /** Alterar a data prevista de um lançamento em aberto (pendente ou aprovado). */
+  changeExpectedDate(
+    actorId: number,
+    expected: Date,
+  ): Record<string, { before: unknown; after: unknown }> {
+    if (
+      ![PaymentStatus.PENDING, PaymentStatus.APPROVED].includes(
+        this.props.status,
+      )
+    )
+      throw new PaymentStateConflict(
+        'Só lançamentos em aberto têm a previsão alterada.',
+      );
+    this.assertExpected(this.props.startDate, expected);
+    const changes = {
+      expected_payment_date: {
+        before: this.props.expectedPaymentDate,
+        after: expected,
+      },
+    };
+    this.props.expectedPaymentDate = expected;
+    this.props.updatedById = actorId;
+    return changes;
+  }
+
   cancel(actorId: number): Record<string, { before: unknown; after: unknown }> {
     this.assertNotPaid();
     const changes = this.statusChange(PaymentStatus.CANCELLED);
@@ -335,9 +404,11 @@ export class FieldAgentPayment {
     paymentDate: Date | null,
   ): void {
     if (endDate.getTime() < startDate.getTime())
-      throw new Error('end_date cannot be earlier than start_date');
+      throw new Error('A data final não pode ser anterior à data inicial.');
     if (paymentDate && paymentDate.getTime() < startDate.getTime())
-      throw new Error('payment_date cannot be earlier than start_date');
+      throw new Error(
+        'A data de pagamento não pode ser anterior à data inicial.',
+      );
   }
   private toColumn(prop: keyof FieldAgentPaymentProps): string {
     return prop.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);

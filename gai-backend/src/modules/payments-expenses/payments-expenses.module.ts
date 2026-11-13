@@ -6,6 +6,8 @@ import { AuthModule } from '../auth/auth.module';
 import { FinanceSettingsModule } from '../finance-settings/finance-settings.module';
 import { RemunerationService } from './application/services/remuneration.service';
 import { RemunerationController } from './presentation/remuneration.controller';
+import { FieldAgentPaymentsController } from './presentation/field-agent-payments.controller';
+import { FieldAgentPaymentsService } from './application/services/field-agent-payments.service';
 import { FieldAgentsModule } from '../field-agents/field-agents.module';
 import { ProjectsModule } from '../projects/projects.module';
 import { PaymentsExpensesScopeService } from './application/services/payments-expenses-scope.service';
@@ -31,9 +33,14 @@ import { PaymentsExpensesController } from './presentation/payments-expenses.con
     FieldAgentsModule,
     FinanceSettingsModule,
   ],
-  controllers: [PaymentsExpensesController, RemunerationController],
+  controllers: [
+    PaymentsExpensesController,
+    RemunerationController,
+    FieldAgentPaymentsController,
+  ],
   providers: [
     RemunerationService,
+    FieldAgentPaymentsService,
     PaymentsExpensesScopeService,
     PaymentsExpensesService,
     {

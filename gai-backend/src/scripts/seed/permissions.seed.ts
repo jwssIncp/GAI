@@ -873,6 +873,14 @@ for (const key of [
 for (const [key, description] of [
   ['payments:delete', 'Remuneração: excluir lançamento (exclusão lógica)'],
   ['payments:reopen', 'Remuneração: reabrir lançamento aprovado para edição'],
+  [
+    'payments:revert-payment',
+    'Pagamento de inventariantes: voltar pago para em aberto',
+  ],
+  [
+    'payments:reschedule',
+    'Pagamento de inventariantes: alterar data prevista ou de pagamento',
+  ],
 ])
   PERMISSION_SEEDS.push({
     key,
