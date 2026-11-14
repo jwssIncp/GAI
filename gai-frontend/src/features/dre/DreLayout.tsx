@@ -1,5 +1,11 @@
 import { navigationHref } from "@/features/projects/navigationContext";
-import { NavLink, Outlet, useSearchParams } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation, useSearchParams } from "react-router-dom";
+
+/** Endereço antigo da DRE mensal: leva à abertura da DRE, mantendo os filtros. */
+export function DreMonthlyRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={"/app/finance/dre" + search} replace />;
+}
 export function DreLayout() {
   const [p] = useSearchParams();
   return (
@@ -9,8 +15,8 @@ export function DreLayout() {
         aria-label="Navegação da DRE"
       >
         {[
-          ["monthly", "DRE mensal"],
-          ["", "Demonstrativo"],
+          ["", "DRE mensal"],
+          ["statement", "Demonstrativo"],
           ["entries", "Classificações e ajustes"],
           ["accounts", "Plano de contas"],
           ["periods", "Competências"],

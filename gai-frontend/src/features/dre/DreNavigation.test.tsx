@@ -44,7 +44,7 @@ function mount(path: string) {
         <Routes>
           <Route path="/app/finance" element={<FinanceLayout />}>
             <Route path="dre" element={<DreLayout />}>
-              <Route index element={<DreReportPage />} />
+              <Route path="statement" element={<DreReportPage />} />
               <Route path="accounts" element={<DreAccountsPage />} />
               <Route path="entries" element={<p>Lista de eventos</p>} />
             </Route>
@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 describe("DRE nested navigation and explicit classification", () => {
   it("keeps both shared layouts and project scope across nonsequential navigation", async () => {
-    mount("/app/finance/dre?project_id=25");
+    mount("/app/finance/dre/statement?project_id=25");
     await screen.findByText("Cobertura incompleta não equivale a zero.");
     fireEvent.click(screen.getByRole("link", { name: "Plano de contas" }));
     await screen.findByRole("button", { name: "Nova conta gerencial" });
@@ -101,7 +101,7 @@ describe("DRE nested navigation and explicit classification", () => {
     ).toBeVisible();
   });
   it("allows clearing a project filter instead of retaining stale scope", async () => {
-    mount("/app/finance/dre?project_id=25");
+    mount("/app/finance/dre/statement?project_id=25");
     await screen.findByText("Cobertura incompleta não equivale a zero.");
     fireEvent.change(screen.getByLabelText("Projeto (ID, opcional)"), {
       target: { value: "" },

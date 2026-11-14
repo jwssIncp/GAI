@@ -100,7 +100,7 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
           {o.window.months_with_revenue === 0
             ? "Sem receita na DRE nos 12 meses anteriores: margem de contribuição e pontos de equilíbrio indefinidos. "
             : "Margem de contribuição sem alguma conta associada na DRE (o % fica zero). "}
-          <Link className="font-semibold underline" to="/app/finance/dre/monthly">Abrir a DRE mensal</Link>
+          <Link className="font-semibold underline" to="/app/finance/dre">Abrir a DRE mensal</Link>
         </p>
       ) : null}
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">

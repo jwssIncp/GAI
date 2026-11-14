@@ -124,7 +124,7 @@ describe("Fluxo de caixa: indicadores", () => {
     get.mockResolvedValue({ ...original, indicators: values({ window: { from: "2025-11", to: "2026-10", revenue: "0.00", months_with_revenue: 0, missing_accounts: [] }, contribution_margin: null }) });
     mount(["cash-flow:read"]);
     expect(await screen.findByText(/Sem receita na DRE nos 12 meses anteriores/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Abrir a DRE mensal" })).toHaveAttribute("href", "/app/finance/dre/monthly");
+    expect(screen.getByRole("link", { name: "Abrir a DRE mensal" })).toHaveAttribute("href", "/app/finance/dre");
   });
 
   it("simulação recusada pela API: mostra o motivo e permite limpar", async () => {

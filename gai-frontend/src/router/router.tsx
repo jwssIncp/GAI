@@ -1,6 +1,7 @@
 import { DreLayout } from "@/features/dre/DreLayout";
 import { DreReportPage } from "@/features/dre/DreReportPage";
 import { DreMonthlyPage } from "@/features/dre/DreMonthlyPage";
+import { DreMonthlyRedirect } from "@/features/dre/DreLayout";
 import {
   DreEntriesPage,
   DreEntryDetailPage,
@@ -131,8 +132,9 @@ export const router = createBrowserRouter([
                     path: "dre",
                     element: <DreLayout />,
                     children: [
-                      { index: true, element: <DreReportPage /> },
-                      { path: "monthly", element: <DreMonthlyPage /> },
+                      { index: true, element: <DreMonthlyPage /> },
+                      { path: "monthly", element: <DreMonthlyRedirect /> },
+                      { path: "statement", element: <DreReportPage /> },
                       { path: "entries", element: <DreEntriesPage /> },
                       {
                         path: "entries/:entryId",
