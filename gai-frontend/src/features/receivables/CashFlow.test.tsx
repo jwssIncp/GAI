@@ -8,7 +8,7 @@ import { CashFlowPage } from "./CashFlowPage";
 import type { CashFlowBoard, FlowItem } from "./cashFlowBoardApi";
 
 const mocks = vi.hoisted(() => ({ board: vi.fn(), confirm: vi.fn(), discard: vi.fn(), receive: vi.fn(), undoReceipts: vi.fn(), reschedule: vi.fn(), settle: vi.fn() }));
-vi.mock("./cashFlowBoardApi", async (original) => ({ ...(await original<object>()), cashFlowApi: mocks }));
+vi.mock("./cashFlowBoardApi", async (original) => ({ ...(await original<object>()), cashFlowApi: mocks, indicatorsApi: { get: vi.fn(async () => ({ configured: false, as_of: "2026-11-14", reference: { month: "2026-11", year: "2026" } })) } }));
 
 const all = ["cash-flow:read", "receivables:read", "receivables:edit", "receivables:receive", "receivables:reverse", "receivables:reschedule"];
 function mount(permissions = all) {

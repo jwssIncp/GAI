@@ -890,6 +890,15 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 8: simular venda nos indicadores do fluxo de caixa.
+PERMISSION_SEEDS.push({
+  key: 'cash-flow:simulate',
+  resource: 'cash-flow',
+  action: 'simulate',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'Fluxo de caixa: simular venda nos indicadores',
+});
+
 // Paridade financeira, etapa 7: fluxo de caixa (reprogramar parcela de recebível).
 PERMISSION_SEEDS.push({
   key: 'receivables:reschedule',

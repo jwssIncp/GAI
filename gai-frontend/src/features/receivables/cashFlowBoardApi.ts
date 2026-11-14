@@ -73,3 +73,76 @@ export const cashFlowKeys = {
 
 export const civilBr = (value: string | null | undefined) => (value ? value.split("-").reverse().join("/") : "");
 export const monthBr = (value: string) => value.split("-").reverse().join("/");
+
+export type FixedCostItem = { key: string; label: string; mode: string; amount: string | null; available: boolean };
+export type CashFlowIndicatorValues = {
+  window: { from: string; to: string; revenue: string; missing_tax: { count: number; amount: string; since: string | null } };
+  contribution_margin: {
+    mc: string;
+    mce: string;
+    income_tax_pct: string;
+    field_agents_pct: string;
+    non_reimbursable_pct: string;
+    commission_pct: string;
+    partner_effective_pct: string;
+  } | null;
+  fixed_cost: { items: FixedCostItem[]; total: string; year: string; unavailable: string[] };
+  cash_year_result: string;
+  operating_result: string;
+  partner_commission: { pct: string; quarters: string[]; operating_by_quarter: string[]; year: string };
+  projected_result: string;
+  year_revenue: string;
+  accounting_break_even: string | null;
+  economic_break_even: string | null;
+  economic_margin_pct: string;
+  net_margin: string | null;
+  average_collection_days: string | null;
+  collection_since: string;
+  depends_on_dre: string[];
+};
+export type SaleSimulationInput = { value: string; signal_month: string; second_month: string; third_month: string; company_expenses: boolean };
+export type CashFlowIndicators =
+  | { configured: false; as_of: string; reference: { month: string; year: string } }
+  | {
+      configured: true;
+      as_of: string;
+      reference: { month: string; year: string };
+      kpis: CashFlowKpis;
+      indicators: CashFlowIndicatorValues;
+      simulation: null | {
+        input: SaleSimulationInput;
+        movements: Array<{ date: string; direction: "in" | "out"; origin: string; gross: string }>;
+        kpis: CashFlowKpis;
+        indicators: CashFlowIndicatorValues;
+        delta: { month_total: string; next_month_total: string; year_total: string; projected_result: string };
+      };
+    };
+
+export const indicatorsApi = {
+  get: (q: BoardQuery, sim: SaleSimulationInput | null) =>
+    api
+      .get<CashFlowIndicators>("/finance/cash-flow/indicators", {
+        params: {
+          ...q,
+          ...(sim
+            ? {
+                sim_value: sim.value,
+                sim_signal_month: sim.signal_month,
+                sim_second_month: sim.second_month,
+                sim_third_month: sim.third_month,
+                sim_company_expenses: String(sim.company_expenses),
+              }
+            : {}),
+        },
+      })
+      .then((r) => r.data),
+};
+export const indicatorsKeys = {
+  get: (q: BoardQuery, sim: SaleSimulationInput | null) => ["cash-flow-board", "indicators", q, sim] as const,
+};
+
+/** "10.000,50" → "10000.50"; inválido → null. */
+export const parseBrMoney = (raw: string): string | null => {
+  const s = raw.trim().replace(/\./g, "").replace(",", ".");
+  return /^\d{1,13}(\.\d{1,2})?$/.test(s) && Number(s) > 0 ? Number(s).toFixed(2) : null;
+};

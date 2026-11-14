@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { formatMoney } from "@/utils/format";
+import { CashFlowIndicators } from "./CashFlowIndicators";
 import {
   cashFlowApi,
   cashFlowKeys,
@@ -194,6 +195,7 @@ export function CashFlowPage() {
 
       {brl ? <KpiRows k={brl} /> : null}
       {others.map((k) => <KpiRows key={k.currency} k={k} />)}
+      <CashFlowIndicators query={query} />
 
       {feedback ? <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>{feedback.message}</p> : null}
 

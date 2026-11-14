@@ -10,6 +10,7 @@ import { AssetTagsModule } from '../asset-tags/asset-tags.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { FinanceSettingsModule } from '../finance-settings/finance-settings.module';
 import { CashFlowBoardService } from './cash-flow-board.service';
+import { CashFlowIndicatorsService } from './cash-flow-indicators.service';
 import { CashFlowBoardController } from './cash-flow-board.controller';
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CashFlowBoardController } from './cash-flow-board.controller';
     CashFlowService,
     FinanceExportService,
     CashFlowBoardService,
+    CashFlowIndicatorsService,
   ],
   exports: [FinanceExportService],
 })

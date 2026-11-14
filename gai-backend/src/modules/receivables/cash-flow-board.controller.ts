@@ -13,6 +13,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -32,6 +33,7 @@ import {
   SessionAuthGuard,
 } from '../auth/presentation/guards/session-auth.guard';
 import { CashFlowBoardService } from './cash-flow-board.service';
+import { CashFlowIndicatorsService } from './cash-flow-indicators.service';
 
 export class CashFlowBoardQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) organization_id?: number;
@@ -39,6 +41,13 @@ export class CashFlowBoardQueryDto {
   @IsOptional() @Matches(/^\d{4}$/) year?: string;
   @IsOptional() @Matches(/^\d{4}-\d{2}$/) month?: string;
   @IsOptional() @IsCivilDate() as_of?: string;
+}
+export class CashFlowIndicatorsQueryDto extends CashFlowBoardQueryDto {
+  @IsOptional() @Matches(/^\d{1,13}(\.\d{1,2})?$/) sim_value?: string;
+  @IsOptional() @Matches(/^\d{4}-\d{2}$/) sim_signal_month?: string;
+  @IsOptional() @Matches(/^\d{4}-\d{2}$/) sim_second_month?: string;
+  @IsOptional() @Matches(/^\d{4}-\d{2}$/) sim_third_month?: string;
+  @IsOptional() @IsIn(['true', 'false']) sim_company_expenses?: string;
 }
 class KeysDto {
   @IsArray()
@@ -97,7 +106,10 @@ class SettleDto extends KeysDto {
 @Controller('finance/cash-flow')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class CashFlowBoardController {
-  constructor(private readonly board: CashFlowBoardService) {}
+  constructor(
+    private readonly board: CashFlowBoardService,
+    private readonly indicatorsService: CashFlowIndicatorsService,
+  ) {}
 
   private actor(req: Request) {
     return (req as Request & { user: AuthenticatedUser }).user;
@@ -107,6 +119,26 @@ export class CashFlowBoardController {
   @RequirePermissions('cash-flow:read')
   get(@Query() q: CashFlowBoardQueryDto, @Req() req: Request) {
     return this.board.board(q, this.actor(req));
+  }
+
+  /** Indicadores (etapa 8) e, com os campos sim_*, a simulação de venda (não grava). */
+  @Get('indicators')
+  @RequirePermissions('cash-flow:read')
+  indicators(@Query() q: CashFlowIndicatorsQueryDto, @Req() req: Request) {
+    const sim =
+      q.sim_value &&
+      q.sim_signal_month &&
+      q.sim_second_month &&
+      q.sim_third_month
+        ? {
+            value: q.sim_value,
+            signal_month: q.sim_signal_month,
+            second_month: q.sim_second_month,
+            third_month: q.sim_third_month,
+            company_expenses: q.sim_company_expenses === 'true',
+          }
+        : null;
+    return this.indicatorsService.indicators(q, sim, this.actor(req));
   }
 
   @Post('proposals/confirm')

@@ -484,6 +484,148 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     }); // sem IR
   });
 
+  /**
+   * Etapa 8. Parâmetros = padrões (IR 13,33%; sócio 10%; margem econômica 10%;
+   * custo fixo 10.915,00 + 3.021,00; itens em "média DRE" indisponíveis).
+   * Janela 12/2025–11/2026 (realizado): receita 4.000,00 (CA#1); IR 533,20 =
+   * 13,33%; diárias 500,00 = 12,50%; não reemb. 200,00 (E1) = 5,00%; comissão
+   * 0; sócio efetivo 10 × (100 − 13,33)/100 = 8,667%.
+   * MC = 100 − 13,33 − 12,50 − 5,00 − 0 − 8,667 = 60,503 → 60,50; MCe = 65,50.
+   * Resultado do fluxo 2026 = 3.016,90; custo fixo 12 × 13.936,00 = 167.232,00;
+   * operacional = 3.016,90 − 167.232,00 = −164.215,10 (sócio 0: todos os
+   * trimestres negativos) = resultado projetado.
+   * PEC = 164.215,10 / 0,65503 = 250.698,59.
+   * PEE = (10% × 7.000,00 + 164.215,10) / (0,65503 − 0,10) = 297.128,26.
+   * Margem líquida = −164.215,10 / (7.000,00 − 650,00/0,8667) = −2.627,43%.
+   * Prazo médio: CA#1 contratada 02/11, recebida 10/11 = 8,0 dias.
+   */
+  it('indicadores: esperado (calculado à mão) × obtido', async () => {
+    const r = (
+      await api(
+        'get',
+        '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-12&year=2026',
+      ).expect(200)
+    ).body;
+    const ind = r.indicators;
+    expect(r.configured).toBe(true);
+    expect(ind.window).toEqual({
+      from: '2025-12',
+      to: '2026-11',
+      revenue: '4000.00',
+      missing_tax: { count: 0, amount: '0.00', since: null },
+    });
+    expect(ind.contribution_margin).toEqual({
+      mc: '60.50',
+      mce: '65.50',
+      income_tax_pct: '13.33',
+      field_agents_pct: '12.50',
+      non_reimbursable_pct: '5.00',
+      commission_pct: '0.00',
+      partner_effective_pct: '8.67',
+    });
+    expect(ind.fixed_cost.total).toBe('13936.00');
+    expect(ind.fixed_cost.year).toBe('167232.00');
+    expect(ind.fixed_cost.unavailable).toEqual([
+      'additional_income_tax',
+      'equipment',
+      'back_office',
+    ]);
+    expect(ind.cash_year_result).toBe('3016.90');
+    expect(ind.partner_commission).toEqual({
+      pct: '10.00',
+      operating_by_quarter: [
+        '-41808.00',
+        '-39207.90',
+        '-41808.00',
+        '-41391.20',
+      ],
+      quarters: ['0.00', '0.00', '0.00', '0.00'],
+      year: '0.00',
+    });
+    expect(ind.operating_result).toBe('-164215.10');
+    expect(ind.projected_result).toBe('-164215.10');
+    expect(ind.year_revenue).toBe('7000.00');
+    expect(ind.accounting_break_even).toBe('250698.59');
+    expect(ind.economic_break_even).toBe('297128.26');
+    expect(ind.net_margin).toBe('-2627.43');
+    expect(ind.average_collection_days).toBe('8.0');
+    expect(r.simulation).toBeNull();
+    // KPIs dos indicadores = KPIs do quadro (mesma lista de movimentos)
+    const brl = (await board()).kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    expect(r.kpis.month).toEqual(brl.month);
+    expect(r.kpis.year).toEqual(brl.year);
+  });
+
+  /**
+   * Simulação: venda de 10.000,00 em 12/2026, 01/2027, 02/2027 (50/30/20),
+   * empresa paga as despesas (20% orçado = 2.000,00 → 1.000/600/400).
+   * 12/2026: +5.000,00 − IR 666,50 − 1.000,00 = +3.333,50 → mês −2.250,00 →
+   * 1.083,50; 01/2027: +3.000,00 − 399,90 − 600,00 = +2.000,10 → 11.453,75 →
+   * 13.453,85; ano 3.016,90 + 3.333,50 = 6.350,40; projetado −160.881,60;
+   * PEC = 160.881,60/0,65503 = 245.609,51; PEE = (1.200 + 160.881,60)/0,55503
+   * = 292.023,13; margem líquida = −160.881,60 / (12.000 − 1.650/0,8667)
+   * = −1.593,48%. Nada é gravado.
+   */
+  it('simulação de venda: esperado × obtido, sem gravar', async () => {
+    const q =
+      '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-12&year=2026' +
+      '&sim_value=10000.00&sim_signal_month=2026-12&sim_second_month=2027-01' +
+      '&sim_third_month=2027-02&sim_company_expenses=true';
+    const s = (await api('get', q).expect(200)).body.simulation;
+    expect(s.movements.map((m: { gross: string }) => m.gross)).toEqual([
+      '5000.00',
+      '666.50',
+      '3000.00',
+      '399.90',
+      '2000.00',
+      '266.60',
+      '1000.00',
+      '600.00',
+      '400.00',
+    ]);
+    expect(s.kpis.month.total).toBe('1083.50');
+    expect(s.kpis.next_month.total).toBe('13453.85');
+    expect(s.kpis.year.total).toBe('6350.40');
+    expect(s.indicators.projected_result).toBe('-160881.60');
+    expect(s.indicators.accounting_break_even).toBe('245609.51');
+    expect(s.indicators.economic_break_even).toBe('292023.13');
+    expect(s.indicators.net_margin).toBe('-1593.48');
+    expect(s.indicators.contribution_margin.mc).toBe('60.50');
+    expect(s.delta).toEqual({
+      month_total: '3333.50',
+      next_month_total: '2000.10',
+      year_total: '3333.50',
+      projected_result: '3333.50',
+    });
+    // nada gravado: o quadro continua igual
+    const brl = (await board()).kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    expect(brl.month.total).toBe('-2250.00');
+    // mês passado: recusado; mês atual: parcela cai hoje (14/11), não no dia 1º
+    const base =
+      '/finance/cash-flow/indicators?as_of=2026-11-14&sim_value=1000.00&sim_company_expenses=false';
+    const past = await api(
+      'get',
+      base +
+        '&sim_signal_month=2026-10&sim_second_month=2026-11&sim_third_month=2026-12',
+    ).expect(400);
+    expect(past.body.message).toContain('mês passado');
+    const now = (
+      await api(
+        'get',
+        base +
+          '&sim_signal_month=2026-11&sim_second_month=2026-12&sim_third_month=2027-01',
+      ).expect(200)
+    ).body.simulation;
+    expect(now.movements[0]).toMatchObject({
+      date: '2026-11-14',
+      gross: '500.00',
+    });
+  });
+
   it('desfazer e refazer: baixa de saída, estorno de recebimento e descarte de proposta', async () => {
     let items = (await board()).items;
     const commission = items.find((i) => i.origin === 'commission')!;
@@ -565,5 +707,6 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
 
   it('permissões', async () => {
     await api('get', '/finance/cash-flow/board', user).expect(403);
+    await api('get', '/finance/cash-flow/indicators', user).expect(403);
   });
 });

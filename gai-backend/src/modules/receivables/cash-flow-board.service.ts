@@ -193,6 +193,10 @@ export class CashFlowBoardService {
     const contracts = (
       await m.find(ContractEntity, { where: { organizationId: org } })
     ).filter((c) => !['cancelled', 'archived'].includes(c.data.status));
+    // Data do contrato (prazo médio de recebimento, etapa 8).
+    const contractDate = new Map(
+      contracts.map((c) => [Number(c.id), c.data.contracted_on ?? null]),
+    );
     const contractValue = new Map(
       contracts.map((c) => [
         Number(c.id),
@@ -353,6 +357,9 @@ export class CashFlowBoardService {
               event_id: wasReversed ? null : Number(e.id),
               reversed_on: wasReversed
                 ? (reversalOf.get(Number(e.id)) ?? null)
+                : null,
+              contracted_on: r.contractId
+                ? (contractDate.get(Number(r.contractId)) ?? null)
                 : null,
             },
           });

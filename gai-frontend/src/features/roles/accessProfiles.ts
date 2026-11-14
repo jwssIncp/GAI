@@ -35,7 +35,7 @@ const actions: Record<string, string> = {
   'configure-prices': 'Configurar preços', receive: 'Registrar recebimento', reverse: 'Estornar',
   classify: 'Classificar', configure: 'Configurar', adjust: 'Ajustar', periods: 'Gerenciar períodos', templates: 'Gerenciar modelos',
   upload: 'Anexar',
-  reopen: 'Reabrir para edição', 'revert-payment': 'Voltar pago para em aberto', reschedule: 'Alterar datas',
+  simulate: 'Simular venda', reopen: 'Reabrir para edição', 'revert-payment': 'Voltar pago para em aberto', reschedule: 'Alterar datas',
 };
 /** Rótulos de ação que dependem do recurso (a mesma ação significa coisas diferentes). */
 const resourceActions: Record<string, string> = {
