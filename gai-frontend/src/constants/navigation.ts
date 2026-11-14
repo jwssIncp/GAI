@@ -17,9 +17,9 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
   { label: 'Despesas', to: '/app/finance/expenses', icon: ReceiptText, permissions: ['expenses:read'], section: 'finance' },
   { label: 'Placas de patrimônio', to: '/app/finance/asset-tags', icon: Tags, permissions: ['asset-tag-orders:read'], section: 'finance' },
   { label: 'Comissões', to: '/app/finance/commissions', icon: Percent, permissions: ['commissions:read'], section: 'finance' },
-  { label: 'Parâmetros financeiros', to: '/app/finance/parameters', icon: SlidersHorizontal, permissions: ['finance-settings:read'], section: 'finance' },
   { label: 'Organizações', to: '/app/organizations', icon: Landmark, permissions: ['organizations:read'], section: 'management' },
   { label: 'Usuários', to: '/app/users', icon: Users, permissions: ['users:read'], section: 'management' },
   { label: 'Perfis e acessos', to: '/app/roles', icon: ShieldCheck, permissions: ['org_roles:read'], section: 'management' },
+  { label: 'Parâmetros financeiros', to: '/app/finance/parameters', icon: SlidersHorizontal, permissions: ['finance-settings:read'], section: 'management' },
   { label: 'Empresas', to: '/app/companies', icon: Building2, permissions: ['companies:read'], section: 'commercial' },
 ];

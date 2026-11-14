@@ -77,9 +77,10 @@ describe("Menu lateral por módulo", () => {
       "Despesas",
       "Placas de patrimônio",
       "Comissões",
-      "Parâmetros financeiros",
       "Usuários",
       "Perfis e acessos",
+      // Parâmetros financeiros fica em Administração (mesma URL e permissão).
+      "Parâmetros financeiros",
     ]);
   });
 
@@ -102,10 +103,10 @@ describe("Menu lateral por módulo", () => {
       ["/app/finance/expenses", ["expenses:read"]],
       ["/app/finance/asset-tags", ["asset-tag-orders:read"]],
       ["/app/finance/commissions", ["commissions:read"]],
-      ["/app/finance/parameters", ["finance-settings:read"]],
       ["/app/organizations", ["organizations:read"]],
       ["/app/users", ["users:read"]],
       ["/app/roles", ["org_roles:read"]],
+      ["/app/finance/parameters", ["finance-settings:read"]],
       ["/app/companies", ["companies:read"]],
     ]);
     expect(navigation.find((item) => item.to === "/app/finance/receivables")?.label).toBe("Recebíveis");
