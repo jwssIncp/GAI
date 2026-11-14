@@ -890,6 +890,15 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 7: fluxo de caixa (reprogramar parcela de recebível).
+PERMISSION_SEEDS.push({
+  key: 'receivables:reschedule',
+  resource: 'receivables',
+  action: 'reschedule',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'Recebíveis: reprogramar a data prevista de uma parcela',
+});
+
 // Paridade financeira, etapa 6: comissões e parceiros.
 for (const [key, description] of [
   ['commissions:read', 'Comissões: consultar comissões e parceiros'],

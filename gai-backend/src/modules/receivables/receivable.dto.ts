@@ -33,7 +33,8 @@ export class ReceivableInputDto {
   @IsOptional() @IsInt() @Min(1) organization_id?: number;
   @IsInt() @Min(1) company_id!: number;
   @IsOptional() @IsInt() @Min(1) project_id?: number;
-  @IsIn(['manual', 'contract', 'amendment', 'budget']) origin!: string;
+  @IsIn(['manual', 'contract', 'amendment', 'budget', 'reimbursement'])
+  origin!: string;
   @IsOptional() @IsInt() @Min(1) source_id?: number;
   @IsString() @MinLength(3) @MaxLength(500) description!: string;
   @IsString() @Matches(/^\d{1,13}(\.\d{1,2})?$/) amount!: string;
@@ -71,6 +72,11 @@ export class ReceiptDto extends FinanceCommandDto {
   @IsString() @MinLength(2) @MaxLength(100) method!: string;
   @IsString() @MinLength(2) @MaxLength(255) reference!: string;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
+}
+/** Reprogramar a data prevista de uma parcela (evento auditado, etapa 7). */
+export class RescheduleInstallmentDto extends FinanceCommandDto {
+  @IsInt() @Min(1) installment_id!: number;
+  @IsCivilDate() due_on!: string;
 }
 export class ReverseReceiptDto extends FinanceCommandDto {
   @IsCivilDate() reversed_on!: string;

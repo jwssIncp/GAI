@@ -8,6 +8,11 @@ import { ReceivableDetailPage } from "./ReceivableDetailPage";
 import { ReceivableForm } from "./ReceivableForm";
 import { CashFlowPage } from "./CashFlowPage";
 import { financeApi, type Receivable } from "./financeApi";
+import { cashFlowApi } from "./cashFlowBoardApi";
+vi.mock("./cashFlowBoardApi", async (original) => ({
+  ...(await original<typeof import("./cashFlowBoardApi")>()),
+  cashFlowApi: { board: vi.fn() },
+}));
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: 2, organization_id: 1 } }),
 }));
@@ -115,16 +120,13 @@ beforeEach(() => {
     page_size: 20,
   });
   vi.mocked(financeApi.detail).mockResolvedValue(row);
-  vi.mocked(financeApi.cash).mockResolvedValue({
-    totals: [],
-    monthly: [],
-    by_client: [],
-    by_project: [],
-    movements: [],
-    limitations: ["Projeção parcial"],
-    undated_expenses: 0,
-    undated_payments: 0,
-    definitions: {},
+  vi.mocked(cashFlowApi.board).mockResolvedValue({
+    as_of: "2026-11-14",
+    reference: { month: "2026-11", year: "2026" },
+    kpis: [],
+    alerts: { proposed_count: 1, proposed_amount: "3000.00", missing_parameters_since: null, missing_tax_count: 0, undated_payments: 0, unproposed_contracts: [] },
+    projects: [],
+    items: [],
   });
 });
 describe("Financial navigation through real nested routes", () => {
@@ -142,8 +144,8 @@ describe("Financial navigation through real nested routes", () => {
   it("fluxo de caixa mantém o filtro de projeto da URL e mostra o próprio título", async () => {
     mount("/app/finance/cash-flow?project_id=25");
     expect(screen.getByRole("heading", { level: 1, name: "Fluxo de caixa" })).toBeInTheDocument();
-    await screen.findByText("Projeção parcial");
-    expect(financeApi.cash).toHaveBeenCalledWith({ project_id: "25" });
+    await screen.findByText(/previsto e não confirmado/);
+    expect(cashFlowApi.board).toHaveBeenCalledWith(expect.objectContaining({ project_id: 25 }));
   });
   it("hides creation for a read-only custom profile", async () => {
     grants.delete("receivables:edit");

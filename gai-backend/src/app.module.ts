@@ -9,6 +9,7 @@ import {
   AssetTagOrderEntity,
   AssetTagsModule,
 } from './modules/asset-tags/asset-tags.module';
+import { CASH_FLOW_PARITY_ENTITIES } from './modules/receivables/cash-flow-parity.entities';
 import {
   CommissionAuditLogEntity,
   CommissionEntity,
@@ -210,6 +211,7 @@ import { UsersModule } from './modules/users/users.module';
           FinanceSettingsVersionEntity,
           AssetTagOrderEntity,
           AssetTagOrderAuditLogEntity,
+          ...CASH_FLOW_PARITY_ENTITIES,
           CommissionPartnerEntity,
           CommissionEntity,
           CommissionAuditLogEntity,

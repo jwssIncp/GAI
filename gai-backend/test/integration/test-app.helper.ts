@@ -12,6 +12,7 @@ import {
   AssetTagOrderEntity,
   AssetTagsModule,
 } from '../../src/modules/asset-tags/asset-tags.module';
+import { CASH_FLOW_PARITY_ENTITIES } from '../../src/modules/receivables/cash-flow-parity.entities';
 import {
   CommissionAuditLogEntity,
   CommissionEntity,
@@ -249,6 +250,7 @@ export async function createTestApp(
           FinanceSettingsVersionEntity,
           AssetTagOrderEntity,
           AssetTagOrderAuditLogEntity,
+          ...CASH_FLOW_PARITY_ENTITIES,
           CommissionPartnerEntity,
           CommissionEntity,
           CommissionAuditLogEntity,

@@ -16,6 +16,8 @@ import {
   ContractAmendmentEntity,
 } from '../contracts/contract.entity';
 import { BudgetEntity, BudgetVersionEntity } from '../budgets/budget.entity';
+import { ExpenseReimbursementBatchEntity } from '../payments-expenses/infrastructure/persistence/expense-parity.entities';
+import { ExpenseEntity } from '../payments-expenses/infrastructure/persistence/expense.entity';
 import { hasAllPermissions } from '../auth/application/services/permission-access';
 import {
   PERMISSION_RESOLVER,
@@ -33,6 +35,7 @@ import {
   FinanceFilterDto,
   ReceiptDto,
   ReceivableInputDto,
+  RescheduleInstallmentDto,
   ReverseReceiptDto,
 } from './receivable.dto';
 import {
@@ -209,6 +212,39 @@ export class ReceivableService {
           version_id: v.id,
           version: v.version,
           hash: v.hash,
+        };
+      } else if (dto.origin === 'reimbursement') {
+        // Lote de reembolso faturado ao cliente (D-B): o recebível é o total
+        // das despesas contadas no lote; sem IR (reembolso não é faturamento).
+        await this.require(actor, ['reimbursement-batches:read']);
+        const batch = await m.findOne(ExpenseReimbursementBatchEntity, {
+          where: { id: dto.source_id, organizationId: org },
+        });
+        if (!batch || !['billed', 'received'].includes(batch.status))
+          invalid('Lote de reembolso faturado não encontrado.');
+        const expenses = await m.find(ExpenseEntity, {
+          where: { organizationId: org, reimbursementBatchId: batch.id },
+        });
+        const total = expenses
+          .filter((e) => !['cancelled', 'rejected'].includes(e.status))
+          .reduce((s, e) => s + scaled(String(e.amount)), 0n);
+        if (total <= 0n) invalid('Lote de reembolso sem despesas.');
+        const project = await m.findOne(ProjectEntity, {
+          where: { id: Number(batch.projectId), organizationId: org },
+        });
+        if (!project) invalid('Projeto do lote não encontrado.');
+        companyId = Number(project.companyId);
+        projectId = Number(project.id);
+        amount = decimal(total);
+        const contract = await m.findOne(ContractEntity, {
+          where: { organizationId: org, projectId },
+        });
+        currency = contract?.data.currency ?? 'BRL';
+        source = {
+          reimbursement_batch_id: Number(batch.id),
+          number: Number(batch.number),
+          amount,
+          currency,
         };
       } else {
         await this.require(actor, ['contracts:read']);
@@ -633,6 +669,32 @@ export class ReceivableService {
           amount: decimal(value),
           effectiveOn: dto.received_on,
         },
+      };
+    });
+  }
+  /** Reprogramar a data prevista de uma parcela em aberto (evento "reschedule"). */
+  reschedule(
+    id: number,
+    dto: RescheduleInstallmentDto,
+    actor: ProjectActorContext,
+  ) {
+    return this.mutate(id, dto, actor, 'reschedule', async (m, row) => {
+      const d = await this.detailFrom(m, row),
+        i = d.installments.find((x) => x.id === dto.installment_id);
+      if (!i) invalid('Parcela não pertence ao recebível.');
+      if (scaled(i.open) <= 0n) conflict('Parcela já recebida.');
+      civil(dto.due_on);
+      if (dto.due_on < row.data.issued_on)
+        invalid('A nova data não pode ser anterior à emissão.');
+      if (dto.due_on === i.dueOn) conflict('A data prevista já é essa.');
+      await m.update(
+        I,
+        { id: i.id, organizationId: row.organizationId },
+        { dueOn: dto.due_on },
+      );
+      return {
+        details: { before: i.dueOn, after: dto.due_on },
+        extra: { installmentId: i.id },
       };
     });
   }
