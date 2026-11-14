@@ -12,6 +12,7 @@ import { FinanceSettingsModule } from '../finance-settings/finance-settings.modu
 import { CashFlowBoardService } from './cash-flow-board.service';
 import { CashFlowIndicatorsService } from './cash-flow-indicators.service';
 import { CashFlowBoardController } from './cash-flow-board.controller';
+import { DreMonthlyService } from '../managerial-dre/dre-monthly.service';
 @Module({
   imports: [
     AuthModule,
@@ -28,7 +29,8 @@ import { CashFlowBoardController } from './cash-flow-board.controller';
     FinanceExportService,
     CashFlowBoardService,
     CashFlowIndicatorsService,
+    DreMonthlyService,
   ],
-  exports: [FinanceExportService],
+  exports: [FinanceExportService, DreMonthlyService],
 })
 export class ReceivablesModule {}

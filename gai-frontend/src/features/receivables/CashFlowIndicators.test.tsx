@@ -30,12 +30,12 @@ const kpis = (month: string, next: string, year: string): CashFlowKpis => ({
   currency: "BRL",
   month: { reference: "2026-12", in_realized: "0.00", in_open: "0.00", out_realized: "0.00", out_open: "0.00", total: month },
   next_month: { reference: "2027-01", in_gross: "0.00", in_net: "0.00", out: "0.00", total: next },
-  year: { reference: "2026", in: "0.00", out: "0.00", total: year, in_open_net: "0.00", out_open: "0.00" },
+  year: { reference: "2026", in: "0.00", out: "0.00", total: "3016.90", in_open_net: "0.00", out_open: "0.00", dre_total: year },
   overdue: { in: "0.00", in_count: 0, out: "0.00", out_count: 0 },
   proposed: { amount: "0.00", count: 0 },
 });
 const values = (p: Partial<CashFlowIndicatorValues>): CashFlowIndicatorValues => ({
-  window: { from: "2025-12", to: "2026-11", revenue: "4000.00", missing_tax: { count: 0, amount: "0.00", since: null } },
+  window: { from: "2025-11", to: "2026-10", revenue: "80000.00", months_with_revenue: 8, missing_accounts: [] },
   contribution_margin: { mc: "60.50", mce: "65.50", income_tax_pct: "13.33", field_agents_pct: "12.50", non_reimbursable_pct: "5.00", commission_pct: "0.00", partner_effective_pct: "8.67" },
   fixed_cost: {
     items: [
@@ -47,9 +47,9 @@ const values = (p: Partial<CashFlowIndicatorValues>): CashFlowIndicatorValues =>
     year: "167232.00",
     unavailable: ["additional_income_tax"],
   },
-  cash_year_result: "3016.90",
+  dre: { year: "2026", revenue: "84000.00", operating_result: "-27647.20", final_result: "-164215.10", estimates: 6, cash_flow_total: "3016.90" },
   operating_result: "-164215.10",
-  partner_commission: { pct: "10.00", quarters: ["0.00", "0.00", "0.00", "0.00"], operating_by_quarter: ["-41808.00", "-39207.90", "-41808.00", "-41391.20"], year: "0.00" },
+  partner_commission: { pct: "10.00", quarters: ["0.00", "0.00", "0.00", "0.00"], operating_by_quarter: ["-41808.00", "-39207.90", "-41808.00", "-41391.20"], year: "0.00", account_missing: false },
   projected_result: "-164215.10",
   year_revenue: "7000.00",
   accounting_break_even: "250698.59",
@@ -58,7 +58,7 @@ const values = (p: Partial<CashFlowIndicatorValues>): CashFlowIndicatorValues =>
   net_margin: "-2627.43",
   average_collection_days: "8.0",
   collection_since: "2026-01-01",
-  depends_on_dre: ["Janela da margem de contribuição pelo realizado do fluxo (caixa), não por competência."],
+  notes: ["Resultado projetado = resultado final da DRE mensal de 2026 (jan–dez)."],
   ...p,
 });
 const original = { configured: true, as_of: "2026-11-14", reference: { month: "2026-12", year: "2026" }, kpis: kpis("-2250.00", "11453.75", "3016.90"), indicators: values({}), simulation: null };
@@ -74,8 +74,8 @@ describe("Fluxo de caixa: indicadores", () => {
     expect(within(region).getAllByText("Margem de contribuição")[0].parentElement).toHaveTextContent("60,50%");
     expect(within(region).getByText("Margem líquida").parentElement).toHaveTextContent("-2627,43%");
     expect(within(region).getByText("Prazo médio de recebimento").parentElement).toHaveTextContent("8,0 dias");
-    expect(within(region).getByText("indisponível (média DRE)")).toBeInTheDocument();
-    expect(within(region).getByText(/realizado do fluxo \(caixa\)/)).toBeInTheDocument();
+    expect(within(region).getByText("sem conta na DRE")).toBeInTheDocument();
+    expect(within(region).getByText(/resultado final da DRE mensal/)).toBeInTheDocument();
     // sem a permissão de simular, não há formulário
     expect(screen.queryByRole("form", { name: "Simular venda" })).toBeNull();
   });
@@ -120,11 +120,11 @@ describe("Fluxo de caixa: indicadores", () => {
     await waitFor(() => expect(get).toHaveBeenLastCalledWith({ year: "2026" }, null));
   });
 
-  it("receita da janela sem IR: margem marcada como incompleta, com link para publicar parâmetros", async () => {
-    get.mockResolvedValue({ ...original, indicators: values({ window: { from: "2025-11", to: "2026-10", revenue: "180.02", missing_tax: { count: 2, amount: "180.02", since: "2026-03-05" } } }) });
+  it("sem receita na DRE nos 12 meses: avisa que a margem fica indefinida e leva à DRE mensal", async () => {
+    get.mockResolvedValue({ ...original, indicators: values({ window: { from: "2025-11", to: "2026-10", revenue: "0.00", months_with_revenue: 0, missing_accounts: [] }, contribution_margin: null }) });
     mount(["cash-flow:read"]);
-    expect(await screen.findByText(/Margem de contribuição incompleta: 2 entrada/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Publicar versão dos parâmetros desde 05.03.2026/ })).toBeInTheDocument();
+    expect(await screen.findByText(/Sem receita na DRE nos 12 meses anteriores/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Abrir a DRE mensal" })).toHaveAttribute("href", "/app/finance/dre/monthly");
   });
 
   it("simulação recusada pela API: mostra o motivo e permite limpar", async () => {

@@ -57,7 +57,11 @@ function KpiRows({ k }: { k: CashFlowKpis }) {
         <Kpi label="Entradas do próximo mês (líquidas)" value={m(k.next_month.in_net)} hint={`bruto ${m(k.next_month.in_gross)}`} />
         <Kpi label="Saídas do próximo mês" value={m(k.next_month.out)} hint="sem o IR (já descontado das entradas)" />
         <Kpi label="Previsto não confirmado" value={m(k.proposed.amount)} hint={`${k.proposed.count} parcela(s) proposta(s)`} tone={k.proposed.count ? "warning" : undefined} />
-        <Kpi label={`Total do ano ${k.year.reference}`} value={m(k.year.total)} hint={`entradas ${m(k.year.in)} − saídas ${m(k.year.out)} (com IR)`} />
+        {k.year.dre_total != null ? (
+          <Kpi label={`Total previsto ${k.year.reference} (DRE)`} value={m(k.year.dre_total)} hint={`resultado da DRE jan–dez · fluxo do ano: ${m(k.year.total)}`} />
+        ) : (
+          <Kpi label={`Total do ano ${k.year.reference}`} value={m(k.year.total)} hint={`entradas ${m(k.year.in)} − saídas ${m(k.year.out)} (com IR)`} />
+        )}
         <Kpi label={`A receber em ${k.year.reference} (líquido)`} value={m(k.year.in_open_net)} />
         <Kpi label={`A pagar em ${k.year.reference}`} value={m(k.year.out_open)} hint="sem o IR" />
       </div>

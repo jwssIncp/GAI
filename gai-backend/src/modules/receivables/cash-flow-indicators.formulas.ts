@@ -39,7 +39,10 @@ export const ratio = (part: string, base: string): bigint | null => {
 
 export interface MarginInput {
   revenue: string;
-  incomeTax: string;
+  /** Valor de IR da janela; ignorado se `incomeTaxPct` vier. */
+  incomeTax?: string;
+  /** % de IR do parâmetro (como o INVESTOR: pctLiq). */
+  incomeTaxPct?: string;
   fieldAgents: string;
   nonReimbursable: string;
   commissions: string;
@@ -52,8 +55,11 @@ export interface MarginInput {
  * %Sócio × (1 − %IR/100); MCe = MC + %NãoReemb. Sem receita na janela: nulo.
  */
 export function contributionMargin(i: MarginInput) {
-  const ir = ratio(i.incomeTax, i.revenue);
-  if (ir === null) return null;
+  if (cents(i.revenue) === 0n) return null;
+  const ir =
+    i.incomeTaxPct !== undefined
+      ? pctUnits(i.incomeTaxPct)
+      : ratio(i.incomeTax ?? '0.00', i.revenue)!;
   const agents = ratio(i.fieldAgents, i.revenue)!;
   const nonReimb = ratio(i.nonReimbursable, i.revenue)!;
   const commission = ratio(i.commissions, i.revenue)!;
@@ -89,6 +95,8 @@ export function fixedCostMonthly(p: {
   branch: string;
   modes: Record<string, FixedCostMode>;
   amounts: Record<string, string>;
+  /** Média de 3 meses da DRE por item (nulo = sem conta associada na DRE). */
+  averages?: Record<string, string | null>;
 }) {
   const LABEL: Record<string, string> = {
     additional_income_tax: 'Adicional de IR',
@@ -122,13 +130,21 @@ export function fixedCostMonthly(p: {
           }
         : mode === 'zero'
           ? { key, label: LABEL[key], mode, amount: '0.00', available: true }
-          : {
-              key,
-              label: LABEL[key],
-              mode,
-              amount: null as string | null,
-              available: false,
-            };
+          : p.averages?.[key] != null
+            ? {
+                key,
+                label: LABEL[key],
+                mode,
+                amount: money(cents(p.averages[key])),
+                available: true,
+              }
+            : {
+                key,
+                label: LABEL[key],
+                mode,
+                amount: null as string | null,
+                available: false,
+              };
     }),
   ];
   const total = items.reduce(

@@ -58,6 +58,9 @@ import {
   scaled,
 } from './dre.policy';
 import type { DreReport } from './dre.report';
+import { DreRecognitionRuleEntity } from './dre-monthly.entities';
+import { DreMonthlyService } from './dre-monthly.service';
+import { civilToday } from '../finance-settings/finance-settings.policy';
 const SOURCE_READS = ['receivables:read', 'expenses:read', 'payments:read'];
 const sourcePermission = (kind: string): string | undefined =>
   Object.assign({} as Record<string, string>, {
@@ -78,7 +81,11 @@ export class DreService {
     readonly ds: DataSource,
     private readonly scope: ProjectScopeService,
     @Inject(PERMISSION_RESOLVER) private readonly resolver: PermissionResolver,
+    private readonly monthly: DreMonthlyService,
   ) {}
+  resolverPort(): PermissionResolver {
+    return this.resolver;
+  }
   org(actor: ProjectActorContext, requested?: number) {
     const org = this.scope.resolveOrganizationFilter(actor, requested);
     if (org == null) invalid('Informe a organização.');
@@ -98,7 +105,7 @@ export class DreService {
     )
       invalid('Projeto fora da organização.');
   }
-  private async command(
+  async command(
     f: DreScopeDto,
     dto: DreCommandDto,
     actor: ProjectActorContext,
@@ -249,6 +256,16 @@ export class DreService {
       if (!a) throw new NotFoundException('Conta não encontrada.');
       if (a.revision !== dto.revision) conflict('Conta alterada. Atualize.');
       if (dto.name.trim().length < 3) invalid('Nome obrigatório.');
+      if (
+        !dto.active &&
+        a.data.active &&
+        (await m.exists(DreRecognitionRuleEntity, {
+          where: { organizationId: org, accountId: id },
+        }))
+      )
+        conflict(
+          'A conta recebe valores automáticos ou faz um papel na projeção da DRE mensal. Troque a conta em Configurar antes de excluí-la.',
+        );
       a.revision++;
       a.data = { ...a.data, name: dto.name.trim(), active: dto.active };
       await m
@@ -846,6 +863,8 @@ export class DreService {
         allow_incomplete: dto.allow_incomplete,
         snapshot: report as unknown as Record<string, unknown>,
         hash: hash(report),
+        // Coluna do mês da DRE mensal, congelada: nada recalcula mês fechado.
+        grid: (await this.monthly.column(org, c, civilToday())) ?? undefined,
       };
       if (!p) {
         p = await m.save(

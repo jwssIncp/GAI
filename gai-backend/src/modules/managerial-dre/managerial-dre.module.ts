@@ -6,9 +6,19 @@ import { ExportJobsModule } from '../export-jobs/export-jobs.module';
 import { DreController } from './dre.controller';
 import { DreService } from './dre.service';
 import { DreExportService } from './dre-export.service';
+import { DreMonthlyController } from './dre-monthly.controller';
+import {
+  DreMonthlyCommandsService,
+  DreMonthlyViewService,
+} from './dre-monthly-commands.service';
 @Module({
   imports: [AuthModule, ProjectsModule, ReceivablesModule, ExportJobsModule],
-  controllers: [DreController],
-  providers: [DreService, DreExportService],
+  controllers: [DreController, DreMonthlyController],
+  providers: [
+    DreService,
+    DreExportService,
+    DreMonthlyCommandsService,
+    DreMonthlyViewService,
+  ],
 })
 export class ManagerialDreModule {}

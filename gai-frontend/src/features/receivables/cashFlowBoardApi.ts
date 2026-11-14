@@ -29,7 +29,8 @@ export type CashFlowKpis = {
   currency: string;
   month: { reference: string; in_realized: string; in_open: string; out_realized: string; out_open: string; total: string };
   next_month: { reference: string; in_gross: string; in_net: string; out: string; total: string };
-  year: { reference: string; in: string; out: string; total: string; in_open_net: string; out_open: string };
+  /** total = fluxo do ano; dre_total = resultado final da DRE mensal jan–dez (etapa 9). */
+  year: { reference: string; in: string; out: string; total: string; in_open_net: string; out_open: string; dre_total?: string | null };
   overdue: { in: string; in_count: number; out: string; out_count: number };
   proposed: { amount: string; count: number };
 };
@@ -76,7 +77,7 @@ export const monthBr = (value: string) => value.split("-").reverse().join("/");
 
 export type FixedCostItem = { key: string; label: string; mode: string; amount: string | null; available: boolean };
 export type CashFlowIndicatorValues = {
-  window: { from: string; to: string; revenue: string; missing_tax: { count: number; amount: string; since: string | null } };
+  window: { from: string; to: string; revenue: string; months_with_revenue: number; missing_accounts: string[] };
   contribution_margin: {
     mc: string;
     mce: string;
@@ -87,9 +88,9 @@ export type CashFlowIndicatorValues = {
     partner_effective_pct: string;
   } | null;
   fixed_cost: { items: FixedCostItem[]; total: string; year: string; unavailable: string[] };
-  cash_year_result: string;
+  dre: { year: string; revenue: string; operating_result: string; final_result: string; estimates: number; cash_flow_total: string };
   operating_result: string;
-  partner_commission: { pct: string; quarters: string[]; operating_by_quarter: string[]; year: string };
+  partner_commission: { pct: string; quarters: string[]; operating_by_quarter: string[]; year: string; account_missing: boolean };
   projected_result: string;
   year_revenue: string;
   accounting_break_even: string | null;
@@ -98,7 +99,7 @@ export type CashFlowIndicatorValues = {
   net_margin: string | null;
   average_collection_days: string | null;
   collection_since: string;
-  depends_on_dre: string[];
+  notes: string[];
 };
 export type SaleSimulationInput = { value: string; signal_month: string; second_month: string; third_month: string; company_expenses: boolean };
 export type CashFlowIndicators =

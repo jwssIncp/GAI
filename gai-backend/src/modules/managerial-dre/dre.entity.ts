@@ -138,6 +138,8 @@ export interface PeriodData {
   allow_incomplete: boolean;
   snapshot: Record<string, unknown>;
   hash: string;
+  /** Coluna congelada da DRE mensal (id da conta → valor). */
+  grid?: Record<string, string>;
 }
 @Entity('dre_periods')
 @Index('uq_dre_period', ['organizationId', 'month'], { unique: true })

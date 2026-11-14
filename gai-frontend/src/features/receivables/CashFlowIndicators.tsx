@@ -6,7 +6,6 @@ import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { formatMoney } from "@/utils/format";
 import {
   indicatorsApi,
@@ -96,13 +95,12 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
           </span>
         </p>
       ) : null}
-      {o.window.missing_tax.count ? (
+      {o.window.months_with_revenue === 0 || o.window.missing_accounts.length ? (
         <p role="status" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
-          Margem de contribuição incompleta: {o.window.missing_tax.count} entrada(s) da janela ({formatMoney(o.window.missing_tax.amount)}) sem IR, por falta de
-          parâmetro vigente na data.{" "}
-          <Link className="font-semibold underline" to={retroactiveSettingsUrl(o.window.missing_tax.since!)}>
-            Publicar versão dos parâmetros desde {o.window.missing_tax.since!.split("-").reverse().join("/")}
-          </Link>
+          {o.window.months_with_revenue === 0
+            ? "Sem receita na DRE nos 12 meses anteriores: margem de contribuição e pontos de equilíbrio indefinidos. "
+            : "Margem de contribuição sem alguma conta associada na DRE (o % fica zero). "}
+          <Link className="font-semibold underline" to="/app/finance/dre/monthly">Abrir a DRE mensal</Link>
         </p>
       ) : null}
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -110,14 +108,14 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
           <>
             <IndicatorCard label={`Total previsto ${monthBr(data.kpis.month.reference)}`} value={formatMoney(data.kpis.month.total)} simulated={formatMoney(sk.month.total)} delta={delta ? formatMoney(delta.month_total) : null} />
             <IndicatorCard label={`Total previsto ${monthBr(data.kpis.next_month.reference)}`} value={formatMoney(data.kpis.next_month.total)} simulated={formatMoney(sk.next_month.total)} delta={delta ? formatMoney(delta.next_month_total) : null} />
-            <IndicatorCard label={`Total do ano ${data.kpis.year.reference}`} value={formatMoney(data.kpis.year.total)} simulated={formatMoney(sk.year.total)} delta={delta ? formatMoney(delta.year_total) : null} />
+            <IndicatorCard label={`Total previsto ${data.kpis.year.reference} (DRE)`} value={formatMoney(data.kpis.year.dre_total ?? "0.00")} simulated={formatMoney(sk.year.dre_total ?? "0.00")} delta={delta ? formatMoney(delta.year_total) : null} />
           </>
         ) : null}
         <IndicatorCard
           label="Resultado projetado do ano"
           {...pick((i) => i.projected_result, money)}
           delta={delta ? formatMoney(delta.projected_result) : null}
-          hint="fluxo do ano − custo fixo × 12 − comissão do sócio"
+          hint={`resultado final da DRE jan–dez (${o.dre.estimates} estimativa(s))`}
         />
         <IndicatorCard
           label="Ponto de equilíbrio contábil"
@@ -164,7 +162,7 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
                 {o.fixed_cost.items.map((i) => (
                   <tr key={i.key}>
                     <td>{i.label}</td>
-                    <td className="text-right tabular-nums">{i.available ? formatMoney(i.amount) : <span className="text-warning">indisponível (média DRE)</span>}</td>
+                    <td className="text-right tabular-nums">{i.available ? formatMoney(i.amount) : <span className="text-warning">sem conta na DRE</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -182,9 +180,9 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
             </table>
           </div>
           <div>
-            <p className="font-semibold">Enquanto a DRE (etapa 9) não existe</p>
+            <p className="font-semibold">Base: DRE mensal {o.dre.year}</p>
             <ul className="mt-1 list-disc pl-5 text-muted-foreground">
-              {o.depends_on_dre.map((t) => <li key={t}>{t}</li>)}
+              {o.notes.map((t) => <li key={t}>{t}</li>)}
             </ul>
           </div>
         </div>

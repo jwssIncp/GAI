@@ -3,6 +3,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { TECHNICAL_REPORT_ENTITIES } from './modules/technical-reports/report.entity';
 import { TechnicalReportsModule } from './modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from './modules/managerial-dre/dre.entity';
+import { DRE_MONTHLY_ENTITIES } from './modules/managerial-dre/dre-monthly.entities';
 import { ManagerialDreModule } from './modules/managerial-dre/managerial-dre.module';
 import {
   AssetTagOrderAuditLogEntity,
@@ -206,6 +207,7 @@ import { UsersModule } from './modules/users/users.module';
           ...BUDGET_ENTITIES,
           ...RECEIVABLE_ENTITIES,
           ...DRE_ENTITIES,
+          ...DRE_MONTHLY_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
           FinanceSettingsVersionEntity,

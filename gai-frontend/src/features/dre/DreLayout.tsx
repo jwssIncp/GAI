@@ -3,12 +3,13 @@ import { NavLink, Outlet, useSearchParams } from "react-router-dom";
 export function DreLayout() {
   const [p] = useSearchParams();
   return (
-    <section className="grid gap-4">
+    <section className="grid min-w-0 gap-4">
       <nav
         className="section-navigation"
         aria-label="Navegação da DRE"
       >
         {[
+          ["monthly", "DRE mensal"],
           ["", "Demonstrativo"],
           ["entries", "Classificações e ajustes"],
           ["accounts", "Plano de contas"],

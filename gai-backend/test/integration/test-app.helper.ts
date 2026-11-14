@@ -6,6 +6,7 @@ import { DocumentsModule } from '../../src/modules/documents/documents.module';
 import { TECHNICAL_REPORT_ENTITIES } from '../../src/modules/technical-reports/report.entity';
 import { TechnicalReportsModule } from '../../src/modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from '../../src/modules/managerial-dre/dre.entity';
+import { DRE_MONTHLY_ENTITIES } from '../../src/modules/managerial-dre/dre-monthly.entities';
 import { ManagerialDreModule } from '../../src/modules/managerial-dre/managerial-dre.module';
 import {
   AssetTagOrderAuditLogEntity,
@@ -245,6 +246,7 @@ export async function createTestApp(
           ...BUDGET_ENTITIES,
           ...RECEIVABLE_ENTITIES,
           ...DRE_ENTITIES,
+          ...DRE_MONTHLY_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
           FinanceSettingsVersionEntity,

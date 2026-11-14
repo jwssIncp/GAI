@@ -34,6 +34,8 @@ import {
 } from '../auth/presentation/guards/session-auth.guard';
 import { CashFlowBoardService } from './cash-flow-board.service';
 import { CashFlowIndicatorsService } from './cash-flow-indicators.service';
+import { ReceivableService } from './receivable.service';
+import { DreMonthlyService } from '../managerial-dre/dre-monthly.service';
 
 export class CashFlowBoardQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) organization_id?: number;
@@ -109,6 +111,8 @@ export class CashFlowBoardController {
   constructor(
     private readonly board: CashFlowBoardService,
     private readonly indicatorsService: CashFlowIndicatorsService,
+    private readonly receivables: ReceivableService,
+    private readonly monthly: DreMonthlyService,
   ) {}
 
   private actor(req: Request) {
@@ -117,8 +121,22 @@ export class CashFlowBoardController {
 
   @Get('board')
   @RequirePermissions('cash-flow:read')
-  get(@Query() q: CashFlowBoardQueryDto, @Req() req: Request) {
-    return this.board.board(q, this.actor(req));
+  async get(@Query() q: CashFlowBoardQueryDto, @Req() req: Request) {
+    const b = await this.board.board(q, this.actor(req));
+    // Total do ano = resultado final da DRE mensal jan–dez (como o INVESTOR);
+    // o total do fluxo continua em year.total.
+    const org = this.receivables.org(this.actor(req), q.organization_id);
+    const grid = await this.monthly.grid(org, b.reference.year, b.as_of);
+    const dreTotal =
+      grid?.lines.find((l) => l.key === 'final_result')?.total ?? null;
+    return {
+      ...b,
+      kpis: b.kpis.map((k) =>
+        k.currency === 'BRL'
+          ? { ...k, year: { ...k.year, dre_total: dreTotal } }
+          : k,
+      ),
+    };
   }
 
   /** Indicadores (etapa 8) e, com os campos sim_*, a simulação de venda (não grava). */

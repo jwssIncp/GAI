@@ -4,7 +4,6 @@ import { civilToday } from '../finance-settings/finance-settings.policy';
 import type { ProjectActorContext } from '../projects/application/services/project-scope.service';
 import { CashFlowBoardService } from './cash-flow-board.service';
 import {
-  addMonths,
   cashFlowKpis,
   cents,
   type FlowItem,
@@ -19,11 +18,17 @@ import {
   economicBreakEven,
   fixedCostMonthly,
   netMargin,
-  partnerCommission,
   pctOf,
   saleResult,
 } from './cash-flow-indicators.formulas';
 import { ReceivableService } from './receivable.service';
+import { DreMonthlyService } from '../managerial-dre/dre-monthly.service';
+import {
+  average3,
+  buildGrid,
+  type GridContext,
+  windowShares,
+} from '../managerial-dre/dre-monthly.formulas';
 
 export interface SaleSimulation {
   value: string;
@@ -35,27 +40,15 @@ export interface SaleSimulation {
 
 const sum = (items: FlowItem[]) =>
   money(items.reduce((s, i) => s + cents(i.gross), 0n));
-const net = (items: FlowItem[]) =>
-  money(
-    items.reduce(
-      (s, i) => s + (i.direction === 'in' ? cents(i.gross) : -cents(i.gross)),
-      0n,
-    ),
-  );
 
-/**
- * Indicadores (doc 06 §7.4, etapa 8), calculados a partir dos mesmos movimentos
- * do fluxo de caixa. Enquanto a DRE (etapa 9) não existe: a janela de 12 meses
- * usa o realizado do fluxo (caixa, não competência), o resultado projetado do
- * ano é o resultado do fluxo menos o custo fixo dos parâmetros nos 12 meses, e
- * os itens de custo fixo em "média de 3 meses da DRE" ficam indisponíveis.
- */
+/** Indicadores do fluxo de caixa (doc 06 §7.4) sobre a DRE mensal. */
 @Injectable()
 export class CashFlowIndicatorsService {
   constructor(
     private readonly board: CashFlowBoardService,
     private readonly receivables: ReceivableService,
     private readonly settings: FinanceSettingsService,
+    private readonly monthly: DreMonthlyService,
   ) {}
 
   async indicators(
@@ -96,7 +89,16 @@ export class CashFlowIndicatorsService {
         (!q.project_id || i.project_id === q.project_id),
     );
     const ref = { month, year };
-    const { internals, ...original } = this.compute(all, params, ref);
+    const dre = await this.monthly.context(org, today);
+    if (!dre)
+      return { configured: false as const, as_of: today, reference: ref };
+    const { internals, ...original } = this.compute(
+      all,
+      params,
+      ref,
+      dre.ctx,
+      Boolean(q.project_id),
+    );
     if (!simulation)
       return {
         configured: true as const,
@@ -110,7 +112,7 @@ export class CashFlowIndicatorsService {
       throw new BadRequestException({
         code: 'SIMULATION_NO_HISTORY',
         message:
-          'Sem receita recebida nos 12 meses anteriores: não há % histórico de inventariantes e despesas para simular a venda.',
+          'Sem receita na DRE dos 12 meses anteriores: não há % histórico de inventariantes e despesas para simular a venda.',
       });
     const mu = internals.margin.units;
     const extra = await this.simulate(org, simulation, today, mu);
@@ -134,7 +136,7 @@ export class CashFlowIndicatorsService {
     const projected = money(cents(internals.result) + cents(effect.result));
     const yearRevenue = money(cents(internals.yearRevenue) + cents(yearSale));
     const yearTotal = money(
-      cents(original.kpis.year.total) + cents(effect.result),
+      cents(original.kpis.year.dre_total) + cents(effect.result),
     );
     const delta = (a: string | null, b: string | null) =>
       a === null || b === null ? null : money(cents(b) - cents(a));
@@ -163,7 +165,7 @@ export class CashFlowIndicatorsService {
           ...original.kpis,
           month: moved.month,
           next_month: moved.next_month,
-          year: { ...original.kpis.year, total: yearTotal },
+          year: { ...original.kpis.year, dre_total: yearTotal },
         },
         indicators: {
           ...original.indicators,
@@ -196,74 +198,72 @@ export class CashFlowIndicatorsService {
     };
   }
 
+  /**
+   * Indicadores sobre a DRE mensal (etapa 9), como o INVESTOR:
+   * - janela dos % (inventariantes, não reembolsáveis, comissões): os 12 meses
+   *   anteriores ao mês corrente com receita, sobre a receita bruta da DRE;
+   *   IR pelo % do parâmetro;
+   * - resultado projetado e total do ano = resultado final da DRE jan–dez
+   *   (realizado + fluxo + estimativas, sem gravar estimativa);
+   * - comissão do sócio por trimestre a partir da DRE;
+   * - itens de custo fixo em "média de 3 meses" pela DRE.
+   */
   private compute(
     items: FlowItem[],
     p: Awaited<ReturnType<FinanceSettingsService['valuesAt']>>,
     ref: { month: string; year: string },
+    ctx: GridContext,
+    projectFiltered: boolean,
   ) {
     const live = items.filter((i) => i.status !== 'reversed');
-    const [kpis] = cashFlowKpis(live, ref).filter((k) => k.currency === 'BRL');
-    // Janela: os 12 meses anteriores ao mês de referência (realizado do fluxo).
-    const start = addMonths(`${ref.month}-01`, -12);
-    const end = `${ref.month}-01`;
-    const win = live.filter(
-      (i) => i.status === 'realized' && i.date >= start && i.date < end,
+    const [flowKpis] = cashFlowKpis(live, ref).filter(
+      (k) => k.currency === 'BRL',
     );
-    const revenue = sum(
-      win.filter((i) => i.direction === 'in' && i.group === 'billing'),
-    );
-    // Entradas da janela sem IR (sem parâmetro vigente na data): a margem fica
-    // incompleta — sinalizada, nunca escondida.
-    const taxed = new Set(
-      items.filter((i) => i.origin === 'income_tax').map((i) => i.key),
-    );
-    const untaxed = win.filter(
-      (i) =>
-        i.direction === 'in' &&
-        i.group === 'billing' &&
-        !taxed.has(`ir:${i.key}`),
-    );
+    const grid = buildGrid(ctx, ref.year);
+    const line = (key: string) => grid.lines.find((l) => l.key === key)!;
+    const ruleTotal = (kind: keyof GridContext['rules']) => {
+      const a = grid.accounts.find((x) => x.id === ctx.rules[kind]);
+      return a ? a.total : '0.00';
+    };
+    const win = windowShares(ctx);
     const margin = contributionMargin({
-      revenue,
-      incomeTax: sum(win.filter((i) => i.origin === 'income_tax')),
-      fieldAgents: sum(win.filter((i) => i.origin === 'field_agent_payment')),
-      nonReimbursable: sum(
-        win.filter(
-          (i) => i.origin === 'expense' && i.group === 'non_reimbursable',
-        ),
-      ),
-      commissions: sum(win.filter((i) => i.origin === 'commission')),
+      revenue: win.revenue,
+      incomeTaxPct: p.income_tax_pct,
+      fieldAgents: win.field_agents,
+      nonReimbursable: win.non_reimbursable,
+      commissions: win.commissions,
       partnerPct: p.partner_commission_pct,
     });
+    const averages: Record<string, string | null> = {};
+    for (const key of ['additional_income_tax', 'equipment', 'back_office']) {
+      const a = ctx.accounts.find(
+        (x) => x.id === ctx.rules[key as keyof GridContext['rules']],
+      );
+      averages[key] = a ? money(average3(ctx, a)) : null;
+    }
     const fixed = fixedCostMonthly({
       operation: p.fixed_cost_operation,
       branch: p.fixed_cost_branch,
       modes: { ...p.fixed_cost_item_modes },
       amounts: { ...(p.fixed_cost_item_amounts ?? {}) },
+      averages,
     });
-    const inYear = live.filter((i) => i.date.startsWith(ref.year));
-    const cashYear = net(inYear);
-    const quarters = [0, 1, 2, 3].map((qi) => {
-      const months = [1, 2, 3].map(
-        (m) => `${ref.year}-${String(qi * 3 + m).padStart(2, '0')}`,
+    const quarterSum = (values: string[]) =>
+      [0, 1, 2, 3].map((q) =>
+        money(
+          values.slice(q * 3, q * 3 + 3).reduce((s, v) => s + cents(v), 0n),
+        ),
       );
-      const cash = net(
-        inYear.filter((i) => months.includes(i.date.slice(0, 7))),
-      );
-      return money(cents(cash) - 3n * cents(fixed.total));
-    });
-    const partner = partnerCommission(quarters, p.partner_commission_pct);
-    const operating = money(cents(cashYear) - 12n * cents(fixed.total));
-    const result = money(cents(operating) - cents(partner.year));
-    const yearRevenue = sum(
-      inYear.filter((i) => i.direction === 'in' && i.group === 'billing'),
+    const partnerAccount = grid.accounts.find(
+      (a) => a.id === ctx.rules.partner_commission,
     );
-    // Não reembolsáveis do ano (inclui as despesas da venda simulada, se houver).
-    const nonReimbYear = sum(
-      inYear.filter(
-        (i) => i.origin === 'expense' && i.group === 'non_reimbursable',
-      ),
-    );
+    const partnerQuarters = partnerAccount
+      ? quarterSum(partnerAccount.cells.map((c) => c.value))
+      : ['0.00', '0.00', '0.00', '0.00'];
+    const result = line('final_result').total;
+    const yearRevenue = line('revenue').total;
+    const nonReimbYear = ruleTotal('non_reimbursable_expenses');
+    const kpis = { ...flowKpis, year: { ...flowKpis.year, dre_total: result } };
     const cutoff = `${p.dre_regime_cutoff_month}-01`;
     const receipts = live
       .filter(
@@ -289,14 +289,11 @@ export class CashFlowIndicatorsService {
       kpis,
       indicators: {
         window: {
-          from: start.slice(0, 7),
-          to: addMonths(end, -1).slice(0, 7),
-          revenue,
-          missing_tax: {
-            count: untaxed.length,
-            amount: sum(untaxed),
-            since: untaxed.length ? untaxed.map((i) => i.date).sort()[0] : null,
-          },
+          from: win.from,
+          to: win.to,
+          revenue: win.revenue,
+          months_with_revenue: win.months_with_revenue,
+          missing_accounts: win.missing,
         },
         contribution_margin: margin
           ? {
@@ -310,13 +307,21 @@ export class CashFlowIndicatorsService {
             }
           : null,
         fixed_cost: { ...fixed, year: money(12n * cents(fixed.total)) },
-        cash_year_result: cashYear,
-        operating_result: operating,
+        dre: {
+          year: ref.year,
+          revenue: yearRevenue,
+          operating_result: line('operating_result').total,
+          final_result: result,
+          estimates: grid.estimates,
+          cash_flow_total: flowKpis.year.total,
+        },
+        operating_result: line('operating_result').total,
         partner_commission: {
           pct: p.partner_commission_pct,
-          quarters: partner.quarters,
-          operating_by_quarter: quarters,
-          year: partner.year,
+          quarters: partnerQuarters,
+          operating_by_quarter: quarterSum(line('operating_result').values),
+          year: money(partnerQuarters.reduce((s, v) => s + cents(v), 0n)),
+          account_missing: !partnerAccount,
         },
         projected_result: result,
         year_revenue: yearRevenue,
@@ -340,15 +345,20 @@ export class CashFlowIndicatorsService {
         ),
         average_collection_days: averageCollectionDays(receipts),
         collection_since: cutoff,
-        depends_on_dre: [
-          'Janela da margem de contribuição pelo realizado do fluxo (caixa), não por competência.',
-          'Resultado projetado = resultado do fluxo no ano − custo fixo dos parâmetros nos 12 meses − comissão do sócio.',
+        notes: [
+          `Resultado projetado = resultado final da DRE mensal de ${ref.year} (jan–dez): lançado, fluxo a partir de ${p.dre_regime_cutoff_month.split('-').reverse().join('/')} e ${grid.estimates} estimativa(s) dos meses abertos (não gravadas).`,
+          'Margem de contribuição: % de inventariantes, não reembolsáveis e comissões dos 12 meses anteriores com receita na DRE; IR pelo parâmetro.',
           ...(fixed.unavailable.length
             ? [
-                `Itens de custo fixo em "média de 3 meses da DRE" indisponíveis até a etapa 9: ${fixed.items
+                `Sem conta associada na DRE para a média de 3 meses: ${fixed.items
                   .filter((i) => !i.available)
                   .map((i) => i.label)
-                  .join(', ')}.`,
+                  .join(', ')}. Associe em DRE mensal › Configurar.`,
+              ]
+            : []),
+          ...(projectFiltered
+            ? [
+                'Filtro de projeto: os valores da DRE são da organização inteira.',
               ]
             : []),
         ],

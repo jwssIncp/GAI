@@ -890,6 +890,15 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 9: importar planilha da DRE mensal.
+PERMISSION_SEEDS.push({
+  key: 'dre:import',
+  resource: 'dre',
+  action: 'import',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'DRE: importar planilha do ano (com pré-visualização)',
+});
+
 // Paridade financeira, etapa 8: simular venda nos indicadores do fluxo de caixa.
 PERMISSION_SEEDS.push({
   key: 'cash-flow:simulate',
