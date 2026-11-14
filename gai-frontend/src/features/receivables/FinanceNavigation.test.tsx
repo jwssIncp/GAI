@@ -12,6 +12,10 @@ import { cashFlowApi } from "./cashFlowBoardApi";
 vi.mock("./cashFlowBoardApi", async (original) => ({
   ...(await original<typeof import("./cashFlowBoardApi")>()),
   cashFlowApi: { board: vi.fn() },
+  // Indicadores do fluxo (etapa 8): sem parâmetros vigentes, sem rede.
+  indicatorsApi: {
+    get: vi.fn(async () => ({ configured: false, as_of: "2026-11-14", reference: { month: "2026-11", year: "2026" } })),
+  },
 }));
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: 2, organization_id: 1 } }),

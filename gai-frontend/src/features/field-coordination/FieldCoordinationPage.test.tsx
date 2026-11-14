@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
+import { projectsApi } from "@/api/endpoints";
 import { ProjectLayout } from "@/features/projects/ProjectLayout";
 import type { CurrentUser } from "@/types/api";
 import {
@@ -176,8 +177,14 @@ function setup(keys = ["read", "edit", "coordinate"]) {
     </QueryClientProvider>,
   );
 }
+// O layout do projeto busca o painel (e a tela, o cadastro). Sem simulação, a
+// busca ia por HTTP real à origem do jsdom (localhost:3000) e o resultado
+// dependia do que estivesse rodando ali. Mesmo efeito do CI, sem rede:
+const offline = () => Promise.reject(new Error("sem rede no teste"));
 beforeEach(() => {
   vi.restoreAllMocks();
+  vi.spyOn(projectsApi, "dashboard").mockImplementation(offline);
+  vi.spyOn(projectsApi, "get").mockImplementation(offline);
   vi.spyOn(fieldApi, "context").mockResolvedValue(context);
   vi.spyOn(fieldApi, "list").mockResolvedValue({
     items: [row],
