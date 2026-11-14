@@ -20,6 +20,8 @@ const previousTabs: Array<[path: string, permissions: string[]]> = [
   // "Remuneração" (diárias) e "Despesas"; ?tab=payments redireciona para Remuneração.
   ["finance", ["expenses:read"]],
   ["finance/remuneration", ["payments:read"]],
+  // Etapa 5: Placas do projeto = tela global filtrada pelo projeto.
+  ["/app/finance/asset-tags?project_id=7", ["asset-tag-orders:read"]],
   ["/app/finance/dre?project_id=7", ["dre:read"]],
   ["/app/finance/receivables?project_id=7", ["receivables:read"]],
   ["/app/finance/cash-flow?project_id=7", ["cash-flow:read"]],
@@ -56,6 +58,7 @@ describe("Navegação do projeto em dois níveis", () => {
     ]);
     expect(tabs.filter((tab) => tab.external).map((tab) => tab.label)).toEqual([
       "Orçamentos",
+      "Placas",
       "Recebíveis",
       "Fluxo de caixa",
       "DRE Gerencial",

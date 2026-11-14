@@ -7,6 +7,11 @@ import { TECHNICAL_REPORT_ENTITIES } from '../../src/modules/technical-reports/r
 import { TechnicalReportsModule } from '../../src/modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from '../../src/modules/managerial-dre/dre.entity';
 import { ManagerialDreModule } from '../../src/modules/managerial-dre/managerial-dre.module';
+import {
+  AssetTagOrderAuditLogEntity,
+  AssetTagOrderEntity,
+  AssetTagsModule,
+} from '../../src/modules/asset-tags/asset-tags.module';
 import { RECEIVABLE_ENTITIES } from '../../src/modules/receivables/receivable.entity';
 import { ReceivablesModule } from '../../src/modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from '../../src/modules/budgets/budget.entity';
@@ -236,6 +241,8 @@ export async function createTestApp(
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
           FinanceSettingsVersionEntity,
+          AssetTagOrderEntity,
+          AssetTagOrderAuditLogEntity,
           ImportSessionEntity,
           ImportPayloadEntity,
           ImportPayloadErrorEntity,
@@ -278,6 +285,7 @@ export async function createTestApp(
       BudgetsModule,
       ReceivablesModule,
       ManagerialDreModule,
+      AssetTagsModule,
       TechnicalReportsModule,
       DocumentsModule,
       AssistedReconciliationModule,

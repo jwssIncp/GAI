@@ -39,6 +39,7 @@ const breadcrumbLabels: Record<string, string> = {
   remuneration: 'Remuneração',
   'field-agent-payments': 'Pagamento de inventariantes',
   expenses: 'Despesas',
+  'asset-tags': 'Placas de patrimônio',
   new:'Novo',
   'import-sessions': 'Importações',
   'export-jobs': 'Exportações',

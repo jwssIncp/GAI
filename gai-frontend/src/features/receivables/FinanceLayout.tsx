@@ -17,6 +17,10 @@ const PAGES: Record<string, [title: string, description: string]> = {
     "Despesas",
     "Despesas por projeto: a reembolsar, reembolsáveis e não reembolsáveis, com o financeiro concluído ou não.",
   ],
+  "asset-tags": [
+    "Placas de patrimônio",
+    "Compra de plaquetas do fornecedor e revenda ao cliente: custo, valor, líquido de impostos e lucro.",
+  ],
   parameters: [
     "Parâmetros financeiros",
     "Valores usados nos cálculos financeiros da organização: impostos, comissões, diária padrão, custos fixos, listas e limites de anexo. Nenhum cálculo usa valor fixo no sistema: sem versão vigente, as telas que dependem destes parâmetros pedem a configuração.",

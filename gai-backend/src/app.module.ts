@@ -4,6 +4,11 @@ import { TECHNICAL_REPORT_ENTITIES } from './modules/technical-reports/report.en
 import { TechnicalReportsModule } from './modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from './modules/managerial-dre/dre.entity';
 import { ManagerialDreModule } from './modules/managerial-dre/managerial-dre.module';
+import {
+  AssetTagOrderAuditLogEntity,
+  AssetTagOrderEntity,
+  AssetTagsModule,
+} from './modules/asset-tags/asset-tags.module';
 import { RECEIVABLE_ENTITIES } from './modules/receivables/receivable.entity';
 import { ReceivablesModule } from './modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from './modules/budgets/budget.entity';
@@ -197,6 +202,8 @@ import { UsersModule } from './modules/users/users.module';
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
           FinanceSettingsVersionEntity,
+          AssetTagOrderEntity,
+          AssetTagOrderAuditLogEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -238,6 +245,7 @@ import { UsersModule } from './modules/users/users.module';
     ReceivablesModule,
     FinanceSettingsModule,
     ManagerialDreModule,
+    AssetTagsModule,
     TechnicalReportsModule,
     DocumentsModule,
     AssistedReconciliationModule,

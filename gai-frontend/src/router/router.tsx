@@ -15,6 +15,7 @@ import { FinanceSettingsPage } from "@/features/finance-settings/FinanceSettings
 import { RemunerationProjectsPage } from "@/features/remuneration/RemunerationProjectsPage";
 import { FieldAgentPaymentsPage } from "@/features/field-agent-payments/FieldAgentPaymentsPage";
 import { ExpenseProjectsPage } from "@/features/expenses/ExpenseProjectsPage";
+import { AssetTagsPage } from "@/features/asset-tags/AssetTagsPage";
 import { projectRoute } from "./projectRoutes";
 import { BudgetLayout } from "@/features/budgets/BudgetLayout";
 import { BudgetsPage } from "@/features/budgets/BudgetsPage";
@@ -176,6 +177,7 @@ export const router = createBrowserRouter([
                   { path: "remuneration", element: <RemunerationProjectsPage /> },
                   { path: "field-agent-payments", element: <FieldAgentPaymentsPage /> },
                   { path: "expenses", element: <ExpenseProjectsPage /> },
+                  { path: "asset-tags", element: <AssetTagsPage /> },
                 ],
               },
             ],

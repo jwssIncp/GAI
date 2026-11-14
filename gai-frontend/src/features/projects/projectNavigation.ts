@@ -76,6 +76,7 @@ export function projectTabGroups(projectId: string): ProjectTabGroup[] {
         { id: "remuneration", label: "Remuneração", path: "finance/remuneration", permissions: ["payments:read"] },
         { id: "finance", label: "Despesas", path: "finance", permissions: ["expenses:read"] },
         { id: "accountabilities", label: "Prestações", path: "finance/accountabilities", permissions: ["expense-accountabilities:read"] },
+        { id: "asset-tags", label: "Placas", path: `/app/finance/asset-tags?project_id=${projectId}`, permissions: ["asset-tag-orders:read"], external: true, hint: "Abre Placas de patrimônio (fora do projeto), filtrado por este projeto." },
         { id: "receivables", label: "Recebíveis", path: `/app/finance/receivables?project_id=${projectId}`, permissions: ["receivables:read"], external: true, hint: "Abre Recebíveis (fora do projeto), filtrado por este projeto." },
         { id: "cash-flow", label: "Fluxo de caixa", path: `/app/finance/cash-flow?project_id=${projectId}`, permissions: ["cash-flow:read"], external: true, hint: "Abre Fluxo de caixa (fora do projeto), filtrado por este projeto." },
         { id: "dre", label: "DRE Gerencial", path: `/app/finance/dre?project_id=${projectId}`, permissions: ["dre:read"], external: true, hint: "Abre a DRE Gerencial (fora do projeto), filtrada por este projeto." },

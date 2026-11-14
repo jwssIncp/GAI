@@ -890,6 +890,19 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 5: placas de patrimônio.
+for (const [key, description] of [
+  ['asset-tag-orders:read', 'Placas de patrimônio: consultar'],
+  ['asset-tag-orders:edit', 'Placas de patrimônio: lançar, editar e excluir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'asset-tag-orders',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
 // Paridade financeira, etapa 4: despesas, adiantamentos, lotes de reembolso e conclusão.
 for (const [key, description] of [
   ['expenses:delete', 'Despesas: excluir lançamento (exclusão lógica)'],
