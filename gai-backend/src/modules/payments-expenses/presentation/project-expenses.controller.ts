@@ -133,9 +133,16 @@ export class ProjectExpensesController {
     res.setHeader('X-Expenses', String(zip.expenses));
     res.setHeader('X-Attachments', String(zip.attachments));
     try {
-      await zip.write((chunk, final) => {
-        res.write(Buffer.from(chunk));
-        if (final) res.end();
+      await zip.write({
+        // Respeita a contrapressão: só lê o próximo pedaço quando a resposta drenar.
+        write: (chunk) =>
+          res.write(chunk)
+            ? Promise.resolve()
+            : new Promise<void>((resolve, reject) => {
+                res.once('drain', resolve);
+                res.once('close', () => reject(new Error('Conexão encerrada')));
+              }),
+        end: () => new Promise<void>((resolve) => res.end(resolve)),
       });
     } catch (error) {
       // Cabeçalho já enviado: só resta interromper a transferência.

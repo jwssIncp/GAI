@@ -31,8 +31,9 @@ export interface StorageSigner {
   createDownloadUrl(input: PresignedUrlInput): Promise<PresignedUrlResult>;
   verifyUpload(input: VerifyUploadInput): Promise<VerifiedStorageObject>;
   /**
-   * Lê o conteúdo de um objeto já confirmado (ex.: ZIP de comprovantes),
-   * conferindo tamanho e checksum SHA-256 quando informado.
+   * Lê um objeto já confirmado em pedaços (ex.: ZIP de comprovantes), sem
+   * carregá-lo inteiro na memória. Confere o tamanho a cada pedaço e o
+   * checksum SHA-256 ao final (lança erro se não bater).
    */
-  readObject(input: PresignedUrlInput): Promise<Buffer>;
+  openObject(input: PresignedUrlInput): Promise<AsyncIterable<Uint8Array>>;
 }

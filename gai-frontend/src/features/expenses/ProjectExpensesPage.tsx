@@ -91,6 +91,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
   const [selected, setSelected] = useState<number[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [pageSize, setPageSize] = useState<number | "all">(25);
+  const [allAgents, setAllAgents] = useState(false);
   const [page, setPage] = useState(1);
   const [feedback, setFeedback] = useState<{ message: string; error?: boolean } | null>(null);
   const data = query.data;
@@ -218,14 +219,20 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
       ) : null}
 
       <section className="premium-panel grid gap-2 p-4" aria-label="Resumo por inventariante">
-        <h3 className="font-semibold">Resumo por inventariante</h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-semibold">Resumo por inventariante</h3>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={allAgents} onChange={(e) => setAllAgents(e.target.checked)} />
+            Mostrar todos os vinculados
+          </label>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[620px] text-sm">
             <thead className="text-xs text-muted-foreground">
               <tr><th className="text-left">Inventariante</th><th className="text-left">Lançamentos</th><th className="text-left">Adiantamentos</th><th className="text-left">Despesas</th><th className="text-left" title="Adiantamentos − despesas">Saldo</th></tr>
             </thead>
             <tbody>
-              {data.summary.map((s) => (
+              {data.summary.filter((s) => allAgents || s.entries > 0 || Number(s.advances) > 0).map((s) => (
                 <tr key={s.field_agent_id ?? "geral"} className="border-t">
                   <td className="py-2">
                     <button type="button" className="text-primary-text hover:underline" onClick={() => setFilter("field_agent_id", s.field_agent_id === null ? "none" : String(s.field_agent_id))}>{s.name}</button>
@@ -240,7 +247,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                     ) : null}
                   </td>
                   <td className="py-2 tabular-nums">{formatMoney(s.expenses)}</td>
-                  <td className={`py-2 font-semibold tabular-nums ${s.balance.startsWith("-") ? "text-destructive" : "text-success"}`}>{formatMoney(s.balance)}</td>
+                  <td className={`py-2 font-semibold tabular-nums ${s.balance === null ? "text-muted-foreground" : s.balance.startsWith("-") ? "text-destructive" : "text-success"}`} title={s.balance === null ? "Despesas gerais não recebem adiantamento" : undefined}>{s.balance === null ? "—" : formatMoney(s.balance)}</td>
                 </tr>
               ))}
             </tbody>
@@ -279,7 +286,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                   <input type="checkbox" aria-label="Selecionar todas as exibidas" checked={visible.length > 0 && visible.every((i) => selected.includes(i.id))}
                     onChange={(e) => setSelected(e.target.checked ? [...new Set([...selected, ...visible.map((i) => i.id)])] : selected.filter((id) => !visible.some((i) => i.id === id)))} />
                 </th>
-                {[["Cód", "Código sequencial da despesa no projeto"], ["Tipo do contrato", "Quem paga as despesas, conforme o contrato"], ["Tipo de despesa", "Reembolsável ou não (vale o da despesa)"], ["Prestação", "Lote de reembolso ao cliente"], ["Data", ""], ["Técnico", ""], ["Motivo", ""], ["Forma", "Forma de pagamento"], ["Anexo", ""], ["Valor", ""], ["Status", ""], ["", ""]].map(([h, t], i) => (
+                {[["Cód", "Código sequencial da despesa no projeto"], ["Tipo de despesa", "Reembolsável ou não (vale o da despesa)"], ["Prestação", "Lote de reembolso ao cliente"], ["Data", ""], ["Técnico", ""], ["Motivo", ""], ["Forma", "Forma de pagamento"], ["Anexo", ""], ["Valor", ""], ["Status", ""], ["", ""]].map(([h, t], i) => (
                   <th key={`${h}-${i}`} scope="col" title={t || undefined} className="whitespace-nowrap border-b px-2 py-3 font-semibold">{h || <span className="sr-only">Ações</span>}</th>
                 ))}
               </tr>
@@ -292,7 +299,6 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                       onChange={(e) => setSelected((s) => (e.target.checked ? [...s, i.id] : s.filter((x) => x !== i.id)))} />
                   </td>
                   <td className="border-b px-2 py-2 tabular-nums">{i.sequence ?? "—"}</td>
-                  <td className="whitespace-nowrap border-b px-2 py-2 text-xs">{i.contract_type_label}</td>
                   <td className="whitespace-nowrap border-b px-2 py-2">
                     {hasPermission("expenses:update") && canEdit && !(i.batch && ["billed", "received"].includes(i.batch.status)) ? (
                       <button type="button" className={`rounded px-2 py-0.5 text-xs font-semibold ${i.expense_type === "reimbursable" ? "bg-primary/15" : i.expense_type ? "bg-muted" : "bg-warning/20"}`}
@@ -340,11 +346,11 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                   </td>
                 </tr>
               ))}
-              {!visible.length ? <tr><td colSpan={13} className="px-3 py-6 text-center text-muted-foreground">Nenhuma despesa com esses filtros.</td></tr> : null}
+              {!visible.length ? <tr><td colSpan={12} className="px-3 py-6 text-center text-muted-foreground">Nenhuma despesa com esses filtros.</td></tr> : null}
             </tbody>
             <tfoot>
               <tr className="font-semibold">
-                <td colSpan={10} className="px-3 py-3">
+                <td colSpan={9} className="px-3 py-3">
                   Total filtrado ({data.totals.count}, sem rejeitadas e canceladas) · Sem reembolso do cliente: {formatMoney(data.totals.non_reimbursable_amount)}
                 </td>
                 <td className="whitespace-nowrap px-2 py-3 tabular-nums">{formatMoney(data.totals.amount)}</td>

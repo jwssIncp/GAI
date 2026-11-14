@@ -270,8 +270,11 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
       setError((e as Error).message);
     },
   });
-  const batches = query.data ?? [];
-  if (!batches.length) return null;
+  const [showCancelled, setShowCancelled] = useState(false);
+  const all = query.data ?? [];
+  const cancelled = all.filter((b) => b.status === "cancelled").length;
+  const batches = showCancelled ? all : all.filter((b) => b.status !== "cancelled");
+  if (!all.length) return null;
   const verb = { bill: "Faturar", reopen: "Reabrir", cancel: "Cancelar" } as const;
   const text = {
     bill: "As despesas do lote saem de \"A reembolsar\" (cobradas do cliente).",
@@ -280,9 +283,18 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
   } as const;
   return (
     <section className="premium-panel grid gap-2 p-4" aria-label="Lotes de reembolso">
-      <h3 className="font-semibold">Lotes de reembolso ao cliente</h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="font-semibold">Lotes de reembolso ao cliente</h3>
+        {cancelled ? (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />
+            {`Mostrar cancelados (${cancelled})`}
+          </label>
+        ) : null}
+      </div>
+      {!batches.length ? <p className="text-sm text-muted-foreground">Nenhum lote aberto ou faturado.</p> : null}
       {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-      <div className="overflow-x-auto">
+      <div className={batches.length ? "overflow-x-auto" : "hidden"}>
         <table className="w-full min-w-[560px] text-sm">
           <thead className="text-xs text-muted-foreground">
             <tr><th className="text-left">Lote</th><th className="text-left">Data</th><th className="text-left">Situação</th><th className="text-left">Despesas</th><th className="text-left">Valor</th><th /></tr>

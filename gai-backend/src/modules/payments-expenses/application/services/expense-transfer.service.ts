@@ -31,6 +31,12 @@ import {
 } from './project-expenses.service';
 
 const IMPORT_LIMIT = 1000;
+
+/** Destino do ZIP: write resolve quando o destino aceita mais dados (contrapressão). */
+export interface ZipSink {
+  write(chunk: Uint8Array): Promise<void>;
+  end(): Promise<void>;
+}
 const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -545,8 +551,8 @@ export class ExpenseTransferService {
       fileName: `despesas-${options.kind === 'client' ? 'cliente-reembolsavel' : 'completo'}-${this.safe(data.project.name)}.zip`,
       expenses: items.length,
       attachments: attachments.length,
-      /** Escreve o ZIP no destino (a resposta HTTP), um comprovante por vez. */
-      write: (sink: (chunk: Uint8Array, final: boolean) => void) =>
+      /** Escreve o ZIP no destino (a resposta HTTP) em streaming, um pedaço por vez. */
+      write: (sink: ZipSink) =>
         this.writeZip(data.project.name, items, attachments, byId, sink),
     };
   }
@@ -556,7 +562,7 @@ export class ExpenseTransferService {
     items: ExpenseBoardItem[],
     attachments: ExpenseAttachmentEntity[],
     byId: Map<number, ExpenseBoardItem>,
-    sink: (chunk: Uint8Array, final: boolean) => void,
+    sink: ZipSink,
   ) {
     const used = new Set<string>();
     const unique = (path: string) => {
@@ -566,27 +572,42 @@ export class ExpenseTransferService {
       used.add(candidate.toLowerCase());
       return candidate;
     };
+    // O fflate entrega os bytes de forma síncrona; a fila guarda só o pedaço
+    // atual e é esvaziada (respeitando a contrapressão da resposta) antes de
+    // ler o próximo pedaço do armazenamento. Nada de juntar comprovantes.
     const state: { failure: Error | null } = { failure: null };
-    const zip = new Zip((error, chunk, final) => {
+    const queue: Uint8Array[] = [];
+    const zip = new Zip((error, chunk) => {
       if (error) state.failure = error;
-      else sink(chunk, final);
+      else queue.push(chunk);
     });
-    const add = (path: string, content: Uint8Array) => {
+    const flush = async () => {
+      if (state.failure) throw state.failure;
+      while (queue.length) await sink.write(queue.shift()!);
+    };
+    const add = async (
+      path: string,
+      parts: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
+    ) => {
       const entry = new ZipPassThrough(unique(path));
       zip.add(entry);
-      entry.push(content, true);
+      for await (const part of parts) {
+        entry.push(part);
+        await flush();
+      }
+      entry.push(new Uint8Array(0), true);
+      await flush();
     };
-    add(
-      `Lançamentos - ${this.safe(projectName)}.xlsx`,
+    await add(`Lançamentos - ${this.safe(projectName)}.xlsx`, [
       this.workbook(this.exportRows(items), items),
-    );
+    ]);
     for (const attachment of attachments) {
       const item = byId.get(Number(attachment.expenseId))!;
       const folder =
         item.field_agent_id === null
           ? 'Despesas Gerais'
           : `Comprovantes por técnico/${this.safe(item.field_agent_name)}`;
-      const content = await this.storage.readObject({
+      const parts = await this.storage.openObject({
         bucket: attachment.bucket,
         path: attachment.path,
         mimeType: attachment.mimeType,
@@ -594,13 +615,14 @@ export class ExpenseTransferService {
         checksum: attachment.checksum,
         expiresInSeconds: this.scope.presignedUrlTtlSeconds(),
       });
-      add(
+      await add(
         `${folder}/${item.sequence ?? item.id}-${this.safe(attachment.originalName)}`,
-        content,
+        parts,
       );
     }
     zip.end();
-    if (state.failure) throw state.failure;
+    await flush();
+    await sink.end();
   }
 
   private safe(name: string) {

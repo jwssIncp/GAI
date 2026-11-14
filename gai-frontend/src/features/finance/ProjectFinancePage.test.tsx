@@ -107,7 +107,8 @@ const board = (patch: Partial<ExpenseBoard> = {}): ExpenseBoard => ({
   },
   summary: [
     { field_agent_id: 7, name: 'Ana Campo', entries: 2, advances: '500.00', advances_count: 1, expenses: '1200.00', balance: '-700.00' },
-    { field_agent_id: null, name: 'Despesas gerais', entries: 1, advances: '0.00', advances_count: 0, expenses: '140.00', balance: '-140.00' },
+    { field_agent_id: 8, name: 'Bruno Sem Lançamento', entries: 0, advances: '0.00', advances_count: 0, expenses: '0.00', balance: '0.00' },
+    { field_agent_id: null, name: 'Despesas gerais', entries: 1, advances: '0.00', advances_count: 0, expenses: '140.00', balance: null },
   ],
   agents: [{ id: 7, name: 'Ana Campo', linked: true }],
   items: [
@@ -122,6 +123,7 @@ const board = (patch: Partial<ExpenseBoard> = {}): ExpenseBoard => ({
 
 const batch: ReimbursementBatch = { id: 4, number: 1, batch_date: '2026-11-01', expected_receipt_on: null, status: 'billed', status_label: 'Faturado', receivable_id: null, notes: null, count: 1, amount: '140.00', billed_at: '2026-11-02T00:00:00.000Z' };
 const openBatch: ReimbursementBatch = { ...batch, id: 5, number: 2, status: 'open', status_label: 'Aberto', count: 0, amount: '0.00', billed_at: null };
+const cancelledBatch: ReimbursementBatch = { ...batch, id: 6, number: 3, status: 'cancelled', status_label: 'Cancelado', count: 0, amount: '0.00', billed_at: null };
 
 function renderPage(user: CurrentUser = admin, path = '/app/projects/20/finance') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -144,7 +146,7 @@ describe('Projeto › Despesas (etapa 4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.board.mockResolvedValue(board());
-    mocks.batches.mockResolvedValue([batch, openBatch]);
+    mocks.batches.mockResolvedValue([batch, openBatch, cancelledBatch]);
     mocks.advances.mockResolvedValue([{ id: 9, field_agent_id: 7, field_agent_name: 'Ana Campo', advanced_on: '2026-10-01', amount: '500.00', notes: null, deposited_by_name: 'Financeiro' }]);
     mocks.changeType.mockResolvedValue({ done: 1, failed: 0, results: [{ id: 1, ok: true }] });
     mocks.remove.mockResolvedValue({ done: 1, failed: 1, results: [{ id: 1, ok: true }, { id: 3, ok: false, message: 'Despesa paga não pode ser excluída.' }] });
@@ -172,6 +174,24 @@ describe('Projeto › Despesas (etapa 4)', () => {
     expect(table.getByText('Rejeitada: Sem nota fiscal')).toBeInTheDocument(); // motivo da rejeição à parte
     expect(table.getAllByText('saldo R$ 50,00').length).toBeGreaterThan(0);
     expect(table.getByText(/Sem reembolso do cliente: R\$ 1\.100,00/)).toBeInTheDocument();
+  });
+
+  it('ajustes: resumo só com movimento (opção de ver todos), Despesas gerais sem saldo, sem coluna Tipo do contrato, lotes cancelados escondidos', async () => {
+    const u = userEvent.setup();
+    renderPage();
+    const summary = within(await screen.findByRole('region', { name: 'Resumo por inventariante' }));
+    expect(summary.queryByText('Bruno Sem Lançamento')).not.toBeInTheDocument();
+    const general = summary.getByRole('button', { name: 'Despesas gerais' }).closest('tr')!;
+    expect(general.lastElementChild).toHaveTextContent('—');
+    await u.click(summary.getByLabelText('Mostrar todos os vinculados'));
+    expect(summary.getByText('Bruno Sem Lançamento')).toBeInTheDocument();
+    const table = within(screen.getByRole('region', { name: 'Lançamentos de despesas' }));
+    expect(table.queryByRole('columnheader', { name: /Tipo do contrato/ })).not.toBeInTheDocument();
+    const batches = within(await screen.findByRole('region', { name: 'Lotes de reembolso' }));
+    expect(await batches.findByText('Lote 2')).toBeInTheDocument();
+    expect(batches.queryByText('Lote 3')).not.toBeInTheDocument();
+    await u.click(batches.getByLabelText('Mostrar cancelados (1)'));
+    expect(batches.getByText('Lote 3')).toBeInTheDocument();
   });
 
   it('alternar o tipo pede confirmação; lote faturado não alterna', async () => {

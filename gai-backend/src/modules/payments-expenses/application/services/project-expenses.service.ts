@@ -546,7 +546,8 @@ export class ProjectExpensesService {
           advances: sum(adv),
           advances_count: adv.length,
           expenses: sum(spent),
-          balance: agentBalance(adv, spent),
+          // Despesas gerais não recebem adiantamento: não há saldo a mostrar.
+          balance: id === null ? null : agentBalance(adv, spent),
         };
       })
       .sort((a, b) =>

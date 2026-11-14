@@ -501,6 +501,10 @@ describe('Despesas do projeto (e2e, etapa 4)', () => {
       expense_type: 'reimbursable',
       balance: '5.00',
     }); // tipo vazio = padrão do contrato
+    // Despesas gerais não recebem adiantamento: sem saldo.
+    expect(
+      (await board()).summary.find((s) => s.field_agent_id === null)!.balance,
+    ).toBeNull();
   });
 
   it('ZIP: pastas por técnico, Despesas Gerais, planilha e só anexos enviados; cliente só reembolsáveis', async () => {

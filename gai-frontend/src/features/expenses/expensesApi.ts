@@ -106,7 +106,8 @@ export type ExpenseBoard = {
     advances: string;
     advances_count: number;
     expenses: string;
-    balance: string;
+    /** Nulo em Despesas gerais (sem adiantamento, sem saldo). */
+    balance: string | null;
   }>;
   agents: Array<{ id: number; name: string; linked: boolean }>;
   items: ExpenseBoardItem[];
