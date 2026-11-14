@@ -6,6 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { DataSource, EntityManager, In, IsNull } from 'typeorm';
+import { assertNotFuture } from '../../common/finance/settlement-date';
 import { AssetTagsService } from '../asset-tags/asset-tags.service';
 import { CommissionsService } from '../commissions/commissions.service';
 import {
@@ -1007,10 +1008,7 @@ export class CashFlowBoardService {
   ) {
     const org = this.receivables.org(actor, organizationId);
     await this.receivables.require(actor, ['cash-flow:read']);
-    if (paidOn && paidOn > civilToday())
-      throw new BadRequestException({
-        message: 'A data de pagamento não pode ser futura.',
-      });
+    assertNotFuture(paidOn, 'A data de pagamento');
     return this.each(keys, async (key) => {
       const [kind, rawId] = key.split(':');
       const id = Number(rawId);

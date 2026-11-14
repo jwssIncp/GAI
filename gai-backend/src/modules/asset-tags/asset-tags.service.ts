@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
+import { assertNotFuture } from '../../common/finance/settlement-date';
 import type { FinancialEvent } from '../../common/finance/financial-event';
 import { UserRole } from '../auth/domain/enums/user.enums';
 import { ContractEntity } from '../contracts/contract.entity';
@@ -419,6 +420,11 @@ export class AssetTagsService {
           civil(o.supplierPaidOn),
           today,
         );
+        assertNotFuture(
+          o.supplierPaidOn,
+          'A data de pagamento ao fornecedor',
+          today,
+        );
         o.supplierPaymentStatus = o.supplierPaidOn ? 'paid' : 'pending';
       }
       if (dto.client_expected_receipt_on !== undefined)
@@ -433,6 +439,15 @@ export class AssetTagsService {
           dto.client_received,
           dto.client_received_on,
           civil(o.clientReceivedOn),
+          today,
+        );
+      if (
+        dto.client_received !== undefined ||
+        dto.client_received_on !== undefined
+      )
+        assertNotFuture(
+          o.clientReceivedOn,
+          'A data de recebimento do cliente',
           today,
         );
       if (dto.expense_type_override !== undefined)

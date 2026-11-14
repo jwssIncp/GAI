@@ -6,6 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
+import { assertNotFuture } from '../../../../common/finance/settlement-date';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { FieldAgentEntity } from '../../../field-agents/infrastructure/persistence/field-agent.entity';
 import { FinanceSettingsService } from '../../../finance-settings/finance-settings.service';
@@ -545,9 +546,17 @@ export class FieldAgentPaymentsService {
         : dto.date_mode === 'chosen'
           ? this.date(dto.payment_date, 'Data do pagamento')
           : this.date(dto.dates?.[String(id)], `Data do lançamento #${id}`);
-    if (dto.date_mode === 'chosen')
+    if (dto.date_mode === 'chosen') {
       this.date(dto.payment_date, 'Data do pagamento');
+      assertNotFuture(dto.payment_date, 'A data do pagamento', today);
+    }
     return this.each(dto.ids, async (id) => {
+      if (dto.date_mode === 'individual')
+        assertNotFuture(
+          dto.dates?.[String(id)],
+          `A data de pagamento do lançamento #${id}`,
+          today,
+        );
       await this.assertOpenPeriod(organizationId, id);
       return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.MARK_PAYMENT_AS_PAID,
@@ -594,6 +603,8 @@ export class FieldAgentPaymentsService {
       dto.date,
       dto.kind === 'payment' ? 'Data de pagamento' : 'Data prevista',
     );
+    if (dto.kind === 'payment')
+      assertNotFuture(dto.date, 'A data de pagamento');
     await this.assertOpenPeriod(organizationId, id);
     try {
       await this.mutate(id, actor, (payment) =>

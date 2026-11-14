@@ -208,6 +208,14 @@ describe('Comissões e parceiros (e2e, etapa 6)', () => {
     });
   });
 
+  it('pagamento com data futura é recusado', async () => {
+    const id = (await list()).items[0].id;
+    const r = await api('patch', `/commissions/${id}`)
+      .send({ paid_on: '2099-01-01' })
+      .expect(400);
+    expect(r.body.message).toMatch(/não pode ser futura/);
+  });
+
   it('permissões e exclusão', async () => {
     await api('get', '/commissions', user).expect(403);
     const id = (await list()).items[0].id;

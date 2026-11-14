@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
+import { assertNotFuture } from '../../common/finance/settlement-date';
 import {
   ProjectScopeService,
   ProjectActorContext,
@@ -640,6 +641,7 @@ export class ReceivableService {
         i = d.installments.find((i) => i.id === dto.installment_id);
       if (!i) invalid('Parcela não pertence ao recebível.');
       civil(dto.received_on);
+      assertNotFuture(dto.received_on, 'A data de recebimento');
       if (
         dto.received_on < row.data.issued_on ||
         dto.received_on > new Date().toISOString().slice(0, 10)
@@ -712,6 +714,7 @@ export class ReceivableService {
       if (d.events.some((r) => r.reversesId === e.id))
         conflict('Recebimento já estornado.');
       civil(dto.reversed_on);
+      assertNotFuture(dto.reversed_on, 'A data do estorno');
       if (
         dto.reversed_on < e.effectiveOn ||
         dto.reversed_on > new Date().toISOString().slice(0, 10)

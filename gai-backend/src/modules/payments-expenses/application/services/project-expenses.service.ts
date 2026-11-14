@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, EntityManager, In, IsNull } from 'typeorm';
+import { assertNotFuture } from '../../../../common/finance/settlement-date';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
 import { ContractEntity } from '../../../contracts/contract.entity';
@@ -1232,6 +1233,7 @@ export class ProjectExpensesService {
           },
         ],
       });
+    assertNotFuture(dto.advanced_on, 'A data do depósito do adiantamento');
     if (toCents(dto.amount) <= 0n)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',

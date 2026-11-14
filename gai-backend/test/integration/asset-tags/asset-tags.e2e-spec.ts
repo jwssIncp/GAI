@@ -217,6 +217,19 @@ describe('Placas de patrimônio (e2e, etapa 5)', () => {
     ]);
   });
 
+  it('baixa com data futura é recusada (pagamento ao fornecedor e recebimento do cliente)', async () => {
+    const { items } = await list();
+    for (const body of [
+      { supplier_paid_on: '2099-01-01' },
+      { client_received_on: '2099-01-01' },
+    ]) {
+      const r = await api('patch', `/asset-tag-orders/${items[0].id}`)
+        .send(body)
+        .expect(400);
+      expect(r.body.message).toMatch(/não pode ser futura/);
+    }
+  });
+
   it('excluir e permissões', async () => {
     await api('get', '/asset-tag-orders', user).expect(403);
     const { items } = await list();

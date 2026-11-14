@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource, EntityManager, In } from 'typeorm';
+import { assertNotFuture } from '../../common/finance/settlement-date';
 import type { FinancialEvent } from '../../common/finance/financial-event';
 import { UserRole } from '../auth/domain/enums/user.enums';
 import { ContractEntity } from '../contracts/contract.entity';
@@ -309,7 +310,10 @@ export class CommissionsService {
       if (dto.amount_manual !== undefined) c.amountManual = dto.amount_manual;
       if (dto.expected_payment_on !== undefined)
         c.expectedPaymentOn = normalizeCivilDate(dto.expected_payment_on);
-      if (dto.paid_on !== undefined) c.paidOn = normalizeCivilDate(dto.paid_on);
+      if (dto.paid_on !== undefined) {
+        c.paidOn = normalizeCivilDate(dto.paid_on);
+        assertNotFuture(c.paidOn, 'A data de pagamento da comissão');
+      }
       if (dto.notes !== undefined) c.notes = dto.notes?.trim() || null;
       commissionAmount(
         money(c.contractValue),

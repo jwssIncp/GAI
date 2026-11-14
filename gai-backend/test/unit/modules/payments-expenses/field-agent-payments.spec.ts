@@ -342,12 +342,12 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
         [2, b],
       ]),
     ).s.pay(
-      { ids: [1, 2], date_mode: 'chosen', payment_date: '2026-11-15' },
+      { ids: [1, 2], date_mode: 'chosen', payment_date: '2026-11-10' },
       actor,
     );
     expect([a.toProps().paymentDate, b.toProps().paymentDate]).toEqual([
-      d('2026-11-15'),
-      d('2026-11-15'),
+      d('2026-11-10'),
+      d('2026-11-10'),
     ]);
     const c = payment(PaymentStatus.APPROVED, { id: 3 });
     const e = payment(PaymentStatus.APPROVED, { id: 4 });
@@ -368,6 +368,26 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
       d('2026-11-11'),
       d('2026-11-12'),
     ]);
+  });
+
+  it('baixa com data futura é recusada (data escolhida e data por lançamento)', async () => {
+    const a = payment(PaymentStatus.APPROVED, { id: 1 });
+    const repo = withRepo(new Map([[1, a]]));
+    await expect(
+      repo.s.pay(
+        { ids: [1], date_mode: 'chosen', payment_date: '2099-01-01' },
+        actor,
+      ),
+    ).rejects.toThrow(/não pode ser futura/);
+    const result = await repo.s.pay(
+      { ids: [1], date_mode: 'individual', dates: { '1': '2099-01-01' } },
+      actor,
+    );
+    expect(result.results[0]).toMatchObject({
+      ok: false,
+      message: expect.stringMatching(/não pode ser futura/),
+    });
+    expect(a.toProps().paymentDate).toBeNull();
   });
 
   it('o lote relata cada item: pendente com exigência de aprovação não é pago, o aprovado sim', async () => {

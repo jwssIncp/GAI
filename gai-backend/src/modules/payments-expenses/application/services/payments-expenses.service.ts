@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { assertNotFuture } from '../../../../common/finance/settlement-date';
 import {
   BadRequestException,
   ConflictException,
@@ -236,6 +237,7 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
     const project = await this.getProject(projectId, actor, false);
+    assertNotFuture(dto.payment_date, 'A data de pagamento');
     // Mesma regra da tela consolidada: não paga o que está em competência fechada da DRE.
     const closed = await this.remuneration.closedPeriodsFor(
       project.organizationId,
