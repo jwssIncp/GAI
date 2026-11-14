@@ -69,6 +69,7 @@ const board = (): CashFlowBoard => ({
   items: [
     item("cb1", { date: "2026-05-31", expected_on: "2026-05-31", overdue: true, overdue_days: 167, gross: "3000.00", net: "2600.10", project_name: "Beta", installment: { number: 1, of: 2 } }),
     item("ca1", { date: "2026-11-10", realized_on: "2026-11-10", status: "realized", installment: { number: 1, of: 3 }, refs: { receivable_id: 9, event_id: 77 } }),
+    item("rev", { date: "2026-11-08", realized_on: "2026-11-08", status: "reversed", gross: "500.00", description: "Recebível estornado", refs: { receivable_id: 5, event_id: null, reversed_on: "2026-11-09" } }),
     item("prop", { status: "proposed", origin: "amendment", origin_label: "Aditivo", gross: "1500.00", net: "1300.05", description: "Contrato CT-A / aditivo AD-1 (previsto, não confirmado)", refs: { source_key: "amendment:3" } }),
     item("ir", { direction: "out", group: "non_reimbursable", origin: "income_tax", origin_label: "Imposto de Renda", gross: "533.20", derived: true, refs: { of: "ca1" }, installment: null, description: "IR 13,33% sobre Contrato CT-A" }),
     item("e3", { direction: "out", group: "non_reimbursable", origin: "expense", origin_label: "Despesa", date: "2026-12-20", expected_on: "2026-12-20", gross: "450.00", installment: null, description: "Lanche (cód. 3)", refs: { settle_key: "expense:3", settled_here: 0 } }),
@@ -136,6 +137,18 @@ describe("Fluxo de caixa (etapa 7)", () => {
     dialog = within(screen.getByRole("dialog"));
     await u.click(dialog.getByRole("button", { name: "Confirmar" }));
     await waitFor(() => expect(mocks.settle).toHaveBeenCalledWith(["expense:3"], "2026-11-14"));
+  });
+
+  it("estornos ficam escondidos por padrão; \"Mostrar estornos\" exibe com status Estornado", async () => {
+    const u = userEvent.setup();
+    mount();
+    const billing = within(await screen.findByRole("region", { name: "Entradas de faturamento" }));
+    expect(billing.queryByText("Recebível estornado")).not.toBeInTheDocument();
+    await u.click(screen.getByLabelText("Mostrar estornos"));
+    const row = billing.getByText("Recebível estornado").closest("tr")!;
+    expect(row).toHaveTextContent("Estornado");
+    expect(row).toHaveTextContent("estornado em 09/11/2026");
+    expect(row).not.toHaveTextContent("-R$");
   });
 
   it("somente em aberto esconde os realizados; perfil sem permissões não vê ações de recebível", async () => {

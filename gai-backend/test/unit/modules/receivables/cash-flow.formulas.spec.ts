@@ -181,6 +181,16 @@ describe('Fluxo de caixa: fórmulas (doc 06 §7.2–§7.4)', () => {
         status: 'proposed',
       }),
     ];
+    // estornado: fica fora de todos os KPIs
+    items.push(
+      item({
+        key: 'rev',
+        direction: 'in',
+        date: '2026-12-05',
+        gross: '9999.00',
+        status: 'reversed',
+      }),
+    );
     const [brl] = cashFlowKpis(items, { month: '2026-12', year: '2026' });
     // mês: 4.000 recebido; saídas 533,20 pagas + 1.000 a pagar → 4.000 − 1.533,20
     expect(brl.month).toEqual({

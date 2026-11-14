@@ -118,7 +118,8 @@ export function incomeTax(amount: string, pct: string): string {
   return money(negative ? -r : r);
 }
 
-export type FlowStatus = 'realized' | 'open' | 'proposed';
+/** "reversed" = recebimento estornado: aparece só sob pedido e fica fora dos KPIs. */
+export type FlowStatus = 'realized' | 'open' | 'proposed' | 'reversed';
 
 /** Um movimento do fluxo (entrada ou saída), já com a data efetiva do fluxo. */
 export interface FlowItem {
@@ -190,6 +191,7 @@ export function cashFlowKpis(
     const overdue = { in: 0n, inCount: 0, out: 0n, outCount: 0 };
     const proposed = { amount: 0n, count: 0 };
     for (const i of own) {
+      if (i.status === 'reversed') continue;
       const v = cents(i.gross);
       const m = i.date.slice(0, 7);
       if (m === ref.month)

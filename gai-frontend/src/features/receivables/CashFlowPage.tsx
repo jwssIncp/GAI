@@ -21,8 +21,8 @@ import {
 } from "./cashFlowBoardApi";
 
 const select = "h-10 max-w-[14rem] rounded-md border bg-background px-3 text-sm";
-const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Previsto (não confirmado)" };
-const STATUS_OUT: Record<FlowItem["status"], string> = { realized: "Pago", open: "A pagar", proposed: "Previsto" };
+const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Previsto (não confirmado)", reversed: "Estornado" };
+const STATUS_OUT: Record<FlowItem["status"], string> = { realized: "Pago", open: "A pagar", proposed: "Previsto", reversed: "Estornado" };
 
 type Action =
   | { kind: "receive"; items: FlowItem[] }
@@ -77,6 +77,7 @@ export function CashFlowPage() {
   }));
   const [monthFilter, setMonthFilter] = useState("");
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [showReversed, setShowReversed] = useState(false);
   const [direction, setDirection] = useState<"" | "in" | "out">("");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
@@ -101,12 +102,13 @@ export function CashFlowPage() {
     const term = search.trim().toLowerCase();
     return (data?.items ?? []).filter(
       (i) =>
+        (showReversed || i.status !== "reversed") &&
         (!direction || i.direction === direction) &&
         (!onlyOpen || i.status !== "realized") &&
         (!monthFilter || i.date.startsWith(monthFilter) || (i.overdue && i.status !== "realized")) &&
         (!term || `${i.project_name} ${i.description} ${i.origin_label}`.toLowerCase().includes(term)),
     );
-  }, [data, direction, onlyOpen, monthFilter, search]);
+  }, [data, direction, onlyOpen, monthFilter, search, showReversed]);
   const byKey = useMemo(() => new Map(items.map((i) => [i.key, i])), [items]);
   const chosen = selected.map((k) => byKey.get(k)).filter((i): i is FlowItem => Boolean(i));
 
@@ -183,6 +185,10 @@ export function CashFlowPage() {
           <input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} />
           Somente em aberto
         </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={showReversed} onChange={(e) => setShowReversed(e.target.checked)} />
+          Mostrar estornos
+        </label>
         <input aria-label="Buscar" placeholder="Buscar projeto ou descrição" className="h-10 w-56 rounded-md border bg-background px-3 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
       </FilterPanel>
 
@@ -228,7 +234,7 @@ export function CashFlowPage() {
                   {rows.map((i) => {
                     const actionable = !i.derived && (i.refs.installment_id || i.refs.event_id || i.refs.source_key || i.refs.settle_key);
                     return (
-                      <tr key={i.key} className={i.overdue ? "bg-destructive/[0.07]" : i.status === "proposed" ? "bg-warning/[0.08]" : ""}>
+                      <tr key={i.key} className={i.overdue ? "bg-destructive/[0.07]" : i.status === "proposed" ? "bg-warning/[0.08]" : i.status === "reversed" ? "text-muted-foreground line-through decoration-muted-foreground/50" : ""}>
                         <td className="border-b px-2 py-2">
                           {actionable ? (
                             <input type="checkbox" aria-label={`Selecionar ${i.description} ${civilBr(i.date)}`} checked={selected.includes(i.key)}
@@ -236,7 +242,7 @@ export function CashFlowPage() {
                           ) : null}
                         </td>
                         <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(i.expected_on ?? i.date)}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(i.realized_on)}</td>
+                        <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(i.realized_on)}{i.status === "reversed" && i.refs.reversed_on ? <span className="block text-xs text-muted-foreground">estornado em {civilBr(String(i.refs.reversed_on))}</span> : null}</td>
                         <td className="whitespace-nowrap border-b px-2 py-2">{i.overdue ? <span className="font-semibold text-destructive">{i.overdue_days} dia(s)</span> : ""}</td>
                         <td className="max-w-[12rem] truncate border-b px-2 py-2" title={i.project_name}>{i.project_name}</td>
                         <td className="whitespace-nowrap border-b px-2 py-2">{i.origin_label}</td>

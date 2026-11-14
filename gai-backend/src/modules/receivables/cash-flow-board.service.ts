@@ -221,7 +221,7 @@ export class CashFlowBoardService {
       currency: cur(projectId),
     });
     const overdue = (status: string, date: string) =>
-      status !== 'realized' && date < today;
+      (status === 'open' || status === 'proposed') && date < today;
     const push = (
       i: Omit<FlowItem, 'overdue' | 'overdue_days' | 'net' | 'derived'> &
         Partial<Pick<FlowItem, 'net' | 'derived'>>,
@@ -323,28 +323,40 @@ export class CashFlowBoardService {
               open: inst.open,
             },
           });
+        // Recebimento estornado: uma linha só, com status "estornado" (fora dos
+        // KPIs; a parcela volta a aparecer em aberto). O evento de estorno não
+        // vira linha negativa.
+        const reversalOf = new Map(
+          d.events
+            .filter((x) => x.reversesId)
+            .map((x) => [Number(x.reversesId), x.effectiveOn]),
+        );
         for (const e of d.events.filter(
-          (x) => x.installmentId === inst.id && x.amount && x.effectiveOn,
-        ))
+          (x) =>
+            x.installmentId === inst.id &&
+            x.operation === 'receipt' &&
+            x.amount &&
+            x.effectiveOn,
+        )) {
+          const wasReversed = reversed.has(Number(e.id));
           await make({
             ...shared,
             key: `rcv-event:${e.id}`,
             date: e.effectiveOn!,
             realized_on: e.effectiveOn,
-            status: 'realized',
+            status: wasReversed ? 'reversed' : 'realized',
             gross: dec(e.amount!),
             contract_pct: pct(dec(e.amount!)),
-            description: e.reversesId
-              ? `Estorno — ${r.data.description}`
-              : r.data.description,
+            description: r.data.description,
             refs: {
               receivable_id: Number(r.id),
-              event_id:
-                e.operation === 'receipt' && !reversed.has(Number(e.id))
-                  ? Number(e.id)
-                  : null,
+              event_id: wasReversed ? null : Number(e.id),
+              reversed_on: wasReversed
+                ? (reversalOf.get(Number(e.id)) ?? null)
+                : null,
             },
           });
+        }
       }
     }
 

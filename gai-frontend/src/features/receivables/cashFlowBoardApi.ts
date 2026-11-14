@@ -12,7 +12,8 @@ export type FlowItem = {
   date: string;
   expected_on: string | null;
   realized_on: string | null;
-  status: "realized" | "open" | "proposed";
+  /** "reversed" = recebimento estornado (escondido por padrão, fora dos KPIs). */
+  status: "realized" | "open" | "proposed" | "reversed";
   overdue: boolean;
   overdue_days: number;
   gross: string;

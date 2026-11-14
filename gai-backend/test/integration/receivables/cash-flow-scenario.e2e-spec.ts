@@ -515,14 +515,39 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
           .expect(200)
       ).body.done,
     ).toBe(1);
-    // Estorno entra como movimento negativo; o IR acompanha
-    items = (await board('as_of=2026-11-14&month=2026-11&year=2026')).items;
+    // Estorno: o recebimento fica "estornado" (sem linha negativa), o IR acompanha,
+    // a parcela volta a aparecer em aberto (02/12/2026) e os KPIs deixam o estornado de fora.
+    const afterUndo = await board('as_of=2026-11-14&year=2026');
+    items = afterUndo.items;
+    expect(items.some((i) => i.gross.startsWith('-'))).toBe(false);
     expect(
       items
-        .filter((i) => i.origin === 'income_tax' && i.status === 'realized')
-        .map((i) => i.gross)
+        .filter((i) => i.status === 'reversed')
+        .map((i) => `${i.origin} ${i.gross}`)
         .sort(),
-    ).toEqual(['-533.20', '533.20']);
+    ).toEqual(['contract 4000.00', 'income_tax 533.20']);
+    // data do estorno = dia em que foi feito (hoje)
+    expect(
+      items.find((i) => i.status === 'reversed' && i.origin === 'contract')!
+        .refs.reversed_on,
+    ).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(
+      items.find(
+        (i) =>
+          i.origin === 'contract' &&
+          i.status === 'open' &&
+          i.date === '2026-12-02',
+      ),
+    ).toMatchObject({ gross: '4000.00' });
+    const nov = afterUndo.kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    // 11/2026 sem o recebimento estornado: entradas 0; saídas pagas 1.333,20 − IR 533,20 = 800,00
+    expect(nov.month).toMatchObject({
+      in_realized: '0.00',
+      out_realized: '800.00',
+      total: '-800.00',
+    });
     // Descartar a proposta do aditivo (com justificativa): some e não volta enquanto não mudar
     const amendmentKey = (await board('as_of=2026-11-14&year=2027')).items.find(
       (i) => i.origin === 'amendment',
