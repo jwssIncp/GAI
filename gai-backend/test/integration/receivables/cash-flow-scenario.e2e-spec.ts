@@ -360,6 +360,40 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       .expect(201);
   });
 
+  it('KPIs do mês atual como a tela pede (sem mês): referência 11/2026 e próximo 12/2026', async () => {
+    // A tela não envia o mês: a API usa o mês da data de referência (14/11/2026).
+    const res = (
+      await api(
+        'get',
+        '/finance/cash-flow/board?as_of=2026-11-14&year=2026',
+      ).expect(200)
+    ).body as {
+      reference: { month: string; year: string };
+      kpis: Array<Record<string, Record<string, string>>>;
+    };
+    expect(res.reference).toEqual({ month: '2026-11', year: '2026' });
+    const brl = res.kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    // 11/2026: recebido CA#1 4.000 (10/11); pagos IR 533,20 + diária P2 500 + E1 200 + E2#1 100 = 1.333,20
+    expect(brl.month).toEqual({
+      reference: '2026-11',
+      in_realized: '4000.00',
+      in_open: '0.00',
+      out_realized: '1333.20',
+      out_open: '0.00',
+      total: '2666.80',
+    });
+    // 12/2026: nenhuma entrada em aberto (CA#1 já recebida); saídas P1 1.000 + placa 200 + E3 450 + comissão 600
+    expect(brl.next_month).toEqual({
+      reference: '2026-12',
+      in_gross: '0.00',
+      in_net: '0.00',
+      out: '2250.00',
+      total: '-2250.00',
+    });
+  });
+
   it('KPIs: esperado (calculado à mão) × obtido', async () => {
     const { kpis, alerts } = await board();
     const brl = kpis.find((k) => (k.currency as unknown as string) === 'BRL')!;

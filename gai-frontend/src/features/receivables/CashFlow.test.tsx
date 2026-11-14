@@ -87,6 +87,8 @@ describe("Fluxo de caixa (etapa 7)", () => {
   it("KPIs do cenário, alerta de previsto não confirmado e vencidas em destaque (inclusive saídas)", async () => {
     mount();
     const kpis = within(await screen.findByRole("region", { name: "Indicadores do fluxo de caixa (BRL)" }));
+    // A tela não envia o mês: a API usa o mês da data de referência (hoje).
+    expect(mocks.board).toHaveBeenCalledWith({ project_id: undefined, year: String(new Date().getFullYear()), month: undefined });
     expect(kpis.getByText("Total previsto 12/2026").nextSibling).toHaveTextContent("-R$ 2.250,00");
     expect(kpis.getByText("Total previsto 01/2027").nextSibling).toHaveTextContent("R$ 11.453,75");
     expect(kpis.getByText("Total do ano 2026").nextSibling).toHaveTextContent("R$ 3.016,90");
