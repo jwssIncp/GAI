@@ -87,6 +87,7 @@ describe("Fluxo de caixa: indicadores", () => {
             ...original,
             simulation: {
               input: sim,
+              basis: { field_agents_pct: "12.50", non_reimbursable_pct: "5.00", mc: "60.50", year_sale: "5000.00", sale_result: "3025.15", client_share: "0.00" },
               movements: [],
               kpis: kpis("1083.50", "13453.85", "6350.40"),
               indicators: values({ projected_result: "-160881.60", accounting_break_even: "245609.51" }),
@@ -113,6 +114,8 @@ describe("Fluxo de caixa: indicadores", () => {
     expect(card.querySelector("s")).toHaveTextContent(/164\.215,10/);
     expect(card).toHaveTextContent(/variação R\$\s?3\.333,50/);
     expect(screen.getByRole("status")).toHaveTextContent("não gravada");
+    expect(screen.getByRole("status")).toHaveTextContent("inventariantes (12,50%)");
+    expect(screen.getByRole("status")).toHaveTextContent(/× MC 60,50% = R\$\s?3\.025,15/);
     await userEvent.click(screen.getByRole("button", { name: "Limpar simulação" }));
     await waitFor(() => expect(get).toHaveBeenLastCalledWith({ year: "2026" }, null));
   });

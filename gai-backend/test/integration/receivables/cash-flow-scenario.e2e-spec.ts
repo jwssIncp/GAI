@@ -559,46 +559,70 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
   });
 
   /**
-   * Simulação: venda de 10.000,00 em 12/2026, 01/2027, 02/2027 (50/30/20),
-   * empresa paga as despesas (20% orçado = 2.000,00 → 1.000/600/400).
-   * 12/2026: +5.000,00 − IR 666,50 − 1.000,00 = +3.333,50 → mês −2.250,00 →
-   * 1.083,50; 01/2027: +3.000,00 − 399,90 − 600,00 = +2.000,10 → 11.453,75 →
-   * 13.453,85; ano 3.016,90 + 3.333,50 = 6.350,40; projetado −160.881,60;
-   * PEC = 160.881,60/0,65503 = 245.609,51; PEE = (1.200 + 160.881,60)/0,55503
-   * = 292.023,13; margem líquida = −160.881,60 / (12.000 − 1.650/0,8667)
-   * = −1.593,48%. Nada é gravado.
+   * Simulação (como o INVESTOR: simMes e SIM_RES): venda de 10.000,00 em
+   * 12/2026, 01/2027, 02/2027 (50/30/20), despesas por conta da empresa.
+   * Cada parcela desconta IR 13,33%, inventariantes 12,50% e não reemb. 5,00%
+   * (% históricos da janela): 5.000 → 666,50 + 625,00 + 250,00;
+   * 3.000 → 399,90 + 375,00 + 150,00; 2.000 → 266,60 + 250,00 + 100,00.
+   * 12/2026: 5.000 − 666,50 − 625 − 250 = +3.458,50 → −2.250,00 → 1.208,50.
+   * 01/2027: 3.000 − 399,90 − 375 − 150 = +2.075,10 → 11.453,75 → 13.528,85.
+   * Ano: venda de 2026 (5.000) × MC 60,503% = 3.025,15 → total 3.016,90 +
+   * 3.025,15 = 6.042,05; projetado −164.215,10 + 3.025,15 = −161.189,95.
+   * PEC = 161.189,95/0,65503 = 246.080,26; PEE = (10% × 12.000 + 161.189,95)
+   * / 0,55503 = 292.578,69; margem líquida = −161.189,95 / (12.000 −
+   * 650/0,8667) = −1.432,80%. Com despesas do cliente: + 5.000 × 5% = 250,00
+   * → 3.275,15. Nada é gravado.
    */
   it('simulação de venda: esperado × obtido, sem gravar', async () => {
     const q =
       '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-12&year=2026' +
       '&sim_value=10000.00&sim_signal_month=2026-12&sim_second_month=2027-01' +
-      '&sim_third_month=2027-02&sim_company_expenses=true';
-    const s = (await api('get', q).expect(200)).body.simulation;
+      '&sim_third_month=2027-02';
+    const s = (await api('get', q + '&sim_company_expenses=true').expect(200))
+      .body.simulation;
     expect(s.movements.map((m: { gross: string }) => m.gross)).toEqual([
       '5000.00',
       '666.50',
+      '625.00',
+      '250.00',
       '3000.00',
       '399.90',
+      '375.00',
+      '150.00',
       '2000.00',
       '266.60',
-      '1000.00',
-      '600.00',
-      '400.00',
+      '250.00',
+      '100.00',
     ]);
-    expect(s.kpis.month.total).toBe('1083.50');
-    expect(s.kpis.next_month.total).toBe('13453.85');
-    expect(s.kpis.year.total).toBe('6350.40');
-    expect(s.indicators.projected_result).toBe('-160881.60');
-    expect(s.indicators.accounting_break_even).toBe('245609.51');
-    expect(s.indicators.economic_break_even).toBe('292023.13');
-    expect(s.indicators.net_margin).toBe('-1593.48');
+    expect(s.basis).toEqual({
+      field_agents_pct: '12.50',
+      non_reimbursable_pct: '5.00',
+      mc: '60.50',
+      year_sale: '5000.00',
+      sale_result: '3025.15',
+      client_share: '0.00',
+    });
+    expect(s.kpis.month.total).toBe('1208.50');
+    expect(s.kpis.next_month.total).toBe('13528.85');
+    expect(s.kpis.year.total).toBe('6042.05');
+    expect(s.indicators.projected_result).toBe('-161189.95');
+    expect(s.indicators.accounting_break_even).toBe('246080.26');
+    expect(s.indicators.economic_break_even).toBe('292578.69');
+    expect(s.indicators.net_margin).toBe('-1432.80');
     expect(s.indicators.contribution_margin.mc).toBe('60.50');
     expect(s.delta).toEqual({
-      month_total: '3333.50',
-      next_month_total: '2000.10',
-      year_total: '3333.50',
-      projected_result: '3333.50',
+      month_total: '3458.50',
+      next_month_total: '2075.10',
+      year_total: '3025.15',
+      projected_result: '3025.15',
     });
+    // despesas do cliente: sem a saída de não reembolsáveis; ano soma a parte do cliente
+    const c = (await api('get', q + '&sim_company_expenses=false').expect(200))
+      .body.simulation;
+    expect(c.movements).toHaveLength(9);
+    expect(c.basis.client_share).toBe('250.00');
+    expect(c.delta.month_total).toBe('3708.50');
+    expect(c.delta.projected_result).toBe('3275.15');
     // nada gravado: o quadro continua igual
     const brl = (await board()).kpis.find(
       (k) => (k.currency as unknown as string) === 'BRL',
@@ -606,7 +630,7 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     expect(brl.month.total).toBe('-2250.00');
     // mês passado: recusado; mês atual: parcela cai hoje (14/11), não no dia 1º
     const base =
-      '/finance/cash-flow/indicators?as_of=2026-11-14&sim_value=1000.00&sim_company_expenses=false';
+      '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-12&sim_value=1000.00&sim_company_expenses=false';
     const past = await api(
       'get',
       base +

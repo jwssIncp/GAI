@@ -88,6 +88,12 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
           {monthBr(data.simulation.input.second_month)} e {monthBr(data.simulation.input.third_month)} (50/30/20)
           {data.simulation.input.company_expenses ? ", com despesas por conta da empresa" : ""}. Os cards mostram o valor com a venda; o
           valor riscado é o atual.
+          <span className="block text-xs text-muted-foreground">
+            Cada parcela desconta IR, inventariantes ({pct(data.simulation.basis.field_agents_pct)})
+            {data.simulation.input.company_expenses ? <> e despesas não reembolsáveis ({pct(data.simulation.basis.non_reimbursable_pct)})</> : null} pelos % dos 12 meses anteriores. No ano:{" "}
+            {formatMoney(data.simulation.basis.year_sale)} × MC {pct(data.simulation.basis.mc)}
+            {data.simulation.input.company_expenses ? "" : ` + parte do cliente ${formatMoney(data.simulation.basis.client_share)}`} = {formatMoney(data.simulation.basis.sale_result)}.
+          </span>
         </p>
       ) : null}
       {o.window.missing_tax.count ? (

@@ -6,9 +6,11 @@ import {
   fixedCostMonthly,
   netMargin,
   partnerCommission,
+  pctOf,
   pctText,
   pctUnits,
   ratio,
+  saleResult,
 } from '../../../../src/modules/receivables/cash-flow-indicators.formulas';
 
 describe('indicadores do fluxo de caixa (fórmulas)', () => {
@@ -131,5 +133,28 @@ describe('indicadores do fluxo de caixa (fórmulas)', () => {
       quarters: ['1200.00', '0.00', '33.34', '0.00'],
       year: '1233.34',
     });
+  });
+
+  it('venda simulada: resultado = venda do ano × MC (+ não reemb. × % se as despesas são do cliente)', () => {
+    expect(pctOf('5000.00', 125000n)).toBe('625.00');
+    expect(pctOf('3000.00', 133300n)).toBe('399.90');
+    // 5.000 × 60,503% = 3.025,15
+    expect(
+      saleResult({
+        yearSale: '5000.00',
+        clientPaysExpenses: false,
+        mcUnits: 605030n,
+        nonReimbursableUnits: 50000n,
+      }),
+    ).toEqual({ result: '3025.15', client_share: '0.00' });
+    // cliente paga as despesas: + 5.000 × 5% = 250,00
+    expect(
+      saleResult({
+        yearSale: '5000.00',
+        clientPaysExpenses: true,
+        mcUnits: 605030n,
+        nonReimbursableUnits: 50000n,
+      }),
+    ).toEqual({ result: '3275.15', client_share: '250.00' });
   });
 });

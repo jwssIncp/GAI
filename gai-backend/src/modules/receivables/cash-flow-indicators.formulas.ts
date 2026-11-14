@@ -60,7 +60,12 @@ export function contributionMargin(i: MarginInput) {
   const partner = div(pctUnits(i.partnerPct) * (HUNDRED - ir), HUNDRED);
   const mc = HUNDRED - ir - agents - nonReimb - commission - partner;
   return {
-    units: { mc, mce: mc + nonReimb },
+    units: {
+      mc,
+      mce: mc + nonReimb,
+      fieldAgents: agents,
+      nonReimbursable: nonReimb,
+    },
     income_tax_pct: pctText(ir),
     field_agents_pct: pctText(agents),
     non_reimbursable_pct: pctText(nonReimb),
@@ -221,4 +226,29 @@ export function partnerCommission(
     return money(v > 0n ? div(v * pct, HUNDRED) : 0n);
   });
   return { quarters, year: money(quarters.reduce((s, q) => s + cents(q), 0n)) };
+}
+
+/** valor × % (unidades de 1e-4 ponto), meio para cima. */
+export const pctOf = (amount: string, units: bigint): string =>
+  money(div(cents(amount) * units, HUNDRED));
+
+/**
+ * Efeito de uma venda simulada no resultado do ano (SIM_RES do INVESTOR):
+ * venda do ano × MC/100 + (se as despesas são do cliente) venda do ano ×
+ * %não reembolsáveis/100 — a parte que não sai do caixa da empresa.
+ */
+export function saleResult(i: {
+  yearSale: string;
+  clientPaysExpenses: boolean;
+  mcUnits: bigint;
+  nonReimbursableUnits: bigint;
+}) {
+  const margin = pctOf(i.yearSale, i.mcUnits);
+  const client = i.clientPaysExpenses
+    ? pctOf(i.yearSale, i.nonReimbursableUnits)
+    : '0.00';
+  return {
+    result: money(cents(margin) + cents(client)),
+    client_share: client,
+  };
 }

@@ -111,6 +111,7 @@ export type CashFlowIndicators =
       indicators: CashFlowIndicatorValues;
       simulation: null | {
         input: SaleSimulationInput;
+        basis: { field_agents_pct: string; non_reimbursable_pct: string; mc: string; year_sale: string; sale_result: string; client_share: string };
         movements: Array<{ date: string; direction: "in" | "out"; origin: string; gross: string }>;
         kpis: CashFlowKpis;
         indicators: CashFlowIndicatorValues;

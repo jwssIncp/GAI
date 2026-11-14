@@ -20,7 +20,8 @@ import {
   fixedCostMonthly,
   netMargin,
   partnerCommission,
-  pctUnits,
+  pctOf,
+  saleResult,
 } from './cash-flow-indicators.formulas';
 import { ReceivableService } from './receivable.service';
 
@@ -94,53 +95,102 @@ export class CashFlowIndicatorsService {
         i.currency === 'BRL' &&
         (!q.project_id || i.project_id === q.project_id),
     );
-    const compute = (items: FlowItem[]) =>
-      this.compute(items, params, { month, year });
-    const original = compute(all);
+    const ref = { month, year };
+    const { internals, ...original } = this.compute(all, params, ref);
     if (!simulation)
       return {
         configured: true as const,
         as_of: today,
-        reference: { month, year },
+        reference: ref,
         ...original,
         simulation: null,
       };
-    const extra = await this.simulate(org, simulation, today);
-    const simulated = compute([...all, ...extra]);
+    this.assertSimulation(simulation, today);
+    if (!internals.margin)
+      throw new BadRequestException({
+        code: 'SIMULATION_NO_HISTORY',
+        message:
+          'Sem receita recebida nos 12 meses anteriores: não há % histórico de inventariantes e despesas para simular a venda.',
+      });
+    const mu = internals.margin.units;
+    const extra = await this.simulate(org, simulation, today, mu);
+    // Meses (atual e próximo): pelos movimentos da venda (líquido de IR −
+    // inventariantes − não reembolsáveis), como o simMes do INVESTOR.
+    const live = all.filter((i) => i.status !== 'reversed');
+    const [moved] = cashFlowKpis([...live, ...extra], ref).filter(
+      (k) => k.currency === 'BRL',
+    );
+    // Ano: venda do ano × MC (+ a parte do cliente: não reemb. × % quando as
+    // despesas são do cliente), como o SIM_RES do INVESTOR.
+    const yearSale = sum(
+      extra.filter((i) => i.origin === 'simulation' && i.date.startsWith(year)),
+    );
+    const effect = saleResult({
+      yearSale,
+      clientPaysExpenses: !simulation.company_expenses,
+      mcUnits: mu.mc,
+      nonReimbursableUnits: mu.nonReimbursable,
+    });
+    const projected = money(cents(internals.result) + cents(effect.result));
+    const yearRevenue = money(cents(internals.yearRevenue) + cents(yearSale));
+    const yearTotal = money(
+      cents(original.kpis.year.total) + cents(effect.result),
+    );
     const delta = (a: string | null, b: string | null) =>
       a === null || b === null ? null : money(cents(b) - cents(a));
     return {
       configured: true as const,
       as_of: today,
-      reference: { month, year },
+      reference: ref,
       ...original,
       simulation: {
         input: simulation,
+        basis: {
+          field_agents_pct: internals.margin.field_agents_pct,
+          non_reimbursable_pct: internals.margin.non_reimbursable_pct,
+          mc: internals.margin.mc,
+          year_sale: yearSale,
+          sale_result: effect.result,
+          client_share: effect.client_share,
+        },
         movements: extra.map((i) => ({
           date: i.date,
           direction: i.direction,
           origin: i.origin_label,
           gross: i.gross,
         })),
-        kpis: simulated.kpis,
-        indicators: simulated.indicators,
-        delta: {
-          month_total: delta(
-            original.kpis.month.total,
-            simulated.kpis.month.total,
+        kpis: {
+          ...original.kpis,
+          month: moved.month,
+          next_month: moved.next_month,
+          year: { ...original.kpis.year, total: yearTotal },
+        },
+        indicators: {
+          ...original.indicators,
+          projected_result: projected,
+          year_revenue: yearRevenue,
+          accounting_break_even: accountingBreakEven(projected, mu.mce),
+          economic_break_even: economicBreakEven(
+            projected,
+            yearRevenue,
+            params.economic_break_even_margin_pct,
+            mu.mce,
           ),
+          net_margin: netMargin(
+            projected,
+            yearRevenue,
+            internals.nonReimbursableYear,
+            params.income_tax_pct,
+          ),
+        },
+        delta: {
+          month_total: delta(original.kpis.month.total, moved.month.total),
           next_month_total: delta(
             original.kpis.next_month.total,
-            simulated.kpis.next_month.total,
+            moved.next_month.total,
           ),
-          year_total: delta(
-            original.kpis.year.total,
-            simulated.kpis.year.total,
-          ),
-          projected_result: delta(
-            original.indicators.projected_result,
-            simulated.indicators.projected_result,
-          ),
+          year_total: effect.result,
+          projected_result: effect.result,
         },
       },
     };
@@ -211,9 +261,7 @@ export class CashFlowIndicatorsService {
     // Não reembolsáveis do ano (inclui as despesas da venda simulada, se houver).
     const nonReimbYear = sum(
       inYear.filter(
-        (i) =>
-          ['expense', 'simulation_expense'].includes(i.origin) &&
-          i.group === 'non_reimbursable',
+        (i) => i.origin === 'expense' && i.group === 'non_reimbursable',
       ),
     );
     const cutoff = `${p.dre_regime_cutoff_month}-01`;
@@ -232,6 +280,12 @@ export class CashFlowIndicatorsService {
         received_on: i.date,
       }));
     return {
+      internals: {
+        margin,
+        result,
+        yearRevenue,
+        nonReimbursableYear: nonReimbYear,
+      },
       kpis,
       indicators: {
         window: {
@@ -302,12 +356,7 @@ export class CashFlowIndicatorsService {
     };
   }
 
-  /** Venda hipotética (não gravada): 50% no mês do sinal, 30% e 20% nos seguintes, com IR e, se a empresa paga as despesas, o % orçado de não reembolsáveis. */
-  private async simulate(
-    org: number,
-    s: SaleSimulation,
-    today: string,
-  ): Promise<FlowItem[]> {
+  private assertSimulation(s: SaleSimulation, today: string): void {
     const current = today.slice(0, 7);
     if (s.signal_month < current)
       throw new BadRequestException({
@@ -320,6 +369,21 @@ export class CashFlowIndicatorsService {
         message:
           'Os meses das parcelas da venda simulada devem estar em ordem.',
       });
+  }
+
+  /**
+   * Venda hipotética (não gravada), como o simMes do INVESTOR: 50% no mês do
+   * sinal, 30% e 20% nos seguintes; cada parcela desconta o IR do parâmetro,
+   * os inventariantes pelo % histórico (12 meses) e, se a empresa paga as
+   * despesas, os não reembolsáveis pelo % histórico.
+   */
+  private async simulate(
+    org: number,
+    s: SaleSimulation,
+    today: string,
+    pct: { fieldAgents: bigint; nonReimbursable: bigint },
+  ): Promise<FlowItem[]> {
+    const current = today.slice(0, 7);
     // No mês atual a parcela cai hoje (não no dia 1º, que já passou).
     const dateOf = (m: string) => (m === current ? today : `${m}-01`);
     const parts = splitPercentages(s.value, ['50.00', '30.00', '20.00']);
@@ -335,8 +399,30 @@ export class CashFlowIndicatorsService {
       overdue_days: 0,
       installment: null,
       contract_pct: null,
+      derived: true,
+      refs: {},
     };
-    let budgetPct: string | null = null;
+    const outflow = (
+      key: string,
+      date: string,
+      gross: string,
+      group: FlowItem['group'],
+      origin: string,
+      label: string,
+      description: string,
+    ): FlowItem => ({
+      ...base,
+      key,
+      direction: 'out',
+      group,
+      origin,
+      origin_label: label,
+      date,
+      expected_on: date,
+      gross,
+      net: gross,
+      description,
+    });
     for (const [i, m] of months.entries()) {
       const date = dateOf(m);
       const p = await this.settings.valuesAt(org, date).catch(() => {
@@ -359,46 +445,39 @@ export class CashFlowIndicatorsService {
         net: money(cents(parts[i]) - cents(tax)),
         derived: false,
         description: `Parcela ${i + 1}/3 da venda simulada`,
-        refs: {},
       });
-      out.push({
-        ...base,
-        key: `sim:ir:${i}`,
-        direction: 'out',
-        group: 'non_reimbursable',
-        origin: 'income_tax',
-        origin_label: 'Imposto de Renda',
-        date,
-        expected_on: date,
-        gross: tax,
-        net: tax,
-        derived: true,
-        description: 'IR da venda simulada',
-        refs: {},
-      });
-      budgetPct ??= p.budgeted_non_reimbursable_expense_pct;
-    }
-    if (s.company_expenses && budgetPct) {
-      const total = money(
-        (cents(s.value) * pctUnits(budgetPct) * 2n + 1_000_000n) / 2_000_000n,
+      out.push(
+        outflow(
+          `sim:ir:${i}`,
+          date,
+          tax,
+          'non_reimbursable',
+          'income_tax',
+          'Imposto de Renda',
+          'IR da venda simulada',
+        ),
+        outflow(
+          `sim:fa:${i}`,
+          date,
+          pctOf(parts[i], pct.fieldAgents),
+          'non_reimbursable',
+          'simulation_field_agents',
+          'Inventariantes (simulação)',
+          'Inventariantes pelo % histórico',
+        ),
       );
-      splitPercentages(total, ['50.00', '30.00', '20.00']).forEach((v, i) =>
-        out.push({
-          ...base,
-          key: `sim:exp:${i}`,
-          direction: 'out',
-          group: 'non_reimbursable',
-          origin: 'simulation_expense',
-          origin_label: 'Despesas não reembolsáveis (simulação)',
-          date: dateOf(months[i]),
-          expected_on: dateOf(months[i]),
-          gross: v,
-          net: v,
-          derived: false,
-          description: `Despesas por conta da empresa: ${budgetPct.replace('.', ',')}% orçado`,
-          refs: {},
-        }),
-      );
+      if (s.company_expenses)
+        out.push(
+          outflow(
+            `sim:nr:${i}`,
+            date,
+            pctOf(parts[i], pct.nonReimbursable),
+            'non_reimbursable',
+            'simulation_expense',
+            'Despesas não reembolsáveis (simulação)',
+            'Despesas por conta da empresa pelo % histórico',
+          ),
+        );
     }
     return out;
   }
