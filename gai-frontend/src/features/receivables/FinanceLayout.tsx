@@ -21,6 +21,7 @@ const PAGES: Record<string, [title: string, description: string]> = {
     "Placas de patrimônio",
     "Compra de plaquetas do fornecedor e revenda ao cliente: custo, valor, líquido de impostos e lucro.",
   ],
+  commissions: ["Comissões", "Comissões comerciais por contrato e parceiro: calculadas ou informadas, pagas, pendentes e atrasadas."],
   parameters: [
     "Parâmetros financeiros",
     "Valores usados nos cálculos financeiros da organização: impostos, comissões, diária padrão, custos fixos, listas e limites de anexo. Nenhum cálculo usa valor fixo no sistema: sem versão vigente, as telas que dependem destes parâmetros pedem a configuração.",

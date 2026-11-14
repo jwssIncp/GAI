@@ -9,6 +9,12 @@ import {
   AssetTagOrderEntity,
   AssetTagsModule,
 } from './modules/asset-tags/asset-tags.module';
+import {
+  CommissionAuditLogEntity,
+  CommissionEntity,
+  CommissionPartnerEntity,
+  CommissionsModule,
+} from './modules/commissions/commissions.module';
 import { RECEIVABLE_ENTITIES } from './modules/receivables/receivable.entity';
 import { ReceivablesModule } from './modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from './modules/budgets/budget.entity';
@@ -204,6 +210,9 @@ import { UsersModule } from './modules/users/users.module';
           FinanceSettingsVersionEntity,
           AssetTagOrderEntity,
           AssetTagOrderAuditLogEntity,
+          CommissionPartnerEntity,
+          CommissionEntity,
+          CommissionAuditLogEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -246,6 +255,7 @@ import { UsersModule } from './modules/users/users.module';
     FinanceSettingsModule,
     ManagerialDreModule,
     AssetTagsModule,
+    CommissionsModule,
     TechnicalReportsModule,
     DocumentsModule,
     AssistedReconciliationModule,

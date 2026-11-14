@@ -12,6 +12,12 @@ import {
   AssetTagOrderEntity,
   AssetTagsModule,
 } from '../../src/modules/asset-tags/asset-tags.module';
+import {
+  CommissionAuditLogEntity,
+  CommissionEntity,
+  CommissionPartnerEntity,
+  CommissionsModule,
+} from '../../src/modules/commissions/commissions.module';
 import { RECEIVABLE_ENTITIES } from '../../src/modules/receivables/receivable.entity';
 import { ReceivablesModule } from '../../src/modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from '../../src/modules/budgets/budget.entity';
@@ -243,6 +249,9 @@ export async function createTestApp(
           FinanceSettingsVersionEntity,
           AssetTagOrderEntity,
           AssetTagOrderAuditLogEntity,
+          CommissionPartnerEntity,
+          CommissionEntity,
+          CommissionAuditLogEntity,
           ImportSessionEntity,
           ImportPayloadEntity,
           ImportPayloadErrorEntity,
@@ -286,6 +295,7 @@ export async function createTestApp(
       ReceivablesModule,
       ManagerialDreModule,
       AssetTagsModule,
+      CommissionsModule,
       TechnicalReportsModule,
       DocumentsModule,
       AssistedReconciliationModule,

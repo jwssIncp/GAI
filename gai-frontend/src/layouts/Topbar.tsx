@@ -40,6 +40,7 @@ const breadcrumbLabels: Record<string, string> = {
   'field-agent-payments': 'Pagamento de inventariantes',
   expenses: 'Despesas',
   'asset-tags': 'Placas de patrimônio',
+  commissions: 'Comissões',
   new:'Novo',
   'import-sessions': 'Importações',
   'export-jobs': 'Exportações',

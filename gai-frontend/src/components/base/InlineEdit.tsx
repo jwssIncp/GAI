@@ -40,6 +40,8 @@ export function InlineEdit({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const show = (raw: string) => (raw === "" ? "(vazio)" : format ? format(raw) : options?.find((o) => o.value === raw)?.label ?? raw);
+  /** Na célula, vazio aparece como "—"; "(vazio)" fica só na confirmação De/Para. */
+  const cellText = (raw: string) => (raw === "" ? (options?.find((o) => o.value === "")?.label ?? "—") : show(raw));
 
   const commit = (typed: string) => {
     setEditing(false);
@@ -55,7 +57,7 @@ export function InlineEdit({
     window.setTimeout(() => setPending(raw), 0);
   };
 
-  if (disabled) return <span>{display ?? show(value)}</span>;
+  if (disabled) return <span>{display ?? cellText(value)}</span>;
   return (
     <>
       {editing ? (
@@ -98,7 +100,7 @@ export function InlineEdit({
             setEditing(true);
           }}
         >
-          {display ?? show(value)}
+          {display ?? cellText(value)}
         </button>
       )}
       {error ? <span role="alert" className="block text-xs text-destructive">{error}</span> : null}

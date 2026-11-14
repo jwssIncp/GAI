@@ -890,6 +890,20 @@ for (const [key, description] of [
     description,
   });
 
+// Paridade financeira, etapa 6: comissões e parceiros.
+for (const [key, description] of [
+  ['commissions:read', 'Comissões: consultar comissões e parceiros'],
+  ['commissions:edit', 'Comissões: lançar, editar e excluir'],
+  ['commission-partners:edit', 'Parceiros de comissão: cadastrar e excluir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
 // Paridade financeira, etapa 5: placas de patrimônio.
 for (const [key, description] of [
   ['asset-tag-orders:read', 'Placas de patrimônio: consultar'],
