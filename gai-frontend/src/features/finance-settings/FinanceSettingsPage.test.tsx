@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import type { CurrentUser } from "@/types/api";
@@ -44,6 +45,8 @@ const defaults: FinanceSettingsValues = {
 const empty: FinanceSettingsOverview = {
   organization_id: 1,
   today: "2026-11-13",
+  earliest_fact_date: null,
+  coverage_start: null,
   current: null,
   scheduled: null,
   versions: [],
@@ -72,12 +75,14 @@ function user(permissions: string[]): CurrentUser {
     permissions: permissions.map((key) => ({ key, scope: "ORGANIZATION" as const })),
   };
 }
-function renderPage(current: CurrentUser) {
+function renderPage(current: CurrentUser, path = "/app/finance/parameters") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <AuthContext.Provider value={{ user: current, bootstrapping: false } as AuthState}>
-        <FinanceSettingsPage />
+        <MemoryRouter initialEntries={[path]}>
+          <FinanceSettingsPage />
+        </MemoryRouter>
       </AuthContext.Provider>
     </QueryClientProvider>,
   );
@@ -85,6 +90,28 @@ function renderPage(current: CurrentUser) {
 
 describe("Parâmetros financeiros", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("lançamentos antes da primeira versão: aviso e versão retroativa sugerida com a data do mais antigo", async () => {
+    const covered = { ...empty, earliest_fact_date: "2026-03-10", coverage_start: "2026-11-01", current: version, versions: [version] };
+    mocks.get.mockResolvedValue({ data: covered });
+    mocks.post.mockResolvedValue({ data: version });
+    renderPage(user(["finance-settings:read", "finance-settings:update"]));
+    expect(await screen.findByText(/sem parâmetro vigente/)).toHaveTextContent("Há lançamentos financeiros desde 10/03/2026");
+    await userEvent.click(screen.getByRole("button", { name: "Publicar versão retroativa desde 10/03/2026" }));
+    const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
+    expect(within(form).getByLabelText("Vale a partir de")).toHaveValue("2026-03-10");
+    expect(within(form).getByRole("alert")).toHaveTextContent(
+      "Esta versão será aplicada a todos os lançamentos desde 10/03/2026 até 01/11/2026 (início da versão mais antiga).",
+    );
+  });
+
+  it("link dos avisos (?valid_from=) abre o formulário já com a data retroativa", async () => {
+    mocks.get.mockResolvedValue({ data: { ...empty, earliest_fact_date: "2026-10-01", coverage_start: "2026-11-01", current: version, versions: [version] } });
+    renderPage(user(["finance-settings:read", "finance-settings:update"]), "/app/finance/parameters?valid_from=2026-10-05");
+    const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
+    expect(within(form).getByLabelText("Vale a partir de")).toHaveValue("2026-10-05");
+    expect(within(form).getByRole("alert")).toHaveTextContent("desde 05/10/2026");
+  });
 
   it("sem versão, quem pode alterar cria a primeira a partir dos valores padrão", async () => {
     mocks.get.mockImplementation((url: string) =>

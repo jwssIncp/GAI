@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -12,6 +13,7 @@ import {
   financeSettingsApi,
   financeSettingsKeys,
   nextValidFrom,
+  uncoveredSince,
   type FinanceSettingsOverview,
   type FinanceSettingsValues,
   type FinanceSettingsVersion,
@@ -133,15 +135,20 @@ function VersionSummary({ version, title }: { version: FinanceSettingsVersion; t
 function VersionForm({
   overview,
   initial,
+  startDate,
   onCancel,
 }: {
   overview: FinanceSettingsOverview;
   initial: FinanceSettingsValues;
+  /** Data sugerida (ex.: do lançamento mais antigo sem parâmetro). */
+  startDate?: string;
   onCancel: () => void;
 }) {
   const cache = useQueryClient();
   const [values, setValues] = useState<FinanceSettingsValues>(() => structuredClone(initial));
-  const [validFrom, setValidFrom] = useState(() => nextValidFrom(overview));
+  const [validFrom, setValidFrom] = useState(() => startDate ?? nextValidFrom(overview));
+  const gap = uncoveredSince(overview);
+  const until = overview.coverage_start && validFrom < overview.coverage_start ? overview.coverage_start : null;
   const [reason, setReason] = useState(
     overview.versions.length ? "" : "Versão inicial com os valores padrão",
   );
@@ -258,12 +265,24 @@ function VersionForm({
         <FormField label="Vale a partir de">
           <Input
             type="date"
-            min={nextValidFrom(overview)}
+            aria-label="Vale a partir de"
             value={validFrom}
             onChange={(event) => setValidFrom(event.target.value)}
             required
           />
+          {gap && validFrom !== gap ? (
+            <button type="button" className="text-left text-xs font-semibold text-primary-text underline" onClick={() => setValidFrom(gap)}>
+              Usar a data do lançamento mais antigo ({formatDate(gap)})
+            </button>
+          ) : null}
         </FormField>
+        {validFrom && validFrom < overview.today ? (
+          <p role="alert" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm sm:col-span-2">
+            Esta versão será aplicada a todos os lançamentos desde {formatDate(validFrom)}
+            {until ? ` até ${formatDate(until)} (início da versão mais antiga)` : ""}. Os valores calculados desses
+            lançamentos passam a usar estes parâmetros. Competências já fechadas na DRE não podem ser alcançadas.
+          </p>
+        ) : null}
         <FormField label="Justificativa">
           <Input value={reason} minLength={5} onChange={(event) => setReason(event.target.value)} required />
         </FormField>
@@ -412,14 +431,34 @@ export function FinanceSettingsPage() {
   const { hasPermission } = usePermissions();
   const canUpdate = hasPermission("finance-settings:update");
   const [draft, setDraft] = useState<FinanceSettingsValues | null>(null);
+  const [params, setParams] = useSearchParams();
+  const requested = /^\d{4}-\d{2}-\d{2}$/.test(params.get("valid_from") ?? "") ? params.get("valid_from")! : undefined;
+  const [startDate, setStartDate] = useState<string | undefined>(requested);
   const query = useQuery({ queryKey: financeSettingsKeys.all, queryFn: financeSettingsApi.overview });
   const defaults = useMutation({ mutationFn: financeSettingsApi.defaults, onSuccess: setDraft });
+  const loaded = query.data;
+  // Link dos avisos "sem parâmetro vigente": abre o formulário já com a data retroativa.
+  useEffect(() => {
+    if (!requested || !canUpdate || !loaded || draft) return;
+    const base = loaded.scheduled ?? loaded.current;
+    if (base) setDraft(base.values);
+    else if (!defaults.isPending) defaults.mutate();
+    setParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requested, canUpdate, loaded]);
+  const openRetroactive = (date: string) => {
+    setStartDate(date);
+    const base = loaded?.scheduled ?? loaded?.current;
+    if (base) setDraft(base.values);
+    else defaults.mutate();
+  };
 
   if (query.isPending) return <LoadingState label="Carregando parâmetros financeiros" />;
   if (query.isError)
     return <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} />;
   const overview = query.data;
   const base = overview.scheduled ?? overview.current;
+  const uncovered = uncoveredSince(overview);
 
   return (
     <div className="grid gap-4">
@@ -432,7 +471,24 @@ export function FinanceSettingsPage() {
       </div>
 
       {draft ? (
-        <VersionForm overview={overview} initial={draft} onCancel={() => setDraft(null)} />
+        <VersionForm overview={overview} initial={draft} startDate={startDate} onCancel={() => { setDraft(null); setStartDate(undefined); }} />
+      ) : null}
+
+      {uncovered && overview.versions.length && !draft ? (
+        <section className="grid gap-2 rounded-lg border border-warning/50 bg-warning/10 p-4 text-sm" role="status">
+          <p>
+            Há lançamentos financeiros desde <strong>{formatDate(uncovered)}</strong> sem parâmetro vigente: a versão mais
+            antiga só vale a partir de {formatDate(overview.coverage_start!)}. Os cálculos que dependem de parâmetros
+            (impostos de placas, IR, diária padrão…) ficam em branco nesses lançamentos; o sistema não usa valor de reserva.
+          </p>
+          {canUpdate ? (
+            <div>
+              <Button type="button" onClick={() => openRetroactive(uncovered)}>
+                Publicar versão retroativa desde {formatDate(uncovered)}
+              </Button>
+            </div>
+          ) : null}
+        </section>
       ) : null}
 
       {!overview.versions.length && !draft ? (
@@ -444,9 +500,14 @@ export function FinanceSettingsPage() {
                 Crie a primeira versão a partir dos valores padrão e ajuste o que for preciso antes de salvar.
               </p>
               <div>
-                <Button type="button" loading={defaults.isPending} onClick={() => defaults.mutate()}>
+                <Button type="button" loading={defaults.isPending} onClick={() => { setStartDate(uncovered ?? undefined); defaults.mutate(); }}>
                   Criar com valores padrão
                 </Button>
+                {uncovered ? (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Sugestão de vigência: {formatDate(uncovered)}, data do lançamento financeiro mais antigo da organização.
+                  </p>
+                ) : null}
               </div>
             </>
           ) : (

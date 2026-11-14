@@ -116,6 +116,10 @@ export interface FinanceSettingsVersionResponse {
 export interface FinanceSettingsOverviewResponse {
   organization_id: number;
   today: string;
+  /** Data do lançamento financeiro mais antigo (sugestão de "vale a partir de"). */
+  earliest_fact_date: string | null;
+  /** Início da versão mais antiga: antes dele, nenhum parâmetro vigente. */
+  coverage_start: string | null;
   current: FinanceSettingsVersionResponse | null;
   scheduled: FinanceSettingsVersionResponse | null;
   versions: FinanceSettingsVersionResponse[];

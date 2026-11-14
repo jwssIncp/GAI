@@ -149,7 +149,11 @@ export class AssetTagsService {
     );
     const qty = (list: typeof visible) =>
       list.reduce((s, r) => s + r.quantity, 0);
-    const missingTax = visible.some((r) => r.net_value === null);
+    // Pedido sem % de impostos vigente não apaga o total: soma os calculáveis
+    // e informa quantos ficaram de fora (e desde quando, para o link retroativo).
+    const missing = visible.filter((r) => r.net_value === null);
+    const calculable = visible.filter((r) => r.net_value !== null);
+    const missingSince = missing.map((r) => r.ordered_on).sort()[0] ?? null;
     const current = await this.parametersAt(organizationId, today);
     return {
       today,
@@ -174,23 +178,21 @@ export class AssetTagsService {
         to_receive: qty(visible.filter((r) => !r.client_received)),
         cost_total: sumCents(visible.map((r) => r.cost_total)),
         value_total: sumCents(visible.map((r) => r.value_total)),
-        net_profit: missingTax
-          ? null
-          : sumCents(visible.map((r) => r.net_profit!)),
-        /** Pedidos sem % de impostos vigente na data do pedido (líquido e lucro em branco). */
-        missing_tax_count: visible.filter((r) => r.net_value === null).length,
+        /** Soma dos pedidos calculáveis (os sem % de impostos ficam de fora). */
+        net_profit: sumCents(calculable.map((r) => r.net_profit!)),
+        /** Pedidos sem % de impostos vigente na data do pedido. */
+        missing_tax_count: missing.length,
+        /** Data do pedido mais antigo sem % (sugestão de versão retroativa). */
+        missing_tax_since: missingSince,
       },
       totals: {
         count: visible.length,
         quantity: qty(visible),
         cost_total: sumCents(visible.map((r) => r.cost_total)),
         value_total: sumCents(visible.map((r) => r.value_total)),
-        net_value: missingTax
-          ? null
-          : sumCents(visible.map((r) => r.net_value!)),
-        net_profit: missingTax
-          ? null
-          : sumCents(visible.map((r) => r.net_profit!)),
+        net_value: sumCents(calculable.map((r) => r.net_value!)),
+        net_profit: sumCents(calculable.map((r) => r.net_profit!)),
+        missing_tax_count: missing.length,
       },
       items: visible,
     };

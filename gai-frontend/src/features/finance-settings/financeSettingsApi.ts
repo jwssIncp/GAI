@@ -53,6 +53,10 @@ export type FinanceSettingsVersion = {
 export type FinanceSettingsOverview = {
   organization_id: number;
   today: string;
+  /** Data do lançamento financeiro mais antigo da organização (sugestão de vigência). */
+  earliest_fact_date: string | null;
+  /** Início da versão mais antiga; antes dele, nenhum parâmetro vigente. */
+  coverage_start: string | null;
   current: FinanceSettingsVersion | null;
   scheduled: FinanceSettingsVersion | null;
   versions: FinanceSettingsVersion[];
@@ -77,6 +81,16 @@ export const FIXED_COST_MODE_LABEL: Record<FixedCostItemMode, string> = {
 };
 
 /** Próxima data de início permitida: hoje, ou o dia seguinte à última vigência. */
+/** Há lançamentos sem parâmetro vigente (antes da primeira versão, ou nenhuma versão)? */
+export function uncoveredSince(overview: FinanceSettingsOverview): string | null {
+  const first = overview.earliest_fact_date;
+  if (!first) return null;
+  return !overview.coverage_start || first < overview.coverage_start ? first : null;
+}
+
+/** Endereço para publicar uma versão retroativa a partir de uma data (links dos avisos). */
+export const retroactiveSettingsUrl = (date: string) => `/app/finance/parameters?valid_from=${date}`;
+
 export function nextValidFrom(overview: FinanceSettingsOverview): string {
   const latest = overview.versions.reduce<string | null>(
     (max, version) => (max === null || version.valid_from > max ? version.valid_from : max),

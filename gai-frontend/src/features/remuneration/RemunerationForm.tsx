@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { FormField } from "@/components/base/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,7 +82,11 @@ export function RemunerationForm({
     >
       {data.parameters.settings_missing ? (
         <p role="note" className="rounded-md border p-3 text-sm">
-          A organização ainda não tem parâmetros financeiros: informe a diária manualmente.
+          Sem parâmetros financeiros vigentes: informe a diária manualmente ou{" "}
+          <Link className="font-semibold underline" to="/app/finance/parameters">
+            publique os parâmetros
+          </Link>
+          .
         </p>
       ) : null}
       <FormField label="Inventariante" error={errors.field_agent_id}>

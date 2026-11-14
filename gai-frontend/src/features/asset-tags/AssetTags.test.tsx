@@ -63,8 +63,8 @@ const data = (): AssetTagList => ({
   today: "2026-11-13",
   parameters: { configured: true, tag_tax_pct: "16.00", tag_models: ["Alumínio", "Aço", "Policarbonato"], default_tag_supplier: "Planner" },
   projects: [{ id: 10, name: "Alfa", open: true }, { id: 11, name: "Beta", open: true }],
-  kpis: { purchased: 1200, supplier_pending: 1000, to_receive: 1200, cost_total: "1450.00", value_total: "3100.00", net_profit: "1154.00", missing_tax_count: 0 },
-  totals: { count: 2, quantity: 1200, cost_total: "1450.00", value_total: "3100.00", net_value: "2604.00", net_profit: "1154.00" },
+  kpis: { purchased: 1200, supplier_pending: 1000, to_receive: 1200, cost_total: "1450.00", value_total: "3100.00", net_profit: "1154.00", missing_tax_count: 0, missing_tax_since: null },
+  totals: { count: 2, quantity: 1200, cost_total: "1450.00", value_total: "3100.00", net_value: "2604.00", net_profit: "1154.00", missing_tax_count: 0 },
   items: [
     row(1),
     row(2, { quantity: 200, sequence_start: null, sequence_end: null, quantity_from_sequence: false, unit_cost: "3.0000", unit_price: "3.0000", cost_total: "600.00", value_total: "600.00", net_value: "504.00", net_profit: "-96.00", expense_type: "non_reimbursable", expense_type_source: "manual" }),
@@ -89,6 +89,18 @@ describe("Placas de patrimônio", () => {
     expect(table.getByText("-R$ 96,00")).toHaveClass("text-destructive");
     expect(table.getByTitle("Calculada pela sequência (fim − início + 1)")).toHaveTextContent("1.000");
     expect(table.getByText(/Não reembolsável ✎/)).toBeInTheDocument();
+  });
+
+  it("pedido sem % de impostos não apaga o lucro: soma os calculáveis e mostra a nota com link retroativo", async () => {
+    const d = data();
+    d.kpis = { ...d.kpis, net_profit: "1250.00", missing_tax_count: 1, missing_tax_since: "2026-10-05" };
+    d.items[1] = { ...d.items[1], tax_pct: null, net_value: null, net_profit: null };
+    mocks.list.mockResolvedValue(d);
+    mount();
+    const kpis = within(await screen.findByRole("region", { name: "Indicadores das placas" }));
+    expect(kpis.getByText("Lucro líquido").nextSibling).toHaveTextContent("R$ 1.250,00");
+    expect(kpis.getByText("1 pedido(s) sem % de impostos")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Publicar versão dos parâmetros desde 05/10/2026" })).toHaveAttribute("href", "/app/finance/parameters?valid_from=2026-10-05");
   });
 
   it("edição em linha confirma De/Para antes de gravar", async () => {

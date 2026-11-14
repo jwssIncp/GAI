@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { Plus, Trash2 } from "lucide-react";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
@@ -26,11 +27,12 @@ import {
 const select = "h-10 max-w-[14rem] rounded-md border bg-background px-3 text-sm";
 const TYPE_LABEL = { reimbursable: "Reembolsável", non_reimbursable: "Não reembolsável" } as const;
 
-function Kpi({ label, value, negative }: { label: string; value: string; negative?: boolean }) {
+function Kpi({ label, value, negative, note }: { label: string; value: string; negative?: boolean; note?: string }) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-lg font-semibold tabular-nums ${negative ? "text-destructive" : ""}`}>{value}</p>
+      {note ? <p className="text-xs text-warning">{note}</p> : null}
     </div>
   );
 }
@@ -78,11 +80,17 @@ export function AssetTagsPage() {
         Quantidade = sequência final − inicial + 1 (quando informada).
         Valor líquido = valor total − {tax ? `${tax.replace(".", ",")}%` : "% de impostos dos parâmetros"} de impostos; lucro = líquido − custo.
         O tipo de despesa vem de "Plaquetas por conta de" do contrato; a alteração manual prevalece.
-        {!data.parameters.configured ? " Sem parâmetros financeiros vigentes: líquido e lucro ficam em branco." : ""}
+        {!data.parameters.configured ? " Sem parâmetros financeiros vigentes hoje: o líquido dos pedidos novos fica em branco." : ""}
       </p>
       {k.missing_tax_count ? (
         <p role="status" className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
-          {k.missing_tax_count} pedido(s) com data anterior à primeira versão dos parâmetros financeiros: sem % de impostos vigente na data, líquido e lucro ficam em branco (o sistema não usa valor de reserva). Para calculá-los, publique em Parâmetros financeiros uma versão válida desde essa data.
+          {k.missing_tax_count} pedido(s) sem % de impostos vigente na data do pedido (anterior à primeira versão dos parâmetros
+          financeiros): líquido e lucro desses pedidos ficam em branco e fora dos totais; o sistema não usa valor de reserva.{" "}
+          {k.missing_tax_since ? (
+            <Link className="font-semibold underline" to={retroactiveSettingsUrl(k.missing_tax_since)}>
+              Publicar versão dos parâmetros desde {civilBr(k.missing_tax_since)}
+            </Link>
+          ) : null}
         </p>
       ) : null}
       <section aria-label="Indicadores das placas" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
@@ -91,7 +99,7 @@ export function AssetTagsPage() {
         <Kpi label="A receber (qtd)" value={qty(k.to_receive)} />
         <Kpi label="Custo total" value={formatMoney(k.cost_total)} />
         <Kpi label="Valor total cliente" value={formatMoney(k.value_total)} />
-        <Kpi label="Lucro líquido" value={k.net_profit === null ? "—" : formatMoney(k.net_profit)} negative={k.net_profit?.startsWith("-")} />
+        <Kpi label="Lucro líquido" value={formatMoney(k.net_profit)} negative={k.net_profit.startsWith("-")} note={k.missing_tax_count ? `${k.missing_tax_count} pedido(s) sem % de impostos` : undefined} />
       </section>
       <FilterPanel>
         <select aria-label="Filtrar por projeto" className={select} value={filters.project_id ?? ""} onChange={(e) => setFilter("project_id", e.target.value)}>
@@ -201,8 +209,8 @@ export function AssetTagsPage() {
                 <td colSpan={13} />
                 <td className="px-2 py-3 tabular-nums">{formatMoney(data.totals.cost_total)}</td>
                 <td className="px-2 py-3 tabular-nums">{formatMoney(data.totals.value_total)}</td>
-                <td className="px-2 py-3 tabular-nums">{data.totals.net_value === null ? "—" : formatMoney(data.totals.net_value)}</td>
-                <td className={`px-2 py-3 tabular-nums ${data.totals.net_profit?.startsWith("-") ? "text-destructive" : ""}`}>{data.totals.net_profit === null ? "—" : formatMoney(data.totals.net_profit)}</td>
+                <td className="px-2 py-3 tabular-nums" title={data.totals.missing_tax_count ? `Sem ${data.totals.missing_tax_count} pedido(s) sem % de impostos` : undefined}>{formatMoney(data.totals.net_value)}{data.totals.missing_tax_count ? "*" : ""}</td>
+                <td className={`px-2 py-3 tabular-nums ${data.totals.net_profit.startsWith("-") ? "text-destructive" : ""}`}>{formatMoney(data.totals.net_profit)}{data.totals.missing_tax_count ? "*" : ""}</td>
                 <td />
               </tr>
             </tfoot>

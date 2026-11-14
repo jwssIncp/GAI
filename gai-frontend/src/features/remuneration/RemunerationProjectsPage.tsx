@@ -46,7 +46,7 @@ export function RemunerationProjectsPage() {
           reembolsáveis).{" "}
           {limit
             ? `Alerta acima de ${limit.replace(".", ",")}% (parâmetros financeiros).`
-            : "Sem parâmetros financeiros vigentes: o alerta fica desligado."}
+            : <>Sem parâmetros financeiros vigentes: o alerta fica desligado. <Link className="font-semibold underline" to="/app/finance/parameters">Publicar parâmetros</Link></>}
         </p>
       </div>
       <FilterPanel>

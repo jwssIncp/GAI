@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import {
   CheckCircle2,
   CreditCard,
@@ -161,6 +162,12 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         </div>
       ) : null}
 
+      {!data.parameters.configured ? (
+        <p role="status" className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
+          Sem parâmetros financeiros vigentes: a lista de motivos e os limites de anexo não se aplicam.{" "}
+          <Link className="font-semibold underline" to="/app/finance/parameters">Publicar parâmetros</Link>
+        </p>
+      ) : null}
       <section aria-label="Indicadores das despesas" className="grid grid-cols-2 gap-2 md:grid-cols-4">
         <Kpi label="Total de despesas" value={formatMoney(k.total)} hint={`${k.count} lançamento(s), sem rejeitadas e canceladas`} />
         <Kpi label="Reembolsável" value={formatMoney(k.reimbursable)} hint={`${pctBr(k.reimbursable_pct)} do total`} />

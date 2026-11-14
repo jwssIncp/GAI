@@ -218,24 +218,46 @@ export function civilToday(now = new Date()): string {
 }
 
 /**
- * Regras de vigência: versões só são acrescentadas. A primeira pode começar em
- * qualquer data; as seguintes começam depois da última e nunca antes de hoje
- * (sem edição retroativa).
+ * Regras de vigência: versões só são acrescentadas e nenhuma existente muda.
+ * A nova versão pode começar:
+ * - antes da primeira (preenche o período que estava sem parâmetros: os
+ *   lançamentos antigos passam a ter valor, e nenhum valor já usado muda);
+ * - depois da última, inclusive no passado (vale desde essa data; a tela avisa
+ *   "será aplicada a todos os lançamentos desde DD/MM/AAAA").
+ * Começar entre versões existentes é recusado (mudaria valores já vigentes),
+ * assim como alcançar competência já fechada na DRE.
  */
 export function assertNewVersionStart(
   validFrom: string,
-  latestValidFrom: string | null,
+  existingStarts: string[],
   today: string,
+  closedDreMonths: string[] = [],
 ): void {
   if (!isCivilDate(validFrom)) invalid('Início da vigência: data inválida.');
-  if (latestValidFrom === null) return;
-  if (validFrom <= latestValidFrom)
+  if (existingStarts.includes(validFrom))
+    conflict(`Já existe uma versão que vale a partir de ${br(validFrom)}.`);
+  const sorted = [...existingStarts].sort();
+  const earliest = sorted[0] ?? null;
+  const latest = sorted[sorted.length - 1] ?? null;
+  const before = earliest !== null && validFrom < earliest;
+  if (earliest !== null && !before && validFrom < latest)
     conflict(
-      `A nova versão precisa começar depois da vigência atual (${latestValidFrom}).`,
+      `A nova versão precisa começar antes da primeira (${br(earliest)}) ou depois da última (${br(latest)}); entre versões mudaria valores já vigentes.`,
     );
-  if (validFrom < today)
-    conflict('Não é possível criar uma versão com início no passado.');
+  // Período afetado: do início até a primeira versão (preenchimento) ou até hoje.
+  const end = before ? earliest : today;
+  if (validFrom < end) {
+    const from = validFrom.slice(0, 7);
+    const to = end.slice(0, 7);
+    const hit = closedDreMonths.filter((m) => m >= from && m <= to).sort();
+    if (hit.length)
+      conflict(
+        `A vigência alcançaria competência fechada na DRE (${hit.join(', ')}). Reabra a competência ou escolha uma data posterior.`,
+      );
+  }
 }
+
+const br = (civil: string) => civil.split('-').reverse().join('/');
 
 /** Versão vigente numa data: a de maior início que não seja posterior a ela. */
 export function versionInForce<T extends { validFrom: string }>(

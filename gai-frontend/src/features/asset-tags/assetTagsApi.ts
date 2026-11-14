@@ -44,8 +44,8 @@ export type AssetTagList = {
   today: string;
   parameters: { configured: boolean; tag_tax_pct: string | null; tag_models: string[] | null; default_tag_supplier: string | null };
   projects: Array<{ id: number; name: string; open: boolean }>;
-  kpis: { purchased: number; supplier_pending: number; to_receive: number; cost_total: string; value_total: string; net_profit: string | null; missing_tax_count: number };
-  totals: { count: number; quantity: number; cost_total: string; value_total: string; net_value: string | null; net_profit: string | null };
+  kpis: { purchased: number; supplier_pending: number; to_receive: number; cost_total: string; value_total: string; net_profit: string; missing_tax_count: number; missing_tax_since: string | null };
+  totals: { count: number; quantity: number; cost_total: string; value_total: string; net_value: string; net_profit: string; missing_tax_count: number };
   items: AssetTagRow[];
 };
 

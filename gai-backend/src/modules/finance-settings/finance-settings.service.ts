@@ -100,11 +100,62 @@ export class FinanceSettingsService {
     return {
       organization_id: organizationId,
       today,
+      earliest_fact_date: await this.earliestFactDate(m, organizationId),
+      coverage_start: rows.length
+        ? rows.map((row) => row.validFrom).sort()[0]
+        : null,
       current: current ? byId.get(current.id)! : null,
       scheduled: scheduled ? byId.get(scheduled.id)! : null,
       versions: presented,
       platform_max_upload_bytes: this.platformMaxUploadBytes(),
     };
+  }
+
+  /**
+   * Data do lançamento financeiro mais antigo da organização (contrato, diária,
+   * despesa, placa ou comissão): é a sugestão de "vale a partir de" para que
+   * nenhum lançamento fique sem parâmetro vigente.
+   */
+  async earliestFactDate(
+    m: EntityManager,
+    organizationId: number,
+  ): Promise<string | null> {
+    const dates: string[] = [];
+    const civil = (v: unknown) =>
+      v instanceof Date
+        ? v.toISOString().slice(0, 10)
+        : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)
+          ? v.slice(0, 10)
+          : null;
+    for (const [table, column] of [
+      ['field_agent_payments', 'start_date'],
+      ['expenses', 'expense_date'],
+      ['asset_tag_orders', 'ordered_on'],
+      ['commissions', 'expected_payment_on'],
+      ['commissions', 'paid_on'],
+    ] as const) {
+      const rows = await m.query<Array<{ d: unknown }>>(
+        `SELECT MIN(${column}) AS d FROM ${table} WHERE organization_id = ? AND deleted_at IS NULL`,
+        [organizationId],
+      );
+      const d = civil(rows[0]?.d);
+      if (d) dates.push(d);
+    }
+    // Data do contrato fica no JSON: lida em memória (poucos por organização).
+    const contracts = await m.query<Array<{ data: unknown }>>(
+      'SELECT data FROM project_contracts WHERE organization_id = ?',
+      [organizationId],
+    );
+    for (const row of contracts) {
+      const data = (
+        typeof row.data === 'string'
+          ? (JSON.parse(row.data) as unknown)
+          : row.data
+      ) as { contracted_on?: string | null } | null;
+      const d = civil(data?.contracted_on);
+      if (d) dates.push(d);
+    }
+    return dates.sort()[0] ?? null;
   }
 
   async publish(
@@ -123,12 +174,16 @@ export class FinanceSettingsService {
     return this.ds.transaction(async (m) => {
       await this.lockOrganization(m, organizationId);
       const previous = await this.versions(m, organizationId);
-      const latest = previous.reduce<string | null>(
-        (max, row) =>
-          max === null || row.validFrom > max ? row.validFrom : max,
-        null,
+      const closed = await m.query<Array<{ month: string }>>(
+        'SELECT month FROM dre_periods WHERE organization_id = ? AND closed = ?',
+        [organizationId, true],
       );
-      assertNewVersionStart(dto.valid_from, latest, civilToday());
+      assertNewVersionStart(
+        dto.valid_from,
+        previous.map((row) => row.validFrom),
+        civilToday(),
+        closed.map((row) => row.month),
+      );
       const saved = await m.save(
         FinanceSettingsVersionEntity,
         m.create(FinanceSettingsVersionEntity, {

@@ -207,38 +207,72 @@ describe('Parâmetros financeiros: vigência (só inclusão, sem retroativo)', (
     expect(versionInForce(versions, '2027-01-01')?.id).toBe(3);
   });
 
-  it('a primeira versão pode começar em qualquer data', () => {
+  it('a primeira versão pode começar em qualquer data, inclusive no passado', () => {
     expect(
-      code(() => assertNewVersionStart('2020-01-01', null, '2026-11-13')),
+      code(() => assertNewVersionStart('2020-01-01', [], '2026-11-13')),
     ).toBe('NO_ERROR');
   });
 
-  it('versões seguintes começam depois da última e nunca no passado', () => {
+  it('nova versão: antes da primeira (preenche o período sem parâmetros) ou depois da última, mesmo no passado', () => {
+    const starts = ['2026-06-01', '2026-11-13'];
+    // antes da primeira: lançamentos antigos ganham parâmetro
     expect(
-      code(() =>
-        assertNewVersionStart('2026-11-13', '2026-11-13', '2026-11-13'),
-      ),
-    ).toBe('FINANCE_SETTINGS_CONFLICT');
+      code(() => assertNewVersionStart('2026-01-01', starts, '2026-11-14')),
+    ).toBe('NO_ERROR');
+    // depois da última, no passado ou no futuro
     expect(
-      code(() =>
-        assertNewVersionStart('2026-11-12', '2026-01-01', '2026-11-13'),
-      ),
-    ).toBe('FINANCE_SETTINGS_CONFLICT');
-    expect(
-      code(() =>
-        assertNewVersionStart('2026-11-13', '2026-01-01', '2026-11-13'),
-      ),
+      code(() => assertNewVersionStart('2026-11-14', starts, '2026-11-20')),
     ).toBe('NO_ERROR');
     expect(
+      code(() => assertNewVersionStart('2027-01-01', starts, '2026-11-14')),
+    ).toBe('NO_ERROR');
+    // entre versões existentes ou na mesma data: recusado
+    expect(
+      code(() => assertNewVersionStart('2026-09-01', starts, '2026-11-14')),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+    expect(
+      code(() => assertNewVersionStart('2026-11-13', starts, '2026-11-14')),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+  });
+
+  it('retroativa não alcança competência fechada na DRE', () => {
+    // preenche 2026-01 a 2026-06: 2026-03 fechado → recusado
+    expect(
       code(() =>
-        assertNewVersionStart('2027-01-01', '2026-01-01', '2026-11-13'),
+        assertNewVersionStart('2026-01-01', ['2026-06-01'], '2026-11-14', [
+          '2026-03',
+        ]),
+      ),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+    // fechado antes do período afetado: aceito
+    expect(
+      code(() =>
+        assertNewVersionStart('2026-04-01', ['2026-06-01'], '2026-11-14', [
+          '2026-03',
+        ]),
+      ),
+    ).toBe('NO_ERROR');
+    // depois da última, no passado: alcança 2026-10 fechado → recusado
+    expect(
+      code(() =>
+        assertNewVersionStart('2026-10-15', ['2026-06-01'], '2026-11-14', [
+          '2026-10',
+        ]),
+      ),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+    // futura: não alcança nada fechado
+    expect(
+      code(() =>
+        assertNewVersionStart('2026-12-01', ['2026-06-01'], '2026-11-14', [
+          '2026-10',
+        ]),
       ),
     ).toBe('NO_ERROR');
   });
 
   it('recusa data inválida', () => {
     expect(
-      code(() => assertNewVersionStart('2026-02-30', null, '2026-11-13')),
+      code(() => assertNewVersionStart('2026-02-30', [], '2026-11-13')),
     ).toBe('FINANCE_SETTINGS_INVALID');
   });
 
