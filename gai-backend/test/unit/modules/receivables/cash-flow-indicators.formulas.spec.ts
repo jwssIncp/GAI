@@ -89,10 +89,12 @@ describe('indicadores do fluxo de caixa (fórmulas)', () => {
   });
 
   it('margem líquida usa 1 − IR dos parâmetros (não 0,8667 fixo)', () => {
-    // −164.215,10 / (7.000 − 650/0,8667) = −2.627,43%
-    expect(netMargin('-164215.10', '7000.00', '650.00', '13.33')).toBe(
-      '-2627.43',
+    // −33.689,20 / (84.000 − 4.650/0,8667) = −42,84% (cenário de referência)
+    expect(netMargin('-33689.20', '84000.00', '4650.00', '13.33')).toBe(
+      '-42.84',
     );
+    // −164.215,10 / (7.000 − 650/0,8667) = −2.627,43%: além de ±1.000%, indefinida
+    expect(netMargin('-164215.10', '7000.00', '650.00', '13.33')).toBeNull();
     // IR 10%: 1.000 / (11.000 − 900/0,9) = 10,00%
     expect(netMargin('1000.00', '11000.00', '900.00', '10.00')).toBe('10.00');
     expect(netMargin('1.00', '100.00', '100.00', '10.00')).toBeNull();
@@ -156,5 +158,20 @@ describe('indicadores do fluxo de caixa (fórmulas)', () => {
         nonReimbursableUnits: 50000n,
       }),
     ).toEqual({ result: '3275.15', client_share: '250.00' });
+  });
+
+  it('receita irrisória: margem além de ±1.000% fica indefinida (não vira -2018529,41%)', () => {
+    expect(netMargin('-10294.50', '0.51', '0.00', '13.33')).toBeNull();
+    expect(netMargin('-100.00', '10.00', '0.00', '13.33')).toBe('-1000.00'); // no limite
+    expect(
+      contributionMargin({
+        revenue: '0.60',
+        incomeTaxPct: '13.33',
+        fieldAgents: '12643.33',
+        nonReimbursable: '0.00',
+        commissions: '0.00',
+        partnerPct: '10.00',
+      }),
+    ).toBeNull();
   });
 });

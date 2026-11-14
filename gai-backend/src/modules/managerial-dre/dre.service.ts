@@ -1111,7 +1111,10 @@ export class DreService {
     await this.project(m, org, f.project_id);
     const monthlyContext = await this.monthly.context(org, civilToday());
     if (monthlyContext)
-      return this.monthlyReport(m, f, actor, monthlyContext, range, org);
+      return {
+        ...this.monthlyReport(m, f, actor, monthlyContext, range, org),
+        projects: await this.projectNames(m, org),
+      };
     const entries = await this.entryRows(m, f, actor),
       periods = await m.find(DrePeriod, { where: { organizationId: org } }),
       canSources = await hasAllPermissions(actor, SOURCE_READS, this.resolver);
@@ -1363,6 +1366,7 @@ export class DreService {
     }
     return {
       ...report,
+      projects: await this.projectNames(m, org),
       mode: 'legacy' as const,
       cutoff: null,
       warnings: [
@@ -1371,6 +1375,18 @@ export class DreService {
       ],
       comparison: null,
     };
+  }
+
+  private async projectNames(m: EntityManager, org: number) {
+    const rows = await m.find(ProjectEntity, {
+      where: { organizationId: org },
+      order: { name: 'ASC' },
+    });
+    return rows.map((p) => ({
+      id: Number(p.id),
+      name: p.name,
+      code: p.code ?? null,
+    }));
   }
 
   /** Demonstrativo a partir da DRE mensal: mesmos números da grade, sem estimativas. */

@@ -1358,13 +1358,13 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const plan = (await api('get', '/finance/dre/monthly/model').expect(200))
       .body;
     // plano sugerido antigo: 5/6/7 são financeiro e tributos (outros grupos) → conflito
-    expect(plan.totals).toEqual({ create: 4, exists: 18, conflict: 9, map: 0 });
+    expect(plan.totals).toEqual({ create: 5, exists: 18, conflict: 9, map: 1 }); // 1.04 revenda de placas
     const applied = (
       await api('post', '/finance/dre/monthly/model')
         .send({ command_key: 'dre-model-1', reason: 'Aplicar modelo padrao' })
         .expect(200)
     ).body;
-    expect(applied).toMatchObject({ created: 4, mapped: 0, conflicts: 9 });
+    expect(applied).toMatchObject({ created: 5, mapped: 1, conflicts: 9 });
     expect(
       (await api('get', '/finance/dre/monthly/model').expect(200)).body.totals
         .create,

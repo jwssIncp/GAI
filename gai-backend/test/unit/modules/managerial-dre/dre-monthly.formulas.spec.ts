@@ -142,7 +142,14 @@ describe('DRE mensal (fórmulas)', () => {
     ).toBe('reimbursable_expenses');
     expect(
       flowKindOf({ direction: 'in', group: 'other_in', origin: 'asset_tag' }),
-    ).toEqual({ kind: 'asset_tags', sign: -1n });
+    ).toEqual({ kind: 'asset_tags_revenue', sign: 1n });
+    expect(
+      flowKindOf({
+        direction: 'out',
+        group: 'non_reimbursable',
+        origin: 'asset_tag_cost',
+      }),
+    ).toEqual({ kind: 'asset_tags', sign: 1n });
     expect(
       flowKindOf({ direction: 'in', group: 'billing', origin: 'simulation' })
         ?.kind,
@@ -245,5 +252,41 @@ describe('DRE mensal (fórmulas)', () => {
       field_agents: '0.00',
       missing: ['commissions'],
     });
+  });
+
+  it('placas: custo do fornecedor em custo e revenda ao cliente em receita (nunca custo negativo)', () => {
+    // 2 pedidos: custo 850 cada; revenda líquida (−16%) 2.100 cada, no mesmo mês
+    const g = buildGrid(
+      ctx({
+        accounts: [
+          {
+            id: 1,
+            code: '1.04',
+            name: 'Revenda de placas',
+            group: 'revenue',
+            post_operational: false,
+          },
+          {
+            id: 2,
+            code: '3.04',
+            name: 'Placas',
+            group: 'direct_cost',
+            post_operational: false,
+          },
+        ],
+        rules: { asset_tags: 2, asset_tags_revenue: 1 },
+        flow: new Map([
+          ['asset_tags|2026-11', 170000n],
+          ['asset_tags_revenue|2026-11', 420000n],
+        ]),
+        entered: new Map(),
+        closed: new Map(),
+      }),
+      '2026',
+    );
+    expect(cell(g, 2, '2026-11').value).toBe('1700.00');
+    expect(cell(g, 1, '2026-11').value).toBe('4200.00');
+    expect(lineOf(g, 'variable_costs').values[10]).toBe('1700.00');
+    expect(lineOf(g, 'revenue').values[10]).toBe('4200.00');
   });
 });

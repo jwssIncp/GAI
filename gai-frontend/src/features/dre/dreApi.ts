@@ -1,5 +1,5 @@
 import { api } from "@/api/http";
-export { money, cls } from "@/features/receivables/financeApi";
+export { money, cls, percent } from "@/features/receivables/financeApi";
 export const groups: Record<string, string> = {
   revenue: "Receitas",
   deductions: "Deduções",
@@ -112,6 +112,7 @@ export type Row = {
   source_key: string | null;
 };
 export type Report = {
+  projects?: Array<{ id: number; name: string; code: string | null }>;
   /** monthly = sobre a DRE mensal; legacy = só classificações (sem parâmetros). */
   mode?: "monthly" | "legacy";
   cutoff?: string | null;

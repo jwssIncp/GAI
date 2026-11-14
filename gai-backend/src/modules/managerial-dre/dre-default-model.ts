@@ -9,7 +9,7 @@ import type { RuleKind } from './dre-monthly.formulas';
  * depois. Nenhuma conta com nome de pessoa: "Pessoal fixo" substitui as contas
  * nominais do INVESTOR e cada organização detalha como quiser.
  */
-export const DRE_DEFAULT_MODEL_VERSION = 'gai-dre-padrao-v1';
+export const DRE_DEFAULT_MODEL_VERSION = 'gai-dre-padrao-v2';
 
 export interface ModelAccount {
   code: string;
@@ -41,6 +41,7 @@ export const DRE_DEFAULT_MODEL: ModelAccount[] = [
   a('1.01', 'Receita de serviços (faturamento)', 'revenue'),
   a('1.02', 'Reembolsos recebidos de clientes', 'revenue'),
   a('1.03', 'Outras receitas operacionais', 'revenue'),
+  a('1.04', 'Revenda de placas de patrimônio', 'revenue'),
   a('2', 'Deduções da receita', 'deductions'),
   a('2.01', 'Imposto de renda sobre o faturamento', 'deductions'),
   a('2.02', 'Adicional de IR', 'deductions'),
@@ -82,6 +83,7 @@ export const DRE_DEFAULT_RULES: Record<RuleKind, string> = {
   reimbursable_expenses: '3.02',
   non_reimbursable_expenses: '3.03',
   asset_tags: '3.04',
+  asset_tags_revenue: '1.04',
   commissions: '3.05',
   equipment: '3.06',
   partner_commission: '5.01',

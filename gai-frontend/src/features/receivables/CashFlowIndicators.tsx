@@ -7,6 +7,7 @@ import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { formatMoney } from "@/utils/format";
+import { percent } from "./financeApi";
 import {
   indicatorsApi,
   indicatorsKeys,
@@ -17,7 +18,7 @@ import {
   type SaleSimulationInput,
 } from "./cashFlowBoardApi";
 
-const pct = (v: string | null) => (v === null ? "—" : `${v.replace(".", ",")}%`);
+const pct = (v: string | null) => percent(v);
 const money = (v: string | null) => (v === null ? "—" : formatMoney(v));
 const addMonth = (ym: string, n: number) => {
   const [y, m] = ym.split("-").map(Number);

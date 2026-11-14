@@ -103,7 +103,7 @@ describe("DRE nested navigation and explicit classification", () => {
   it("allows clearing a project filter instead of retaining stale scope", async () => {
     mount("/app/finance/dre/statement?project_id=25");
     await screen.findByText("Cobertura incompleta não equivale a zero.");
-    fireEvent.change(screen.getByLabelText("Projeto (ID, opcional)"), {
+    fireEvent.change(screen.getByLabelText("Projeto"), {
       target: { value: "" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Consultar DRE" }));
@@ -173,5 +173,36 @@ describe("DRE nested navigation and explicit classification", () => {
     expect(
       await screen.findByText(/A partir de 09\/2026 os valores passam a incluir o fluxo de caixa/),
     ).toBeInTheDocument();
+  });
+  it("Demonstrativo: projeto por nome no filtro e nas tabelas; margem indefinida e percentual em pt-BR", async () => {
+    const base = await dreApi.report({});
+    const calc = (gross: string | null, operating: string | null) => ({
+      currency: "BRL",
+      lines: ["revenue", "deductions", "net_revenue", "direct_cost", "gross_profit", "operating_expense", "operating_result", "financial_income", "financial_expense", "financial_result", "before_tax", "income_tax", "after_tax"].map((key) => {
+        const v = key === "revenue" ? "100.00" : key === "before_tax" ? "-13.84" : "0.00";
+        return { key, label: key === "revenue" ? "Receita bruta" : key === "before_tax" ? "Antes de tributos" : key, amount: v, known_amount: v, complete: true, groups: [], entry_ids: [] };
+      }),
+      gross_margin: gross,
+      operating_margin: operating,
+      known_gross_margin: gross,
+      known_operating_margin: operating,
+      complete: true,
+      unclassified_amount: "0.00",
+    });
+    vi.mocked(dreApi.report).mockResolvedValue({
+      ...base,
+      mode: "monthly" as const,
+      cutoff: "2026-09",
+      complete: true,
+      projects: [{ id: 44, name: "Projeto Sintético", code: "PS-44" }],
+      totals: [calc("12.5", null)],
+      by_project: [{ ...calc(null, null), project_id: 44 }],
+    } as never);
+    mount("/app/finance/dre/statement");
+    expect(await screen.findByRole("option", { name: "Projeto Sintético (PS-44)" })).toBeInTheDocument();
+    expect(screen.getByText("12,50%")).toBeInTheDocument();
+    expect(screen.getByText("Margem operacional validada").parentElement).toHaveTextContent("—");
+    const row = screen.getAllByText("Projeto Sintético (PS-44)").find((e) => e.closest("td"))!.closest("tr")!;
+    expect(row).toHaveTextContent(/-R\$\s?13,84/);
   });
 });

@@ -164,6 +164,22 @@ export class DreMonthlyService {
       },
     };
     const warnings: string[] = [];
+    // Corte antes do início dos parâmetros (dado anterior à regra da etapa 10):
+    // os meses entre o corte e o início ficam sem IR. Republique o corte.
+    const [{ first }] = await m.query<Array<{ first: string | Date | null }>>(
+      'SELECT MIN(valid_from) AS first FROM finance_settings_versions WHERE organization_id = ?',
+      [org],
+    );
+    const firstMonth = first
+      ? (first instanceof Date ? first.toISOString() : String(first)).slice(
+          0,
+          7,
+        )
+      : null;
+    if (firstMonth && p.dre_regime_cutoff_month < firstMonth)
+      warnings.push(
+        `O mês de corte (${p.dre_regime_cutoff_month.split('-').reverse().join('/')}) é anterior ao início dos parâmetros (${firstMonth.split('-').reverse().join('/')}): publique uma versão dos parâmetros com o corte correto ou uma versão retroativa.`,
+      );
     if (sourcedAfterCutoff)
       warnings.push(
         `${sourcedAfterCutoff} classificação(ões) de recebível, despesa ou diária a partir do corte foram substituídas pela alimentação automática do fluxo.`,

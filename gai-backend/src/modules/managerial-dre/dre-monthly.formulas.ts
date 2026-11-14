@@ -23,6 +23,7 @@ export const FLOW_KINDS = [
   'reimbursable_expenses',
   'non_reimbursable_expenses',
   'asset_tags',
+  'asset_tags_revenue',
   'commissions',
 ] as const;
 export const ROLE_KINDS = [
@@ -43,7 +44,8 @@ export const RULE_LABELS: Record<RuleKind, string> = {
   field_agents: 'Inventariantes (diárias)',
   reimbursable_expenses: 'Despesas reembolsáveis',
   non_reimbursable_expenses: 'Despesas não reembolsáveis',
-  asset_tags: 'Placas de patrimônio (custo − revenda)',
+  asset_tags: 'Placas de patrimônio (custo do fornecedor)',
+  asset_tags_revenue: 'Revenda de placas ao cliente (líquida dos impostos)',
   commissions: 'Comissões de parceiros',
   additional_income_tax: 'Adicional de IR (projeção)',
   equipment: 'Equipamentos e licenças (projeção)',
@@ -103,7 +105,8 @@ export function flowKindOf(i: {
       : { kind: 'non_reimbursable_expenses', sign: 1n };
   if (i.origin === 'commission') return { kind: 'commissions', sign: 1n };
   if (i.origin === 'asset_tag_cost') return { kind: 'asset_tags', sign: 1n };
-  if (i.origin === 'asset_tag') return { kind: 'asset_tags', sign: -1n };
+  // Revenda ao cliente é receita (não abate o custo: evita custo negativo).
+  if (i.origin === 'asset_tag') return { kind: 'asset_tags_revenue', sign: 1n };
   if (i.direction === 'in' && i.group === 'billing')
     return { kind: 'billing_revenue', sign: 1n };
   if (i.direction === 'in' && i.group === 'reimbursement')

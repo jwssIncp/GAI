@@ -7,6 +7,8 @@ export interface DreReport {
   /** monthly = a partir da DRE mensal (etapa 10); legacy = só classificações. */
   mode?: 'monthly' | 'legacy';
   cutoff?: string | null;
+  /** Projetos da organização (nome e código) para filtro e tabelas. */
+  projects?: Array<{ id: number; name: string; code: string | null }>;
   organization_id: number;
   filters: DreReportDto;
   generated_at: string;

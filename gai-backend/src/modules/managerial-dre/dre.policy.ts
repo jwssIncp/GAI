@@ -68,11 +68,18 @@ export interface DreLineInput {
 /** Valor decimal com sinal (a DRE mensal aceita ajustes negativos). */
 export const signed = (v: string): bigint =>
   v.startsWith('-') ? -scaled(v.slice(1)) : scaled(v);
+/**
+ * Margem acima de ±1.000% não tem significado (receita irrisória perante os
+ * custos): a margem fica indefinida ("—"), nunca um número como -2018529,41%.
+ */
+export const MARGIN_LIMIT_PCT = 1000n;
 export function percentage(n: bigint, d: bigint) {
   if (d <= 0n) return null;
   const neg = n < 0n,
     abs = neg ? -n : n;
-  return decimal((neg ? -1n : 1n) * ((abs * 10000n + d / 2n) / d));
+  const v = (abs * 10000n + d / 2n) / d; // centésimos de ponto percentual
+  if (v > MARGIN_LIMIT_PCT * 100n) return null;
+  return decimal((neg ? -1n : 1n) * v);
 }
 export function calculateDre(
   rows: DreLineInput[],

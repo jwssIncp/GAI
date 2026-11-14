@@ -72,7 +72,7 @@ describe("Fluxo de caixa: indicadores", () => {
     const region = await screen.findByRole("region", { name: "Indicadores gerenciais" });
     expect(within(region).getByText("Ponto de equilíbrio contábil").parentElement).toHaveTextContent(/250\.698,59/);
     expect(within(region).getAllByText("Margem de contribuição")[0].parentElement).toHaveTextContent("60,50%");
-    expect(within(region).getByText("Margem líquida").parentElement).toHaveTextContent("-2627,43%");
+    expect(within(region).getByText("Margem líquida").parentElement).toHaveTextContent("-2.627,43%");
     expect(within(region).getByText("Prazo médio de recebimento").parentElement).toHaveTextContent("8,0 dias");
     expect(within(region).getByText("sem conta na DRE")).toBeInTheDocument();
     expect(within(region).getByText(/resultado final da DRE mensal/)).toBeInTheDocument();

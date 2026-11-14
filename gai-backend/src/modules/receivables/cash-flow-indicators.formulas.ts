@@ -8,6 +8,8 @@ import { cents, money } from './cash-flow.formulas';
 /** 1% = 10.000 unidades (4 casas decimais no percentual). */
 export const PCT_UNIT = 10_000n;
 const HUNDRED = 100n * PCT_UNIT;
+/** Margem além de ±1.000%: receita irrisória, margem indefinida ("—"). */
+const MARGIN_LIMIT = 1000n * PCT_UNIT;
 
 const div = (a: bigint, b: bigint): bigint => {
   if (b === 0n) throw new Error('divisão por zero');
@@ -65,6 +67,8 @@ export function contributionMargin(i: MarginInput) {
   const commission = ratio(i.commissions, i.revenue)!;
   const partner = div(pctUnits(i.partnerPct) * (HUNDRED - ir), HUNDRED);
   const mc = HUNDRED - ir - agents - nonReimb - commission - partner;
+  // Receita irrisória (margem além de ±1.000%): margem indefinida.
+  if (mc > MARGIN_LIMIT || mc < -MARGIN_LIMIT) return null;
   return {
     units: {
       mc,
@@ -202,7 +206,8 @@ export function netMargin(
   const grossedUp = div(cents(nonReimbursable) * HUNDRED, keep);
   const base = cents(revenue) - grossedUp;
   if (base <= 0n) return null;
-  return pctText(div(cents(result) * HUNDRED, base));
+  const v = div(cents(result) * HUNDRED, base);
+  return v > MARGIN_LIMIT || v < -MARGIN_LIMIT ? null : pctText(v);
 }
 
 /** Prazo médio de recebimento: Σ(valor × dias contrato→recebimento) / Σ valor (1 casa). */

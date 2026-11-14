@@ -5,10 +5,10 @@ import {
 } from '../../../../src/modules/managerial-dre/dre-default-model';
 
 describe('Modelo padrão de DRE', () => {
-  it('tem 8 agrupadoras e 23 contas de lançamento, sem nomes de pessoas, e associa todos os tipos', () => {
+  it('tem 8 agrupadoras e 24 contas de lançamento, sem nomes de pessoas, e associa todos os tipos', () => {
     expect(DRE_DEFAULT_MODEL.filter((a) => a.synthetic)).toHaveLength(8);
-    expect(DRE_DEFAULT_MODEL.filter((a) => !a.synthetic)).toHaveLength(23);
-    expect(Object.keys(DRE_DEFAULT_RULES)).toHaveLength(13);
+    expect(DRE_DEFAULT_MODEL.filter((a) => !a.synthetic)).toHaveLength(24);
+    expect(Object.keys(DRE_DEFAULT_RULES)).toHaveLength(14);
     for (const code of Object.values(DRE_DEFAULT_RULES))
       expect(DRE_DEFAULT_MODEL.find((a) => a.code === code)?.synthetic).toBe(
         false,
@@ -18,9 +18,9 @@ describe('Modelo padrão de DRE', () => {
     ).toEqual(['5.01', '5.02', '5.03', '5.04']);
   });
 
-  it('organização sem plano: cria tudo, associa os 13 tipos e marca os pós-operacionais', () => {
+  it('organização sem plano: cria tudo, associa os 14 tipos e marca os pós-operacionais', () => {
     const p = planDefaultModel([], {}, []);
-    expect(p.totals).toEqual({ create: 31, exists: 0, conflict: 0, map: 13 });
+    expect(p.totals).toEqual({ create: 32, exists: 0, conflict: 0, map: 14 });
     expect(p.post_operational.every((x) => x.action === 'mark')).toBe(true);
   });
 
