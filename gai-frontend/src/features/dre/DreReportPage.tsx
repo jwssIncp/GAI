@@ -168,6 +168,17 @@ export function DreReportPage() {
       ) : (
         q.data && (
           <>
+            {q.data.mode === "legacy" ? (
+              <p role="alert" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm font-semibold">
+                Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.{" "}
+                <Link className="underline" to="/app/finance/parameters">Parâmetros financeiros</Link>
+              </p>
+            ) : q.data.mode === "monthly" && q.data.cutoff ? (
+              <p role="status" className="rounded-md border border-primary/40 bg-primary/5 p-3 text-sm">
+                A partir de {q.data.cutoff.split("-").reverse().join("/")} os valores passam a incluir o fluxo de caixa (DRE automática) e são
+                os mesmos da DRE mensal, sem estimativas. Antes do corte valem o lançado, o importado e as classificações.
+              </p>
+            ) : null}
             <section
               className="premium-panel grid gap-2 p-4 text-sm"
               aria-label="Cobertura da DRE"
@@ -177,7 +188,7 @@ export function DreReportPage() {
                   ? "Cobertura gerencial revisada"
                   : "Apuração parcial — resultado não definitivo"}
               </strong>
-              {q.data.warnings.map((w) => (
+              {q.data.warnings.filter((w) => !w.startsWith("Cálculo legado") && !w.startsWith("A partir de ")).map((w) => (
                 <p key={w}>{w}</p>
               ))}
               <p>

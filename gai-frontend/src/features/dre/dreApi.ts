@@ -112,6 +112,9 @@ export type Row = {
   source_key: string | null;
 };
 export type Report = {
+  /** monthly = sobre a DRE mensal; legacy = só classificações (sem parâmetros). */
+  mode?: "monthly" | "legacy";
+  cutoff?: string | null;
   organization_id: number;
   filters: Record<string, unknown>;
   source_permissions: string[];
@@ -146,6 +149,8 @@ export type Period = {
   month: string;
   revision: number;
   closed: boolean;
+  /** Coluna da DRE mensal congelada no fechamento. */
+  has_grid?: boolean;
   data: {
     currency: string;
     policy_reference: string;

@@ -4,6 +4,9 @@ import type { calculateDre, DreLineInput } from './dre.policy';
 export type DreCalculated = ReturnType<typeof calculateDre>;
 export interface DreReport {
   engine_version: string;
+  /** monthly = a partir da DRE mensal (etapa 10); legacy = só classificações. */
+  mode?: 'monthly' | 'legacy';
+  cutoff?: string | null;
   organization_id: number;
   filters: DreReportDto;
   generated_at: string;

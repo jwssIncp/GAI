@@ -65,6 +65,9 @@ export interface DreLineInput {
   description: string;
   source_key: string | null;
 }
+/** Valor decimal com sinal (a DRE mensal aceita ajustes negativos). */
+export const signed = (v: string): bigint =>
+  v.startsWith('-') ? -scaled(v.slice(1)) : scaled(v);
 export function percentage(n: bigint, d: bigint) {
   if (d <= 0n) return null;
   const neg = n < 0n,
@@ -80,7 +83,7 @@ export function calculateDre(
     DreGroup,
     bigint
   >;
-  for (const r of rows) if (r.group) sums[r.group] += scaled(r.amount);
+  for (const r of rows) if (r.group) sums[r.group] += signed(r.amount);
   const complete = (groups: DreGroup[]) =>
     !hasGaps && groups.every((g) => reviewed.includes(g));
   const line = (
@@ -169,7 +172,7 @@ export function calculateDre(
     known_operating_margin: percentage(operating, net),
     complete: complete([...DRE_GROUPS]),
     unclassified_amount: decimal(
-      rows.filter((r) => !r.group).reduce((s, r) => s + scaled(r.amount), 0n),
+      rows.filter((r) => !r.group).reduce((s, r) => s + signed(r.amount), 0n),
     ),
   };
 }

@@ -13,6 +13,7 @@ import type {
 } from './finance-settings.dto';
 import { FinanceSettingsVersionEntity } from './finance-settings.entity';
 import {
+  assertCutoff,
   assertNewVersionStart,
   civilToday,
   defaultFinanceSettingsValues,
@@ -81,8 +82,9 @@ export class FinanceSettingsService {
     }));
   }
 
-  defaults(): FinanceSettingsValuesDto {
-    return defaultFinanceSettingsValues();
+  /** Valores sugeridos; o corte da DRE segue o início informado. */
+  defaults(validFrom?: string): FinanceSettingsValuesDto {
+    return defaultFinanceSettingsValues(validFrom);
   }
 
   async overview(
@@ -182,6 +184,15 @@ export class FinanceSettingsService {
         dto.valid_from,
         previous.map((row) => row.validFrom),
         civilToday(),
+        closed.map((row) => row.month),
+      );
+      assertCutoff(
+        values.dre_regime_cutoff_month,
+        dto.valid_from,
+        previous.map((row) => ({
+          validFrom: row.validFrom,
+          cutoff: row.values.dre_regime_cutoff_month,
+        })),
         closed.map((row) => row.month),
       );
       const saved = await m.save(

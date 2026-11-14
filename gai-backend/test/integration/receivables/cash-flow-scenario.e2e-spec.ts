@@ -72,7 +72,8 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       .send({
         valid_from: '2026-01-01',
         reason: 'Parametros do cenario',
-        values: defaults,
+        // corte da DRE automática escolhido pela organização do cenário
+        values: { ...defaults, dre_regime_cutoff_month: '2026-09' },
       })
       .expect(201);
     const project = async (name: string) =>
@@ -1120,5 +1121,294 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
   it('permissões', async () => {
     await api('get', '/finance/cash-flow/board', user).expect(403);
     await api('get', '/finance/cash-flow/indicators', user).expect(403);
+  });
+
+  /**
+   * Etapa 10 (no fim: não altera os valores dos testes anteriores).
+   * Totais anuais da DRE 2026 sem estimativas (o estorno do teste anterior só
+   * move a receita de CA#1 de nov para dez): receita 84.000; deduções
+   * 8 × 1.333 + 533,20 = 11.197,20; custos variáveis 8 × 2.000 + 500 + 1.000
+   * (diárias) + 100 + 200 + 8 × 500 + 200 + 450 = 22.450 (+ 20 da diária de
+   * set criada aqui = 22.470); despesas operacionais 10 × 6.000 + (8 × 300 +
+   * 600) + (300 + 600 + 900) = 64.800.
+   * Operacional = 84.000 − 11.197,20 − 22.470 − 64.800 = −14.467,20.
+   */
+  it('etapa 10: Demonstrativo = DRE mensal, classificação em dobro recusada, fechamento por verificação, coluna congelada, modelo padrão e XLSX = tela', async () => {
+    const report = async () =>
+      (
+        await api(
+          'get',
+          '/finance/dre/report?start_month=2026-01&end_month=2026-12',
+        ).expect(200)
+      ).body as {
+        mode: string;
+        cutoff: string;
+        warnings: string[];
+        totals: Array<{
+          currency: string;
+          lines: Array<{
+            key: string;
+            label: string;
+            amount: string | null;
+            known_amount: string;
+          }>;
+        }>;
+        by_project: Array<{
+          project_id: number | null;
+          lines: Array<{ key: string; known_amount: string }>;
+        }>;
+      };
+    const line = (r: Awaited<ReturnType<typeof report>>, key: string) =>
+      r.totals[0].lines.find((l) => l.key === key)!.known_amount;
+
+    // 1) Classificar origem do fluxo a partir do corte: recusado (contaria em dobro)
+    const ca1 = (await board('as_of=2026-11-14&year=2026')).items
+      .concat((await board('as_of=2026-11-14&year=2027')).items)
+      .find(
+        (i) =>
+          i.origin === 'contract' &&
+          i.project_name === 'Alfa fluxo' &&
+          i.installment?.number === 1,
+      )!;
+    const dup = await api('post', '/finance/dre/entries')
+      .send({
+        command_key: 'dre-dup-ca1',
+        reason: 'Tentativa de classificar CA1',
+        source_kind: 'receivable',
+        source_id: ca1.refs.receivable_id,
+        project_id: alfa,
+        economic_key: 'dup-ca1',
+        event_document: 'Contrato CT-A parcela 1',
+        description: 'CA1 classificada manualmente',
+        currency: 'BRL',
+        status: 'recognized',
+        allocations: [
+          { month: '2026-12', account_id: acc('1.01'), amount: '4000.00' },
+        ],
+      })
+      .expect(409);
+    expect(dup.body.message).toContain('contaria em dobro');
+
+    // 2) Fechamento de set/2026 pela verificação: bloqueio e ciência
+    const p = (
+      await api('post', `/projects/${alfa}/payments`)
+        .send({
+          field_agent_id: agent,
+          start_date: '2026-09-01',
+          end_date: '2026-09-02',
+          expected_payment_date: '2026-09-20',
+          daily_rate: '10.00',
+        })
+        .expect(201)
+    ).body.id;
+    await api('post', `/projects/${alfa}/payments/${p}/approve`).expect(200);
+    await api('put', '/finance/dre/monthly/rules')
+      .send({
+        command_key: 'dre-rules-off',
+        reason: 'Teste do bloqueio',
+        rules: { field_agents: null },
+      })
+      .expect(200);
+    let check = (
+      await api(
+        'get',
+        '/finance/dre/monthly/checklist/2026-09?as_of=2026-11-14',
+      ).expect(200)
+    ).body;
+    expect(check.blockers.map((b: { code: string }) => b.code)).toEqual([
+      'unmapped_kinds',
+    ]);
+    const closeSep = (acknowledged: string[], key: string) =>
+      api('post', '/finance/dre/periods/2026-09/close').send({
+        command_key: key,
+        reason: 'Fechamento de setembro',
+        currency: 'BRL',
+        revision: 0,
+        policy_reference: 'Politica de fechamento do cenario',
+        sources_reviewed: false,
+        allow_incomplete: true, // ignorado na DRE automática: não contorna bloqueio
+        reviewed_groups: [],
+        acknowledged,
+      });
+    expect(
+      (await closeSep([], 'dre-close-sep-1').expect(409)).body.message,
+    ).toContain('sem conta associada');
+    await api('put', '/finance/dre/monthly/rules')
+      .send({
+        command_key: 'dre-rules-on',
+        reason: 'Teste do bloqueio',
+        rules: { field_agents: acc('3.01') },
+      })
+      .expect(200);
+    check = (
+      await api(
+        'get',
+        '/finance/dre/monthly/checklist/2026-09?as_of=2026-11-14',
+      ).expect(200)
+    ).body;
+    expect(check.blockers).toEqual([]);
+    expect(check.warnings).toEqual([
+      expect.objectContaining({
+        code: 'open_items',
+        count: 1,
+        amount: '20.00',
+      }),
+    ]);
+    expect(
+      (await closeSep([], 'dre-close-sep-2').expect(409)).body.message,
+    ).toContain('Confirme ciência');
+    await closeSep(['open_items'], 'dre-close-sep-3').expect(201);
+
+    // 3) Demonstrativo = DRE mensal (sem estimativas), com aviso do fluxo
+    const r = await report();
+    expect(r.mode).toBe('monthly');
+    expect(r.cutoff).toBe('2026-09');
+    expect(r.warnings.join(' ')).toContain('passam a incluir o fluxo');
+    expect(line(r, 'revenue')).toBe('84000.00');
+    expect(line(r, 'deductions')).toBe('11197.20');
+    expect(line(r, 'direct_cost')).toBe('22470.00');
+    expect(line(r, 'operating_expense')).toBe('64800.00');
+    expect(line(r, 'operating_result')).toBe('-14467.20');
+    const g = (await dreView()).grid as DreGrid & {
+      accounts: Array<{ group?: string }>;
+    };
+    const actual = (group: string) =>
+      (
+        g.accounts
+          .filter((a) => (a as { group?: string }).group === group)
+          .flatMap((a) => a.cells)
+          .reduce(
+            (s2, c) =>
+              s2 +
+              Math.round(Number(c.value) * 100) -
+              Math.round(Number(c.estimate ?? 0) * 100),
+            0,
+          ) / 100
+      ).toFixed(2);
+    for (const [key, group] of [
+      ['revenue', 'revenue'],
+      ['deductions', 'deductions'],
+      ['direct_cost', 'direct_cost'],
+      ['operating_expense', 'operating_expense'],
+    ])
+      expect(line(r, key)).toBe(actual(group));
+    const alfaLines = r.by_project.find((x) => x.project_id === alfa)!.lines;
+    expect(alfaLines.find((l) => l.key === 'revenue')!.known_amount).toBe(
+      '4000.00',
+    );
+
+    // 4) Mês fechado antes da DRE mensal: diferença por linha e congelamento com motivo
+    await api('post', '/finance/dre/periods/2026-08/close')
+      .send({
+        command_key: 'dre-close-aug',
+        reason: 'Fechamento de agosto',
+        currency: 'BRL',
+        revision: 0,
+        policy_reference: 'Politica de fechamento do cenario',
+        sources_reviewed: false,
+        allow_incomplete: false,
+        reviewed_groups: [],
+      })
+      .expect(201);
+    // simula um fechamento antigo: sem coluna congelada e resumo só das classificações
+    await ds.query(
+      "UPDATE dre_periods SET data = JSON_REMOVE(JSON_SET(data, '$.snapshot.totals[0].lines[0].known_amount', '0.00'), '$.grid') WHERE month = '2026-08'",
+    );
+    const periods = (await api('get', '/finance/dre/periods').expect(200))
+      .body as Array<{ month: string; has_grid: boolean; revision: number }>;
+    expect(periods.find((x) => x.month === '2026-08')!.has_grid).toBe(false);
+    const preview = (
+      await api('get', '/finance/dre/monthly/freeze/2026-08').expect(200)
+    ).body;
+    expect(
+      preview.lines.find((l: { key: string }) => l.key === 'revenue'),
+    ).toMatchObject({
+      stored: '0.00',
+      recalculated: '10000.00',
+      difference: '10000.00',
+    });
+    await api('post', '/finance/dre/monthly/freeze/2026-08')
+      .send({
+        command_key: 'dre-freeze-aug-0',
+        reason: 'curt',
+        revision: preview.revision,
+      })
+      .expect(400); // motivo obrigatório (mínimo de 5 caracteres)
+    await api('post', '/finance/dre/monthly/freeze/2026-08')
+      .send({
+        command_key: 'dre-freeze-aug',
+        reason: 'Congelar agosto conferido',
+        revision: preview.revision,
+      })
+      .expect(200);
+    expect(
+      (await api('get', '/finance/dre/periods').expect(200)).body.find(
+        (x: { month: string }) => x.month === '2026-08',
+      ).has_grid,
+    ).toBe(true);
+    const history = (
+      await api('get', '/finance/dre/periods/2026-08').expect(200)
+    ).body;
+    expect(history.period.data.frozen).toMatchObject({
+      reason: 'Congelar agosto conferido',
+    });
+    await api('get', '/finance/dre/monthly/freeze/2026-08').expect(409); // já congelada
+
+    // 5) Modelo padrão: pré-visualização e aplicação que só completa
+    const plan = (await api('get', '/finance/dre/monthly/model').expect(200))
+      .body;
+    // plano sugerido antigo: 5/6/7 são financeiro e tributos (outros grupos) → conflito
+    expect(plan.totals).toEqual({ create: 4, exists: 18, conflict: 9, map: 0 });
+    const applied = (
+      await api('post', '/finance/dre/monthly/model')
+        .send({ command_key: 'dre-model-1', reason: 'Aplicar modelo padrao' })
+        .expect(200)
+    ).body;
+    expect(applied).toMatchObject({ created: 4, mapped: 0, conflicts: 9 });
+    expect(
+      (await api('get', '/finance/dre/monthly/model').expect(200)).body.totals
+        .create,
+    ).toBe(0);
+    await api('get', '/finance/dre/monthly/model', user).expect(403);
+
+    // 6) XLSX do Demonstrativo = valores da tela (mesma API)
+    const now = await report();
+    const job = (
+      await api('post', '/finance/dre/exports')
+        .send({
+          start_month: '2026-01',
+          end_month: '2026-12',
+          kind: 'statement',
+        })
+        .expect(201)
+    ).body;
+    let status = '';
+    for (let i = 0; i < 40 && status !== 'finished'; i++) {
+      status = (await api('get', `/finance/dre/exports/${job.id}`).expect(200))
+        .body.status;
+      if (status !== 'finished')
+        await new Promise((done) => setTimeout(done, 250));
+    }
+    expect(status).toBe('finished');
+    const file = (
+      await api('get', `/finance/dre/exports/${job.id}/download`)
+        .buffer(true)
+        .parse((res, done) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (c: Buffer) => chunks.push(c));
+          res.on('end', () => done(null, Buffer.concat(chunks)));
+        })
+        .expect(200)
+    ).body as Buffer;
+    const book = XLSX.read(file, { type: 'buffer' });
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(
+      book.Sheets['DRE Gerencial'],
+      { header: 1 },
+    );
+    const sheet = new Map(
+      rows.slice(1).map((x) => [String(x[1]), Number(x[3])]),
+    );
+    for (const l of now.totals[0].lines)
+      expect(sheet.get(l.label)).toBe(Number(l.known_amount));
   });
 });

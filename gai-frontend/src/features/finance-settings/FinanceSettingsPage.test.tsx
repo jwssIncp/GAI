@@ -133,7 +133,8 @@ describe("Parâmetros financeiros", () => {
     expect(payload).toMatchObject({
       valid_from: "2026-11-13",
       reason: "Versão inicial com os valores padrão",
-      values: { ...defaults, default_daily_rate: "190.50" },
+      // corte da DRE automática acompanha o início da 1ª versão (por organização)
+      values: { ...defaults, default_daily_rate: "190.50", dre_regime_cutoff_month: "2026-11" },
     });
   });
 

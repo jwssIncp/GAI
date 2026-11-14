@@ -133,3 +133,48 @@ export const monthLabel = (m: string) => {
   const names = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
   return `${names[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`;
 };
+
+export type DreChecklist =
+  | { month: string; legacy: true; message: string }
+  | {
+      month: string;
+      cutoff: string;
+      automatic: boolean;
+      blockers: Array<{ code: string; message: string }>;
+      warnings: Array<{ code: string; message: string; count: number; amount: string | null }>;
+    };
+export type DreFreezePreview = {
+  month: string;
+  revision: number;
+  lines: Array<{ key: string; label: string; stored: string | null; recalculated: string; difference: string | null }>;
+  accounts: Array<{ id: number; code: string; name: string; value: string }>;
+};
+export type DreReviewEntry = {
+  id: number;
+  revision: number;
+  description: string;
+  source: string;
+  project_id: number | null;
+  months: string[];
+  amount: string;
+};
+export type DreModelPlan = {
+  version: string;
+  accounts: Array<{ code: string; name: string; group: string; synthetic: boolean; action: "create" | "exists" | "conflict"; note: string | null }>;
+  rules: Array<{ kind: string; code: string; action: "map" | "kept" | "skip" }>;
+  post_operational: Array<{ code: string; action: "mark" | "kept" }>;
+  totals: { create: number; exists: number; conflict: number; map: number };
+};
+
+export const dreClosingApi = {
+  checklist: (month: string) => api.get<DreChecklist>(`${base}/checklist/${month}`).then((r) => r.data),
+  freezePreview: (month: string) => api.get<DreFreezePreview>(`${base}/freeze/${month}`).then((r) => r.data),
+  freeze: (month: string, revision: number, reason: string) =>
+    api.post(`${base}/freeze/${month}`, { command_key: key(), reason, revision }).then((r) => r.data),
+  review: () => api.get<DreReviewEntry[]>(`${base}/review`).then((r) => r.data),
+  voidReviewed: (id: number, revision: number, reason: string) =>
+    api.post(`${base}/review/${id}/void`, { command_key: key(), reason, revision }).then((r) => r.data),
+  modelPreview: () => api.get<DreModelPlan>(`${base}/model`).then((r) => r.data),
+  modelApply: (reason: string) =>
+    api.post<{ created: number; mapped: number; post_operational_marked: number; conflicts: number }>(`${base}/model`, { command_key: key(), reason }).then((r) => r.data),
+};

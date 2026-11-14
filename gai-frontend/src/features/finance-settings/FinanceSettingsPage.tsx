@@ -145,8 +145,19 @@ function VersionForm({
   onCancel: () => void;
 }) {
   const cache = useQueryClient();
-  const [values, setValues] = useState<FinanceSettingsValues>(() => structuredClone(initial));
-  const [validFrom, setValidFrom] = useState(() => startDate ?? nextValidFrom(overview));
+  const [values, setValues] = useState<FinanceSettingsValues>(() => {
+    const v = structuredClone(initial);
+    const start = startDate ?? nextValidFrom(overview);
+    return overview.versions.length || !start ? v : { ...v, dre_regime_cutoff_month: start.slice(0, 7) };
+  });
+  const [validFrom, setValidFromState] = useState(() => startDate ?? nextValidFrom(overview));
+  // Corte da DRE automática: na 1ª versão acompanha o mês de início (por
+  // organização), enquanto o usuário não escolher outro.
+  const [cutoffTouched, setCutoffTouched] = useState(overview.versions.length > 0);
+  const setValidFrom = (date: string) => {
+    setValidFromState(date);
+    if (!cutoffTouched && /^\d{4}-\d{2}/.test(date)) setValues((current) => ({ ...current, dre_regime_cutoff_month: date.slice(0, 7) }));
+  };
   const gap = uncoveredSince(overview);
   const until = overview.coverage_start && validFrom < overview.coverage_start ? overview.coverage_start : null;
   const [reason, setReason] = useState(
@@ -385,11 +396,14 @@ function VersionForm({
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-2 font-semibold">Recebíveis e DRE</legend>
         {integer("first_installment_days_after_contract", "Prazo da 1ª parcela (dias após o contrato)")}
-        <FormField label="Mês de corte do regime da DRE">
+        <FormField label="Mês de corte do regime da DRE" hint="A partir deste mês a DRE é alimentada pelo fluxo de caixa. Não pode ser antes do início dos parâmetros da organização.">
           <Input
             type="month"
             value={values.dre_regime_cutoff_month}
-            onChange={(event) => set("dre_regime_cutoff_month", event.target.value)}
+            onChange={(event) => {
+              setCutoffTouched(true);
+              set("dre_regime_cutoff_month", event.target.value);
+            }}
           />
         </FormField>
       </fieldset>

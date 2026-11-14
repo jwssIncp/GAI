@@ -17,7 +17,8 @@ const mocks = vi.hoisted(() => ({
   preview: vi.fn(),
   confirm: vi.fn(),
 }));
-vi.mock("./dreMonthlyApi", async (original) => ({ ...(await original<object>()), dreMonthlyApi: mocks }));
+const closing = vi.hoisted(() => ({ modelPreview: vi.fn(), modelApply: vi.fn(), review: vi.fn(), voidReviewed: vi.fn(), checklist: vi.fn(), freezePreview: vi.fn(), freeze: vi.fn() }));
+vi.mock("./dreMonthlyApi", async (original) => ({ ...(await original<object>()), dreMonthlyApi: mocks, dreClosingApi: closing }));
 
 const all = ["dre:read", "dre:adjust", "dre:configure", "dre:import"];
 function mount(permissions = all) {
@@ -84,6 +85,8 @@ const view = (): DreMonthlyView => ({
 describe("DRE mensal", () => {
   beforeEach(() => {
     Object.values(mocks).forEach((m) => m.mockReset());
+    Object.values(closing).forEach((m) => m.mockReset());
+    closing.review.mockResolvedValue([]);
     mocks.view.mockResolvedValue(view());
     vi.spyOn(window, "confirm").mockReturnValue(true);
   });
@@ -198,5 +201,43 @@ describe("DRE mensal", () => {
     expect(parseSignedMoney("-1.234,56")).toBe("-1234.56");
     expect(parseSignedMoney("")).toBeNull();
     expect(parseSignedMoney("abc")).toBeUndefined();
+  });
+
+  it("modelo padrão: pré-visualiza o que será criado e associado e aplica só com motivo", async () => {
+    closing.modelPreview.mockResolvedValue({
+      version: "gai-dre-padrao-v1",
+      accounts: [
+        { code: "1", name: "Receitas", group: "revenue", synthetic: true, action: "exists", note: null },
+        { code: "1.03", name: "Outras receitas operacionais", group: "revenue", synthetic: false, action: "create", note: null },
+        { code: "5", name: "Pós-operacional", group: "operating_expense", synthetic: true, action: "conflict", note: "já existe com outro grupo ou tipo: mantida como está" },
+      ],
+      rules: [{ kind: "billing_revenue", code: "1.01", action: "kept" }],
+      post_operational: [],
+      totals: { create: 1, exists: 1, conflict: 1, map: 0 },
+    });
+    closing.modelApply.mockResolvedValue({ created: 1, mapped: 0, post_operational_marked: 0, conflicts: 1 });
+    mount();
+    await screen.findByRole("table");
+    await userEvent.click(screen.getByRole("button", { name: "Aplicar modelo padrão" }));
+    expect(await screen.findByText(/1 conta\(s\) a criar · 1 já existente\(s\) · 0 associação\(ões\) a fazer · 1 conflito/)).toBeInTheDocument();
+    expect(screen.getByText(/já existe com outro grupo/)).toBeInTheDocument();
+    const apply = screen.getByRole("button", { name: "Aplicar modelo" });
+    expect(apply).toBeDisabled();
+    await userEvent.type(screen.getByLabelText("Motivo da aplicação do modelo"), "Implantação da DRE");
+    await userEvent.click(apply);
+    await waitFor(() => expect(closing.modelApply).toHaveBeenCalledWith("Implantação da DRE"));
+    expect(await screen.findByText(/Modelo padrão aplicado: 1 conta\(s\) criada\(s\)/)).toBeInTheDocument();
+  });
+
+  it("classificações a revisar: lista e anula com motivo", async () => {
+    closing.review.mockResolvedValue([{ id: 41, revision: 2, description: "CA1 classificada", source: "receivable", project_id: 7, months: ["2026-11"], amount: "4000.00" }]);
+    closing.voidReviewed.mockResolvedValue({ id: 41, revision: 3, status: "void" });
+    mount([...all, "dre:classify"]);
+    const panel = await screen.findByRole("region", { name: "Classificações a revisar" });
+    expect(panel).toHaveTextContent("CA1 classificada");
+    await userEvent.click(within(panel).getByRole("button", { name: "Anular" }));
+    await userEvent.type(await screen.findByLabelText("Motivo da anulação"), "Duplicada com o fluxo");
+    await userEvent.click(screen.getByRole("button", { name: "Anular classificação" }));
+    await waitFor(() => expect(closing.voidReviewed).toHaveBeenCalledWith(41, 2, "Duplicada com o fluxo"));
   });
 });

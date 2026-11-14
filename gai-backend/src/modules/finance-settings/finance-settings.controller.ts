@@ -38,8 +38,12 @@ export class FinanceSettingsController {
 
   @Get('defaults')
   @RequirePermissions('finance-settings:read')
-  defaults() {
-    return this.service.defaults();
+  defaults(@Query('valid_from') validFrom?: string) {
+    return this.service.defaults(
+      validFrom && /^\d{4}-\d{2}-\d{2}$/.test(validFrom)
+        ? validFrom
+        : undefined,
+    );
   }
 
   @Post()

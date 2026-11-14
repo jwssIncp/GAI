@@ -49,6 +49,7 @@ import {
   calculateDre,
   conflict,
   decimal,
+  signed,
   DRE_ENGINE,
   DreLineInput,
   GROUP_LABELS,
@@ -59,6 +60,7 @@ import {
 } from './dre.policy';
 import type { DreReport } from './dre.report';
 import { DreRecognitionRuleEntity } from './dre-monthly.entities';
+import { RULE_LABELS } from './dre-monthly.formulas';
 import { DreMonthlyService } from './dre-monthly.service';
 import { civilToday } from '../finance-settings/finance-settings.policy';
 const SOURCE_READS = ['receivables:read', 'expenses:read', 'payments:read'];
@@ -192,7 +194,7 @@ export class DreService {
       }),
     );
   }
-  private async insertAccount(
+  async insertAccount(
     m: EntityManager,
     org: number,
     dto: Omit<DreAccountDto, 'command_key' | 'reason'>,
@@ -628,6 +630,28 @@ export class DreService {
           'Origem não elegível para novo reconhecimento. Use exclusão/estorno gerencial justificado.',
         );
     }
+    if (
+      source.kind !== 'manual' &&
+      ['draft', 'recognized'].includes(dto.status)
+    ) {
+      const regime = await this.monthly.regime(org, civilToday());
+      const kinds: Record<string, string[]> = {
+        receivable: ['billing_revenue', 'reimbursement_revenue'],
+        expense: ['reimbursable_expenses', 'non_reimbursable_expenses'],
+        payment: ['field_agents'],
+      };
+      const rule = (kinds[source.kind] ?? []).find(
+        (k) => regime?.rules[k as keyof typeof regime.rules],
+      );
+      if (
+        regime &&
+        rule &&
+        dto.allocations.some((a) => a.month >= regime.cutoff)
+      )
+        conflict(
+          `Esta origem já entra na DRE pela alimentação automática (${RULE_LABELS[rule as keyof typeof RULE_LABELS]}) a partir de ${regime.cutoff.split('-').reverse().join('/')}; classificá-la contaria em dobro.`,
+        );
+    }
     const allocations: EntryData['allocations'] = [];
     let total = 0n;
     const seen = new Set<string>();
@@ -787,10 +811,14 @@ export class DreService {
       order: { month: 'DESC' },
       take: 1000,
     });
-    return periods.map((p) => ({
-      ...p,
-      data: { ...p.data, snapshot: { complete: p.data.snapshot.complete } },
-    }));
+    return periods.map((p) => {
+      const { grid, ...data } = p.data;
+      return {
+        ...p,
+        has_grid: Boolean(grid),
+        data: { ...data, snapshot: { complete: p.data.snapshot.complete } },
+      };
+    });
   }
   async periodDetail(c: string, f: DreScopeDto, actor: ProjectActorContext) {
     month(c);
@@ -851,7 +879,20 @@ export class DreService {
         actor,
         cert,
       );
-      if (!report.complete && !dto.allow_incomplete)
+      const check = await this.monthly.checklist(org, c, civilToday());
+      if (check) {
+        if (check.blockers.length)
+          conflict(
+            `Não é possível fechar: ${check.blockers.map((b) => b.message).join(' ')}`,
+          );
+        const missing = check.warnings.filter(
+          (w) => !(dto.acknowledged ?? []).includes(w.code),
+        );
+        if (missing.length)
+          conflict(
+            `Confirme ciência antes de fechar: ${missing.map((w) => w.message).join(' ')}`,
+          );
+      } else if (!report.complete && !dto.allow_incomplete)
         conflict(
           'Apuração incompleta. Classifique pendências ou autorize explicitamente fechamento parcial na política.',
         );
@@ -860,7 +901,10 @@ export class DreService {
         policy_reference: dto.policy_reference.trim(),
         reviewed_groups: dto.reviewed_groups,
         sources_reviewed: dto.sources_reviewed,
-        allow_incomplete: dto.allow_incomplete,
+        allow_incomplete: check ? false : dto.allow_incomplete,
+        ...(check
+          ? { checklist: check, acknowledged: dto.acknowledged ?? [] }
+          : {}),
         snapshot: report as unknown as Record<string, unknown>,
         hash: hash(report),
         // Coluna do mês da DRE mensal, congelada: nada recalcula mês fechado.
@@ -890,6 +934,140 @@ export class DreService {
           .execute();
       }
       return { ...p };
+    });
+  }
+  /**
+   * Meses fechados antes da DRE mensal (sem coluna congelada): diferença por
+   * linha entre o resumo guardado no fechamento e a coluna recalculada hoje.
+   */
+  async freezePreview(c: string, f: DreScopeDto, actor: ProjectActorContext) {
+    month(c);
+    await this.require(actor, ['dre:read', 'dre:periods']);
+    const org = this.org(actor, f.organization_id);
+    const p = await this.ds.manager.findOneBy(DrePeriod, {
+      organizationId: org,
+      month: c,
+    });
+    if (!p?.closed) conflict('Competência não está fechada.');
+    if (p.data.grid) conflict('A coluna desta competência já está congelada.');
+    const ctx = await this.monthly.context(org, civilToday());
+    if (!ctx)
+      invalid(
+        'Sem parâmetros financeiros vigentes: a DRE mensal não está ativa.',
+      );
+    const now = calculateDre(
+      this.monthly.reportRows(ctx, [c]),
+      [...DRE_GROUPS],
+      false,
+    );
+    const stored = (
+      (
+        p.data.snapshot as {
+          totals?: Array<{
+            currency: string;
+            lines: Array<{ key: string; label: string; known_amount: string }>;
+          }>;
+        }
+      ).totals ?? []
+    ).find((t) => t.currency === 'BRL');
+    const lines = now.lines.map((l) => {
+      const before =
+        stored?.lines.find((x) => x.key === l.key)?.known_amount ?? null;
+      return {
+        key: l.key,
+        label: l.label,
+        stored: before,
+        recalculated: l.known_amount,
+        difference:
+          before === null
+            ? null
+            : decimal(signed(l.known_amount) - signed(before)),
+      };
+    });
+    const column = (await this.monthly.column(org, c, civilToday()))!;
+    return {
+      month: c,
+      revision: p.revision,
+      lines,
+      accounts: ctx.ctx.accounts
+        .map((a) => ({
+          id: a.id,
+          code: a.code,
+          name: a.name,
+          value: column[String(a.id)],
+        }))
+        .filter((a) => a.value !== '0.00'),
+    };
+  }
+  /** Congela a coluna recalculada de um mês fechado antes da DRE mensal (motivo e auditoria). */
+  freezeColumn(
+    c: string,
+    f: DreScopeDto,
+    dto: DreReopenDto,
+    actor: ProjectActorContext,
+  ) {
+    month(c);
+    return this.command(f, dto, actor, 'period-freeze:' + c, async (m, org) => {
+      const preview = await this.freezePreview(c, f, actor);
+      const p = await m.findOneBy(DrePeriod, { organizationId: org, month: c });
+      if (!p || p.revision !== dto.revision)
+        conflict('Competência alterada. Atualize.');
+      const data = {
+        ...p.data,
+        grid: (await this.monthly.column(org, c, civilToday()))!,
+        frozen: {
+          at: new Date().toISOString(),
+          actor_id: actor.id,
+          reason: dto.reason.trim(),
+          lines: preview.lines,
+        },
+      };
+      p.revision++;
+      await m
+        .createQueryBuilder()
+        .update(DrePeriod)
+        .set({ revision: p.revision, data: () => ':data' })
+        .where('id=:id', { id: p.id, data: JSON.stringify(data) })
+        .execute();
+      return { month: c, revision: p.revision, lines: preview.lines };
+    });
+  }
+  /** Anula uma classificação de origem do fluxo substituída pela DRE automática (a revisar). */
+  voidReviewed(
+    id: number,
+    f: DreScopeDto,
+    dto: DreReopenDto,
+    actor: ProjectActorContext,
+  ) {
+    return this.command(f, dto, actor, 'entry-void:' + id, async (m, org) => {
+      await this.require(actor, ['dre:read', 'dre:classify', 'dre:adjust']);
+      const e = await m.findOneBy(DreEntry, { id, organizationId: org });
+      if (!e) throw new NotFoundException('Reconhecimento não encontrado.');
+      if (e.revision !== dto.revision)
+        conflict('Reconhecimento alterado. Atualize.');
+      if (!['receivable', 'expense', 'payment'].includes(e.data.source?.kind))
+        invalid(
+          'Só classificações de recebível, despesa ou diária podem ser anuladas aqui.',
+        );
+      await this.unlocked(
+        m,
+        org,
+        e.data.allocations.map((a) => a.month),
+      );
+      e.revision++;
+      e.data = { ...e.data, status: 'void' };
+      await m
+        .createQueryBuilder()
+        .update(DreEntry)
+        .set({ revision: e.revision, data: () => ':data' })
+        .where('id=:id AND organization_id=:org', {
+          id: e.id,
+          org,
+          data: JSON.stringify(e.data),
+        })
+        .execute();
+      await this.version(m, e, actor, dto.reason);
+      return { id: e.id, revision: e.revision, status: 'void' };
     });
   }
   reopen(
@@ -931,6 +1109,9 @@ export class DreService {
     const range = months(f.start_month, f.end_month),
       org = this.org(actor, f.organization_id);
     await this.project(m, org, f.project_id);
+    const monthlyContext = await this.monthly.context(org, civilToday());
+    if (monthlyContext)
+      return this.monthlyReport(m, f, actor, monthlyContext, range, org);
     const entries = await this.entryRows(m, f, actor),
       periods = await m.find(DrePeriod, { where: { organizationId: org } }),
       canSources = await hasAllPermissions(actor, SOURCE_READS, this.resolver);
@@ -1180,6 +1361,134 @@ export class DreService {
         },
       };
     }
-    return { ...report, comparison: null };
+    return {
+      ...report,
+      mode: 'legacy' as const,
+      cutoff: null,
+      warnings: [
+        'Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.',
+        ...report.warnings,
+      ],
+      comparison: null,
+    };
+  }
+
+  /** Demonstrativo a partir da DRE mensal: mesmos números da grade, sem estimativas. */
+  private monthlyReport(
+    m: EntityManager,
+    f: DreReportDto,
+    actor: ProjectActorContext,
+    c: NonNullable<Awaited<ReturnType<DreMonthlyService['context']>>>,
+    range: string[],
+    org: number,
+  ): DreReport {
+    const rows = this.monthly.reportRows(c, range, f.project_id);
+    const all = [...DRE_GROUPS];
+    const periods = c.periods;
+    const unclassified = c.entries.flatMap((e) =>
+      e.data.status === 'draft' &&
+      (!f.project_id || e.projectId === f.project_id)
+        ? e.data.allocations
+            .filter((a) => range.includes(a.month))
+            .map((a) => ({
+              entry_id: e.id,
+              account_code: a.account?.code ?? null,
+              month: a.month,
+              amount: a.amount,
+              currency: e.data.currency,
+              reason: 'Reconhecimento em rascunho',
+              description: e.data.description,
+            }))
+        : [],
+    );
+    const cutoffBr = c.ctx.cutoff.split('-').reverse().join('/');
+    const report: DreReport = {
+      engine_version: DRE_ENGINE,
+      mode: 'monthly',
+      cutoff: c.ctx.cutoff,
+      organization_id: org,
+      filters: f,
+      generated_at: new Date().toISOString(),
+      complete: true,
+      totals: [{ currency: 'BRL', ...calculateDre(rows, all, false) }],
+      monthly: range.map((month) => ({
+        month,
+        currency: 'BRL',
+        closed: periods.find((p) => p.month === month)?.closed ?? false,
+        ...calculateDre(
+          rows.filter((r) => r.month === month),
+          all,
+          false,
+        ),
+      })),
+      by_project: [...new Set(rows.map((r) => r.project_id))].map(
+        (project_id) => ({
+          project_id,
+          currency: 'BRL',
+          ...calculateDre(
+            rows.filter((r) => r.project_id === project_id),
+            all,
+            false,
+          ),
+        }),
+      ),
+      rows,
+      unclassified,
+      pending_sources: [],
+      stale_sources: [],
+      source_permissions: SOURCE_READS,
+      warnings: [
+        'DRE gerencial; não é demonstração contábil oficial.',
+        `A partir de ${cutoffBr} os valores passam a incluir o fluxo de caixa (DRE automática, mesmos números da DRE mensal, sem estimativas). Antes, valem o lançado/importado e as classificações.`,
+        ...(f.project_id
+          ? [
+              'Filtro de projeto: só os valores com projeto (fluxo e classificações); lançamentos da DRE mensal são da organização.',
+            ]
+          : []),
+        ...c.warnings,
+      ],
+      periods: periods
+        .filter((p) => range.includes(p.month))
+        .map((p) => ({
+          month: p.month,
+          revision: p.revision,
+          closed: p.closed,
+          closure_hash: p.data.hash,
+          policy_reference: p.data.policy_reference,
+        })),
+      entry_versions: c.entries.map((e) => ({
+        id: e.id,
+        revision: e.revision,
+        hash: hash(e.data),
+      })),
+      comparison: null,
+    };
+    if (f.compare_start_month || f.compare_end_month) {
+      if (!f.compare_start_month || !f.compare_end_month)
+        invalid('Informe as duas competências de comparação.');
+      const other = months(f.compare_start_month, f.compare_end_month);
+      if (other.length !== range.length)
+        invalid('Comparação exige períodos com a mesma quantidade de meses.');
+      return {
+        ...report,
+        comparison: {
+          start_month: f.compare_start_month,
+          end_month: f.compare_end_month,
+          totals: [
+            {
+              currency: 'BRL',
+              ...calculateDre(
+                this.monthly.reportRows(c, other, f.project_id),
+                all,
+                false,
+              ),
+            },
+          ],
+        },
+      };
+    }
+    void m;
+    void actor;
+    return report;
   }
 }

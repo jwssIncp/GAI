@@ -8,6 +8,7 @@ import { DreService } from './dre.service';
 import { DreExportService } from './dre-export.service';
 import { DreMonthlyController } from './dre-monthly.controller';
 import {
+  DreDefaultModelService,
   DreMonthlyCommandsService,
   DreMonthlyViewService,
 } from './dre-monthly-commands.service';
@@ -19,6 +20,7 @@ import {
     DreExportService,
     DreMonthlyCommandsService,
     DreMonthlyViewService,
+    DreDefaultModelService,
   ],
 })
 export class ManagerialDreModule {}

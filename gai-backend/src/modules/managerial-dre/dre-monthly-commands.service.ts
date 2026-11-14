@@ -34,7 +34,8 @@ import {
   type RuleKind,
   toCents,
 } from './dre-monthly.formulas';
-import { DreMonthlyService } from './dre-monthly.service';
+import { DreMonthlyService, EMPTY_LAYOUT } from './dre-monthly.service';
+import { planDefaultModel } from './dre-default-model';
 
 const br = (month: string) => month.split('-').reverse().join('/');
 const normalize = (s: string) =>
@@ -547,12 +548,13 @@ export class DreMonthlyViewService {
     await this.dre.require(actor, ['dre:read']);
     const org = this.dre.org(actor, q.organization_id);
     const today = q.as_of ?? civilToday();
-    const grid = await this.monthly.grid(org, q.year, today);
-    if (!grid) return { configured: false as const, as_of: today };
+    // Um único contexto (o fluxo é calculado uma vez) para o ano e o comparativo.
+    const c = await this.monthly.context(org, today);
+    if (!c) return { configured: false as const, as_of: today };
+    const grid = this.monthly.gridFrom(c, q.year);
     const compare = q.compare_year
-      ? await this.monthly.grid(org, q.compare_year, today)
+      ? this.monthly.gridFrom(c, q.compare_year)
       : null;
-    const c = (await this.monthly.context(org, today))!;
     return {
       configured: true as const,
       as_of: today,
@@ -596,6 +598,32 @@ export class DreMonthlyViewService {
           })),
       },
     };
+  }
+
+  /** Verificação do fechamento de um mês (bloqueios e avisos). */
+  async checklist(
+    month: string,
+    q: { organization_id?: number; as_of?: string },
+    actor: ProjectActorContext,
+  ) {
+    await this.dre.require(actor, ['dre:read']);
+    const org = this.dre.org(actor, q.organization_id);
+    return (
+      (await this.monthly.checklist(org, month, q.as_of ?? civilToday())) ?? {
+        month,
+        legacy: true,
+        message:
+          'Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.',
+      }
+    );
+  }
+
+  /** Classificações de origens do fluxo a partir do corte, a revisar. */
+  async review(q: { organization_id?: number }, actor: ProjectActorContext) {
+    await this.dre.require(actor, ['dre:read']);
+    const org = this.dre.org(actor, q.organization_id);
+    const c = await this.monthly.context(org, civilToday());
+    return c ? this.monthly.reviewEntries(c) : [];
   }
 
   /** Detalhamento de uma célula: composição, histórico e movimentos do fluxo. */
@@ -665,5 +693,144 @@ export class DreMonthlyViewService {
       })),
       movements_hidden: kinds.length > 0 && !canFlow,
     };
+  }
+}
+
+/** Modelo padrão de DRE: pré-visualização e aplicação explícita (etapa 10). */
+@Injectable()
+export class DreDefaultModelService {
+  constructor(private readonly dre: DreService) {}
+
+  private async current(m: EntityManager, org: number) {
+    const accounts = await m.find(DreAccount, {
+      where: { organizationId: org },
+    });
+    const rules = await m.find(DreRecognitionRuleEntity, {
+      where: { organizationId: org },
+    });
+    const layout = await m.findOneBy(DreReportLayoutEntity, {
+      organizationId: org,
+    });
+    return {
+      accounts,
+      rules: Object.fromEntries(
+        rules.map((r) => [r.kind, r.accountId]),
+      ) as Partial<Record<RuleKind, number>>,
+      layout,
+      plan: planDefaultModel(
+        accounts.map((a) => ({
+          id: a.id,
+          code: a.code,
+          name: a.data.name,
+          group: a.data.group,
+          posting: a.data.posting,
+          active: a.data.active,
+        })),
+        Object.fromEntries(rules.map((r) => [r.kind, r.accountId])),
+        layout?.data.post_operational ?? [],
+      ),
+    };
+  }
+
+  async preview(f: { organization_id?: number }, actor: ProjectActorContext) {
+    await this.dre.require(actor, ['dre:read', 'dre:configure']);
+    const org = this.dre.org(actor, f.organization_id);
+    return (await this.current(this.dre.ds.manager, org)).plan;
+  }
+
+  async apply(
+    f: DreScopeDto,
+    dto: { command_key: string; reason: string },
+    actor: ProjectActorContext,
+  ) {
+    await this.dre.require(actor, ['dre:read', 'dre:configure']);
+    return this.dre.command(
+      f,
+      dto,
+      actor,
+      'monthly-default-model',
+      async (m, org) => {
+        const { plan, layout } = await this.current(m, org);
+        const reason = `${dto.reason.trim()} (modelo ${plan.version})`;
+        const ids = new Map<string, number>();
+        for (const x of plan.accounts)
+          if (x.account_id) ids.set(x.code, x.account_id);
+        let created = 0;
+        for (const x of plan.accounts) {
+          if (x.action !== 'create') continue;
+          const acc = await this.dre.insertAccount(
+            m,
+            org,
+            {
+              code: x.code,
+              name: x.name,
+              group: x.group,
+              posting: !x.synthetic,
+              ...(x.parent ? { parent_id: ids.get(x.parent) } : {}),
+            },
+            actor,
+            reason,
+          );
+          ids.set(x.code, acc.id);
+          created++;
+        }
+        let mapped = 0;
+        for (const r of plan.rules) {
+          if (r.action !== 'map') continue;
+          await m.save(
+            m.create(DreRecognitionRuleEntity, {
+              organizationId: org,
+              kind: r.kind,
+              accountId: ids.get(r.code)!,
+              revision: 1,
+              actorId: actor.id,
+              recordedAt: new Date(),
+            }),
+          );
+          mapped++;
+        }
+        const marks = plan.post_operational
+          .filter((p) => p.action === 'mark')
+          .map((p) => ids.get(p.code)!);
+        if (marks.length) {
+          const data = {
+            ...EMPTY_LAYOUT,
+            ...(layout?.data ?? {}),
+            post_operational: [
+              ...new Set([...(layout?.data.post_operational ?? []), ...marks]),
+            ],
+          };
+          if (layout)
+            await m
+              .createQueryBuilder()
+              .update(DreReportLayoutEntity)
+              .set({
+                revision: layout.revision + 1,
+                data: () => ':data',
+                actorId: actor.id,
+                recordedAt: new Date(),
+              })
+              .where('id=:id', { id: layout.id, data: JSON.stringify(data) })
+              .execute();
+          else
+            await m.save(
+              m.create(DreReportLayoutEntity, {
+                organizationId: org,
+                revision: 1,
+                data,
+                actorId: actor.id,
+                recordedAt: new Date(),
+              }),
+            );
+        }
+        return {
+          version: plan.version,
+          created,
+          mapped,
+          post_operational_marked: marks.length,
+          conflicts: plan.totals.conflict,
+        };
+      },
+    );
   }
 }

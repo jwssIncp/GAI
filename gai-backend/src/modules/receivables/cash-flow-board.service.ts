@@ -137,6 +137,11 @@ export class CashFlowBoardService {
   }
 
   async board(q: BoardQuery, actor: ProjectActorContext) {
+    return (await this.boardWithItems(q, actor)).board;
+  }
+
+  /** Quadro e os movimentos completos calculados (reaproveitados pela DRE). */
+  async boardWithItems(q: BoardQuery, actor: ProjectActorContext) {
     const org = this.receivables.org(actor, q.organization_id);
     await this.receivables.require(actor, [
       'cash-flow:read',
@@ -164,7 +169,7 @@ export class CashFlowBoardService {
     const proposed = scoped.filter(
       (i) => i.status === 'proposed' && i.direction === 'in',
     );
-    return {
+    const board = {
       as_of: today,
       reference: { month, year },
       kpis: cashFlowKpis(scoped, { month, year }),
@@ -181,6 +186,7 @@ export class CashFlowBoardService {
       projects: all.projects,
       items: visible,
     };
+    return { board, all, org };
   }
 
   /** Todos os movimentos da organização (sem filtro de período), já classificados. */

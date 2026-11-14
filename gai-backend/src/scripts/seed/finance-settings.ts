@@ -35,7 +35,7 @@ async function seedFinanceSettings(): Promise<void> {
           [
             organization.id,
             validFrom,
-            JSON.stringify(defaultFinanceSettingsValues()),
+            JSON.stringify(defaultFinanceSettingsValues(validFrom)),
             'Versão inicial com os valores padrão (seed)',
           ],
         );

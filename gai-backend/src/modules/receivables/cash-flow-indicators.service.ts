@@ -83,13 +83,14 @@ export class CashFlowIndicatorsService {
         reference: { month, year },
       };
     }
-    const all = (await this.board.items(org, today)).items.filter(
+    const computed = await this.board.items(org, today);
+    const all = computed.items.filter(
       (i) =>
         i.currency === 'BRL' &&
         (!q.project_id || i.project_id === q.project_id),
     );
     const ref = { month, year };
-    const dre = await this.monthly.context(org, today);
+    const dre = await this.monthly.context(org, today, computed);
     if (!dre)
       return { configured: false as const, as_of: today, reference: ref };
     const { internals, ...original } = this.compute(

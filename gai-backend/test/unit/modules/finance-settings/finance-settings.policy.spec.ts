@@ -6,6 +6,7 @@ import {
 } from '../../../../src/modules/finance-settings/finance-settings.dto';
 import { FinanceSettingsVersionEntity } from '../../../../src/modules/finance-settings/finance-settings.entity';
 import {
+  assertCutoff,
   assertNewVersionStart,
   civilToday,
   defaultFinanceSettingsValues,
@@ -61,7 +62,11 @@ describe('Parâmetros financeiros: valores padrão (doc 06 §8)', () => {
       '3021.00',
     ]);
     expect(v.first_installment_days_after_contract).toBe(30);
-    expect(v.dre_regime_cutoff_month).toBe('2026-09');
+    // corte: mês de início dos parâmetros da organização (nada fixo no código)
+    expect(v.dre_regime_cutoff_month).toBe(civilToday().slice(0, 7));
+    expect(
+      defaultFinanceSettingsValues('2025-03-10').dre_regime_cutoff_month,
+    ).toBe('2025-03');
     expect(v.expense_reasons).toEqual([
       'Transporte',
       'Refeição',
@@ -289,5 +294,39 @@ describe('Parâmetros financeiros: vigência (só inclusão, sem retroativo)', (
     });
     row.normalizeIds();
     expect([row.id, row.organizationId, row.actorId]).toEqual([7, 3, null]);
+  });
+});
+
+describe('Parâmetros financeiros: mês de corte da DRE automática (por organização)', () => {
+  it('não pode ser antes do início dos parâmetros da organização', () => {
+    expect(code(() => assertCutoff('2026-02', '2026-03-01', []))).toBe(
+      'FINANCE_SETTINGS_INVALID',
+    );
+    expect(code(() => assertCutoff('2026-03', '2026-03-15', []))).toBe(
+      'NO_ERROR',
+    );
+    // versão retroativa antecipa o início: o corte pode acompanhar
+    expect(
+      code(() =>
+        assertCutoff('2026-01', '2026-01-01', [
+          { validFrom: '2026-03-01', cutoff: '2026-03' },
+        ]),
+      ),
+    ).toBe('NO_ERROR');
+  });
+  it('mudar o corte não pode atravessar competência fechada', () => {
+    const prev = [{ validFrom: '2026-01-01', cutoff: '2026-09' }];
+    expect(
+      code(() => assertCutoff('2026-11', '2026-11-01', prev, ['2026-09'])),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+    expect(
+      code(() => assertCutoff('2026-07', '2026-11-01', prev, ['2026-08'])),
+    ).toBe('FINANCE_SETTINGS_CONFLICT');
+    expect(
+      code(() => assertCutoff('2026-11', '2026-11-01', prev, ['2026-12'])),
+    ).toBe('NO_ERROR');
+    expect(
+      code(() => assertCutoff('2026-09', '2026-11-01', prev, ['2026-10'])),
+    ).toBe('NO_ERROR');
   });
 });

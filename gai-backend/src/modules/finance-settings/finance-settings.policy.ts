@@ -36,7 +36,9 @@ export function missingSettings(): never {
  * Nenhum cálculo lê este objeto: os cálculos usam sempre a versão vigente
  * gravada para a organização e falham quando ela não existe.
  */
-export function defaultFinanceSettingsValues(): FinanceSettingsValuesDto {
+export function defaultFinanceSettingsValues(
+  validFrom: string = civilToday(),
+): FinanceSettingsValuesDto {
   return {
     income_tax_pct: '13.33',
     tag_tax_pct: '16.00',
@@ -67,7 +69,9 @@ export function defaultFinanceSettingsValues(): FinanceSettingsValuesDto {
     },
     economic_break_even_margin_pct: '10.00',
     first_installment_days_after_contract: 30,
-    dre_regime_cutoff_month: '2026-09',
+    // Corte da DRE automática: por organização, a partir do início dos
+    // parâmetros (nunca uma data fixa no código).
+    dre_regime_cutoff_month: validFrom.slice(0, 7),
     expense_reasons: [
       'Transporte',
       'Refeição',
@@ -258,6 +262,42 @@ export function assertNewVersionStart(
 }
 
 const br = (civil: string) => civil.split('-').reverse().join('/');
+const brMonth = (month: string) => month.split('-').reverse().join('/');
+
+/**
+ * Mês de corte da DRE automática (por organização, nos parâmetros):
+ * - não pode ser antes do início dos parâmetros da organização (sem
+ *   parâmetro vigente o fluxo não tem IR);
+ * - mudar o corte em relação à versão vizinha não pode atravessar competência
+ *   fechada da DRE (o mês mudaria de regime depois de fechado).
+ */
+export function assertCutoff(
+  cutoff: string,
+  validFrom: string,
+  previous: Array<{ validFrom: string; cutoff: string }>,
+  closedDreMonths: string[] = [],
+): void {
+  const starts = [validFrom, ...previous.map((p) => p.validFrom)].sort();
+  const firstMonth = starts[0].slice(0, 7);
+  if (cutoff < firstMonth)
+    invalid(
+      `O mês de corte da DRE automática (${brMonth(cutoff)}) não pode ser antes do início dos parâmetros da organização (${brMonth(firstMonth)}): sem parâmetro vigente o fluxo não tem IR.`,
+    );
+  const sorted = [...previous].sort((a, b) =>
+    a.validFrom.localeCompare(b.validFrom),
+  );
+  const neighbour =
+    validFrom < (sorted[0]?.validFrom ?? '')
+      ? sorted[0]
+      : sorted[sorted.length - 1];
+  if (!neighbour || neighbour.cutoff === cutoff) return;
+  const [from, to] = [neighbour.cutoff, cutoff].sort();
+  const hit = closedDreMonths.filter((m) => m >= from && m < to).sort();
+  if (hit.length)
+    conflict(
+      `Mudar o corte de ${brMonth(neighbour.cutoff)} para ${brMonth(cutoff)} mudaria o regime de competência já fechada (${hit.map(brMonth).join(', ')}). Reabra a competência ou mantenha o corte.`,
+    );
+}
 
 /** Versão vigente numa data: a de maior início que não seja posterior a ela. */
 export function versionInForce<T extends { validFrom: string }>(

@@ -122,11 +122,15 @@ export class CashFlowBoardController {
   @Get('board')
   @RequirePermissions('cash-flow:read')
   async get(@Query() q: CashFlowBoardQueryDto, @Req() req: Request) {
-    const b = await this.board.board(q, this.actor(req));
+    const {
+      board: b,
+      all,
+      org,
+    } = await this.board.boardWithItems(q, this.actor(req));
     // Total do ano = resultado final da DRE mensal jan–dez (como o INVESTOR);
     // o total do fluxo continua em year.total.
-    const org = this.receivables.org(this.actor(req), q.organization_id);
-    const grid = await this.monthly.grid(org, b.reference.year, b.as_of);
+    // Mesmo cálculo do fluxo reaproveitado pela DRE (uma vez por consulta).
+    const grid = await this.monthly.grid(org, b.reference.year, b.as_of, all);
     const dreTotal =
       grid?.lines.find((l) => l.key === 'final_result')?.total ?? null;
     return {

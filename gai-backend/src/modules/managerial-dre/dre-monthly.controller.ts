@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -31,12 +33,20 @@ import {
   DreRulesDto,
 } from './dre-monthly.dto';
 import {
+  DreDefaultModelService,
   DreMonthlyCommandsService,
   DreMonthlyViewService,
 } from './dre-monthly-commands.service';
+import { DreCommandDto, DreReopenDto } from './dre.dto';
+import { DreService } from './dre.service';
 
 const IMPORT_MAX_BYTES = 5 * 1024 * 1024;
 type Upload = { originalname: string; buffer: Buffer } | undefined;
+
+class DreDetailQueryLite {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) organization_id?: number;
+  @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/) as_of?: string;
+}
 
 class DreDetailQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) organization_id?: number;
@@ -52,6 +62,8 @@ export class DreMonthlyController {
   constructor(
     private readonly view: DreMonthlyViewService,
     private readonly commands: DreMonthlyCommandsService,
+    private readonly model: DreDefaultModelService,
+    private readonly dre: DreService,
   ) {}
   private actor(req: Request) {
     return (req as Request & { user: AuthenticatedUser }).user;
@@ -63,10 +75,79 @@ export class DreMonthlyController {
     return this.view.view(q, this.actor(req));
   }
 
+  @Get('checklist/:month')
+  @RequirePermissions('dre:read')
+  checklist(
+    @Param('month') month: string,
+    @Query() q: DreDetailQueryLite,
+    @Req() req: Request,
+  ) {
+    return this.view.checklist(month, q, this.actor(req));
+  }
+
+  @Get('review')
+  @RequirePermissions('dre:read')
+  review(@Query() q: DreScopeDto, @Req() req: Request) {
+    return this.view.review(q, this.actor(req));
+  }
+
+  @Post('review/:id/void')
+  @HttpCode(200)
+  @RequirePermissions('dre:read', 'dre:classify', 'dre:adjust')
+  voidReviewed(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() f: DreScopeDto,
+    @Body() d: DreReopenDto,
+    @Req() req: Request,
+  ) {
+    return this.dre.voidReviewed(id, f, d, this.actor(req));
+  }
+
+  @Get('freeze/:month')
+  @RequirePermissions('dre:read', 'dre:periods')
+  freezePreview(
+    @Param('month') month: string,
+    @Query() f: DreScopeDto,
+    @Req() req: Request,
+  ) {
+    return this.dre.freezePreview(month, f, this.actor(req));
+  }
+
+  @Post('freeze/:month')
+  @HttpCode(200)
+  @RequirePermissions('dre:read', 'dre:periods')
+  freeze(
+    @Param('month') month: string,
+    @Query() f: DreScopeDto,
+    @Body() d: DreReopenDto,
+    @Req() req: Request,
+  ) {
+    return this.dre.freezeColumn(month, f, d, this.actor(req));
+  }
+
   @Get('detail')
   @RequirePermissions('dre:read')
   detail(@Query() q: DreDetailQueryDto, @Req() req: Request) {
     return this.view.detail(q, this.actor(req));
+  }
+
+  /** Modelo padrão: pré-visualização do que será criado e associado. */
+  @Get('model')
+  @RequirePermissions('dre:read', 'dre:configure')
+  modelPreview(@Query() f: DreScopeDto, @Req() req: Request) {
+    return this.model.preview(f, this.actor(req));
+  }
+
+  /** Aplica o modelo padrão (completa; nunca sobrescreve). */
+  @Post('model')
+  @HttpCode(200)
+  @RequirePermissions('dre:read', 'dre:configure')
+  modelApply(
+    @Query() f: DreScopeDto,
+    @Body() d: DreCommandDto,
+    @Req() req: Request,
+  ) {
+    return this.model.apply(f, d, this.actor(req));
   }
 
   @Put('rules')

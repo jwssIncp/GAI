@@ -159,4 +159,19 @@ describe("DRE nested navigation and explicit classification", () => {
       ),
     );
   });
+  it("Demonstrativo sem parâmetros: avisa que é cálculo legado", async () => {
+    const legacy = { ...(await dreApi.report({})), mode: "legacy" as const, cutoff: null };
+    vi.mocked(dreApi.report).mockResolvedValue(legacy);
+    mount("/app/finance/dre/statement");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.",
+    );
+  });
+  it("Demonstrativo na DRE automática: informa que os valores passam a incluir o fluxo", async () => {
+    vi.mocked(dreApi.report).mockResolvedValue({ ...(await dreApi.report({})), mode: "monthly" as const, cutoff: "2026-09" });
+    mount("/app/finance/dre/statement");
+    expect(
+      await screen.findByText(/A partir de 09\/2026 os valores passam a incluir o fluxo de caixa/),
+    ).toBeInTheDocument();
+  });
 });

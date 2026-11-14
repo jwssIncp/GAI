@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { formatMoney } from "@/utils/format";
 import {
+  dreClosingApi,
   dreMonthlyApi,
   dreMonthlyKeys,
   monthLabel,
@@ -70,7 +71,7 @@ export function DreMonthlyPage() {
   const [summary, setSummary] = useState(false);
   const [showHidden, setShowHidden] = useState(false);
   const [cell, setCell] = useState<{ account: DreGridAccount; month: string } | null>(null);
-  const [dialog, setDialog] = useState<"import" | "config" | null>(null);
+  const [dialog, setDialog] = useState<"import" | "config" | "model" | null>(null);
   const [feedback, setFeedback] = useState<{ message: string; error?: boolean } | null>(null);
   const q = { year, ...(compareYear ? { compare_year: compareYear } : {}) };
   const view = useQuery({ queryKey: dreMonthlyKeys.view(q), queryFn: () => dreMonthlyApi.view(q), placeholderData: keepPreviousData });
@@ -145,6 +146,7 @@ export function DreMonthlyPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {hasPermission("dre:import") ? <Button type="button" variant="secondary" onClick={() => setDialog("import")}>Importar planilha</Button> : null}
+          {canConfigure ? <Button type="button" variant="secondary" onClick={() => setDialog("model")}>Aplicar modelo padrão</Button> : null}
           {canConfigure ? <Button type="button" variant="secondary" onClick={() => setDialog("config")}>Configurar</Button> : null}
         </div>
       </div>
@@ -284,6 +286,8 @@ export function DreMonthlyPage() {
 
       {cell ? <CellDialog account={cell.account} month={cell.month} canEdit={hasPermission("dre:adjust")} onClose={() => setCell(null)} onSaved={() => { setCell(null); void refresh(); }} /> : null}
       {dialog === "import" ? <ImportDialog defaultYear={year} onClose={() => setDialog(null)} onDone={(n) => { setDialog(null); setFeedback({ message: `Importação concluída: ${n} valor(es) gravado(s).` }); void refresh(); }} /> : null}
+      {dialog === "model" ? <ModelDialog onClose={() => setDialog(null)} onDone={(m) => { setDialog(null); setFeedback({ message: m }); void refresh(); }} /> : null}
+      {hasPermission("dre:classify") && hasPermission("dre:adjust") ? <ReviewPanel onDone={(m) => { setFeedback({ message: m }); void refresh(); }} /> : null}
       {dialog === "config" ? <ConfigDialog data={data} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setFeedback({ message: "Configuração da DRE salva." }); void refresh(); }} /> : null}
     </div>
   );
@@ -502,5 +506,112 @@ function ConfigDialog({ data, onClose, onSaved }: { data: Configured; onClose: (
         </div>
       </form>
     </ModalForm>
+  );
+}
+
+const MODEL_ACTION: Record<string, string> = { create: "criar", exists: "já existe", conflict: "não usada", map: "associar", kept: "mantida", skip: "sem conta", mark: "marcar pós-operacional" };
+
+/** Modelo padrão de DRE: pré-visualização e aplicação explícita (completa, nunca sobrescreve). */
+function ModelDialog({ onClose, onDone }: { onClose: () => void; onDone: (message: string) => void }) {
+  const plan = useQuery({ queryKey: ["dre-monthly", "model"], queryFn: () => dreClosingApi.modelPreview() });
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const apply = useMutation({
+    mutationFn: () => dreClosingApi.modelApply(reason.trim()),
+    onSuccess: (r) => onDone(`Modelo padrão aplicado: ${r.created} conta(s) criada(s), ${r.mapped} associação(ões), ${r.post_operational_marked} conta(s) pós-operacional(is)${r.conflicts ? `; ${r.conflicts} conta(s) do modelo não usadas por conflito` : ""}.`),
+    onError: (e) => setError((e as Error).message),
+  });
+  const p = plan.data;
+  return (
+    <ModalForm open onOpenChange={(o) => !o && onClose()} title="Aplicar modelo padrão de DRE">
+      {plan.isLoading || !p ? (
+        <LoadingState />
+      ) : (
+        <div className="grid gap-3 text-sm">
+          <p className="text-muted-foreground">
+            O modelo ({p.version}) só completa o que falta: contas com o mesmo código, associações já feitas e contas pós-operacionais
+            já marcadas ficam como estão. Tudo pode ser ajustado depois.
+          </p>
+          <p role="status" className="font-semibold">
+            {p.totals.create} conta(s) a criar · {p.totals.exists} já existente(s) · {p.totals.map} associação(ões) a fazer
+            {p.totals.conflict ? ` · ${p.totals.conflict} conflito(s)` : ""}
+          </p>
+          <div className="max-h-64 overflow-auto rounded border">
+            <table className="w-full text-xs">
+              <thead><tr className="bg-muted/50"><th className="p-1 text-left">Conta</th><th className="p-1 text-left">Ação</th></tr></thead>
+              <tbody>
+                {p.accounts.map((a) => (
+                  <tr key={a.code} className={`border-t ${a.synthetic ? "font-semibold" : ""}`}>
+                    <td className="p-1">{a.code} {a.name}</td>
+                    <td className={`p-1 ${a.action === "conflict" ? "text-warning" : ""}`}>{MODEL_ACTION[a.action]}{a.note ? ` — ${a.note}` : ""}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <details>
+            <summary className="cursor-pointer">Associações ({p.rules.filter((r) => r.action === "map").length} a fazer)</summary>
+            <ul className="mt-1 grid gap-0.5 text-xs">
+              {p.rules.map((r) => <li key={r.kind}>{r.kind} → {r.code}: {MODEL_ACTION[r.action]}</li>)}
+            </ul>
+          </details>
+          <FormField label="Motivo">
+            <Input aria-label="Motivo da aplicação do modelo" value={reason} onChange={(e) => setReason(e.target.value)} />
+          </FormField>
+          {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+            <Button type="button" disabled={reason.trim().length < 5 || apply.isPending || (p.totals.create === 0 && p.totals.map === 0)} onClick={() => apply.mutate()}>
+              Aplicar modelo
+            </Button>
+          </div>
+        </div>
+      )}
+    </ModalForm>
+  );
+}
+
+/** Classificações de recebível/despesa/diária a partir do corte: substituídas pela DRE automática. */
+function ReviewPanel({ onDone }: { onDone: (message: string) => void }) {
+  const cache = useQueryClient();
+  const list = useQuery({ queryKey: ["dre-monthly", "review"], queryFn: () => dreClosingApi.review() });
+  const [target, setTarget] = useState<{ id: number; revision: number; description: string } | null>(null);
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState("");
+  const voidIt = useMutation({
+    mutationFn: () => dreClosingApi.voidReviewed(target!.id, target!.revision, reason.trim()),
+    onSuccess: () => {
+      onDone(`Classificação "${target!.description}" anulada.`);
+      setTarget(null);
+      void cache.invalidateQueries({ queryKey: ["dre-monthly", "review"] });
+    },
+    onError: (e) => setError((e as Error).message),
+  });
+  if (!list.data?.length) return null;
+  return (
+    <section aria-label="Classificações a revisar" className="rounded-lg border border-warning/50 p-3 text-sm">
+      <p className="font-semibold">Classificações a revisar ({list.data.length})</p>
+      <p className="text-muted-foreground">Estas origens já entram na DRE pelo fluxo a partir do corte; a classificação manual é ignorada. Anule para limpar.</p>
+      <ul className="mt-2 grid gap-1">
+        {list.data.map((e) => (
+          <li key={e.id} className="flex flex-wrap items-center justify-between gap-2">
+            <span>#{e.id} · {e.description} · {e.months.map(monthLabel).join(", ")} · {formatMoney(e.amount)}</span>
+            <Button type="button" variant="ghost" onClick={() => { setTarget(e); setReason(""); setError(""); }}>Anular</Button>
+          </li>
+        ))}
+      </ul>
+      {target ? (
+        <ModalForm open onOpenChange={(o) => !o && setTarget(null)} title={`Anular classificação #${target.id}`}>
+          <form className="grid gap-3 text-sm" onSubmit={(e) => { e.preventDefault(); if (reason.trim().length < 5) setError("Informe o motivo."); else voidIt.mutate(); }}>
+            <p>{target.description}</p>
+            <FormField label="Motivo">
+              <Input aria-label="Motivo da anulação" value={reason} onChange={(e) => setReason(e.target.value)} />
+            </FormField>
+            {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+            <Button type="submit" disabled={voidIt.isPending}>Anular classificação</Button>
+          </form>
+        </ModalForm>
+      ) : null}
+    </section>
   );
 }
