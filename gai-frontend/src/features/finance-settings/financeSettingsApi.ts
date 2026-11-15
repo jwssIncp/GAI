@@ -68,7 +68,8 @@ export const financeSettingsApi = {
     api.get<FinanceSettingsOverview>("/finance-settings").then((r) => r.data),
   defaults: () =>
     api.get<FinanceSettingsValues>("/finance-settings/defaults").then((r) => r.data),
-  publish: (payload: { valid_from: string; reason: string; values: FinanceSettingsValues }) =>
+  /** `change_cutoff`: confirma a mudança do mês de corte herdado da versão vizinha. */
+  publish: (payload: { valid_from: string; reason: string; values: FinanceSettingsValues; change_cutoff?: boolean }) =>
     api.post<FinanceSettingsVersion>("/finance-settings", payload).then((r) => r.data),
 };
 
@@ -90,6 +91,36 @@ export function uncoveredSince(overview: FinanceSettingsOverview): string | null
 
 /** Endereço para publicar uma versão retroativa a partir de uma data (links dos avisos). */
 export const retroactiveSettingsUrl = (date: string) => `/app/finance/parameters?valid_from=${date}`;
+
+/**
+ * Versão de onde a nova herda o mês de corte da DRE: a primeira, se a nova
+ * começar antes dela (retroativa); senão, a última. Sem versões, nenhuma.
+ */
+export function neighbourVersion(
+  versions: FinanceSettingsVersion[],
+  validFrom: string,
+): FinanceSettingsVersion | null {
+  if (!versions.length) return null;
+  const sorted = [...versions].sort((a, b) => a.valid_from.localeCompare(b.valid_from));
+  return validFrom && validFrom < sorted[0].valid_from ? sorted[0] : sorted[sorted.length - 1];
+}
+
+/** Meses AAAA-MM de `from` (inclusive) a `to` (exclusive). */
+export function monthsBetween(from: string, to: string): string[] {
+  const out: string[] = [];
+  let [y, m] = from.split("-").map(Number);
+  for (let guard = 0; guard < 600; guard++) {
+    const month = `${y}-${String(m).padStart(2, "0")}`;
+    if (month >= to) break;
+    out.push(month);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
 
 export function nextValidFrom(overview: FinanceSettingsOverview): string {
   const latest = overview.versions.reduce<string | null>(

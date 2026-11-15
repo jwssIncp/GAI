@@ -67,7 +67,14 @@ export class FinanceSettingsValuesDto {
   fixed_cost_item_amounts!: FixedCostItemAmountsDto;
   @IsString() @Matches(PERCENT) economic_break_even_margin_pct!: string;
   @IsInt() @Min(0) @Max(365) first_installment_days_after_contract!: number;
-  @IsString() @Matches(/^\d{4}-\d{2}$/) dre_regime_cutoff_month!: string;
+  /**
+   * Mês de corte da DRE automática. Opcional na publicação: sem ele, a versão
+   * nova herda o corte da versão vizinha (na 1ª versão, o mês de início).
+   */
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}$/)
+  dre_regime_cutoff_month!: string;
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(50)
@@ -95,6 +102,12 @@ export class PublishFinanceSettingsDto {
   @ValidateNested()
   @Type(() => FinanceSettingsValuesDto)
   values!: FinanceSettingsValuesDto;
+  /**
+   * Confirma a mudança do mês de corte em relação à versão vizinha. Sem ela,
+   * um corte diferente do herdado é recusado (409) com os meses que mudariam
+   * de regime.
+   */
+  @IsOptional() @IsBoolean() change_cutoff?: boolean;
 }
 
 export class FinanceSettingsQueryDto {

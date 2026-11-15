@@ -167,7 +167,10 @@ export function normalizeFinanceSettingsValues(
       invalid(
         `${label}: o limite por arquivo não pode passar do teto da plataforma (${platformMaxUploadBytes} bytes).`,
       );
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(dto.dre_regime_cutoff_month))
+  if (
+    dto.dre_regime_cutoff_month !== undefined &&
+    !/^\d{4}-(0[1-9]|1[0-2])$/.test(dto.dre_regime_cutoff_month)
+  )
     invalid('Mês de corte da DRE: use o formato AAAA-MM.');
   return {
     income_tax_pct: percent(dto.income_tax_pct, '% de IR sobre faturamento'),
@@ -297,6 +300,74 @@ export function assertCutoff(
     conflict(
       `Mudar o corte de ${brMonth(neighbour.cutoff)} para ${brMonth(cutoff)} mudaria o regime de competência já fechada (${hit.map(brMonth).join(', ')}). Reabra a competência ou mantenha o corte.`,
     );
+}
+
+/** Versão vizinha de uma versão nova: a primeira (se começar antes) ou a última. */
+export function neighbourVersion<T extends { validFrom: string }>(
+  validFrom: string,
+  previous: T[],
+): T | undefined {
+  const sorted = [...previous].sort((a, b) =>
+    a.validFrom.localeCompare(b.validFrom),
+  );
+  return validFrom < (sorted[0]?.validFrom ?? '')
+    ? sorted[0]
+    : sorted[sorted.length - 1];
+}
+
+/** Meses AAAA-MM de `from` (inclusive) a `to` (exclusive). */
+export function monthsBetween(from: string, to: string): string[] {
+  const out: string[] = [];
+  let [y, m] = from.split('-').map(Number);
+  for (let guard = 0; guard < 600; guard++) {
+    const month = `${y}-${String(m).padStart(2, '0')}`;
+    if (month >= to) break;
+    out.push(month);
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return out;
+}
+
+/**
+ * Mês de corte de uma versão nova: herda o da versão vizinha. Na 1ª versão,
+ * o padrão é o mês de início. Mudar o corte exige confirmação explícita
+ * (`change`): sem ela, recusa e mostra os meses que mudariam de regime.
+ */
+export function resolveCutoff(
+  requested: string | undefined,
+  validFrom: string,
+  previous: Array<{ validFrom: string; cutoff: string; version: number }>,
+  change: boolean,
+): string {
+  const neighbour = neighbourVersion(validFrom, previous);
+  if (!neighbour) return requested ?? validFrom.slice(0, 7);
+  if (!requested || requested === neighbour.cutoff) return neighbour.cutoff;
+  if (change) return requested;
+  const [from, to] = [neighbour.cutoff, requested].sort();
+  const months = monthsBetween(from, to);
+  const range =
+    months.length > 1
+      ? `${brMonth(months[0])} a ${brMonth(months[months.length - 1])}`
+      : brMonth(months[0]);
+  throw new ConflictException({
+    code: 'CUTOFF_CHANGE_NOT_CONFIRMED',
+    details: { inherited: neighbour.cutoff, requested, months },
+    message:
+      `A versão nova herda o corte da DRE da versão ${neighbour.version} (${brMonth(neighbour.cutoff)}). ` +
+      `Mudar para ${brMonth(requested)} faz ${months.length > 1 ? 'os meses' : 'o mês'} ${range} ` +
+      (requested > neighbour.cutoff
+        ? months.length > 1
+          ? 'deixarem de ser alimentados pelo fluxo de caixa (volta a valer o lançado ou importado). '
+          : 'deixar de ser alimentado pelo fluxo de caixa (volta a valer o lançado ou importado). '
+        : months.length > 1
+          ? 'passarem a ser alimentados pelo fluxo de caixa. '
+          : 'passar a ser alimentado pelo fluxo de caixa. ') +
+      'Confirme a mudança do corte para publicar.',
+  });
 }
 
 /** Versão vigente numa data: a de maior início que não seja posterior a ela. */
