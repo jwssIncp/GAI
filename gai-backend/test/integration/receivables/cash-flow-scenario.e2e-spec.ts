@@ -1172,6 +1172,10 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
           project_id: number | null;
           lines: Array<{ key: string; known_amount: string }>;
         }>;
+        monthly: Array<{
+          month: string;
+          lines: Array<{ key: string; label: string; known_amount: string }>;
+        }>;
       };
     const line = (r: Awaited<ReturnType<typeof report>>, key: string) =>
       r.totals[0].lines.find((l) => l.key === key)!.known_amount;
@@ -1279,34 +1283,110 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     expect(r.mode).toBe('monthly');
     expect(r.cutoff).toBe('2026-09');
     expect(r.warnings.join(' ')).toContain('passam a incluir o fluxo');
+    // Mesmas linhas e nomes da DRE mensal (com pós-operacional e resultado final)
+    const KEYS = [
+      'revenue',
+      'deductions',
+      'net_revenue',
+      'variable_costs',
+      'fixed_costs',
+      'total_costs',
+      'operating_result',
+      'post_operational',
+      'financial_result',
+      'income_taxes',
+      'final_result',
+    ];
+    expect(r.totals[0].lines.map((l) => l.key)).toEqual(KEYS);
     expect(line(r, 'revenue')).toBe('84000.00');
     expect(line(r, 'deductions')).toBe('11197.20');
-    expect(line(r, 'direct_cost')).toBe('22470.00');
-    expect(line(r, 'operating_expense')).toBe('64800.00');
-    expect(line(r, 'operating_result')).toBe('-14467.20');
-    const g = (await dreView()).grid as DreGrid & {
-      accounts: Array<{ group?: string }>;
+    expect(line(r, 'variable_costs')).toBe('22470.00');
+    // ano: 84.000 − 11.197,20 − 22.470 − 64.800 (custos fixos + pós-operacional)
+    expect(line(r, 'final_result')).toBe('-14467.20');
+    const g = (await dreView()).grid as unknown as {
+      months: string[];
+      accounts: Array<{
+        group: string;
+        post_operational: boolean;
+        cells: Array<{ value: string; estimate: string | null }>;
+      }>;
+      lines: Array<{ key: string; label: string; values: string[] }>;
     };
-    const actual = (group: string) =>
-      (
-        g.accounts
-          .filter((a) => (a as { group?: string }).group === group)
-          .flatMap((a) => a.cells)
-          .reduce(
-            (s2, c) =>
-              s2 +
-              Math.round(Number(c.value) * 100) -
-              Math.round(Number(c.estimate ?? 0) * 100),
-            0,
-          ) / 100
-      ).toFixed(2);
-    for (const [key, group] of [
-      ['revenue', 'revenue'],
-      ['deductions', 'deductions'],
-      ['direct_cost', 'direct_cost'],
-      ['operating_expense', 'operating_expense'],
-    ])
-      expect(line(r, key)).toBe(actual(group));
+    // DRE mensal sem estimativas, recalculada à mão pelas regras da DRE mensal
+    const cents = (v: string | null) => Math.round(Number(v ?? 0) * 100);
+    const expected = (
+      pick: (
+        cells: Array<{ value: string; estimate: string | null }>,
+      ) => number,
+    ) => {
+      const sum = (f: (a: (typeof g.accounts)[number]) => boolean) =>
+        g.accounts.filter(f).reduce((s2, a) => s2 + pick(a.cells), 0);
+      const inG = (group: string) => (a: (typeof g.accounts)[number]) =>
+        !a.post_operational && a.group === group;
+      const revenue = sum(inG('revenue'));
+      const deductions = sum(inG('deductions'));
+      const net = revenue - deductions;
+      const variable = sum(inG('direct_cost'));
+      const fixed = sum(inG('operating_expense'));
+      const operating = net - variable - fixed;
+      const post = g.accounts
+        .filter((a) => a.post_operational)
+        .reduce(
+          (s2, a) =>
+            s2 +
+            (['revenue', 'financial_income'].includes(a.group) ? -1 : 1) *
+              pick(a.cells),
+          0,
+        );
+      const financial =
+        sum(inG('financial_income')) - sum(inG('financial_expense'));
+      const taxes = sum(inG('income_tax'));
+      const v: Record<string, number> = {
+        revenue,
+        deductions,
+        net_revenue: net,
+        variable_costs: variable,
+        fixed_costs: fixed,
+        total_costs: variable + fixed,
+        operating_result: operating,
+        post_operational: post,
+        financial_result: financial,
+        income_taxes: taxes,
+        final_result: operating - post + financial - taxes,
+      };
+      return Object.fromEntries(KEYS.map((k) => [k, (v[k] / 100).toFixed(2)]));
+    };
+    const got = (ls: Array<{ key: string; known_amount: string }>) =>
+      Object.fromEntries(ls.map((l) => [l.key, l.known_amount]));
+    // ano
+    expect(got(r.totals[0].lines)).toEqual(
+      expected((cells) =>
+        cells.reduce((s2, c) => s2 + cents(c.value) - cents(c.estimate), 0),
+      ),
+    );
+    // mês a mês: todas as linhas e o resultado final
+    for (const [i, month] of g.months.entries()) {
+      const demo = r.monthly.find((x) => x.month === month)!;
+      const want = expected(
+        (cells) => cents(cells[i].value) - cents(cells[i].estimate),
+      );
+      expect({ month, ...got(demo.lines) }).toEqual({ month, ...want });
+      // mês sem estimativa: igual, linha a linha, à grade da DRE mensal
+      if (g.accounts.every((a) => a.cells[i].estimate == null))
+        for (const key of KEYS)
+          expect([month, key, got(demo.lines)[key]]).toEqual([
+            month,
+            key,
+            (
+              cents(g.lines.find((l) => l.key === key)!.values[i]) / 100
+            ).toFixed(2),
+          ]);
+    }
+    // nomes iguais aos da DRE mensal
+    for (const key of KEYS)
+      expect(r.totals[0].lines.find((l) => l.key === key)!.label).toBe(
+        g.lines.find((l) => l.key === key)!.label,
+      );
     const alfaLines = r.by_project.find((x) => x.project_id === alfa)!.lines;
     expect(alfaLines.find((l) => l.key === 'revenue')!.known_amount).toBe(
       '4000.00',
@@ -1752,7 +1832,9 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const closedMsg = (m: string) => {
       expect(m).toContain('10/2026');
       expect(m).toContain('fechada');
-      expect(m).toContain('reabra a competência');
+      expect(m).toContain(
+        'Reabra a competência 10/2026 na DRE (exige permissão e justificativa) e lance novamente.',
+      );
     };
     // ── recebimento ──
     const realized = async () =>

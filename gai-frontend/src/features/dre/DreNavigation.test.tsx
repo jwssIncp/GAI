@@ -178,9 +178,10 @@ describe("DRE nested navigation and explicit classification", () => {
     const base = await dreApi.report({});
     const calc = (gross: string | null, operating: string | null) => ({
       currency: "BRL",
-      lines: ["revenue", "deductions", "net_revenue", "direct_cost", "gross_profit", "operating_expense", "operating_result", "financial_income", "financial_expense", "financial_result", "before_tax", "income_tax", "after_tax"].map((key) => {
-        const v = key === "revenue" ? "100.00" : key === "before_tax" ? "-13.84" : "0.00";
-        return { key, label: key === "revenue" ? "Receita bruta" : key === "before_tax" ? "Antes de tributos" : key, amount: v, known_amount: v, complete: true, groups: [], entry_ids: [] };
+      // modo DRE automática: as mesmas linhas da DRE mensal
+      lines: ["revenue", "deductions", "net_revenue", "variable_costs", "fixed_costs", "total_costs", "operating_result", "post_operational", "financial_result", "income_taxes", "final_result"].map((key) => {
+        const v = key === "revenue" ? "100.00" : key === "final_result" ? "-13.84" : "0.00";
+        return { key, label: key === "revenue" ? "Receita bruta" : key === "final_result" ? "Resultado final" : key, amount: v, known_amount: v, complete: true, groups: [], entry_ids: [] };
       }),
       gross_margin: gross,
       operating_margin: operating,
