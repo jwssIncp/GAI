@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { assertNotFuture } from '../../common/finance/settlement-date';
+import { assertDreMonthsOpen } from './dre-closed-period';
 import {
   ProjectScopeService,
   ProjectActorContext,
@@ -777,6 +778,12 @@ export class ReceivableService {
         invalid('Data de recebimento anterior à emissão.');
       if (dto.received_on === e.effectiveOn)
         conflict('A data de recebimento já é essa.');
+      await assertDreMonthsOpen(
+        m,
+        row.organizationId,
+        [e.effectiveOn, dto.received_on],
+        'Não é possível alterar a data de recebimento',
+      );
       const today = new Date().toISOString().slice(0, 10);
       const before = e.details;
       return {

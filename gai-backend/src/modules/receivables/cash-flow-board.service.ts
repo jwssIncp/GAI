@@ -44,6 +44,9 @@ import {
   ReceivableProposalDecisionEntity,
 } from './cash-flow-parity.entities';
 import { hash } from './receivable.policy';
+import { assertDreMonthsOpen } from './dre-closed-period';
+import { CommissionEntity } from '../commissions/commission.entity';
+import { AssetTagOrderEntity } from '../asset-tags/asset-tag-order.entity';
 import { ReceivableEntity } from './receivable.entity';
 import { ReceivableService } from './receivable.service';
 
@@ -1149,9 +1152,17 @@ export class CashFlowBoardService {
       const id = Number(rawId);
       if (kind === 'commission') {
         await this.receivables.require(actor, ['commissions:edit']);
+        const row = await this.ds.manager.findOne(CommissionEntity, {
+          where: { id, organizationId: org },
+        });
+        await this.assertRepayOpen(org, row?.paidOn, paidOn);
         await this.commissions.update(id, { paid_on: paidOn }, actor);
       } else if (kind === 'asset_tag_order') {
         await this.receivables.require(actor, ['asset-tag-orders:edit']);
+        const row = await this.ds.manager.findOne(AssetTagOrderEntity, {
+          where: { id, organizationId: org },
+        });
+        await this.assertRepayOpen(org, row?.supplierPaidOn, paidOn);
         await this.tags.update(
           id,
           paidOn ? { supplier_paid_on: paidOn } : { supplier_paid: false },
@@ -1189,6 +1200,7 @@ export class CashFlowBoardService {
           throw new ConflictException({
             message: 'Saída sem baixa feita no fluxo.',
           });
+        await this.assertRepayOpen(org, before, paidOn);
         await repo.save(
           current
             ? Object.assign(current, { paidOn, updatedById: actor.id })
@@ -1212,6 +1224,25 @@ export class CashFlowBoardService {
           message: 'Esta saída não tem baixa no fluxo.',
         });
     });
+  }
+
+  /**
+   * Alterar a data de pagamento (já pago → nova data): recusado se a data
+   * original ou a nova cair em competência fechada da DRE.
+   */
+  private async assertRepayOpen(
+    org: number,
+    before: string | Date | null | undefined,
+    paidOn: string | null,
+  ) {
+    const original = before ? civil(before) : null;
+    if (!original || !paidOn || original === paidOn) return;
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      org,
+      [original, paidOn],
+      'Não é possível alterar a data de pagamento',
+    );
   }
 
   private async audit(

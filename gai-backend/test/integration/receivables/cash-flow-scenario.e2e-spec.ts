@@ -1737,4 +1737,117 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     expect(same).toMatchObject({ done: 0, failed: 1 });
     expect(same.results[0].message).toContain('já é essa');
   });
+
+  /**
+   * Competência fechada (10/2026 foi fechada na DRE mais acima): alterar a data
+   * de recebimento ou de pagamento é recusado se a data original OU a nova cair
+   * em mês fechado; a mensagem indica o mês e pede a reabertura.
+   */
+  it('alterar data em competência fechada: recebimento e pagamento, data original e nova data', async () => {
+    const setOct = (closed: boolean) =>
+      ds.query('UPDATE dre_periods SET closed = ? WHERE month = ?', [
+        closed,
+        '2026-10',
+      ]);
+    const closedMsg = (m: string) => {
+      expect(m).toContain('10/2026');
+      expect(m).toContain('fechada');
+      expect(m).toContain('reabra a competência');
+    };
+    // ── recebimento ──
+    const realized = async () =>
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) =>
+          i.origin === 'contract' &&
+          i.status === 'realized' &&
+          i.date === '2026-11-12',
+      )!;
+    const redate = async (eventItem: Item, on: string) =>
+      (
+        await api('post', '/finance/cash-flow/receipts/redate')
+          .send({
+            items: [
+              {
+                receivable_id: eventItem.refs.receivable_id,
+                event_id: eventItem.refs.event_id,
+              },
+            ],
+            received_on: on,
+            reason: 'Data informada pelo banco',
+          })
+          .expect(200)
+      ).body as {
+        done: number;
+        failed: number;
+        results: Array<{ message?: string }>;
+      };
+    const r1 = await realized();
+    // nova data em mês fechado
+    let res = await redate(r1, '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // reaberta, a mudança para 10/2026 passa; fechada de novo, a data original
+    // (10/2026) impede voltar para 11/2026
+    await setOct(false);
+    expect(await redate(r1, '2026-10-20')).toMatchObject({ done: 1 });
+    await setOct(true);
+    const inOct = (await board('as_of=2026-11-14&year=all')).items.find(
+      (i) =>
+        i.origin === 'contract' &&
+        i.status === 'realized' &&
+        i.refs.receivable_id === r1.refs.receivable_id &&
+        i.date === '2026-10-20',
+    )!;
+    res = await redate(inOct, '2026-11-13');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // nada mudou: segue recebido em 20/10/2026
+    expect(
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) => i.refs.event_id === inOct.refs.event_id,
+      ),
+    ).toMatchObject({ status: 'realized', date: '2026-10-20' });
+
+    // ── pagamento (comissão e despesa com baixa no fluxo) ──
+    const settle = async (key: string, paid_on: string | null) =>
+      (
+        await api('post', '/finance/cash-flow/outflows/settle')
+          .send({ keys: [key], paid_on })
+          .expect(200)
+      ).body as {
+        done: number;
+        failed: number;
+        results: Array<{ message?: string }>;
+      };
+    const items = (await board('as_of=2026-11-14&year=all')).items;
+    const commission = String(
+      items.find((i) => i.origin === 'commission')!.refs.settle_key,
+    );
+    expect(await settle(commission, '2026-11-13')).toMatchObject({ done: 1 });
+    // nova data em mês fechado
+    res = await settle(commission, '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // data original em mês fechado
+    await setOct(false);
+    expect(await settle(commission, '2026-10-20')).toMatchObject({ done: 1 });
+    await setOct(true);
+    res = await settle(commission, '2026-11-13');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // despesa parcelada baixada no fluxo (12/11/2026): nova data em mês fechado
+    const expense = items.find(
+      (i) =>
+        String(i.refs.settle_key).startsWith('expense:') &&
+        i.refs.settled_here === 1,
+    )!;
+    res = await settle(String(expense.refs.settle_key), '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    expect(
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) => i.key === expense.key,
+      ),
+    ).toMatchObject({ status: 'realized', date: expense.date });
+  });
 });
