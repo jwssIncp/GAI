@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { FilterPanel } from "@/components/base/FilterPanel";
@@ -10,7 +10,9 @@ import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { formatMoney } from "@/utils/format";
-import { CashFlowIndicators } from "./CashFlowIndicators";
+import { CashFlowBlock, type BlockAction, type BlockKind } from "./CashFlowBlock";
+import { IndicatorsPanel, SimulationBar } from "./CashFlowIndicators";
+import { useCashFlowIndicators } from "./useCashFlowIndicators";
 import {
   cashFlowApi,
   cashFlowKeys,
@@ -19,48 +21,63 @@ import {
   type BatchResult,
   type CashFlowKpis,
   type FlowItem,
+  type SaleSimulationInput,
 } from "./cashFlowBoardApi";
 
-const select = "h-10 max-w-[14rem] rounded-md border bg-background px-3 text-sm";
-const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Previsto (não confirmado)", reversed: "Estornado" };
-const STATUS_OUT: Record<FlowItem["status"], string> = { realized: "Pago", open: "A pagar", proposed: "Previsto", reversed: "Estornado" };
+const select = "h-10 max-w-full rounded-md border bg-background px-3 text-sm md:max-w-[16rem]";
 
-type Action =
-  | { kind: "receive"; items: FlowItem[] }
-  | { kind: "reschedule"; items: FlowItem[] }
-  | { kind: "discard"; items: FlowItem[] }
-  | { kind: "settle"; items: FlowItem[] }
-  | null;
-
-function Kpi({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: "danger" | "warning" }) {
-  const negative = value.startsWith("-");
+function Kpi({ label, value, hint, tone, simulated }: { label: string; value: string; hint?: string; tone?: "danger" | "warning"; simulated?: string }) {
+  const changed = simulated !== undefined && simulated !== value;
+  const shown = changed ? simulated : value;
+  const negative = shown.startsWith("-");
   return (
-    <div className={`rounded-lg border bg-card p-3 ${tone === "danger" ? "border-destructive/50" : tone === "warning" ? "border-warning/50" : ""}`}>
+    <div className={`rounded-lg border bg-card p-3 ${tone === "danger" ? "border-destructive/50" : tone === "warning" ? "border-warning/50" : changed ? "border-primary/60" : ""}`}>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-semibold tabular-nums ${negative || tone === "danger" ? "text-destructive" : ""}`}>{value}</p>
+      <p className={`text-lg font-semibold tabular-nums ${negative || tone === "danger" ? "text-destructive" : ""}`}>{shown}</p>
+      {changed ? (
+        <p className="text-xs text-muted-foreground">
+          sem a venda: <s>{value}</s> · simulado
+        </p>
+      ) : null}
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
 
-function KpiRows({ k }: { k: CashFlowKpis }) {
+const sumMoney = (a: string, b: string) => ((Math.round(Number(a) * 100) + Math.round(Number(b) * 100)) / 100).toFixed(2);
+
+/** Cards do fluxo (mês, próximo mês e ano de referência); com simulação, os totais mostram o valor com a venda. */
+function KpiRows({ k, sim, projectFiltered }: { k: CashFlowKpis; sim?: CashFlowKpis; projectFiltered: boolean }) {
   const m = (v: string) => formatMoney(v);
   return (
     <section aria-label={`Indicadores do fluxo de caixa (${k.currency})`} className="grid gap-2">
       {k.currency !== "BRL" ? <p className="text-sm font-semibold">Valores em {k.currency} (não somados ao BRL)</p> : null}
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi label={`Total previsto ${monthBr(k.month.reference)}`} value={m(k.month.total)} hint="(entradas − saídas) do mês" />
-        <Kpi label="Entradas do mês" value={m(String((Number(k.month.in_realized) + Number(k.month.in_open)).toFixed(2)))} hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`} />
-        <Kpi label="Saídas do mês" value={m(String((Number(k.month.out_realized) + Number(k.month.out_open)).toFixed(2)))} hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`} />
+        <Kpi label={`Total previsto ${monthBr(k.month.reference)}`} value={m(k.month.total)} simulated={sim ? m(sim.month.total) : undefined} hint="(entradas − saídas) do mês" />
+        <Kpi label="Entradas do mês" value={m(sumMoney(k.month.in_realized, k.month.in_open))} hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`} />
+        <Kpi label="Saídas do mês" value={m(sumMoney(k.month.out_realized, k.month.out_open))} hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`} />
         <Kpi label="Em atraso" value={m(k.overdue.in)} hint={`${k.overdue.in_count} entrada(s) · saídas ${m(k.overdue.out)} (${k.overdue.out_count})`} tone={k.overdue.in_count || k.overdue.out_count ? "danger" : undefined} />
-        <Kpi label={`Total previsto ${monthBr(k.next_month.reference)}`} value={m(k.next_month.total)} hint="entradas líquidas de IR − saídas" />
+        <Kpi label={`Total previsto ${monthBr(k.next_month.reference)}`} value={m(k.next_month.total)} simulated={sim ? m(sim.next_month.total) : undefined} hint="entradas líquidas de IR − saídas" />
         <Kpi label="Entradas do próximo mês (líquidas)" value={m(k.next_month.in_net)} hint={`bruto ${m(k.next_month.in_gross)}`} />
         <Kpi label="Saídas do próximo mês" value={m(k.next_month.out)} hint="sem o IR (já descontado das entradas)" />
         <Kpi label="Previsto não confirmado" value={m(k.proposed.amount)} hint={`${k.proposed.count} parcela(s) proposta(s)`} tone={k.proposed.count ? "warning" : undefined} />
         {k.year.dre_total != null ? (
-          <Kpi label={`Total previsto ${k.year.reference} (DRE)`} value={m(k.year.dre_total)} hint={`resultado da DRE jan–dez · fluxo do ano: ${m(k.year.total)}`} />
+          <Kpi
+            label={`Total previsto ${k.year.reference} (DRE)`}
+            value={m(k.year.dre_total)}
+            simulated={sim?.year.dre_total != null ? m(sim.year.dre_total) : undefined}
+            hint={`resultado da DRE jan–dez · fluxo do ano: ${m(k.year.total)}`}
+          />
         ) : (
-          <Kpi label={`Total do ano ${k.year.reference}`} value={m(k.year.total)} hint={`entradas ${m(k.year.in)} − saídas ${m(k.year.out)} (com IR)`} />
+          <Kpi
+            label={`Total do ano ${k.year.reference}`}
+            value={m(k.year.total)}
+            hint={
+              projectFiltered
+                ? "pelo fluxo do projeto: a DRE é da organização inteira"
+                : `entradas ${m(k.year.in)} − saídas ${m(k.year.out)} (com IR)`
+            }
+          />
         )}
         <Kpi label={`A receber em ${k.year.reference} (líquido)`} value={m(k.year.in_open_net)} />
         <Kpi label={`A pagar em ${k.year.reference}`} value={m(k.year.out_open)} hint="sem o IR" />
@@ -69,32 +86,59 @@ function KpiRows({ k }: { k: CashFlowKpis }) {
   );
 }
 
-/** Financeiro › Fluxo de caixa (doc 06 §7, etapa 7). */
+type Dialog =
+  | { kind: "receive" | "reschedule" | "discard" | "redate" | "settle" | "repay"; items: FlowItem[] }
+  | null;
+
+const BLOCKS: Array<{ kind: BlockKind; title: string; groups: FlowItem["group"][]; direction: "in" | "out" }> = [
+  { kind: "billing", title: "Entradas de faturamento", groups: ["billing"], direction: "in" },
+  { kind: "reimbursement", title: "Entradas de reembolso e revenda de placas", groups: ["reimbursement", "other_in"], direction: "in" },
+  { kind: "to_reimburse", title: "Saídas para reembolsar", groups: ["to_reimburse"], direction: "out" },
+  { kind: "non_reimbursable", title: "Saídas não reembolsáveis", groups: ["non_reimbursable"], direction: "out" },
+];
+
+/** Financeiro › Fluxo de caixa: filtro geral (na URL), avisos, simulação, cards, indicadores e os quatro blocos. */
 export function CashFlowPage() {
   const { hasPermission } = usePermissions();
   const cache = useQueryClient();
-  const [params] = useSearchParams();
-  const thisYear = new Date().getFullYear();
-  const [query, setQuery] = useState(() => ({
-    project_id: Number(params.get("project_id")) || undefined,
-    year: params.get("year") ?? String(thisYear),
-    month: params.get("month") ?? undefined,
-  }));
-  const [monthFilter, setMonthFilter] = useState("");
-  const [onlyOpen, setOnlyOpen] = useState(false);
-  const [showReversed, setShowReversed] = useState(false);
-  const [direction, setDirection] = useState<"" | "in" | "out">("");
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string[]>([]);
-  const [action, setAction] = useState<Action>(null);
+  const [params, setParams] = useSearchParams();
+  const thisYear = String(new Date().getFullYear());
+  // Filtro geral (gravado na URL: recarregar ou compartilhar o link abre igual).
+  const year = params.get("year") ?? thisYear;
+  const projectId = Number(params.get("project_id")) || undefined;
+  const month = params.get("month") ?? undefined;
+  const direction = (params.get("tipo") ?? "") as "" | "in" | "out";
+  const onlyOpen = params.get("em_aberto") === "1";
+  const currentMonth = params.get("mes_atual") === "1";
+  const showReversed = params.get("estornos") === "1";
+  const setFilter = (changes: Record<string, string | null>) =>
+    setParams(
+      (p) => {
+        const next = new URLSearchParams(p);
+        for (const [k, v] of Object.entries(changes)) {
+          if (v === null || v === "") next.delete(k);
+          else next.set(k, v);
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  const query = useMemo(() => ({ project_id: projectId, year, month }), [projectId, year, month]);
+  const [sim, setSim] = useState<SaleSimulationInput | null>(null);
+  const [dialog, setDialog] = useState<Dialog>(null);
   const [feedback, setFeedback] = useState<{ message: string; error?: boolean } | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+  const [details, setDetails] = useState(false);
+  const [balances, setBalances] = useState<Partial<Record<BlockKind, number | null>>>({});
   const board = useQuery({ queryKey: cashFlowKeys.board(query), queryFn: () => cashFlowApi.board(query) });
+  const indicators = useCashFlowIndicators(query, sim);
+  const onBalance = useCallback((kind: BlockKind, cents: number | null) => setBalances((b) => (b[kind] === cents ? b : { ...b, [kind]: cents })), []);
 
   const run = useMutation({
     mutationFn: async (job: () => Promise<BatchResult>) => job(),
     onSuccess: async (r) => {
-      setAction(null);
-      setSelected([]);
+      setDialog(null);
+      setResetKey((k) => k + 1);
       const failures = r.results.filter((x) => !x.ok).map((x) => x.message).join("; ");
       setFeedback({ message: `${r.done} item(ns) concluído(s).${failures ? ` Não concluídos: ${failures}` : ""}`, error: r.failed > 0 });
       await cache.invalidateQueries({ queryKey: cashFlowKeys.all });
@@ -103,217 +147,241 @@ export function CashFlowPage() {
   });
 
   const data = board.data;
+  // Filtro geral nas tabelas (tipo, em aberto, mês atual, estornos); os cards seguem o mês e o ano de referência.
   const items = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const now = (data?.as_of ?? "").slice(0, 7);
     return (data?.items ?? []).filter(
       (i) =>
         (showReversed || i.status !== "reversed") &&
         (!direction || i.direction === direction) &&
-        (!onlyOpen || i.status !== "realized") &&
-        (!monthFilter || i.date.startsWith(monthFilter) || (i.overdue && i.status !== "realized")) &&
-        (!term || `${i.project_name} ${i.description} ${i.origin_label}`.toLowerCase().includes(term)),
+        (!onlyOpen || i.status === "open" || i.status === "proposed") &&
+        (!currentMonth || i.date.startsWith(now) || (i.overdue && i.status !== "realized")),
     );
-  }, [data, direction, onlyOpen, monthFilter, search, showReversed]);
-  const byKey = useMemo(() => new Map(items.map((i) => [i.key, i])), [items]);
-  const chosen = selected.map((k) => byKey.get(k)).filter((i): i is FlowItem => Boolean(i));
+  }, [data, direction, onlyOpen, currentMonth, showReversed]);
 
   if (board.isLoading) return <LoadingState label="Carregando fluxo de caixa" />;
   if (board.isError) return <ErrorState message={(board.error as Error).message} onRetry={() => void board.refetch()} />;
   if (!data) return null;
   const brl = data.kpis.find((k) => k.currency === "BRL") ?? data.kpis[0];
   const others = data.kpis.filter((k) => k !== brl);
-  const years = [thisYear - 1, thisYear, thisYear + 1, thisYear + 2].map(String);
-  const months = Array.from({ length: 12 }, (_, i) => `${query.year}-${String(i + 1).padStart(2, "0")}`);
-  const tables: Array<[string, FlowItem["group"][]]> = [
-    ["Entradas de faturamento", ["billing"]],
-    ["Entradas de reembolsos e placas", ["reimbursement", "other_in"]],
-    ["Saídas para reembolsar", ["to_reimburse"]],
-    ["Saídas não reembolsáveis", ["non_reimbursable"]],
-  ];
-  const balance = items.reduce((s, i) => s + (i.direction === "in" ? 1 : -1) * Math.round(Number(i.gross) * 100), 0) / 100;
-  const ids = (list: FlowItem[]) => list.map((i) => ({ receivable_id: Number(i.refs.receivable_id), installment_id: Number(i.refs.installment_id) }));
-  const can = {
-    confirm: chosen.filter((i) => i.status === "proposed" && i.refs.source_key),
-    receive: chosen.filter((i) => i.direction === "in" && i.status === "open" && i.refs.installment_id),
-    undo: chosen.filter((i) => i.direction === "in" && i.status === "realized" && i.refs.event_id),
-    settle: chosen.filter((i) => i.direction === "out" && i.status === "open" && i.refs.settle_key),
-    // Despesa: só a baixa feita aqui no fluxo pode ser desfeita aqui (a da despesa paga fica na despesa).
-    unsettle: chosen.filter((i) => i.direction === "out" && i.status === "realized" && Boolean(i.refs.settle_key) && (i.origin !== "expense" || i.refs.settled_here === 1)),
-  };
-  const sourceKeys = (list: FlowItem[]) => [...new Set(list.map((i) => String(i.refs.source_key)))];
+  const simKpis = indicators.data?.configured ? (indicators.data.simulation?.kpis ?? undefined) : undefined;
+  const years = [...new Set([Number(thisYear) - 1, Number(thisYear), Number(thisYear) + 1, Number(thisYear) + 2, ...(year !== "all" ? [Number(year)] : [])])].sort().map(String);
+  const shownBlocks = BLOCKS.filter((b) => !direction || b.direction === direction);
+  const visibleBalances = shownBlocks.map((b) => balances[b.kind]);
+  const balance = visibleBalances.reduce<number>((s, v) => s + (v ?? 0), 0) / 100;
+  const someHidden = visibleBalances.some((v) => v === null);
+  const tablesYear = data.tables_year ?? year;
 
-  return (
-    <div className="grid gap-4">
-      {data.alerts.proposed_count ? (
-        <p role="alert" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
-          ⚠ {data.alerts.proposed_count} origem(ns) com recebível previsto e não confirmado ({formatMoney(data.alerts.proposed_amount)}). Elas já contam no
-          fluxo como "previsto (não confirmado)"; confirme para virar recebível ou descarte com justificativa.
-        </p>
-      ) : null}
-      {data.alerts.missing_parameters_since ? (
-        <p role="status" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+  // ── avisos: uma linha de resumo, detalhes sob demanda ──
+  const alerts: Array<{ key: string; summary: string; detail: React.ReactNode; tone?: "warning" }> = [];
+  if (data.alerts.proposed_count)
+    alerts.push({
+      key: "proposed",
+      tone: "warning",
+      summary: `${data.alerts.proposed_count} proposta(s) não confirmada(s)`,
+      detail: (
+        <>
+          {data.alerts.proposed_count} origem(ns) com recebível previsto e não confirmado ({formatMoney(data.alerts.proposed_amount)}). Elas já contam no fluxo
+          como "previsto (não confirmado)"; confirme para virar recebível ou descarte com justificativa.
+        </>
+      ),
+    });
+  if (data.alerts.missing_parameters_since)
+    alerts.push({
+      key: "parameters",
+      tone: "warning",
+      summary: `${data.alerts.missing_tax_count} entrada(s) sem parâmetro vigente`,
+      detail: (
+        <>
           {data.alerts.missing_tax_count} entrada(s) sem parâmetro vigente (IR não calculado, sem valor de reserva).{" "}
           <Link className="font-semibold underline" to={retroactiveSettingsUrl(data.alerts.missing_parameters_since)}>
             Publicar versão dos parâmetros desde {civilBr(data.alerts.missing_parameters_since)}
           </Link>
-        </p>
-      ) : null}
-      {data.alerts.unproposed_contracts.length ? (
-        <p role="status" className="rounded-md border p-3 text-sm">
-          Sem proposta de recebível: {[...new Set(data.alerts.unproposed_contracts.map((c) => c.reason))].join(" ")}{" "}
+        </>
+      ),
+    });
+  if (data.alerts.unproposed_contracts.length)
+    alerts.push({
+      key: "unproposed",
+      summary: `${data.alerts.unproposed_contracts.length} contrato(s) sem proposta`,
+      detail: (
+        <>
+          <span className="block">Sem proposta de recebível:</span>
+          <ul className="list-disc pl-5">
+            {data.alerts.unproposed_contracts.map((c) => <li key={c.source_key}>{c.reason}</li>)}
+          </ul>
           <Link className="font-semibold underline" to="/app/finance/parameters">Ver parâmetros</Link>
-        </p>
-      ) : null}
-      {data.alerts.undated_payments ? (
-        <p className="text-sm text-muted-foreground">{data.alerts.undated_payments} diária(s) em aberto sem data prevista ficam fora do fluxo (informe em Pagamento de inventariantes).</p>
-      ) : null}
+        </>
+      ),
+    });
+  if (data.alerts.undated_payments)
+    alerts.push({
+      key: "undated",
+      summary: `${data.alerts.undated_payments} diária(s) sem data prevista`,
+      detail: <>{data.alerts.undated_payments} diária(s) em aberto sem data prevista ficam fora do fluxo (informe em Pagamento de inventariantes).</>,
+    });
+  if (projectId)
+    alerts.push({
+      key: "fixed",
+      summary: "custos fixos fora (filtro de projeto)",
+      detail: <>Custos fixos não pertencem a projeto: com um projeto filtrado eles ficam fora das tabelas e dos cards, e o total do ano é o do fluxo do projeto (a DRE é da organização inteira).</>,
+    });
+  const warning = alerts.some((a) => a.tone === "warning");
 
+  const refsOf = (list: FlowItem[]) => list.map((i) => ({ receivable_id: Number(i.refs.receivable_id), installment_id: Number(i.refs.installment_id) }));
+  const eventsOf = (list: FlowItem[]) => list.map((i) => ({ receivable_id: Number(i.refs.receivable_id), event_id: Number(i.refs.event_id) }));
+  const settleKeys = (list: FlowItem[]) => list.map((i) => String(i.refs.settle_key));
+  const sourceKeys = (list: FlowItem[]) => [...new Set(list.map((i) => String(i.refs.source_key)))];
+  const onAction = (a: BlockAction) => {
+    setFeedback(null);
+    if (a.kind === "confirm") run.mutate(() => cashFlowApi.confirm(sourceKeys(a.items)));
+    else if (a.kind === "undo") run.mutate(() => cashFlowApi.undoReceipts(eventsOf(a.items)));
+    else if (a.kind === "unsettle") run.mutate(() => cashFlowApi.settle(settleKeys(a.items), null));
+    else setDialog({ kind: a.kind as NonNullable<Dialog>["kind"], items: a.items });
+  };
+
+  return (
+    <div className="grid min-w-0 gap-4">
       <FilterPanel>
-        <select aria-label="Ano" className={select} value={query.year} onChange={(e) => { setSelected([]); setMonthFilter(""); setQuery((q) => ({ ...q, year: e.target.value })); }}>
+        <select aria-label="Ano" className={select} value={year} onChange={(e) => setFilter({ year: e.target.value === thisYear ? null : e.target.value })}>
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
+          <option value="all">Todos os anos</option>
         </select>
-        <select aria-label="Projeto" className={select} value={query.project_id ?? ""} onChange={(e) => { setSelected([]); setQuery((q) => ({ ...q, project_id: e.target.value ? Number(e.target.value) : undefined })); }}>
+        <select aria-label="Projeto" className={select} value={projectId ?? ""} onChange={(e) => setFilter({ project_id: e.target.value || null })}>
           <option value="">Projeto: todos</option>
           {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <select aria-label="Mês das tabelas" className={select} value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)}>
-          <option value="">Mês: todos</option>
-          {months.map((m) => <option key={m} value={m}>{monthBr(m)}</option>)}
-        </select>
-        <Button type="button" variant="ghost" onClick={() => { const now = data.as_of.slice(0, 7); setMonthFilter(now); }}>Mês atual</Button>
-        <select aria-label="Tipo" className={select} value={direction} onChange={(e) => setDirection(e.target.value as "" | "in" | "out")}>
+        <select aria-label="Tipo" className={select} value={direction} onChange={(e) => setFilter({ tipo: e.target.value || null })}>
           <option value="">Entradas e saídas</option>
           <option value="in">Entradas</option>
           <option value="out">Saídas</option>
         </select>
+        <Button type="button" size="sm" variant={currentMonth ? "soft" : "ghost"} aria-pressed={currentMonth} onClick={() => setFilter({ mes_atual: currentMonth ? null : "1", month: null })}>
+          Mês atual
+        </Button>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={onlyOpen} onChange={(e) => setOnlyOpen(e.target.checked)} />
+          <input type="checkbox" checked={onlyOpen} onChange={(e) => setFilter({ em_aberto: e.target.checked ? "1" : null })} />
           Somente em aberto
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={showReversed} onChange={(e) => setShowReversed(e.target.checked)} />
+          <input type="checkbox" checked={showReversed} onChange={(e) => setFilter({ estornos: e.target.checked ? "1" : null })} />
           Mostrar estornos
         </label>
-        <input aria-label="Buscar" placeholder="Buscar projeto ou descrição" className="h-10 w-56 rounded-md border bg-background px-3 text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Button type="button" size="sm" variant="ghost" onClick={() => setParams(new URLSearchParams(), { replace: true })}>Limpar filtros</Button>
       </FilterPanel>
+      <p className="-mt-2 text-xs text-muted-foreground">
+        Tipo, "Somente em aberto", "Mês atual" e "Todos os anos" valem para as tabelas; os cards seguem o mês de referência ({monthBr(data.reference.month)}) e o ano{" "}
+        {data.reference.year}.
+      </p>
 
-      {brl ? <KpiRows k={brl} /> : null}
-      {others.map((k) => <KpiRows key={k.currency} k={k} />)}
-      <CashFlowIndicators query={query} />
+      {alerts.length ? (
+        <div role="status" className={`rounded-md border p-3 text-sm ${warning ? "border-warning/50 bg-warning/10" : ""}`}>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {warning ? <span aria-hidden="true">⚠</span> : null}
+            <span>{alerts.map((a) => a.summary).join(" · ")}</span>
+            <Button type="button" size="sm" variant="ghost" aria-expanded={details} onClick={() => setDetails(!details)}>
+              {details ? "ocultar detalhes" : "ver detalhes"}
+            </Button>
+          </div>
+          {details ? (
+            <ul className="mt-2 grid gap-2">
+              {alerts.map((a) => <li key={a.key} className="rounded border bg-card p-2">{a.detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      <SimulationBar indicators={indicators} referenceMonth={data.reference.month} sim={sim} onSimulate={setSim} />
+      {brl ? <KpiRows k={brl} sim={simKpis} projectFiltered={Boolean(projectId)} /> : null}
+      {others.map((k) => <KpiRows key={k.currency} k={k} projectFiltered={Boolean(projectId)} />)}
+      <IndicatorsPanel indicators={indicators} simulating={Boolean(sim)} />
 
       {feedback ? <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>{feedback.message}</p> : null}
 
-      <div className="flex flex-wrap gap-2">
-        {hasPermission("receivables:edit") ? (
-          <>
-            <Button type="button" disabled={!can.confirm.length} onClick={() => run.mutate(() => cashFlowApi.confirm(sourceKeys(can.confirm)))}>Confirmar propostas ({sourceKeys(can.confirm).length})</Button>
-            <Button type="button" variant="secondary" disabled={!can.confirm.length} onClick={() => setAction({ kind: "discard", items: can.confirm })}>Descartar propostas</Button>
-          </>
-        ) : null}
-        {hasPermission("receivables:receive") ? <Button type="button" variant="secondary" disabled={!can.receive.length} onClick={() => setAction({ kind: "receive", items: can.receive })}>Marcar recebido ({can.receive.length})</Button> : null}
-        {hasPermission("receivables:reschedule") ? <Button type="button" variant="secondary" disabled={!can.receive.length} onClick={() => setAction({ kind: "reschedule", items: can.receive })}>Alterar data prevista</Button> : null}
-        {hasPermission("receivables:reverse") ? <Button type="button" variant="ghost" disabled={!can.undo.length} onClick={() => run.mutate(() => cashFlowApi.undoReceipts(can.undo.map((i) => ({ receivable_id: Number(i.refs.receivable_id), event_id: Number(i.refs.event_id) }))))}>Desfazer recebimento ({can.undo.length})</Button> : null}
-        <Button type="button" variant="secondary" disabled={!can.settle.length} onClick={() => setAction({ kind: "settle", items: can.settle })}>Pagar ({can.settle.length})</Button>
-        <Button type="button" variant="ghost" disabled={!can.unsettle.length} onClick={() => run.mutate(() => cashFlowApi.settle(can.unsettle.map((i) => String(i.refs.settle_key)), null))}>Desfazer pagamento ({can.unsettle.length})</Button>
-      </div>
-
-      {tables.map(([title, groups]) => {
-        const rows = items.filter((i) => groups.includes(i.group));
-        if (!rows.length) return null;
-        const inflow = rows[0].direction === "in";
-        const total = rows.reduce((s, i) => s + Math.round(Number(i.gross) * 100), 0) / 100;
-        const net = rows.reduce((s, i) => s + Math.round(Number(i.net) * 100), 0) / 100;
-        return (
-          <div key={title} className="premium-panel">
-            <div className="overflow-x-auto" role="region" aria-label={title} tabIndex={0}>
-              <table className="w-full min-w-[980px] border-separate border-spacing-0 text-left text-sm">
-                <caption className="px-3 py-2 text-left font-semibold">{title}</caption>
-                <thead className="bg-muted text-xs text-muted-foreground">
-                  <tr>
-                    <th className="border-b px-2 py-2"><span className="sr-only">Selecionar</span></th>
-                    {["Data prevista", inflow ? "Recebido em" : "Pago em", "Em atraso", "Projeto", "Origem", "Descrição", "Parcela", "Status", "Valor bruto", ...(inflow ? ["Líquido", "% do contrato"] : [])].map((h) => (
-                      <th key={h} scope="col" className="whitespace-nowrap border-b px-2 py-2 font-semibold">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((i) => {
-                    const actionable = !i.derived && (i.refs.installment_id || i.refs.event_id || i.refs.source_key || i.refs.settle_key);
-                    return (
-                      <tr key={i.key} className={i.overdue ? "bg-destructive/[0.07]" : i.status === "proposed" ? "bg-warning/[0.08]" : i.status === "reversed" ? "text-muted-foreground line-through decoration-muted-foreground/50" : ""}>
-                        <td className="border-b px-2 py-2">
-                          {actionable ? (
-                            <input type="checkbox" aria-label={`Selecionar ${i.description} ${civilBr(i.date)}`} checked={selected.includes(i.key)}
-                              onChange={(e) => setSelected((s) => (e.target.checked ? [...s, i.key] : s.filter((k) => k !== i.key)))} />
-                          ) : null}
-                        </td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(i.expected_on ?? i.date)}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(i.realized_on)}{i.status === "reversed" && i.refs.reversed_on ? <span className="block text-xs text-muted-foreground">estornado em {civilBr(String(i.refs.reversed_on))}</span> : null}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{i.overdue ? <span className="font-semibold text-destructive">{i.overdue_days} dia(s)</span> : ""}</td>
-                        <td className="max-w-[12rem] truncate border-b px-2 py-2" title={i.project_name}>{i.project_name}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{i.origin_label}</td>
-                        <td className="max-w-[16rem] truncate border-b px-2 py-2" title={i.description}>{i.description}</td>
-                        <td className={`whitespace-nowrap border-b px-2 py-2 ${i.installment && i.installment.number === i.installment.of && i.installment.of > 1 ? "font-semibold" : ""}`}>{i.installment ? `${i.installment.number}/${i.installment.of}` : ""}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2">{(inflow ? STATUS_IN : STATUS_OUT)[i.status]}</td>
-                        <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(i.gross)}</td>
-                        {inflow ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(i.net)}</td> : null}
-                        {inflow ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{i.contract_pct ? `${i.contract_pct.replace(".", ",")}%` : ""}</td> : null}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="font-semibold">
-                    <td colSpan={9} className="px-2 py-2">Subtotal ({rows.length})</td>
-                    <td className="px-2 py-2 tabular-nums">{formatMoney(total)}</td>
-                    {inflow ? <td className="px-2 py-2 tabular-nums">{formatMoney(net)}</td> : null}
-                    {inflow ? <td /> : null}
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        );
-      })}
-      <p className="text-sm font-semibold">Saldo das linhas exibidas (entradas − saídas): <span className={balance < 0 ? "text-destructive" : ""}>{formatMoney(balance)}</span></p>
+      {shownBlocks.map((b) => (
+        <CashFlowBlock
+          key={b.kind}
+          kind={b.kind}
+          title={b.title}
+          rows={items.filter((i) => b.groups.includes(i.group))}
+          asOf={data.as_of}
+          tablesYear={tablesYear}
+          can={hasPermission}
+          busy={run.isPending}
+          resetKey={resetKey}
+          onAction={onAction}
+          onBalance={onBalance}
+        />
+      ))}
+      <p className="text-sm font-semibold">
+        Saldo das linhas exibidas (entradas − saídas): <span className={balance < 0 ? "text-destructive" : ""}>{formatMoney(balance)}</span>
+        {someHidden ? <span className="font-normal text-muted-foreground"> · blocos ocultos ficam fora</span> : null}
+      </p>
       <p className="text-xs text-muted-foreground">
-        Saídas vencidas e não pagas e entradas vencidas aparecem sempre, mesmo fora do ano escolhido. IR = valor da entrada de faturamento × % dos
-        parâmetros vigente na data da entrada (reembolsos e placas sem IR). Diárias têm baixa em Pagamento de inventariantes.
+        Saídas vencidas e não pagas e entradas vencidas aparecem sempre, mesmo fora do ano ou do mês escolhido. Entradas pelo bruto e o IR como saída: o IR é
+        descontado uma vez só (valor da entrada de faturamento × % dos parâmetros vigente na data; reembolsos e revenda de placas sem IR). Custos fixos vêm da
+        DRE mensal a partir do mês de corte: "Lançado" é o valor lançado na DRE (não significa pago) e "Estimado" é a estimativa. Diárias têm baixa em
+        Pagamento de inventariantes.
       </p>
 
-      {action?.kind === "receive" || action?.kind === "settle" ? (
+      {dialog?.kind === "receive" || dialog?.kind === "settle" ? (
         <DateDialog
-          title={action.kind === "receive" ? `Marcar ${action.items.length} parcela(s) como recebida(s)` : `Pagar ${action.items.length} saída(s)`}
-          label={action.kind === "receive" ? "Recebido em" : "Pago em"}
+          title={dialog.kind === "receive" ? `Marcar ${dialog.items.length} parcela(s) como recebida(s)` : `Pagar ${dialog.items.length} saída(s)`}
+          label={dialog.kind === "receive" ? "Recebido em" : "Pago em"}
           today={data.as_of}
+          max={data.as_of}
           busy={run.isPending}
-          onClose={() => setAction(null)}
+          onClose={() => setDialog(null)}
           onConfirm={(date) =>
-            run.mutate(() => (action.kind === "receive" ? cashFlowApi.receive(ids(action.items), date) : cashFlowApi.settle(action.items.map((i) => String(i.refs.settle_key)), date)))
+            run.mutate(() => (dialog.kind === "receive" ? cashFlowApi.receive(refsOf(dialog.items), date) : cashFlowApi.settle(settleKeys(dialog.items), date)))
           }
         />
       ) : null}
-      {action?.kind === "reschedule" ? (
+      {dialog?.kind === "repay" ? (
         <DateDialog
-          title={`Nova data prevista (${action.items.length} parcela(s))`}
+          title={`Alterar a data de pagamento (${dialog.items.length} saída(s))`}
+          label="Nova data de pagamento"
+          today={data.as_of}
+          max={data.as_of}
+          busy={run.isPending}
+          onClose={() => setDialog(null)}
+          onConfirm={(date) => run.mutate(() => cashFlowApi.settle(settleKeys(dialog.items), date))}
+        />
+      ) : null}
+      {dialog?.kind === "redate" ? (
+        <DateDialog
+          title={`Alterar a data de recebimento (${dialog.items.length} recebimento(s))`}
+          label="Nova data de recebimento"
+          help="O recebimento atual é estornado e um novo é registrado na nova data, na mesma operação. Os dois ficam na auditoria."
+          today={data.as_of}
+          max={data.as_of}
+          withReason
+          busy={run.isPending}
+          onClose={() => setDialog(null)}
+          onConfirm={(date, reason) => run.mutate(() => cashFlowApi.redateReceipts(eventsOf(dialog.items), date, reason!))}
+        />
+      ) : null}
+      {dialog?.kind === "reschedule" ? (
+        <DateDialog
+          title={`Nova data prevista (${dialog.items.length} parcela(s))`}
           label="Nova data prevista"
           today={data.as_of}
           withReason
           busy={run.isPending}
-          onClose={() => setAction(null)}
-          onConfirm={(date, reason) => run.mutate(() => cashFlowApi.reschedule(ids(action.items), date, reason!))}
+          onClose={() => setDialog(null)}
+          onConfirm={(date, reason) => run.mutate(() => cashFlowApi.reschedule(refsOf(dialog.items), date, reason!))}
         />
       ) : null}
-      {action?.kind === "discard" ? (
+      {dialog?.kind === "discard" ? (
         <DateDialog
-          title={`Descartar ${sourceKeys(action.items).length} proposta(s)`}
+          title={`Descartar ${sourceKeys(dialog.items).length} proposta(s)`}
           label=""
           today={data.as_of}
           withReason
           noDate
           busy={run.isPending}
-          onClose={() => setAction(null)}
-          onConfirm={(_d, reason) => run.mutate(() => cashFlowApi.discard(sourceKeys(action.items), reason!))}
+          onClose={() => setDialog(null)}
+          onConfirm={(_d, reason) => run.mutate(() => cashFlowApi.discard(sourceKeys(dialog.items), reason!))}
         />
       ) : null}
     </div>
@@ -323,7 +391,9 @@ export function CashFlowPage() {
 function DateDialog({
   title,
   label,
+  help,
   today,
+  max,
   withReason,
   noDate,
   busy,
@@ -332,7 +402,10 @@ function DateDialog({
 }: {
   title: string;
   label: string;
+  help?: string;
   today: string;
+  /** Data máxima (baixas: hoje; data futura é recusada). */
+  max?: string;
   withReason?: boolean;
   noDate?: boolean;
   busy: boolean;
@@ -341,13 +414,16 @@ function DateDialog({
 }) {
   const [date, setDate] = useState(today);
   const [reason, setReason] = useState("");
-  const invalid = (!noDate && !date) || (withReason && reason.trim().length < 5);
+  const future = Boolean(max && date && date > max);
+  const invalid = (!noDate && (!date || future)) || (withReason && reason.trim().length < 5);
   return (
     <ModalForm open onOpenChange={(o) => !o && onClose()} title={title}>
       <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); if (!invalid) onConfirm(date, reason.trim()); }}>
+        {help ? <p className="text-sm text-muted-foreground">{help}</p> : null}
         {!noDate ? (
           <FormField label={label}>
-            <Input type="date" aria-label={label} value={date} onChange={(e) => setDate(e.target.value)} />
+            <Input type="date" aria-label={label} value={date} max={max} onChange={(e) => setDate(e.target.value)} />
+            {future ? <span role="alert" className="text-xs text-destructive">Data futura não é aceita.</span> : null}
           </FormField>
         ) : null}
         {withReason ? (
@@ -364,4 +440,3 @@ function DateDialog({
     </ModalForm>
   );
 }
-

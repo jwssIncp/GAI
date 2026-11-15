@@ -148,7 +148,7 @@ describe("Financial navigation through real nested routes", () => {
   it("fluxo de caixa mantém o filtro de projeto da URL e mostra o próprio título", async () => {
     mount("/app/finance/cash-flow?project_id=25");
     expect(screen.getByRole("heading", { level: 1, name: "Fluxo de caixa" })).toBeInTheDocument();
-    await screen.findByText(/previsto e não confirmado/);
+    await screen.findByText(/não confirmada/);
     expect(cashFlowApi.board).toHaveBeenCalledWith(expect.objectContaining({ project_id: 25 }));
   });
   it("hides creation for a read-only custom profile", async () => {
