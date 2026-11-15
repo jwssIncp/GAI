@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -63,7 +63,9 @@ export function DreMonthlyPage() {
   const { hasPermission } = usePermissions();
   const cache = useQueryClient();
   const thisYear = String(new Date().getFullYear());
-  const [year, setYear] = useState(thisYear);
+  // ?year=AAAA abre o ano pedido (ex.: "Ajustar na DRE" a partir do fluxo de caixa).
+  const [params] = useSearchParams();
+  const [year, setYear] = useState(() => (/^\d{4}$/.test(params.get("year") ?? "") ? params.get("year")! : thisYear));
   const [compareYear, setCompareYear] = useState("");
   const [from, setFrom] = useState(1);
   const [to, setTo] = useState(12);
