@@ -26,6 +26,7 @@ import {
   scope,
   type Calculated,
   type Line,
+  percent,
 } from "./dreApi";
 const current = () => new Date().toISOString().slice(0, 7);
 const value = (t: Calculated, key: string) =>
@@ -66,6 +67,13 @@ export function DreReportPage() {
     q.data?.rows.filter(
       (r) => r.currency === currency && ids.includes(r.entry_id),
     ) ?? [];
+  const projects = q.data?.projects ?? [];
+  /** Nome do projeto (código entre parênteses), não só o ID. */
+  const projectLabel = (id: number | null) => {
+    if (id === null) return "Sem projeto";
+    const x = projects.find((y) => y.id === id);
+    return x ? (x.code ? `${x.name} (${x.code})` : x.name) : `Projeto #${id}`;
+  };
   return (
     <div className="grid gap-4">
       <form
@@ -102,14 +110,20 @@ export function DreReportPage() {
           />
         </label>
         <label className="grid gap-1 text-sm">
-          Projeto (ID, opcional)
-          <input
+          Projeto
+          <select
             className={cls}
-            type="number"
-            min={1}
             name="project_id"
+            key={projects.length}
             defaultValue={p.get("project_id") ?? ""}
-          />
+          >
+            <option value="">Todos os projetos</option>
+            {projects.map((x) => (
+              <option key={x.id} value={x.id}>
+                {projectLabel(x.id)}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="grid gap-1 text-sm">
           Comparar desde
@@ -168,6 +182,17 @@ export function DreReportPage() {
       ) : (
         q.data && (
           <>
+            {q.data.mode === "legacy" ? (
+              <p role="alert" className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm font-semibold">
+                Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.{" "}
+                <Link className="underline" to="/app/finance/parameters">Parâmetros financeiros</Link>
+              </p>
+            ) : q.data.mode === "monthly" && q.data.cutoff ? (
+              <p role="status" className="rounded-md border border-primary/40 bg-primary/5 p-3 text-sm">
+                A partir de {q.data.cutoff.split("-").reverse().join("/")} os valores passam a incluir o fluxo de caixa (DRE automática) e são
+                os mesmos da DRE mensal, sem estimativas. Antes do corte valem o lançado, o importado e as classificações.
+              </p>
+            ) : null}
             <section
               className="premium-panel grid gap-2 p-4 text-sm"
               aria-label="Cobertura da DRE"
@@ -177,7 +202,7 @@ export function DreReportPage() {
                   ? "Cobertura gerencial revisada"
                   : "Apuração parcial — resultado não definitivo"}
               </strong>
-              {q.data.warnings.map((w) => (
+              {q.data.warnings.filter((w) => !w.startsWith("Cálculo legado") && !w.startsWith("A partir de ")).map((w) => (
                 <p key={w}>{w}</p>
               ))}
               <p>
@@ -219,17 +244,17 @@ export function DreReportPage() {
                   <MetricCard
                     label="Margem bruta validada"
                     value={
-                      t.gross_margin == null
+                      t.gross_margin == null && !q.data.complete
                         ? "Não validada"
-                        : t.gross_margin + "%"
+                        : percent(t.gross_margin)
                     }
                   />
                   <MetricCard
                     label="Margem operacional validada"
                     value={
-                      t.operating_margin == null
+                      t.operating_margin == null && !q.data.complete
                         ? "Não validada"
-                        : t.operating_margin + "%"
+                        : percent(t.operating_margin)
                     }
                   />
                 </div>
@@ -373,7 +398,7 @@ export function DreReportPage() {
                 { header: "Competência", cell: (r) => r.month },
                 {
                   header: "Projeto",
-                  cell: (r) => r.project_id ?? "Sem projeto",
+                  cell: (r) => projectLabel(r.project_id),
                 },
                 { header: "Apurado", cell: (r) => money(r.amount, r.currency) },
               ]}
@@ -385,7 +410,7 @@ export function DreReportPage() {
               columns={[
                 {
                   header: "Projeto",
-                  cell: (r) => r.project_id ?? "Sem projeto",
+                  cell: (r) => projectLabel(r.project_id),
                 },
                 { header: "Moeda", cell: (r) => r.currency },
                 {

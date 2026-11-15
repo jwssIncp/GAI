@@ -7,7 +7,8 @@ describe("Exact financial presentation", () => {
     );
   });
   it("preserves reversal sign and cents", () => {
-    expect(money("-0.01", "BRL")).toBe("R$ -0,01");
+    // mesmo formato dos cards (Intl pt-BR): sinal antes do símbolo
+    expect(money("-0.01", "BRL")).toBe("-R$ 0,01");
   });
   it("never invents currency for legacy outflows", () => {
     expect(money("100.10", "UNSPECIFIED")).toBe("100,10 (moeda não informada)");

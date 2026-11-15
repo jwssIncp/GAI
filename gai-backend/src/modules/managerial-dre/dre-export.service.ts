@@ -22,6 +22,9 @@ export class DreExportService {
     private readonly files: FinanceExportService,
   ) {}
   async create(dto: DreExportDto, actor: ProjectActorContext) {
+    // Valores como número: texto começando com "-" seria prefixado pela
+    // proteção contra fórmulas e o negativo viraria texto na planilha.
+    const num = (v: string | null) => (v === null ? null : Number(v));
     const report = await this.dre.report(dto, actor);
     const permissions = [
       'dre:read',
@@ -43,8 +46,8 @@ export class DreExportService {
         t.lines.map((l) => [
           t.currency,
           l.label,
-          l.amount,
-          l.known_amount,
+          num(l.amount),
+          num(l.known_amount),
           l.complete ? 'Validada' : 'Incompleta',
         ]),
       ),
@@ -65,8 +68,8 @@ export class DreExportService {
             t.project_id,
             t.currency,
             l.label,
-            l.amount,
-            l.known_amount,
+            num(l.amount),
+            num(l.known_amount),
           ]),
         ),
       });
@@ -86,8 +89,8 @@ export class DreExportService {
             t.month,
             t.currency,
             l.label,
-            l.amount,
-            l.known_amount,
+            num(l.amount),
+            num(l.known_amount),
             t.closed,
           ]),
         ),
@@ -109,8 +112,8 @@ export class DreExportService {
             report.comparison!.end_month,
             t.currency,
             l.label,
-            l.amount,
-            l.known_amount,
+            num(l.amount),
+            num(l.known_amount),
           ]),
         ),
       });
@@ -152,7 +155,7 @@ export class DreExportService {
           r.account_name,
           r.group,
           r.description,
-          r.amount,
+          num(r.amount),
           r.source_key,
         ]),
       });
@@ -164,7 +167,7 @@ export class DreExportService {
           Number(r.entry_id),
           String(r.month),
           String(r.currency),
-          String(r.amount),
+          num(String(r.amount)),
           typeof r.reason === 'string' ? r.reason : '',
         ]),
       });
@@ -185,8 +188,8 @@ export class DreExportService {
           s.id,
           s.project_id,
           s.currency,
-          s.amount,
-          s.remaining_amount ?? null,
+          num(s.amount),
+          num(s.remaining_amount ?? null),
           s.hint_date,
           s.description,
         ]),

@@ -98,6 +98,7 @@ export class FieldAgentManagementService {
       email: row.email,
       phone: row.phone,
       document: row.document,
+      state: row.state ?? null,
       status: row.status,
       metadata: row.metadata,
       created_at: row.createdAt.toISOString(),

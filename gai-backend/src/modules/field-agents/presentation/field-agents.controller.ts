@@ -2,14 +2,17 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
+  Inject,
   Param,
   ParseIntPipe,
   Patch,
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,7 +23,21 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import * as XLSX from 'xlsx';
+import { safeSpreadsheetText } from '../../project-dashboard/presentation/organization-overview.controller';
+import { hasAllPermissions } from '../../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../auth/domain/ports/permission-resolver.port';
+import {
+  ConfirmFieldAgentDocumentUploadDto,
+  CreateFieldAgentDocumentUploadDto,
+  FieldAgentBatchDeleteDto,
+  FieldAgentUsageQueryDto,
+} from '../application/dto/field-agent-records.dto';
+import { FieldAgentRecordsService } from '../application/services/field-agent-records.service';
 import {
   ApiConflictResponse,
   ApiForbiddenResponse,
@@ -72,12 +89,138 @@ export class FieldAgentsController {
     private readonly getFieldAgent: GetFieldAgentUseCase,
     private readonly updateFieldAgent: UpdateFieldAgentUseCase,
     private readonly updateFieldAgentStatus: UpdateFieldAgentStatusUseCase,
+    private readonly records: FieldAgentRecordsService,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
   ) {}
 
   @Get('context')
   @RequirePermissions('field-agents:read')
   context(@Req() req: AuthenticatedRequest) {
     return this.management.context(this.toActor(req));
+  }
+
+  @Get('summary')
+  @RequirePermissions('field-agents:read')
+  @ApiOperation({ summary: 'Indicadores da lista: total e UFs' })
+  summary(@Req() req: AuthenticatedRequest) {
+    return this.records.summary(this.toActor(req));
+  }
+
+  @Get('export')
+  @RequirePermissions('field-agents:read', 'field-agents:export')
+  @ApiOperation({ summary: 'Exportar a lista filtrada (XLSX)' })
+  async export(
+    @Query() query: ListFieldAgentsQueryDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    const rows = (await this.records.exportRows(query, this.toActor(req))).map(
+      (row) =>
+        Object.fromEntries(
+          Object.entries(row).map(([key, value]) => [
+            key,
+            safeSpreadsheetText(String(value)),
+          ]),
+        ),
+    );
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet(rows, {
+      header: [
+        'Nome',
+        'E-mail',
+        'Telefone',
+        'UF',
+        'CPF/CNPJ',
+        'Status',
+        'Acesso ao app',
+      ],
+    });
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Inventariantes');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="inventariantes.xlsx"',
+    );
+    return res
+      .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .send(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  }
+
+  @Get('financial-usage')
+  @RequirePermissions('field-agents:read')
+  @ApiOperation({
+    summary: 'Lançamentos (diárias e despesas) ligados aos inventariantes',
+  })
+  financialUsage(
+    @Query() query: FieldAgentUsageQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.financialUsage(query.ids, this.toActor(req));
+  }
+
+  @Post('batch-delete')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:delete')
+  @ApiOperation({ summary: 'Excluir inventariantes logicamente, em lote' })
+  batchDelete(
+    @Body() dto: FieldAgentBatchDeleteDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.batchDelete(dto.ids, this.toActor(req));
+  }
+
+  @Get(':id/documents')
+  @RequirePermissions('field-agents:read', 'field-agent-documents:read')
+  listDocuments(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.listDocuments(id, this.toActor(req));
+  }
+
+  @Post(':id/documents/upload-url')
+  @HttpCode(201)
+  @RequirePermissions('field-agents:read', 'field-agent-documents:upload')
+  createDocumentUpload(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateFieldAgentDocumentUploadDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.createDocumentUpload(id, dto, this.toActor(req));
+  }
+
+  @Post(':id/documents/:documentId/confirm-upload')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:read', 'field-agent-documents:upload')
+  confirmDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+    @Body() dto: ConfirmFieldAgentDocumentUploadDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.confirmDocument(id, documentId, dto, this.toActor(req));
+  }
+
+  @Post(':id/documents/:documentId/download-url')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:read', 'field-agent-documents:read')
+  downloadDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.downloadDocument(id, documentId, this.toActor(req));
+  }
+
+  @Post(':id/documents/:documentId/remove')
+  @HttpCode(200)
+  @RequirePermissions('field-agents:read', 'field-agent-documents:remove')
+  removeDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.records.removeDocument(id, documentId, this.toActor(req));
   }
 
   @Get('user-options')
@@ -166,6 +309,20 @@ export class FieldAgentsController {
     @Body() dto: CreateFieldAgentDto,
     @Req() req: AuthenticatedRequest,
   ) {
+    // Vincular projetos no cadastro exige a mesma permissão do vínculo pelo projeto.
+    if (
+      dto.project_ids?.length &&
+      !(await hasAllPermissions(
+        req.user!,
+        ['project-field-agents:assign'],
+        this.permissions,
+      ))
+    )
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message:
+          'Permissão necessária para vincular projetos: project-field-agents:assign',
+      });
     return this.createFieldAgent.execute(dto, this.toActor(req));
   }
 

@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Building2, ContactRound, FileSpreadsheet, FolderKanban, Landmark, LayoutDashboard, ShieldCheck, Users, Wallet } from 'lucide-react';
+import { ArrowLeftRight, BadgeDollarSign, HandCoins, Percent, ReceiptText, Tags, Building2, ContactRound, FileSpreadsheet, FolderKanban, Landmark, LayoutDashboard, ShieldCheck, SlidersHorizontal, Users, Wallet } from 'lucide-react';
 
 // Menu lateral por módulo (seção). A ordem do array é preservada: o Dashboard usa os
 // primeiros itens permitidos como "acesso rápido"; o Sidebar agrupa por seção.
@@ -12,8 +12,14 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
   {label:'Recebíveis',to:'/app/finance/receivables',icon:Wallet,permissions:['receivables:read'],section:'finance'},
   {label:'Fluxo de caixa',to:'/app/finance/cash-flow',icon:ArrowLeftRight,permissions:['cash-flow:read'],section:'finance'},
   {label:'DRE Gerencial',to:'/app/finance/dre',icon:FileSpreadsheet,permissions:['dre:read'],section:'finance'},
+  { label: 'Remuneração', to: '/app/finance/remuneration', icon: BadgeDollarSign, permissions: ['payments:read'], section: 'finance' },
+  { label: 'Pagamento de inventariantes', to: '/app/finance/field-agent-payments', icon: HandCoins, permissions: ['payments:read'], section: 'finance' },
+  { label: 'Despesas', to: '/app/finance/expenses', icon: ReceiptText, permissions: ['expenses:read'], section: 'finance' },
+  { label: 'Placas de patrimônio', to: '/app/finance/asset-tags', icon: Tags, permissions: ['asset-tag-orders:read'], section: 'finance' },
+  { label: 'Comissões', to: '/app/finance/commissions', icon: Percent, permissions: ['commissions:read'], section: 'finance' },
   { label: 'Organizações', to: '/app/organizations', icon: Landmark, permissions: ['organizations:read'], section: 'management' },
   { label: 'Usuários', to: '/app/users', icon: Users, permissions: ['users:read'], section: 'management' },
   { label: 'Perfis e acessos', to: '/app/roles', icon: ShieldCheck, permissions: ['org_roles:read'], section: 'management' },
+  { label: 'Parâmetros financeiros', to: '/app/finance/parameters', icon: SlidersHorizontal, permissions: ['finance-settings:read'], section: 'management' },
   { label: 'Empresas', to: '/app/companies', icon: Building2, permissions: ['companies:read'], section: 'commercial' },
 ];

@@ -92,6 +92,12 @@ export class DreCloseDto extends DreCommandDto {
   @ArrayMaxSize(7)
   @IsIn(DRE_GROUPS, { each: true })
   reviewed_groups!: DreGroup[];
+  /** Avisos da verificação do fechamento confirmados (DRE mensal). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  acknowledged?: string[];
 }
 export class DreReopenDto extends DreCommandDto {
   @IsInt() @Min(1) revision!: number;

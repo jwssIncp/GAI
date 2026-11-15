@@ -9,6 +9,7 @@ import { PermissionGate } from '@/features/auth/PermissionGate';
 import { formatDateTime } from '@/utils/format';
 import { useExpenseAttachmentDownloadUrl, useExpenseAttachments, useRemoveExpenseAttachment, useUploadExpenseAttachment } from './financeQueries';
 import type { Expense, ExpenseAttachment } from '@/types/api';
+import { reduceImage } from './reduceImage';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
 const MAX_SIZE_BYTES = 20 * 1024 * 1024;
@@ -20,7 +21,18 @@ function formatBytes(value: number) {
   return `${(value / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: number; expense: Expense }) {
+export function ExpenseAttachmentsPanel({
+  projectId,
+  expense,
+  maxBytes,
+  maxFiles,
+}: {
+  projectId: number;
+  expense: Expense;
+  /** Limites dos parâmetros financeiros (nunca acima do teto da plataforma). */
+  maxBytes?: number;
+  maxFiles?: number;
+}) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [downloadLink, setDownloadLink] = useState<{ url: string; attachment: ExpenseAttachment } | null>(null);
@@ -31,14 +43,23 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
   const remove = useRemoveExpenseAttachment(projectId, expense.id);
   const acceptedTypes = useMemo(() => ALLOWED_TYPES.join(','), []);
 
-  async function handleFile(file: File) {
+  const limit = Math.min(maxBytes ?? MAX_SIZE_BYTES, MAX_SIZE_BYTES);
+  const active = (attachments.data ?? []).filter((a) => a.status !== 'removed').length;
+  const full = maxFiles !== undefined && active >= maxFiles;
+
+  async function handleFile(original: File) {
     setFeedback(null);
-    if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
+    if (!ALLOWED_TYPES.includes(original.type as (typeof ALLOWED_TYPES)[number])) {
       setFeedback('Formato não permitido. Envie PDF, JPEG, PNG ou WEBP.');
       return;
     }
-    if (file.size < 1 || file.size > MAX_SIZE_BYTES) {
-      setFeedback('O arquivo deve ter entre 1 byte e 20 MB.');
+    if (full) {
+      setFeedback(`Limite de ${maxFiles} comprovante(s) por despesa (parâmetros financeiros).`);
+      return;
+    }
+    const file = await reduceImage(original);
+    if (file.size < 1 || file.size > limit) {
+      setFeedback(`O arquivo deve ter até ${formatBytes(limit)}.`);
       return;
     }
     setProgress(0);
@@ -73,7 +94,10 @@ export function ExpenseAttachmentsPanel({ projectId, expense }: { projectId: num
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">Comprovantes</h3>
-          <p className="text-sm text-muted-foreground">Despesa #{expense.id}. Arquivos protegidos por URL temporária.</p>
+          <p className="text-sm text-muted-foreground">
+            Arquivos protegidos por URL temporária. Até {formatBytes(limit)} por arquivo
+            {maxFiles !== undefined ? `, no máximo ${maxFiles} por despesa` : ''}; imagens são reduzidas antes do envio.
+          </p>
         </div>
         <PermissionGate permissions={['expenses:upload-attachment']}>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">

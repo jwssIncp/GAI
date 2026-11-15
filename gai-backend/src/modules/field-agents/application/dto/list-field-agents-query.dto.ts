@@ -1,5 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+import {
+  BRAZILIAN_STATES,
+  normalizeState,
+} from '../../domain/validation/brazilian-states';
 import {
   IsEnum,
   IsIn,
@@ -44,6 +48,12 @@ export class ListFieldAgentsQueryDto {
   @IsOptional()
   @IsEnum(FieldAgentStatus)
   status?: FieldAgentStatus;
+
+  @ApiPropertyOptional({ enum: BRAZILIAN_STATES })
+  @Transform(({ value }) => normalizeState(value) ?? undefined)
+  @IsOptional()
+  @IsIn(BRAZILIAN_STATES)
+  state?: string;
 
   @ApiPropertyOptional({ description: 'Busca por nome, email ou documento' })
   @IsOptional()

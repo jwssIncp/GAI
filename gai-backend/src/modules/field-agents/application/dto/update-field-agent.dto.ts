@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsEmail,
+  IsIn,
   IsInt,
   IsObject,
   IsOptional,
@@ -11,6 +12,10 @@ import {
   MinLength,
 } from 'class-validator';
 import { JsonRecord } from '../../domain/entities/field-agent';
+import {
+  BRAZILIAN_STATES,
+  normalizeState,
+} from '../../domain/validation/brazilian-states';
 import {
   IsBrazilianDocument,
   IsBrazilianPhone,
@@ -56,6 +61,12 @@ export class UpdateFieldAgentDto {
   @MaxLength(50)
   @IsBrazilianDocument()
   document?: string | null;
+
+  @ApiPropertyOptional({ enum: BRAZILIAN_STATES, nullable: true })
+  @Transform(({ value }) => normalizeState(value))
+  @IsOptional()
+  @IsIn(BRAZILIAN_STATES, { message: 'UF inválida.' })
+  state?: string | null;
 
   @ApiPropertyOptional({
     type: 'object',

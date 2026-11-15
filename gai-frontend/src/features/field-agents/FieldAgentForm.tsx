@@ -19,7 +19,10 @@ import { ApiError } from "@/api/http";
 import { maskDocument, maskPhone, isValidDocument } from "./brazilianContact";
 import { FieldAgentUserSelect } from "./FieldAgentUserSelect";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { fieldAgentsApi } from "@/api/endpoints";
+import { fieldAgentsApi, projectFieldAgentsApi } from "@/api/endpoints";
+import { BRAZILIAN_STATES } from "./brazilianStates";
+import { FieldAgentProjectsPicker } from "./FieldAgentProjectsPicker";
+import { FieldAgentDocumentsPanel } from "./FieldAgentDocumentsPanel";
 
 type Props =
   | {
@@ -44,6 +47,29 @@ export function FieldAgentForm(props: Props) {
   });
   const createdId = useRef<number | null>(null);
   const [invited, setInvited] = useState(false);
+  const [projectIds, setProjectIds] = useState<number[]>([]);
+  const canLinkProjects =
+    hasPermission("project-field-agents:assign") && hasPermission("projects:read");
+  /** Na edição, vincula os projetos marcados (mesma regra do vínculo pelo projeto). */
+  async function linkNewProjects(fieldAgentId: number) {
+    const failures: string[] = [];
+    for (const projectId of projectIds) {
+      try {
+        await projectFieldAgentsApi.assign(projectId, { field_agent_id: fieldAgentId });
+      } catch (error) {
+        failures.push((error as Error).message);
+      }
+    }
+    if (projectIds.length) {
+      await queryClient.invalidateQueries({ queryKey: ["field-agents"] });
+      await queryClient.invalidateQueries({ queryKey: ["project-field-agents"] });
+    }
+    setProjectIds([]);
+    if (failures.length)
+      throw new Error(
+        `Cadastro salvo, mas ${failures.length} vínculo(s) não foram criados: ${failures.join("; ")}`,
+      );
+  }
   const form = useForm<FieldAgentFormValues>({
     resolver: zodResolver(makeFieldAgentSchema(initial?.document)),
     defaultValues: {
@@ -51,6 +77,7 @@ export function FieldAgentForm(props: Props) {
       email: initial?.email ?? "",
       phone: initial?.phone ?? "",
       document: initial?.document ?? "",
+      state: initial?.state ?? "",
       user_id: initial?.user_id ? String(initial.user_id) : "",
       access: initial?.user_id ? "existing" : "none",
       login: "",
@@ -75,15 +102,19 @@ export function FieldAgentForm(props: Props) {
             login: string;
           };
           fields.user_id = mode === "existing" ? fields.user_id : null;
+          if (props.mode === "create" && canLinkProjects && projectIds.length)
+            fields.project_ids = projectIds;
           if (mode === "invite") {
             if (props.mode === "create" && !createdId.current) {
               const saved = await fieldAgentsApi.create(fields);
               createdId.current = saved.id;
-            } else if (props.mode === "edit")
+            } else if (props.mode === "edit") {
               await fieldAgentsApi.update(
                 initial!.id,
                 changedFields(fields, form.formState.dirtyFields),
               );
+              await linkNewProjects(initial!.id);
+            }
             const result = await fieldAgentsApi.invite(
               props.mode === "edit" ? initial!.id : createdId.current!,
               { login, email: fields.email! },
@@ -108,10 +139,11 @@ export function FieldAgentForm(props: Props) {
                 })
               : fields;
           await props.onSubmit(payload as never);
+          if (props.mode === "edit") await linkNewProjects(initial!.id);
         } catch (error) {
           const apiError = error as ApiError;
           const detail = apiError.details?.find(({ field }) =>
-            ["email", "document", "phone", "user_id", "login"].includes(field),
+            ["email", "document", "phone", "state", "user_id", "login"].includes(field),
           );
           if (detail)
             form.setError(detail.field as "email", { message: detail.message });
@@ -188,7 +220,38 @@ export function FieldAgentForm(props: Props) {
             }
           />
         </FormField>
+        <FormField
+          label="UF"
+          optional
+          error={form.formState.errors.state?.message}
+        >
+          <select
+            className="h-11 rounded-md border bg-background px-3 text-sm"
+            {...form.register("state")}
+          >
+            <option value="">Não informada</option>
+            {BRAZILIAN_STATES.map((uf) => (
+              <option key={uf} value={uf}>
+                {uf}
+              </option>
+            ))}
+          </select>
+        </FormField>
       </fieldset>
+      {canLinkProjects ? (
+        <section className="grid gap-2">
+          <h3 className="font-semibold">Projetos</h3>
+          <FieldAgentProjectsPicker
+            fieldAgentId={initial?.id}
+            value={projectIds}
+            onChange={setProjectIds}
+            disabled={busy || invited || Boolean(createdId.current)}
+          />
+        </section>
+      ) : null}
+      {initial && hasPermission("field-agent-documents:read") ? (
+        <FieldAgentDocumentsPanel fieldAgentId={initial.id} />
+      ) : null}
       <fieldset className="grid gap-4" disabled={busy || invited}>
         <legend className="mb-3 font-semibold">Acesso ao sistema</legend>
         <FormField label="Forma de acesso">

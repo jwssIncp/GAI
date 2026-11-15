@@ -49,7 +49,8 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   // Navegação em dois níveis: grupo › aba. A aba "Imagens" foi removida (abria a mesma tela de Itens).
   const transitions: Array<[string, string, string]> = [
     ["Inventário", "Itens e avaliação", "inventory-items"],
-    ["Financeiro", "Pagamentos e despesas", "finance"],
+    ["Financeiro", "Remuneração", "finance/remuneration"],
+    ["Financeiro", "Despesas", "finance"],
     ["Inventário", "Pendências", "pending-issues"],
     ["Visão geral", "Dashboard", "dashboard"],
     ["Contábil e laudo", "Base contábil", "accounting-items"],

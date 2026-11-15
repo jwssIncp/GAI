@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { assertNotFuture } from '../../../../common/finance/settlement-date';
 import {
   BadRequestException,
   ConflictException,
@@ -26,6 +27,13 @@ import { ExpenseAttachment } from '../../domain/entities/expense-attachment';
 import { Expense } from '../../domain/entities/expense';
 import { FieldAgentPayment } from '../../domain/entities/field-agent-payment';
 import { PaymentStateConflict } from '../../domain/entities/payment-state-conflict';
+import {
+  daysInclusive,
+  RemunerationRuleError,
+} from '../../domain/remuneration.formulas';
+import { FinanceSettingsService } from '../../../finance-settings/finance-settings.service';
+import { RemunerationService } from './remuneration.service';
+import { ExpenseRulesService } from './expense-rules.service';
 import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services/project-status-transition.policy';
 import { ExpenseAttachmentStatus } from '../../domain/enums/expense-attachment-status.enum';
 import { ExpenseStatus } from '../../domain/enums/expense-status.enum';
@@ -43,6 +51,7 @@ import {
   MarkAsPaidDto,
   PaymentInputDto,
   RejectExpenseDto,
+  ReopenPaymentDto,
 } from '../dto/payments-expenses-inputs';
 import {
   ListExpensesQueryDto,
@@ -74,6 +83,9 @@ export class PaymentsExpensesService {
     @Inject(STORAGE_SIGNER) private readonly storageSigner: StorageSigner,
     private readonly scope: PaymentsExpensesScopeService,
     private readonly logger: PinoLogger,
+    private readonly financeSettings: FinanceSettingsService,
+    private readonly remuneration: RemunerationService,
+    private readonly expenseRules: ExpenseRulesService,
   ) {
     this.logger.setContext(PaymentsExpensesService.name);
   }
@@ -92,34 +104,42 @@ export class PaymentsExpensesService {
     const startDate = this.requiredDate(dto.start_date, 'start_date');
     const endDate = this.requiredDate(dto.end_date, 'end_date');
     const now = new Date();
-    const payment = new FieldAgentPayment({
-      id: 0,
-      organizationId: project.organizationId,
-      projectId,
-      fieldAgentId: dto.field_agent_id,
-      state: this.scope.cleanText(dto.state) ?? null,
-      startDate,
-      endDate,
-      paymentDate: this.scope.parseDate(dto.payment_date),
-      days: this.scope.daysBetweenInclusive(startDate, endDate),
-      dailyRate: dto.daily_rate,
-      additionalAmount: dto.additional_amount ?? '0.00',
-      dailyTotal: '0.00',
-      discountAmount: dto.discount_amount ?? '0.00',
-      finalAmount: '0.00',
-      status: PaymentStatus.PENDING,
-      notes: this.scope.cleanText(dto.notes) ?? null,
-      approvedById: null,
-      approvedAt: null,
-      paidById: null,
-      paidAt: null,
-      createdById: actor.id,
-      updatedById: actor.id,
-      metadata: dto.metadata ?? null,
-      createdAt: now,
-      updatedAt: now,
-      deletedAt: null,
-    });
+    // Validação completa ANTES de gravar: nenhum registro vazio (bug do INVESTOR l.1510).
+    const payment = this.paymentRule(
+      () =>
+        new FieldAgentPayment({
+          id: 0,
+          organizationId: project.organizationId,
+          projectId,
+          fieldAgentId: dto.field_agent_id,
+          state: this.scope.cleanText(dto.state) ?? null,
+          startDate,
+          endDate,
+          paymentDate: null,
+          expectedPaymentDate: this.expectedDate(dto),
+          days: daysInclusive(startDate, endDate),
+          dailyRate: dto.daily_rate,
+          additionalAmount: dto.additional_amount ?? '0.00',
+          dailyTotal: '0.00',
+          ...this.manualTotal(dto),
+          discountAmount: dto.discount_amount ?? '0.00',
+          finalAmount: '0.00',
+          status: PaymentStatus.PENDING,
+          notes: this.scope.cleanText(dto.notes) ?? null,
+          approvedById: null,
+          approvedAt: null,
+          paidById: null,
+          paidAt: null,
+          reopenedById: null,
+          reopenedAt: null,
+          createdById: actor.id,
+          updatedById: actor.id,
+          metadata: dto.metadata ?? null,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null,
+        }),
+    );
     const saved = await this.repo.savePaymentWithAudit(payment, {
       organizationId: project.organizationId,
       projectId,
@@ -177,19 +197,22 @@ export class PaymentsExpensesService {
     return this.mutatePayment(projectId, id, actor, (payment) => {
       const startDate = this.requiredDate(dto.start_date, 'start_date');
       const endDate = this.requiredDate(dto.end_date, 'end_date');
-      const changes = payment.updateFields({
-        state: this.scope.cleanText(dto.state) ?? null,
-        startDate,
-        endDate,
-        paymentDate: this.scope.parseDate(dto.payment_date),
-        days: this.scope.daysBetweenInclusive(startDate, endDate),
-        dailyRate: dto.daily_rate,
-        additionalAmount: dto.additional_amount ?? '0.00',
-        discountAmount: dto.discount_amount ?? '0.00',
-        notes: this.scope.cleanText(dto.notes) ?? null,
-        metadata: dto.metadata ?? null,
-        updatedById: actor.id,
-      });
+      const changes = this.paymentRule(() =>
+        payment.updateFields({
+          state: this.scope.cleanText(dto.state) ?? null,
+          startDate,
+          endDate,
+          expectedPaymentDate: this.expectedDate(dto),
+          days: daysInclusive(startDate, endDate),
+          dailyRate: dto.daily_rate,
+          additionalAmount: dto.additional_amount ?? '0.00',
+          ...this.manualTotal(dto),
+          discountAmount: dto.discount_amount ?? '0.00',
+          notes: this.scope.cleanText(dto.notes) ?? null,
+          metadata: dto.metadata ?? null,
+          updatedById: actor.id,
+        }),
+      );
       return {
         organizationId: payment.organizationId,
         projectId,
@@ -213,7 +236,80 @@ export class PaymentsExpensesService {
     dto: MarkAsPaidDto,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
-    return this.paymentTransition(projectId, id, actor, 'paid', dto);
+    const project = await this.getProject(projectId, actor, false);
+    assertNotFuture(dto.payment_date, 'A data de pagamento');
+    // Mesma regra da tela consolidada: não paga o que está em competência fechada da DRE.
+    const closed = await this.remuneration.closedPeriodsFor(
+      project.organizationId,
+      id,
+    );
+    if (closed.length)
+      throw new ConflictException({
+        code: 'DRE_PERIOD_CLOSED',
+        message: `Lançamento classificado na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
+      });
+    // Decisão D-A: com "exigir aprovação", só aprovados são pagos. Sem parâmetros
+    // vigentes, mantém o comportamento anterior do GAI (pendente ou aprovado).
+    let requireApproval = false;
+    try {
+      requireApproval = (
+        await this.financeSettings.valuesAt(project.organizationId)
+      ).require_approval;
+    } catch {
+      requireApproval = false;
+    }
+    return this.paymentTransition(
+      projectId,
+      id,
+      actor,
+      'paid',
+      dto,
+      requireApproval,
+    );
+  }
+  /** Reabrir para edição (D-D): permissão própria, justificativa e auditoria. */
+  async reopenPayment(
+    projectId: number,
+    id: number,
+    dto: ReopenPaymentDto,
+    actor: PaymentsExpensesActorContext,
+  ): Promise<PaymentResponseDto> {
+    const current = await this.findPayment(projectId, id, actor);
+    const closed = await this.remuneration.closedPeriodsFor(
+      current.organizationId,
+      id,
+    );
+    if (closed.length)
+      throw new ConflictException({
+        code: 'DRE_PERIOD_CLOSED',
+        message: `Lançamento classificado na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
+      });
+    return this.mutatePayment(projectId, id, actor, (payment) => ({
+      organizationId: payment.organizationId,
+      projectId,
+      paymentId: payment.id,
+      operation: PaymentExpenseAuditOperation.REOPEN_PAYMENT,
+      performedBy: actor.id,
+      changes: {
+        ...payment.reopen(actor.id, new Date()),
+        reason: { before: null, after: dto.reason.trim() },
+      },
+    }));
+  }
+  /** Exclusão lógica (pendente ou cancelado), auditada. */
+  async deletePayment(
+    projectId: number,
+    id: number,
+    actor: PaymentsExpensesActorContext,
+  ): Promise<PaymentResponseDto> {
+    return this.mutatePayment(projectId, id, actor, (payment) => ({
+      organizationId: payment.organizationId,
+      projectId,
+      paymentId: payment.id,
+      operation: PaymentExpenseAuditOperation.DELETE_PAYMENT,
+      performedBy: actor.id,
+      changes: payment.softDelete(actor.id, new Date()),
+    }));
   }
   async cancelPayment(
     projectId: number,
@@ -236,14 +332,21 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<ExpenseResponseDto> {
     const project = await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
     const fieldAgentId = await this.resolveExpenseAgent(
       project.organizationId,
       projectId,
       dto.field_agent_id ?? null,
       actor,
     );
+    const { fields, installments } = await this.expenseRules.classify(
+      project.organizationId,
+      projectId,
+      dto,
+    );
     const now = new Date();
     const expense = new Expense({
+      ...fields,
       id: 0,
       organizationId: project.organizationId,
       projectId,
@@ -266,13 +369,22 @@ export class PaymentsExpensesService {
       updatedAt: now,
       deletedAt: null,
     });
-    const saved = await this.repo.saveExpenseWithAudit(expense, {
-      organizationId: project.organizationId,
-      projectId,
-      operation: PaymentExpenseAuditOperation.CREATE_EXPENSE,
-      performedBy: actor.id,
-      changes: { status: { before: null, after: ExpenseStatus.PENDING } },
-    });
+    const saved = await this.repo.saveExpenseWithAudit(
+      expense,
+      {
+        organizationId: project.organizationId,
+        projectId,
+        operation: PaymentExpenseAuditOperation.CREATE_EXPENSE,
+        performedBy: actor.id,
+        changes: {
+          status: { before: null, after: ExpenseStatus.PENDING },
+          ...(installments
+            ? { installments: { before: null, after: installments } }
+            : {}),
+        },
+      },
+      installments === undefined ? {} : { installments },
+    );
     return ExpenseResponseDto.fromDomain(saved);
   }
   async listExpenses(
@@ -319,6 +431,8 @@ export class PaymentsExpensesService {
   ): Promise<ExpenseResponseDto> {
     const expense = await this.findExpense(projectId, id, actor);
     await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
+    await this.expenseRules.assertNotBilled(expense.reimbursementBatchId);
     const fieldAgentId = await this.resolveExpenseAgent(
       expense.organizationId,
       projectId,
@@ -326,8 +440,15 @@ export class PaymentsExpensesService {
       actor,
     );
     const expenseDate = this.requiredDate(dto.expense_date, 'expense_date');
+    const { fields, installments } = await this.expenseRules.classify(
+      expense.organizationId,
+      projectId,
+      dto,
+      expense.toProps(),
+    );
     const changes = this.expenseRule(() =>
       expense.updateFields({
+        ...fields,
         fieldAgentId,
         description: this.scope.cleanText(dto.description) ?? dto.description,
         reason: this.scope.cleanText(dto.reason) ?? null,
@@ -337,15 +458,54 @@ export class PaymentsExpensesService {
         updatedById: actor.id,
       }),
     );
-    const saved = await this.repo.saveExpenseWithAudit(expense, {
-      organizationId: expense.organizationId,
-      projectId,
-      expenseId: expense.id,
-      operation: PaymentExpenseAuditOperation.UPDATE_EXPENSE,
-      performedBy: actor.id,
-      changes,
-    });
+    if (installments !== undefined)
+      changes.installments = { before: null, after: installments };
+    const saved = await this.repo.saveExpenseWithAudit(
+      expense,
+      {
+        organizationId: expense.organizationId,
+        projectId,
+        expenseId: expense.id,
+        operation: PaymentExpenseAuditOperation.UPDATE_EXPENSE,
+        performedBy: actor.id,
+        changes,
+      },
+      installments === undefined ? {} : { installments },
+    );
     return ExpenseResponseDto.fromDomain(saved);
+  }
+  /**
+   * Reabrir despesa aprovada para edição (D-D): permissão própria, justificativa,
+   * auditoria; bloqueado em competência fechada da DRE, em lote já faturado e
+   * com o financeiro do projeto concluído.
+   */
+  async reopenExpense(
+    projectId: number,
+    id: number,
+    dto: ReopenPaymentDto,
+    actor: PaymentsExpensesActorContext,
+  ): Promise<ExpenseResponseDto> {
+    const expense = await this.findExpense(projectId, id, actor);
+    await this.getProject(projectId, actor, true);
+    await this.expenseRules.assertFinanceOpen(projectId);
+    await this.expenseRules.assertNotBilled(expense.reimbursementBatchId);
+    await this.expenseRules.assertDreOpen(expense.organizationId, id);
+    const changes = this.expenseRule(() =>
+      expense.reopen(actor.id, new Date()),
+    );
+    return ExpenseResponseDto.fromDomain(
+      await this.repo.saveExpenseWithAudit(expense, {
+        organizationId: expense.organizationId,
+        projectId,
+        expenseId: expense.id,
+        operation: PaymentExpenseAuditOperation.REOPEN_EXPENSE,
+        performedBy: actor.id,
+        changes: {
+          ...changes,
+          reason: { before: null, after: dto.reason.trim() },
+        },
+      }),
+    );
   }
   async approveExpense(
     projectId: number,
@@ -561,6 +721,7 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
     action: 'approve' | 'paid' | 'cancel',
     dto?: MarkAsPaidDto,
+    requireApproval = false,
   ) {
     return this.mutatePayment(projectId, id, actor, (payment) => {
       const changes =
@@ -571,6 +732,7 @@ export class PaymentsExpensesService {
                 actor.id,
                 new Date(),
                 this.scope.parseDate(dto?.payment_date),
+                requireApproval,
               )
             : payment.cancel(actor.id);
       const operation =
@@ -601,6 +763,11 @@ export class PaymentsExpensesService {
         id,
         (payment, projectStatus) => {
           this.scope.assertCanAccessOrganization(actor, payment.organizationId);
+          if (payment.toProps().deletedAt)
+            throw new NotFoundException({
+              code: 'NOT_FOUND',
+              message: 'Payment not found',
+            });
           if (
             !ProjectStatusTransitionPolicy.allowsOperationalMutation(
               projectStatus,
@@ -806,6 +973,50 @@ export class PaymentsExpensesService {
         message: 'Attachment not found',
       });
     return attachment;
+  }
+  /** Data prevista: obrigatória; aceita payment_date de clientes antigos como previsão. */
+  private expectedDate(dto: PaymentInputDto): Date {
+    const date = this.scope.parseDate(
+      dto.expected_payment_date ?? dto.payment_date ?? null,
+    );
+    if (!date)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: 'Informe a data prevista de pagamento.',
+        details: [
+          {
+            field: 'expected_payment_date',
+            message: 'Informe a data prevista de pagamento.',
+          },
+        ],
+      });
+    return date;
+  }
+  private manualTotal(dto: PaymentInputDto) {
+    if (!dto.total_manual) return { totalManual: false, totalAmount: '0.00' };
+    if (!dto.total_amount)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: 'Informe o total manual.',
+        details: [
+          { field: 'total_amount', message: 'Informe o total manual.' },
+        ],
+      });
+    return { totalManual: true, totalAmount: dto.total_amount };
+  }
+  /** Regras do domínio da diária (Error comum) viram 400, não 500. */
+  private paymentRule<T>(apply: () => T): T {
+    try {
+      return apply();
+    } catch (error) {
+      if (error instanceof PaymentStateConflict) throw error;
+      if (error instanceof RemunerationRuleError || error instanceof Error)
+        throw new BadRequestException({
+          code: 'VALIDATION_ERROR',
+          message: error.message,
+        });
+      throw error;
+    }
   }
   private requiredDate(value: string, field: string): Date {
     const date = this.scope.parseDate(value);

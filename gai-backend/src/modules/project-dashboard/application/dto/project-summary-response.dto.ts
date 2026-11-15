@@ -127,6 +127,9 @@ export class ProjectFinancialSummaryDto {
   cancelled_payments!: number;
   @ApiProperty({ example: '5000.00' })
   total_payment_amount!: string;
+  /** Diárias em aberto sem data prevista (anteriores à obrigatoriedade). */
+  @ApiProperty()
+  payments_without_expected_date!: number;
   @ApiProperty()
   total_expenses!: number;
   @ApiProperty()

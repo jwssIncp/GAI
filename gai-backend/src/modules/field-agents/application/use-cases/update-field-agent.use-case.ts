@@ -56,6 +56,7 @@ export class UpdateFieldAgentUseCase {
         email: dto.email,
         phone: dto.phone,
         document: dto.document,
+        state: dto.state,
         metadata: dto.metadata,
       });
     } catch (error) {

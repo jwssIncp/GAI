@@ -1,5 +1,7 @@
 import { DreLayout } from "@/features/dre/DreLayout";
 import { DreReportPage } from "@/features/dre/DreReportPage";
+import { DreMonthlyPage } from "@/features/dre/DreMonthlyPage";
+import { DreMonthlyRedirect } from "@/features/dre/DreLayout";
 import {
   DreEntriesPage,
   DreEntryDetailPage,
@@ -11,6 +13,12 @@ import { ReceivablesPage } from "@/features/receivables/ReceivablesPage";
 import { ReceivableForm } from "@/features/receivables/ReceivableForm";
 import { ReceivableDetailPage } from "@/features/receivables/ReceivableDetailPage";
 import { CashFlowPage } from "@/features/receivables/CashFlowPage";
+import { FinanceSettingsPage } from "@/features/finance-settings/FinanceSettingsPage";
+import { RemunerationProjectsPage } from "@/features/remuneration/RemunerationProjectsPage";
+import { FieldAgentPaymentsPage } from "@/features/field-agent-payments/FieldAgentPaymentsPage";
+import { ExpenseProjectsPage } from "@/features/expenses/ExpenseProjectsPage";
+import { AssetTagsPage } from "@/features/asset-tags/AssetTagsPage";
+import { CommissionsPage } from "@/features/commissions/CommissionsPage";
 import { projectRoute } from "./projectRoutes";
 import { BudgetLayout } from "@/features/budgets/BudgetLayout";
 import { BudgetsPage } from "@/features/budgets/BudgetsPage";
@@ -124,7 +132,9 @@ export const router = createBrowserRouter([
                     path: "dre",
                     element: <DreLayout />,
                     children: [
-                      { index: true, element: <DreReportPage /> },
+                      { index: true, element: <DreMonthlyPage /> },
+                      { path: "monthly", element: <DreMonthlyRedirect /> },
+                      { path: "statement", element: <DreReportPage /> },
                       { path: "entries", element: <DreEntriesPage /> },
                       {
                         path: "entries/:entryId",
@@ -159,6 +169,22 @@ export const router = createBrowserRouter([
               {
                 element: <ProtectedRoute permissions={["cash-flow:read"]} />,
                 children: [{ path: "cash-flow", element: <CashFlowPage /> }],
+              },
+              {
+                element: <ProtectedRoute permissions={["finance-settings:read"]} />,
+                children: [
+                  { path: "parameters", element: <FinanceSettingsPage /> },
+                ],
+              },
+              {
+                element: <ProtectedRoute permissions={["payments:read"]} />,
+                children: [
+                  { path: "remuneration", element: <RemunerationProjectsPage /> },
+                  { path: "field-agent-payments", element: <FieldAgentPaymentsPage /> },
+                  { path: "expenses", element: <ExpenseProjectsPage /> },
+                  { path: "asset-tags", element: <AssetTagsPage /> },
+                  { path: "commissions", element: <CommissionsPage /> },
+                ],
               },
             ],
           },

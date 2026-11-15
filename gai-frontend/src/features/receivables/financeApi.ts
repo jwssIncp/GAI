@@ -180,12 +180,18 @@ export const financeApi = {
 export function money(value: string, currency: string) {
   const negative = value.startsWith("-"),
     [whole, fraction = "00"] = (negative ? value.slice(1) : value).split(".");
-  const exact = `${negative ? "-" : ""}${new Intl.NumberFormat("pt-BR").format(BigInt(whole))},${fraction.padEnd(2, "0")}`;
-  if (currency === "UNSPECIFIED") return `${exact} (moeda não informada)`;
+  const digits = `${new Intl.NumberFormat("pt-BR").format(BigInt(whole))},${fraction.padEnd(2, "0")}`;
+  if (currency === "UNSPECIFIED") return `${negative ? "-" : ""}${digits} (moeda não informada)`;
   const symbol = new Intl.NumberFormat("pt-BR", { style: "currency", currency })
     .formatToParts(0)
     .find((p) => p.type === "currency")!.value;
-  return `${symbol} ${exact}`;
+  // Mesmo formato dos cards (Intl pt-BR): o sinal vem antes do símbolo.
+  return `${negative ? "-" : ""}${symbol} ${digits}`;
+}
+/** Percentual pt-BR ("12.5" → "12,50%"); nulo/indefinido → "—". */
+export function percent(value: string | null | undefined) {
+  if (value === null || value === undefined) return "—";
+  return `${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 export const today = () => new Date().toISOString().slice(0, 10);
 export const cls = "w-full rounded-lg border bg-background p-2 text-sm";

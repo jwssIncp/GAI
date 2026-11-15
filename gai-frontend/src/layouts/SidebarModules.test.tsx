@@ -46,10 +46,12 @@ describe("Menu lateral por módulo", () => {
   );
   afterAll(() => vi.unstubAllGlobals());
 
-  // Itens visíveis antes da Etapa 2 (ordem antiga), por perfil. O conjunto deve ser o mesmo.
+  // Itens visíveis antes da Etapa 2 (ordem antiga), por perfil. O conjunto deve ser o mesmo,
+  // mais os itens novos acrescentados depois (paridade financeira, etapa 1: Parâmetros financeiros).
+  const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes", "Despesas", "Placas de patrimônio", "Comissões"];
   it.each([
-    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Usuários", "Perfis e acessos", "Empresas"]],
-    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas"]],
+    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
+    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
     ["operador de campo", user({ permissions: ["projects:read", "field-agents:read", "inventory-items:read"] }), ["Visão geral", "Projetos", "Inventariantes"]],
     ["financeiro", user({ permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read", "budgets:read", "companies:read"] }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Empresas"]],
   ])("%s vê exatamente os mesmos itens de antes, agrupados por módulo", (_label, current, before) => {
@@ -70,8 +72,15 @@ describe("Menu lateral por módulo", () => {
       "Recebíveis",
       "Fluxo de caixa",
       "DRE Gerencial",
+      "Remuneração",
+      "Pagamento de inventariantes",
+      "Despesas",
+      "Placas de patrimônio",
+      "Comissões",
       "Usuários",
       "Perfis e acessos",
+      // Parâmetros financeiros fica em Administração (mesma URL e permissão).
+      "Parâmetros financeiros",
     ]);
   });
 
@@ -89,9 +98,15 @@ describe("Menu lateral por módulo", () => {
       ["/app/finance/receivables", ["receivables:read"]],
       ["/app/finance/cash-flow", ["cash-flow:read"]],
       ["/app/finance/dre", ["dre:read"]],
+      ["/app/finance/remuneration", ["payments:read"]],
+      ["/app/finance/field-agent-payments", ["payments:read"]],
+      ["/app/finance/expenses", ["expenses:read"]],
+      ["/app/finance/asset-tags", ["asset-tag-orders:read"]],
+      ["/app/finance/commissions", ["commissions:read"]],
       ["/app/organizations", ["organizations:read"]],
       ["/app/users", ["users:read"]],
       ["/app/roles", ["org_roles:read"]],
+      ["/app/finance/parameters", ["finance-settings:read"]],
       ["/app/companies", ["companies:read"]],
     ]);
     expect(navigation.find((item) => item.to === "/app/finance/receivables")?.label).toBe("Recebíveis");

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useDebouncedValue } from "./useDebouncedValue";
 import {
+  Download,
   Eye,
   Lock,
   Pencil,
@@ -27,13 +28,18 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { FieldAgentDetailDrawer } from "./FieldAgentDetailDrawer";
 import { FieldAgentForm } from "./FieldAgentForm";
 import {
+  useBatchDeleteFieldAgents,
   useChangeFieldAgentStatus,
   useCreateFieldAgent,
   useDeleteFieldAgent,
+  useFieldAgentSummary,
   useFieldAgents,
   useUpdateFieldAgent,
 } from "./fieldAgentsQueries";
-import { formatDate } from "@/utils/format";
+import { fieldAgentsApi } from "@/api/endpoints";
+import { BRAZILIAN_STATES } from "./brazilianStates";
+import type { FieldAgentFinancialUsage } from "@/types/api";
+import { batchDescription } from "./fieldAgentBatch";
 import type { FieldAgent, FieldAgentStatus } from "@/types/api";
 
 export function FieldAgentsPage() {
@@ -54,6 +60,12 @@ export function FieldAgentsPage() {
     item: FieldAgent;
   } | null>(null);
   const [deletion, setDeletion] = useState<"current" | "deleted">("current");
+  const [state, setState] = useState("");
+  const [selected, setSelected] = useState<number[]>([]);
+  const [batchConfirm, setBatchConfirm] = useState<{
+    usage: FieldAgentFinancialUsage[];
+  } | null>(null);
+  const [exporting, setExporting] = useState(false);
   const [feedback, setFeedback] = useState<{
     error?: boolean;
     message: string;
@@ -66,9 +78,10 @@ export function FieldAgentsPage() {
       page_size: 20,
       search: term || undefined,
       status: status || undefined,
+      state: state || undefined,
       deletion,
     }),
-    [page, term, status, deletion],
+    [page, term, status, state, deletion],
   );
   const query = useFieldAgents(params);
   const create = useCreateFieldAgent();
@@ -79,11 +92,84 @@ export function FieldAgentsPage() {
   const unblock = useChangeFieldAgentStatus("unblock");
   const restore = useChangeFieldAgentStatus("restore");
   const deleteAgent = useDeleteFieldAgent();
+  const batchDelete = useBatchDeleteFieldAgents();
+  const summary = useFieldAgentSummary();
   const { hasPermission } = usePermissions();
   const { user } = useAuth();
   const data = query.data ? normalizePage(query.data) : null;
+  const canBatchDelete =
+    deletion === "current" && hasPermission("field-agents:delete");
+  const pageIds = data?.items.map((item) => item.id) ?? [];
+  const allOnPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
+  const resetSelection = () => setSelected([]);
 
+  async function openBatchDelete() {
+    setFeedback(null);
+    try {
+      const usage = await fieldAgentsApi.financialUsage(selected);
+      setBatchConfirm({ usage });
+    } catch (error) {
+      setFeedback({ error: true, message: (error as Error).message });
+    }
+  }
+
+  async function exportList() {
+    setExporting(true);
+    setFeedback(null);
+    try {
+      const blob = await fieldAgentsApi.exportFile({
+        search: term || undefined,
+        status: status || undefined,
+        state: state || undefined,
+        deletion,
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "inventariantes.xlsx";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setFeedback({ error: true, message: (error as Error).message });
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  const selectionColumn: Column<FieldAgent> = {
+    header: "Seleção",
+    headerContent: (
+      <input
+        type="checkbox"
+        aria-label="Selecionar todos desta página"
+        checked={allOnPageSelected}
+        onChange={(event) =>
+          setSelected(
+            event.target.checked
+              ? [...new Set([...selected, ...pageIds])]
+              : selected.filter((id) => !pageIds.includes(id)),
+          )
+        }
+      />
+    ),
+    cell: (item) => (
+      <input
+        type="checkbox"
+        aria-label={`Selecionar ${item.name}`}
+        checked={selected.includes(item.id)}
+        onChange={(event) =>
+          setSelected(
+            event.target.checked
+              ? [...selected, item.id]
+              : selected.filter((id) => id !== item.id),
+          )
+        }
+      />
+    ),
+  };
   const columns: Column<FieldAgent>[] = [
+    ...(canBatchDelete ? [selectionColumn] : []),
     {
       header: "Nome",
       cell: (item) => (
@@ -95,11 +181,17 @@ export function FieldAgentsPage() {
     },
     { header: "Email", cell: (item) => item.email ?? "-" },
     { header: "Telefone", cell: (item) => item.phone ?? "-" },
-    { header: "Documento", cell: (item) => item.document ?? "-" },
+    { header: "UF", cell: (item) => item.state ?? "-" },
+    {
+      header: "Documento",
+      className: "whitespace-nowrap",
+      cell: (item) => item.document ?? "-",
+    },
     { header: "Status", cell: (item) => <StatusBadge value={item.status} /> },
-    { header: "Criado em", cell: (item) => formatDate(item.created_at) },
     {
       header: "Ações",
+      sticky: "right",
+      className: "whitespace-nowrap",
       cell: (item) => (
         <div className="flex items-center gap-1">
           <Button
@@ -201,13 +293,49 @@ export function FieldAgentsPage() {
         title="Inventariantes"
         description="Cadastro e acompanhamento dos inventariantes da organização ativa."
         action={
-          hasPermission("field-agents:create") && user?.organization_id ? (
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <Plus size={17} /> Novo inventariante
-            </Button>
-          ) : null
+          <div className="flex flex-wrap gap-2">
+            {hasPermission("field-agents:export") ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={exporting}
+                onClick={() => void exportList()}
+              >
+                <Download size={17} /> {exporting ? "Exportando..." : "Exportar Excel"}
+              </Button>
+            ) : null}
+            {hasPermission("field-agents:create") && user?.organization_id ? (
+              <Button type="button" onClick={() => setCreateOpen(true)}>
+                <Plus size={17} /> Novo inventariante
+              </Button>
+            ) : null}
+          </div>
         }
       />
+      <section
+        aria-label="Indicadores de inventariantes"
+        className="grid gap-3 sm:grid-cols-3"
+      >
+        <Kpi
+          label="Inventariantes"
+          value={summary.data?.total}
+          hint="Cadastros atuais da organização"
+        />
+        <Kpi
+          label="UFs"
+          value={summary.data?.states_count}
+          hint={
+            summary.data?.without_state
+              ? `${summary.data.without_state} sem UF informada`
+              : "UFs distintas nos cadastros"
+          }
+        />
+        <Kpi
+          label="Exibidos"
+          value={data?.totalItems}
+          hint="Resultado dos filtros atuais"
+        />
+      </section>
       <FilterPanel>
         <SearchInput
           value={search}
@@ -224,6 +352,7 @@ export function FieldAgentsPage() {
           onChange={(event) => {
             setDeletion(event.target.value as "current" | "deleted");
             setPage(1);
+            resetSelection();
           }}
         >
           <option value="current">Cadastros atuais</option>
@@ -243,7 +372,56 @@ export function FieldAgentsPage() {
           <option value="inactive">Inativo</option>
           <option value="blocked">Bloqueado</option>
         </select>
+        <select
+          className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          value={state}
+          onChange={(event) => {
+            setState(event.target.value);
+            setPage(1);
+          }}
+          aria-label="Filtrar por UF"
+        >
+          <option value="">Todas as UFs</option>
+          {BRAZILIAN_STATES.map((uf) => (
+            <option key={uf} value={uf}>
+              {uf}
+            </option>
+          ))}
+        </select>
+        {search || status || state ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              setSearch("");
+              setStatus("");
+              setState("");
+              setPage(1);
+            }}
+          >
+            Limpar filtros
+          </Button>
+        ) : null}
       </FilterPanel>
+      {canBatchDelete && selected.length ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3 text-sm">
+          <span role="status">
+            {selected.length} selecionado(s)
+          </span>
+          <div className="flex gap-2">
+            <Button type="button" variant="ghost" onClick={resetSelection}>
+              Limpar seleção
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => void openBatchDelete()}
+            >
+              <Trash2 size={16} /> Excluir selecionados
+            </Button>
+          </div>
+        </div>
+      ) : null}
       {feedback ? (
         <p
           role={feedback.error ? "alert" : "status"}
@@ -311,6 +489,34 @@ export function FieldAgentsPage() {
           />
         ) : null}
       </DrawerForm>
+      <ConfirmDialog
+        open={Boolean(batchConfirm)}
+        onOpenChange={(open) => !open && setBatchConfirm(null)}
+        title="Excluir inventariantes selecionados"
+        description={batchDescription(selected.length, batchConfirm?.usage ?? [])}
+        busy={batchDelete.isPending}
+        onConfirm={() =>
+          batchDelete.mutate(selected, {
+            onSuccess: (result) => {
+              setBatchConfirm(null);
+              resetSelection();
+              const failures = result.results
+                .filter((item) => !item.deleted)
+                .map((item) => `#${item.id}: ${item.message ?? "não excluído"}`);
+              setFeedback({
+                error: result.failed > 0,
+                message:
+                  `${result.deleted} inventariante(s) excluído(s). Lançamentos e histórico preservados.` +
+                  (failures.length ? ` Não excluídos: ${failures.join("; ")}.` : ""),
+              });
+            },
+            onError: (error) => {
+              setBatchConfirm(null);
+              setFeedback({ error: true, message: error.message });
+            },
+          })
+        }
+      />
       <FieldAgentDetailDrawer
         id={viewingId}
         open={Boolean(viewingId)}
@@ -364,6 +570,26 @@ export function FieldAgentsPage() {
         }}
       />
     </PageContainer>
+  );
+}
+
+function Kpi({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value?: number;
+  hint: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-2xl font-semibold tabular-nums">
+        {value == null ? "–" : value.toLocaleString("pt-BR")}
+      </p>
+      <p className="text-xs text-muted-foreground">{hint}</p>
+    </div>
   );
 }
 

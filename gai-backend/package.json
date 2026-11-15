@@ -26,6 +26,8 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d data-source.ts",
     "seed:bootstrap": "ts-node -r tsconfig-paths/register src/scripts/seed/bootstrap.ts",
     "permissions:sync": "ts-node -r tsconfig-paths/register src/scripts/seed/sync-permissions.ts",
+    "seed:finance-settings": "ts-node -r tsconfig-paths/register src/scripts/seed/finance-settings.ts",
+    "seed:finance-settings:prod": "node dist/src/scripts/seed/finance-settings.js",
     "mobile:retention": "ts-node -r tsconfig-paths/register src/scripts/seed/run-mobile-retention.ts",
     "mobile:retention:prod": "node scripts/with-db-lock.cjs --name gai_release --wait 1800 -- node dist/src/scripts/seed/run-mobile-retention.js",
     "items:external-duplicates:prod": "node dist/src/scripts/seed/report-external-item-duplicates.js",

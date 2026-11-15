@@ -1,22 +1,22 @@
 import { navigationHref } from "@/features/projects/navigationContext";
-import { NavLink, Outlet, useSearchParams } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation, useSearchParams } from "react-router-dom";
+
+/** Endereço antigo da DRE mensal: leva à abertura da DRE, mantendo os filtros. */
+export function DreMonthlyRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={"/app/finance/dre" + search} replace />;
+}
 export function DreLayout() {
   const [p] = useSearchParams();
   return (
-    <section className="grid gap-4">
-      <div>
-        <h2 className="text-xl font-semibold">DRE Gerencial</h2>
-        <p className="text-sm text-muted-foreground">
-          Resultado por competência explícita, com cobertura das fontes e
-          histórico. Não é DRE contábil oficial.
-        </p>
-      </div>
+    <section className="grid min-w-0 gap-4">
       <nav
         className="section-navigation"
         aria-label="Navegação da DRE"
       >
         {[
-          ["", "Demonstrativo"],
+          ["", "DRE mensal"],
+          ["statement", "Demonstrativo"],
           ["entries", "Classificações e ajustes"],
           ["accounts", "Plano de contas"],
           ["periods", "Competências"],

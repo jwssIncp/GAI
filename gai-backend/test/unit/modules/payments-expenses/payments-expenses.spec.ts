@@ -17,6 +17,11 @@ function makePayment() {
     startDate: new Date('2026-07-01T00:00:00.000Z'),
     endDate: new Date('2026-07-03T00:00:00.000Z'),
     paymentDate: null,
+    expectedPaymentDate: null,
+    totalAmount: '0.00',
+    totalManual: false,
+    reopenedById: null,
+    reopenedAt: null,
     days: 3,
     dailyRate: '100.00',
     additionalAmount: '50.00',
@@ -58,7 +63,7 @@ describe('FieldAgentPayment domain', () => {
           ...makePayment().toProps(),
           endDate: new Date('2026-06-30T00:00:00.000Z'),
         }),
-    ).toThrow('end_date cannot be earlier than start_date');
+    ).toThrow('A data final não pode ser anterior à data inicial.');
   });
   it('preserves direct settlement of a pending payment and records its amount', () => {
     const payment = makePayment();

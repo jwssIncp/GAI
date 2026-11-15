@@ -131,6 +131,9 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
     if (params.status) {
       qb.andWhere('fieldAgent.status = :status', { status: params.status });
     }
+    if (params.state) {
+      qb.andWhere('fieldAgent.state = :state', { state: params.state });
+    }
     if (params.search) {
       const digits = params.search.replace(/\D/g, '');
       qb.andWhere(
@@ -204,7 +207,10 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
   async saveFieldAgentWithAudit(
     fieldAgent: FieldAgent,
     audit: FieldAgentAuditEntry,
+    initialProjectIds: number[] = [],
   ): Promise<FieldAgent> {
+    if (initialProjectIds.length && fieldAgent.id > 0)
+      throw new Error('initialProjectIds only applies to new field agents');
     const db = this.fieldAgentRepo.manager.connection;
     return identityTransaction(db, async (manager) => {
       // Same access/user locks as organization transfer; no cross-tenant link can
@@ -309,6 +315,41 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
         performedBy: audit.performedBy,
         changes: fieldAgentAuditChanges(audit.changes),
       });
+
+      // Vínculos escolhidos no cadastro: mesmas regras do vínculo pelo projeto
+      // (projeto da organização e em status operacional), na mesma transação.
+      for (const projectId of initialProjectIds) {
+        await this.lockOperationalProject(
+          manager,
+          saved.organizationId,
+          projectId,
+        );
+        const link = await manager.getRepository(ProjectFieldAgentEntity).save(
+          manager.getRepository(ProjectFieldAgentEntity).create({
+            organizationId: saved.organizationId,
+            projectId,
+            fieldAgentId: saved.id,
+            role: null,
+            status: ProjectFieldAgentStatus.ACTIVE,
+            startDate: null,
+            endDate: null,
+            notes: null,
+          }),
+        );
+        await auditRepo.save({
+          organizationId: saved.organizationId,
+          fieldAgentId: saved.id,
+          projectFieldAgentId: link.id,
+          projectId,
+          operation: FieldAgentAuditOperation.ASSIGN_TO_PROJECT,
+          performedBy: audit.performedBy,
+          changes: fieldAgentAuditChanges({
+            field_agent_id: { before: null, after: saved.id },
+            project_id: { before: null, after: projectId },
+            status: { before: null, after: ProjectFieldAgentStatus.ACTIVE },
+          }),
+        });
+      }
 
       return this.toFieldAgentDomain(saved);
     });
@@ -459,6 +500,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
       email: props.email,
       phone: props.phone,
       document: props.document,
+      state: props.state,
       status: props.status,
       metadata: props.metadata,
       createdAt: props.createdAt,
@@ -502,6 +544,7 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
       email: entity.email,
       phone: entity.phone,
       document: entity.document,
+      state: entity.state ?? null,
       status: entity.status,
       metadata: entity.metadata,
       createdAt: this.toDate(entity.createdAt),

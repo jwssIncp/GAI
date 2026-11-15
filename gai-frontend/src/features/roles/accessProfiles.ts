@@ -14,6 +14,10 @@ const resources: Record<string, string> = {
   'assisted-reconciliation': 'Conciliação assistida', consolidations: 'Consolidação de evidências', 'plate-history': 'Histórico de placas',
   payments: 'Pagamentos', expenses: 'Despesas', 'expense-accountabilities': 'Prestações de contas', 'expense-installments': 'Parcelas de despesas',
   receivables: 'Recebíveis', 'cash-flow': 'Fluxo de caixa', finance: 'Financeiro', dre: 'DRE gerencial',
+  'finance-settings': 'Parâmetros financeiros', 'field-agent-documents': 'Documentos dos inventariantes',
+  'expense-advances': 'Adiantamentos de despesas', 'reimbursement-batches': 'Lotes de reembolso ao cliente', 'project-finance': 'Financeiro do projeto',
+  'asset-tag-orders': 'Placas de patrimônio',
+  commissions: 'Comissões', 'commission-partners': 'Parceiros de comissão',
   budgets: 'Orçamentos', contracts: 'Contratos', 'commercial-indicators': 'Indicadores comerciais',
   documents: 'Documentos', 'technical-reports': 'Laudos técnicos',
   'import-sessions': 'Sessões de importação', 'import-payloads': 'Dados de importação', 'import-files': 'Arquivos de importação', 'import-errors': 'Erros de importação', 'export-jobs': 'Exportações',
@@ -30,17 +34,36 @@ const actions: Record<string, string> = {
   reinventory: 'Solicitar reinventário', 'batch-create': 'Criar em lote', amend: 'Aditar',
   'configure-prices': 'Configurar preços', receive: 'Registrar recebimento', reverse: 'Estornar',
   classify: 'Classificar', configure: 'Configurar', adjust: 'Ajustar', periods: 'Gerenciar períodos', templates: 'Gerenciar modelos',
+  upload: 'Anexar',
+  simulate: 'Simular venda', reopen: 'Reabrir para edição', 'revert-payment': 'Voltar pago para em aberto', reschedule: 'Alterar datas',
+};
+/** Rótulos de ação que dependem do recurso (a mesma ação significa coisas diferentes). */
+const resourceActions: Record<string, string> = {
+  'field-agent-documents:read': 'Consultar e baixar',
+  'field-agent-documents:remove': 'Remover',
+  'finance-settings:update': 'Criar nova versão',
+  'expenses:delete': 'Excluir',
+  'expenses:export-zip': 'Exportar ZIP com comprovantes',
+  'reimbursement-batches:create': 'Prestar conta (incluir no lote)',
+  'reimbursement-batches:close': 'Faturar ao cliente',
+  'reimbursement-batches:reopen': 'Reabrir ou cancelar lote',
+  'project-finance:close': 'Concluir financeiro',
+  'project-finance:reopen': 'Reabrir financeiro',
+  'asset-tag-orders:edit': 'Lançar, editar e excluir',
+  'commissions:edit': 'Lançar, editar e excluir',
+  'commission-partners:edit': 'Cadastrar e excluir',
 };
 export const resourceName = (resource: string) => resources[resource] ?? 'Outras funcionalidades';
-export const actionName = (action: string) => actions[action] ?? 'Ação específica';
+export const actionName = (action: string, resource?: string) =>
+  (resource ? resourceActions[`${resource}:${action}`] : undefined) ?? actions[action] ?? 'Ação específica';
 export function permissionArea(resource: string) {
   if (['users', 'org_roles'].includes(resource)) return 'Usuários e administração';
   if (['companies', 'company-units', 'project-units'].includes(resource)) return 'Empresas e unidades';
   if (['projects', 'project-preparation', 'contracts', 'commercial-indicators', 'budgets'].includes(resource)) return 'Projetos e contratos';
   if (resource.startsWith('import-') || resource === 'export-jobs') return 'Importações e exportações';
   if (['documents', 'technical-reports'].includes(resource)) return 'Documentos e laudos';
-  if (['payments', 'expenses', 'expense-accountabilities', 'expense-installments', 'receivables', 'cash-flow', 'finance', 'dre'].includes(resource)) return 'Financeiro';
-  if (['field-agents', 'project-field-agents', 'field-coordination', 'inventory-items', 'inventory-item-images', 'inventory-sessions', 'inventory-rounds', 'inventory-observations'].includes(resource)) return 'Inventário e campo';
+  if (['payments', 'expenses', 'expense-accountabilities', 'expense-installments', 'expense-advances', 'reimbursement-batches', 'project-finance', 'asset-tag-orders', 'commissions', 'commission-partners', 'receivables', 'cash-flow', 'finance', 'dre', 'finance-settings'].includes(resource)) return 'Financeiro';
+  if (['field-agents', 'field-agent-documents', 'project-field-agents', 'field-coordination', 'inventory-items', 'inventory-item-images', 'inventory-sessions', 'inventory-rounds', 'inventory-observations'].includes(resource)) return 'Inventário e campo';
   return 'Patrimônio e avaliações';
 }
 export const roleName = (key: string | null | undefined, name: string) => key === 'ORG_ADMIN' ? 'Administrador da organização' : key === 'ORG_USER' ? 'Usuário da organização' : key === 'PLATFORM_ADMIN' ? 'Administrador da plataforma' : name;

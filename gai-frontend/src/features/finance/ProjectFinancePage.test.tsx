@@ -1,64 +1,54 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
+import type { ExpenseBoard, ExpenseBoardItem, ReimbursementBatch } from '@/features/expenses/expensesApi';
+import { equalInstallments } from '@/features/expenses/expensesApi';
 import { ProjectFinancePage } from './ProjectFinancePage';
-import type { CurrentUser, Expense, ExpenseAttachment, FieldAgent, FieldAgentPayment, PaginatedItems } from '@/types/api';
+import type { CurrentUser, ExpenseAttachment } from '@/types/api';
 
 const mocks = vi.hoisted(() => ({
-  paymentsList: vi.fn(),
-  paymentSummary: vi.fn(),
-  paymentCreate: vi.fn(),
-  paymentUpdate: vi.fn(),
-  paymentApprove: vi.fn(),
-  paymentMarkAsPaid: vi.fn(),
-  paymentCancel: vi.fn(),
-  expensesList: vi.fn(),
-  expenseCreate: vi.fn(),
-  expenseUpdate: vi.fn(),
-  expenseApprove: vi.fn(),
-  expenseReject: vi.fn(),
-  expenseMarkAsPaid: vi.fn(),
-  expenseCancel: vi.fn(),
-  fieldAgentsList: vi.fn(),
+  board: vi.fn(),
+  batches: vi.fn(),
+  advances: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  action: vi.fn(),
+  reject: vi.fn(),
+  reopen: vi.fn(),
+  changeType: vi.fn(),
+  remove: vi.fn(),
+  addToBatch: vi.fn(),
+  batchAction: vi.fn(),
+  closeFinance: vi.fn(),
+  reopenFinance: vi.fn(),
+  saveAdvance: vi.fn(),
+  removeAdvance: vi.fn(),
+  importPreview: vi.fn(),
+  importCommit: vi.fn(),
+  exportFile: vi.fn(),
+  zip: vi.fn(),
   attachmentsList: vi.fn(),
   createUploadUrl: vi.fn(),
   confirmUpload: vi.fn(),
-  downloadUrl: vi.fn(),
-  removeAttachment: vi.fn(),
   uploadToPresignedUrl: vi.fn(),
 }));
 
 vi.mock('@/api/http', () => ({ uploadToPresignedUrl: mocks.uploadToPresignedUrl }));
 vi.mock('@/api/endpoints', () => ({
-  fieldAgentsApi: { list: mocks.fieldAgentsList },
-  paymentsApi: {
-    list: mocks.paymentsList,
-    summary: mocks.paymentSummary,
-    create: mocks.paymentCreate,
-    update: mocks.paymentUpdate,
-    approve: mocks.paymentApprove,
-    markAsPaid: mocks.paymentMarkAsPaid,
-    cancel: mocks.paymentCancel,
-  },
-  expensesApi: {
-    list: mocks.expensesList,
-    create: mocks.expenseCreate,
-    update: mocks.expenseUpdate,
-    approve: mocks.expenseApprove,
-    reject: mocks.expenseReject,
-    markAsPaid: mocks.expenseMarkAsPaid,
-    cancel: mocks.expenseCancel,
-  },
   expenseAttachmentsApi: {
     list: mocks.attachmentsList,
     createUploadUrl: mocks.createUploadUrl,
     confirmUpload: mocks.confirmUpload,
-    downloadUrl: mocks.downloadUrl,
-    remove: mocks.removeAttachment,
+    downloadUrl: vi.fn(),
+    remove: vi.fn(),
   },
+}));
+vi.mock('@/features/expenses/expensesApi', async (original) => ({
+  ...(await original<object>()),
+  expensesApi: mocks,
 }));
 
 const admin: CurrentUser = {
@@ -69,87 +59,82 @@ const admin: CurrentUser = {
   organization_id: 1,
   role_assignments: [{ assignment_id: 1, role_id: 1, role_key: 'ORG_ADMIN', role_name: 'Admin', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' }],
 };
-
-const noPermissions: CurrentUser = {
+const reader: CurrentUser = {
   ...admin,
-  role_assignments: [{ assignment_id: 2, role_id: 3, role_key: 'ORG_USER', role_name: 'User', role_type: 'SYSTEM', organization_id: 1, assigned_at: '2026-01-01T00:00:00.000Z' }],
-};
+  role_assignments: [],
+  permissions: [{ key: 'expenses:read', scope: 'ORGANIZATION' }],
+} as unknown as CurrentUser;
 
-const agent: FieldAgent = {
-  id: 7,
-  organization_id: 1,
-  name: 'Ana Inventariante',
-  email: 'ana@gai.local',
-  phone: null,
-  document: null,
-  status: 'active',
-  metadata: null,
-  created_at: '2026-01-01T00:00:00.000Z',
-  updated_at: '2026-01-01T00:00:00.000Z',
-};
-
-const payment: FieldAgentPayment = {
-  id: 10,
-  organization_id: 1,
-  project_id: 20,
+const item = (id: number, patch: Partial<ExpenseBoardItem> = {}): ExpenseBoardItem => ({
+  id,
+  sequence: id,
+  expense_type: 'reimbursable',
+  expense_type_label: 'Reembolsável',
+  contract_type_label: 'Reembolsável',
+  reason_code: 'Transporte',
+  description: 'Táxi do aeroporto',
+  legacy_reason: null,
+  expense_date: '2026-10-05',
   field_agent_id: 7,
-  state: 'SP',
-  start_date: '2026-01-01',
-  end_date: '2026-01-03',
-  payment_date: null,
-  days: 3,
-  daily_rate: '100.00',
-  additional_amount: '20.00',
-  daily_total: '300.00',
-  discount_amount: '0.00',
-  final_amount: '320.00',
+  field_agent_name: 'Ana Campo',
+  payment_method: 'cash',
+  payment_method_label: 'À vista',
+  installments: [],
+  invoiced_payment_date: null,
+  attachments: 1,
+  amount: '100.00',
+  deposited_amount: '150.00',
+  balance: '50.00',
   status: 'pending',
-  notes: 'Diarias janeiro',
-  metadata: null,
-  created_at: '2026-01-01T00:00:00.000Z',
-  updated_at: '2026-01-01T00:00:00.000Z',
-};
+  rejection_reason: null,
+  batch: null,
+  to_reimburse: true,
+  reopened_at: null,
+  updated_at: '2026-10-05T10:00:00.000Z',
+  ...patch,
+});
 
-const expense: Expense = {
-  id: 15,
-  organization_id: 1,
-  project_id: 20,
-  field_agent_id: 7,
-  description: 'Almoco em campo',
-  reason: 'Equipe em inventário',
-  expense_date: '2026-01-02',
-  amount: '45.90',
-  status: 'pending',
-  metadata: null,
-  created_at: '2026-01-02T00:00:00.000Z',
-  updated_at: '2026-01-02T00:00:00.000Z',
-};
+const board = (patch: Partial<ExpenseBoard> = {}): ExpenseBoard => ({
+  project: { id: 20, name: 'Projeto Alfa', status: 'active' },
+  today: '2026-11-13',
+  closure: null,
+  parameters: { configured: true, reasons: ['Transporte', 'Refeição', 'Lanche', 'Lavanderia', 'Outros'], attachment_max_bytes: 8 * 1024 * 1024, attachment_max_files: 2 },
+  default_expense_type: 'reimbursable',
+  contract_type_label: 'Reembolsável',
+  kpis: {
+    total: '1340.00', count: 3, reimbursable: '240.00', reimbursable_pct: '17.91', non_reimbursable: '1100.00', non_reimbursable_pct: '82.09',
+    unclassified: '50.00', unclassified_count: 1, to_reimburse: '100.00', contract_value: '10000.00', contract_pct: '13.40',
+  },
+  summary: [
+    { field_agent_id: 7, name: 'Ana Campo', entries: 2, advances: '500.00', advances_count: 1, expenses: '1200.00', balance: '-700.00' },
+    { field_agent_id: 8, name: 'Bruno Sem Lançamento', entries: 0, advances: '0.00', advances_count: 0, expenses: '0.00', balance: '0.00' },
+    { field_agent_id: null, name: 'Despesas gerais', entries: 1, advances: '0.00', advances_count: 0, expenses: '140.00', balance: null },
+  ],
+  agents: [{ id: 7, name: 'Ana Campo', linked: true }],
+  items: [
+    item(1),
+    item(2, { expense_type: 'non_reimbursable', expense_type_label: 'Não reembolsável', amount: '1100.00', payment_method: 'installments', payment_method_label: 'A prazo', installments: [{ number: 1, due_date: '2026-11-05', amount: '550.00' }, { number: 2, due_date: '2026-12-05', amount: '550.00' }], status: 'approved', deposited_amount: null, balance: null, to_reimburse: false }),
+    item(3, { field_agent_id: null, field_agent_name: 'Despesas gerais', amount: '140.00', status: 'paid', batch: { id: 4, number: 1, status: 'billed', batch_date: '2026-11-01' }, to_reimburse: false, rejection_reason: null }),
+    item(4, { status: 'rejected', rejection_reason: 'Sem nota fiscal', description: 'Almoço', reason_code: 'Refeição' }),
+  ],
+  totals: { count: 4, amount: '1340.00', non_reimbursable_amount: '1100.00' },
+  ...patch,
+});
 
-const attachment: ExpenseAttachment = {
-  id: 80,
-  organization_id: 1,
-  expense_id: 15,
-  original_name: 'recibo.pdf',
-  mime_type: 'application/pdf',
-  size_bytes: 2048,
-  checksum: null,
-  status: 'uploaded',
-  created_at: '2026-01-02T00:00:00.000Z',
-};
+const batch: ReimbursementBatch = { id: 4, number: 1, batch_date: '2026-11-01', expected_receipt_on: null, status: 'billed', status_label: 'Faturado', receivable_id: null, notes: null, count: 1, amount: '140.00', billed_at: '2026-11-02T00:00:00.000Z' };
+const openBatch: ReimbursementBatch = { ...batch, id: 5, number: 2, status: 'open', status_label: 'Aberto', count: 0, amount: '0.00', billed_at: null };
+const cancelledBatch: ReimbursementBatch = { ...batch, id: 6, number: 3, status: 'cancelled', status_label: 'Cancelado', count: 0, amount: '0.00', billed_at: null };
 
-function page<T>(items: T[], overrides: Partial<PaginatedItems<T>> = {}): PaginatedItems<T> {
-  return { items, page: 1, page_size: 20, total_items: items.length, total_pages: items.length ? 1 : 0, ...overrides };
-}
-
-function renderPage(user: CurrentUser = admin) {
+function renderPage(user: CurrentUser = admin, path = '/app/projects/20/finance') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = { user, accessToken: 'token', expiresAt: '2099-01-01T00:00:00.000Z', bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
   return render(
     <QueryClientProvider client={client}>
       <AuthContext.Provider value={auth}>
-        <MemoryRouter initialEntries={['/app/projects/20/finance']}>
+        <MemoryRouter initialEntries={[path]}>
           <Routes>
             <Route path="/app/projects/:projectId/finance" element={<ProjectFinancePage />} />
+            <Route path="/app/projects/:projectId/finance/remuneration" element={<p>Remuneração (destino do redirecionamento)</p>} />
           </Routes>
         </MemoryRouter>
       </AuthContext.Provider>
@@ -157,98 +142,228 @@ function renderPage(user: CurrentUser = admin) {
   );
 }
 
-describe('ProjectFinancePage', () => {
+describe('Projeto › Despesas (etapa 4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.fieldAgentsList.mockResolvedValue(page([agent]));
-    mocks.paymentSummary.mockResolvedValue({ total_pending: '320.00', total_approved: '0.00', total_paid: '0.00', total_cancelled: '0.00', total_count: 1 });
-    mocks.paymentsList.mockResolvedValue(page([payment]));
-    mocks.paymentCreate.mockResolvedValue(payment);
-    mocks.paymentUpdate.mockResolvedValue(payment);
-    mocks.paymentApprove.mockResolvedValue({ ...payment, status: 'approved' });
-    mocks.paymentMarkAsPaid.mockResolvedValue({ ...payment, status: 'paid' });
-    mocks.paymentCancel.mockResolvedValue({ ...payment, status: 'cancelled' });
-    mocks.expensesList.mockResolvedValue(page([expense]));
-    mocks.expenseCreate.mockResolvedValue(expense);
-    mocks.expenseUpdate.mockResolvedValue(expense);
-    mocks.expenseApprove.mockResolvedValue({ ...expense, status: 'approved' });
-    mocks.expenseReject.mockResolvedValue({ ...expense, status: 'rejected' });
-    mocks.expenseMarkAsPaid.mockResolvedValue({ ...expense, status: 'paid' });
-    mocks.expenseCancel.mockResolvedValue({ ...expense, status: 'cancelled' });
-    mocks.attachmentsList.mockResolvedValue([attachment]);
-    mocks.createUploadUrl.mockResolvedValue({ attachment: { ...attachment, id: 81, original_name: 'novo.pdf', status: 'pending_upload' }, upload_url: 'https://upload.example/proof', expires_in_seconds: 300 });
-    mocks.confirmUpload.mockResolvedValue({ ...attachment, id: 81, original_name: 'novo.pdf' });
-    mocks.downloadUrl.mockResolvedValue({ attachment, download_url: 'https://signed.example/recibo.pdf', expires_in_seconds: 300 });
-    mocks.removeAttachment.mockResolvedValue({ ...attachment, status: 'removed' });
-    mocks.uploadToPresignedUrl.mockResolvedValue(undefined);
+    mocks.board.mockResolvedValue(board());
+    mocks.batches.mockResolvedValue([batch, openBatch, cancelledBatch]);
+    mocks.advances.mockResolvedValue([{ id: 9, field_agent_id: 7, field_agent_name: 'Ana Campo', advanced_on: '2026-10-01', amount: '500.00', notes: null, deposited_by_name: 'Financeiro' }]);
+    mocks.changeType.mockResolvedValue({ done: 1, failed: 0, results: [{ id: 1, ok: true }] });
+    mocks.remove.mockResolvedValue({ done: 1, failed: 1, results: [{ id: 1, ok: true }, { id: 3, ok: false, message: 'Despesa paga não pode ser excluída.' }] });
+    mocks.addToBatch.mockResolvedValue({ batch_id: 6, batch_number: 3, done: 1, failed: 0, results: [{ id: 1, ok: true }] });
+    mocks.create.mockResolvedValue({ id: 99 });
+    mocks.attachmentsList.mockResolvedValue([] as ExpenseAttachment[]);
   });
 
-  it('renderiza resumo e listagem de pagamentos', async () => {
+  it('?tab=payments (endereço antigo) redireciona para Remuneração', async () => {
+    renderPage(admin, '/app/projects/20/finance?tab=payments');
+    expect(await screen.findByText('Remuneração (destino do redirecionamento)')).toBeInTheDocument();
+  });
+
+  it('KPIs com "A reembolsar", aviso das antigas sem tipo, resumo com saldo e colunas do INVESTOR', async () => {
     renderPage();
-    expect(await screen.findByText('R$ 320,00')).toBeInTheDocument();
-    expect(await screen.findByText('Pagamento #10')).toBeInTheDocument();
+    const kpis = within(await screen.findByRole('region', { name: 'Indicadores das despesas' }));
+    expect(kpis.getByText('A reembolsar').nextSibling).toHaveTextContent('R$ 100,00');
+    expect(kpis.getByText('Reembolsável').parentElement).toHaveTextContent('17,91% do total');
+    expect(screen.getByText(/1 despesa\(s\) antiga\(s\) sem tipo/)).toBeInTheDocument();
+    const summary = within(screen.getByRole('region', { name: 'Resumo por inventariante' }));
+    expect(summary.getByText('-R$ 700,00')).toHaveClass('text-destructive');
+    const table = within(screen.getByRole('region', { name: 'Lançamentos de despesas' }));
+    expect(table.getByText('A prazo (2x)')).toBeInTheDocument();
+    expect(table.getByText(/Lote 1 · 01\/11\/2026 ✓/)).toBeInTheDocument();
+    expect(table.getByText('Rejeitada: Sem nota fiscal')).toBeInTheDocument(); // motivo da rejeição à parte
+    expect(table.getAllByText('saldo R$ 50,00').length).toBeGreaterThan(0);
+    expect(table.getByText(/Sem reembolso do cliente: R\$ 1\.100,00/)).toBeInTheDocument();
   });
 
-  it('filtra pagamentos com parametros reais', async () => {
+  it('ajustes: resumo só com movimento (opção de ver todos), Despesas gerais sem saldo, sem coluna Tipo do contrato, lotes cancelados escondidos', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.selectOptions(await screen.findByLabelText('Filtrar pagamento por status'), 'pending');
-    await userEvent.type(screen.getByPlaceholderText('UF/Estado'), 'SP');
-    await waitFor(() => expect(mocks.paymentsList).toHaveBeenLastCalledWith(20, expect.objectContaining({ status: 'pending', state: 'SP' })));
+    const summary = within(await screen.findByRole('region', { name: 'Resumo por inventariante' }));
+    expect(summary.queryByText('Bruno Sem Lançamento')).not.toBeInTheDocument();
+    const general = summary.getByRole('button', { name: 'Despesas gerais' }).closest('tr')!;
+    expect(general.lastElementChild).toHaveTextContent('—');
+    await u.click(summary.getByLabelText('Mostrar todos os vinculados'));
+    expect(summary.getByText('Bruno Sem Lançamento')).toBeInTheDocument();
+    const table = within(screen.getByRole('region', { name: 'Lançamentos de despesas' }));
+    expect(table.queryByRole('columnheader', { name: /Tipo do contrato/ })).not.toBeInTheDocument();
+    const batches = within(await screen.findByRole('region', { name: 'Lotes de reembolso' }));
+    expect(await batches.findByText('Lote 2')).toBeInTheDocument();
+    expect(batches.queryByText('Lote 3')).not.toBeInTheDocument();
+    await u.click(batches.getByLabelText('Mostrar cancelados (1)'));
+    expect(batches.getByText('Lote 3')).toBeInTheDocument();
   });
 
-  it('valida formulario de pagamento', async () => {
+  it('alternar o tipo pede confirmação; lote faturado não alterna', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: /novo pagamento/i }));
-    await userEvent.click(screen.getByRole('button', { name: /criar pagamento/i }));
-    expect(await screen.findByText('Selecione o inventariante')).toBeInTheDocument();
+    const table = within(await screen.findByRole('region', { name: 'Lançamentos de despesas' }));
+    await u.click(table.getByRole('button', { name: 'Alternar tipo da despesa 1: Reembolsável' }));
+    expect(mocks.changeType).not.toHaveBeenCalled();
+    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(mocks.changeType).toHaveBeenCalledWith(20, [1], 'non_reimbursable'));
+    expect(table.queryByRole('button', { name: /Alternar tipo da despesa 3/ })).not.toBeInTheDocument();
   });
 
-  it('aprova pagamento com permissao', async () => {
+  it('excluir em lote relata o resultado de cada despesa', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByLabelText('Aprovar pagamento'));
-    await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
-    await waitFor(() => expect(mocks.paymentApprove).toHaveBeenCalledWith(20, 10));
+    await u.click(await screen.findByLabelText('Selecionar despesa 1'));
+    await u.click(screen.getByLabelText('Selecionar despesa 3'));
+    await u.click(screen.getByRole('button', { name: 'Excluir (2)' }));
+    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith(20, [1, 3]));
+    expect(await screen.findByRole('alert')).toHaveTextContent('1 despesa(s) excluída(s). Não concluídas: 3: Despesa paga não pode ser excluída.');
   });
 
-  it('oculta criacao para usuario sem permissao', async () => {
-    renderPage(noPermissions);
-    await screen.findByText('Pagamento #10');
-    expect(screen.queryByRole('button', { name: /novo pagamento/i })).not.toBeInTheDocument();
-  });
-
-  it('renderiza despesas em aba dedicada', async () => {
+  it('prestar conta: só reembolsáveis entram, em lote novo ou aberto', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
-    expect(await screen.findByText('Almoco em campo')).toBeInTheDocument();
+    await u.click(await screen.findByLabelText('Selecionar despesa 1'));
+    await u.click(screen.getByLabelText('Selecionar despesa 2'));
+    await u.click(screen.getByRole('button', { name: 'Prestar conta (2)' }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByText(/1 de 2 selecionada\(s\) são reembolsáveis/)).toBeInTheDocument();
+    await u.selectOptions(dialog.getByLabelText('Lote de reembolso'), '5');
+    await u.click(dialog.getByRole('button', { name: 'Incluir no lote' }));
+    await waitFor(() => expect(mocks.addToBatch).toHaveBeenCalledWith(20, { ids: [1], batch_id: 5 }));
   });
 
-  it('valida formulario de despesa', async () => {
+  it('nova despesa: motivo da lista, tipo padrão do contrato e parcelas iguais (resto na última)', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
-    await userEvent.click(await screen.findByRole('button', { name: /nova despesa/i }));
-    await userEvent.click(screen.getByRole('button', { name: /criar despesa/i }));
-    expect(await screen.findByText('Descreva a despesa')).toBeInTheDocument();
+    await u.click(await screen.findByRole('button', { name: /Nova despesa/ }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByLabelText('Tipo de despesa')).toHaveValue('reimbursable');
+    await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
+    expect(dialog.getByText('Escolha o motivo.')).toBeInTheDocument();
+    await u.selectOptions(dialog.getByLabelText('Motivo'), 'Refeição');
+    await u.type(dialog.getByLabelText('Valor da despesa (R$)'), '100,00');
+    await u.click(dialog.getByLabelText('A prazo'));
+    await u.clear(dialog.getByLabelText('Número de parcelas'));
+    await u.type(dialog.getByLabelText('Número de parcelas'), '3');
+    expect(dialog.getByLabelText('Valor da parcela 3')).toHaveValue('33,34');
+    await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+    expect(mocks.create.mock.calls[0][1]).toMatchObject({
+      reason_code: 'Refeição',
+      description: 'Refeição',
+      expense_type: 'reimbursable',
+      amount: '100.00',
+      payment_method: 'installments',
+      installment_count: 3,
+      installments: [
+        { due_date: '2026-12-13', amount: '33.33' },
+        { due_date: '2027-01-13', amount: '33.33' },
+        { due_date: '2027-02-13', amount: '33.34' },
+      ],
+    });
   });
 
-  it('rejeita despesa com motivo obrigatorio', async () => {
+  it('grade editada precisa somar o valor', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
-    await userEvent.click(await screen.findByLabelText('Rejeitar despesa'));
-    await userEvent.click(screen.getByRole('button', { name: /rejeitar despesa/i }));
-    expect(await screen.findByText('Informe o motivo da rejeição')).toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText('Motivo'), 'Sem comprovante');
-    await userEvent.click(screen.getByRole('button', { name: /rejeitar despesa/i }));
-    await waitFor(() => expect(mocks.expenseReject).toHaveBeenCalledWith(20, 15, { reason: 'Sem comprovante' }));
+    await u.click(await screen.findByRole('button', { name: /Nova despesa/ }));
+    const dialog = within(screen.getByRole('dialog'));
+    await u.selectOptions(dialog.getByLabelText('Motivo'), 'Lanche');
+    await u.type(dialog.getByLabelText('Valor da despesa (R$)'), '100');
+    await u.click(dialog.getByLabelText('A prazo'));
+    await u.click(dialog.getByLabelText('Parcelas iguais (resto na última)'));
+    await u.clear(dialog.getByLabelText('Valor da parcela 1'));
+    await u.type(dialog.getByLabelText('Valor da parcela 1'), '60,00');
+    await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
+    expect(dialog.getByRole('alert')).toHaveTextContent('A soma das parcelas (R$ 110,00) difere do valor (R$ 100,00).');
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 
-  it('envia comprovante usando upload-url e confirm-upload', async () => {
+  it('adiantamentos: excluir pede confirmação', async () => {
+    const u = userEvent.setup();
     renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Despesas' }));
-    await userEvent.click(await screen.findByLabelText('Comprovantes da despesa'));
-    const file = new File(['conteúdo'], 'novo.pdf', { type: 'application/pdf' });
-    await userEvent.upload(await screen.findByLabelText('Enviar comprovante'), file);
-    await waitFor(() => expect(mocks.createUploadUrl).toHaveBeenCalledWith(20, 15, expect.objectContaining({ original_name: 'novo.pdf', mime_type: 'application/pdf' })));
-    expect(mocks.uploadToPresignedUrl).toHaveBeenCalledWith('https://upload.example/proof', file, expect.any(Function));
-    await waitFor(() => expect(mocks.confirmUpload).toHaveBeenCalledWith(20, 15, 81, { size_bytes: file.size }));
+    await u.click(await screen.findByRole('button', { name: 'Gerenciar adiantamentos de Ana Campo' }));
+    const dialog = within(await screen.findByRole('dialog', { name: 'Adiantamentos de Ana Campo' }));
+    await u.click(await dialog.findByRole('button', { name: 'Excluir adiantamento de 01/10/2026' }));
+    expect(mocks.removeAdvance).not.toHaveBeenCalled();
+    await u.click(within(screen.getByRole('dialog', { name: 'Excluir adiantamento' })).getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(mocks.removeAdvance).toHaveBeenCalledWith(20, 9));
+  });
+
+  it('concluir o financeiro exige justificativa; concluído bloqueia novas despesas e mostra reabrir', async () => {
+    const u = userEvent.setup();
+    mocks.closeFinance.mockResolvedValue({});
+    renderPage();
+    await u.click(await screen.findByRole('button', { name: /Concluir financeiro/ }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByRole('button', { name: 'Concluir' })).toBeDisabled();
+    await u.type(dialog.getByLabelText('Justificativa'), 'Projeto encerrado');
+    await u.click(dialog.getByRole('button', { name: 'Concluir' }));
+    await waitFor(() => expect(mocks.closeFinance).toHaveBeenCalledWith(20, 'Projeto encerrado'));
+  });
+
+  it('com o financeiro concluído: sem nova despesa nem prestar conta, com faixa e reabrir', async () => {
+    mocks.board.mockResolvedValue(board({ closure: { closed_at: '2026-11-10T12:00:00.000Z', closed_by: 'Admin', reason: 'Encerrado' } }));
+    renderPage();
+    expect(await screen.findByText(/Financeiro concluído em/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Nova despesa/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Prestar conta/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Reabrir financeiro/ })).toBeInTheDocument();
+  });
+
+  it('importar: pré-visualização com erros por linha e grava só as válidas', async () => {
+    const u = userEvent.setup();
+    mocks.importPreview.mockResolvedValue({
+      file_name: 'despesas.csv',
+      columns: { expense_date: 'Data', amount: 'Total' },
+      ignored_columns: ['Projeto'],
+      rows: [
+        { line: 2, values: { expense_date: '2026-10-03', field_agent_id: 7, field_agent_name: 'Ana Campo', reason_code: 'Transporte', description: null, expense_type: null, amount: '1234.56', deposited_amount: null, payment_method: null, installment_count: null, invoiced_payment_date: null }, errors: [] },
+        { line: 3, values: { expense_date: null, field_agent_id: null, field_agent_name: null, reason_code: null, description: null, expense_type: null, amount: null, deposited_amount: null, payment_method: null, installment_count: null, invoiced_payment_date: null }, errors: ['Data inválida.'] },
+      ],
+      valid: 1,
+      invalid: 1,
+    });
+    mocks.importCommit.mockResolvedValue({ done: 1, failed: 0, results: [{ line: 2, ok: true }] });
+    renderPage();
+    await u.click(await screen.findByRole('button', { name: /Importar/ }));
+    const dialog = within(screen.getByRole('dialog'));
+    await u.upload(dialog.getByLabelText('Arquivo para importar'), new File(['x'], 'despesas.csv', { type: 'text/csv' }));
+    expect(await dialog.findByText('Data inválida.')).toBeInTheDocument();
+    expect(dialog.getByText(/Valor ← "Total"/)).toBeInTheDocument();
+    await u.click(dialog.getByRole('button', { name: 'Importar 1 linha(s) válida(s)' }));
+    await waitFor(() => expect(mocks.importCommit).toHaveBeenCalledWith(20, [expect.objectContaining({ line: 2 })]));
+  });
+
+  it('perfil só de leitura não vê ações de alteração', async () => {
+    renderPage(reader);
+    await screen.findByRole('region', { name: 'Lançamentos de despesas' });
+    for (const name of [/Nova despesa/, /Importar/, /Prestar conta/, /Excluir \(/, /Concluir financeiro/, /ZIP/])
+      expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Alternar tipo/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Lotes de reembolso' })).not.toBeInTheDocument();
+  });
+
+  it('comprovantes: respeita o limite de arquivos dos parâmetros', async () => {
+    const u = userEvent.setup();
+    mocks.attachmentsList.mockResolvedValue([
+      { id: 1, organization_id: 1, expense_id: 1, original_name: 'a.pdf', mime_type: 'application/pdf', size_bytes: 10, checksum: null, status: 'uploaded', created_at: '2026-10-05T00:00:00.000Z' },
+      { id: 2, organization_id: 1, expense_id: 1, original_name: 'b.pdf', mime_type: 'application/pdf', size_bytes: 10, checksum: null, status: 'uploaded', created_at: '2026-10-05T00:00:00.000Z' },
+    ]);
+    renderPage();
+    await u.click(await screen.findByRole('button', { name: 'Comprovantes da despesa 1' }));
+    expect(await screen.findByText(/no máximo 2 por despesa/)).toBeInTheDocument();
+    await screen.findByText('b.pdf');
+    await u.upload(screen.getByLabelText('Enviar comprovante'), new File(['x'], 'c.pdf', { type: 'application/pdf' }));
+    expect(await screen.findByText(/Limite de 2 comprovante\(s\) por despesa/)).toBeInTheDocument();
+    expect(mocks.createUploadUrl).not.toHaveBeenCalled();
+  });
+});
+
+describe('parcelas iguais (mesma regra da API)', () => {
+  it('R$ 100,00 em 3x: 33,33 + 33,33 + 33,34; 31/01 + 1 mês = 28/02', () => {
+    expect(equalInstallments('100.00', 3, '2026-01-31')).toEqual([
+      { number: 1, due_date: '2026-02-28', amount: '33.33' },
+      { number: 2, due_date: '2026-03-31', amount: '33.33' },
+      { number: 3, due_date: '2026-04-30', amount: '33.34' },
+    ]);
+    expect(equalInstallments('0.05', 10, '2026-01-01')).toEqual([]);
   });
 });

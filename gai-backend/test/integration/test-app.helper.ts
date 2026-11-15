@@ -6,7 +6,20 @@ import { DocumentsModule } from '../../src/modules/documents/documents.module';
 import { TECHNICAL_REPORT_ENTITIES } from '../../src/modules/technical-reports/report.entity';
 import { TechnicalReportsModule } from '../../src/modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from '../../src/modules/managerial-dre/dre.entity';
+import { DRE_MONTHLY_ENTITIES } from '../../src/modules/managerial-dre/dre-monthly.entities';
 import { ManagerialDreModule } from '../../src/modules/managerial-dre/managerial-dre.module';
+import {
+  AssetTagOrderAuditLogEntity,
+  AssetTagOrderEntity,
+  AssetTagsModule,
+} from '../../src/modules/asset-tags/asset-tags.module';
+import { CASH_FLOW_PARITY_ENTITIES } from '../../src/modules/receivables/cash-flow-parity.entities';
+import {
+  CommissionAuditLogEntity,
+  CommissionEntity,
+  CommissionPartnerEntity,
+  CommissionsModule,
+} from '../../src/modules/commissions/commissions.module';
 import { RECEIVABLE_ENTITIES } from '../../src/modules/receivables/receivable.entity';
 import { ReceivablesModule } from '../../src/modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from '../../src/modules/budgets/budget.entity';
@@ -85,6 +98,12 @@ import { InventoryPendingIssueEntity } from '../../src/modules/inventory-pending
 import { PaymentsExpensesModule } from '../../src/modules/payments-expenses/payments-expenses.module';
 import { ExpenseAttachmentEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/expense.entity';
+import { FinanceSettingsVersionEntity } from '../../src/modules/finance-settings/finance-settings.entity';
+import {
+  ExpenseAdvanceEntity,
+  ExpenseReimbursementBatchEntity,
+  ProjectFinancialClosureEntity,
+} from '../../src/modules/payments-expenses/infrastructure/persistence/expense-parity.entities';
 import { FieldAgentPaymentEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from '../../src/modules/payments-expenses/infrastructure/persistence/payment-expense-audit-log.entity';
 import { ImportSessionsModule } from '../../src/modules/import-sessions/import-sessions.module';
@@ -214,6 +233,9 @@ export async function createTestApp(
           InventoryPendingIssueAuditLogEntity,
           FieldAgentPaymentEntity,
           ExpenseEntity,
+          ExpenseAdvanceEntity,
+          ExpenseReimbursementBatchEntity,
+          ProjectFinancialClosureEntity,
           ExpenseAttachmentEntity,
           PaymentExpenseAuditLogEntity,
           ...EXPENSE_ACCOUNTABILITY_ENTITIES,
@@ -224,8 +246,16 @@ export async function createTestApp(
           ...BUDGET_ENTITIES,
           ...RECEIVABLE_ENTITIES,
           ...DRE_ENTITIES,
+          ...DRE_MONTHLY_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
+          FinanceSettingsVersionEntity,
+          AssetTagOrderEntity,
+          AssetTagOrderAuditLogEntity,
+          ...CASH_FLOW_PARITY_ENTITIES,
+          CommissionPartnerEntity,
+          CommissionEntity,
+          CommissionAuditLogEntity,
           ImportSessionEntity,
           ImportPayloadEntity,
           ImportPayloadErrorEntity,
@@ -268,6 +298,8 @@ export async function createTestApp(
       BudgetsModule,
       ReceivablesModule,
       ManagerialDreModule,
+      AssetTagsModule,
+      CommissionsModule,
       TechnicalReportsModule,
       DocumentsModule,
       AssistedReconciliationModule,

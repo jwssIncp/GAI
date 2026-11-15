@@ -868,3 +868,126 @@ for (const key of [
     scope: PermissionScope.ORGANIZATION,
     description: 'Laudos tecnicos: ' + key.split(':')[1],
   });
+
+// Paridade financeira, etapa 2: Remuneração (excluir e reabrir lançamento).
+for (const [key, description] of [
+  ['payments:delete', 'Remuneração: excluir lançamento (exclusão lógica)'],
+  ['payments:reopen', 'Remuneração: reabrir lançamento aprovado para edição'],
+  [
+    'payments:revert-payment',
+    'Pagamento de inventariantes: voltar pago para em aberto',
+  ],
+  [
+    'payments:reschedule',
+    'Pagamento de inventariantes: alterar data prevista ou de pagamento',
+  ],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'payments',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
+// Paridade financeira, etapa 9: importar planilha da DRE mensal.
+PERMISSION_SEEDS.push({
+  key: 'dre:import',
+  resource: 'dre',
+  action: 'import',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'DRE: importar planilha do ano (com pré-visualização)',
+});
+
+// Paridade financeira, etapa 8: simular venda nos indicadores do fluxo de caixa.
+PERMISSION_SEEDS.push({
+  key: 'cash-flow:simulate',
+  resource: 'cash-flow',
+  action: 'simulate',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'Fluxo de caixa: simular venda nos indicadores',
+});
+
+// Paridade financeira, etapa 7: fluxo de caixa (reprogramar parcela de recebível).
+PERMISSION_SEEDS.push({
+  key: 'receivables:reschedule',
+  resource: 'receivables',
+  action: 'reschedule',
+  scope: PermissionScope.ORGANIZATION,
+  description: 'Recebíveis: reprogramar a data prevista de uma parcela',
+});
+
+// Paridade financeira, etapa 6: comissões e parceiros.
+for (const [key, description] of [
+  ['commissions:read', 'Comissões: consultar comissões e parceiros'],
+  ['commissions:edit', 'Comissões: lançar, editar e excluir'],
+  ['commission-partners:edit', 'Parceiros de comissão: cadastrar e excluir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
+// Paridade financeira, etapa 5: placas de patrimônio.
+for (const [key, description] of [
+  ['asset-tag-orders:read', 'Placas de patrimônio: consultar'],
+  ['asset-tag-orders:edit', 'Placas de patrimônio: lançar, editar e excluir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: 'asset-tag-orders',
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
+// Paridade financeira, etapa 4: despesas, adiantamentos, lotes de reembolso e conclusão.
+for (const [key, description] of [
+  ['expenses:delete', 'Despesas: excluir lançamento (exclusão lógica)'],
+  ['expenses:import', 'Despesas: importar lista (Excel/CSV)'],
+  ['expenses:export-zip', 'Despesas: exportar ZIP com comprovantes'],
+  ['expenses:reopen', 'Despesas: reabrir lançamento aprovado para edição'],
+  ['expense-advances:read', 'Adiantamentos: consultar'],
+  ['expense-advances:create', 'Adiantamentos: lançar'],
+  ['expense-advances:update', 'Adiantamentos: editar'],
+  ['expense-advances:delete', 'Adiantamentos: excluir'],
+  ['reimbursement-batches:read', 'Lotes de reembolso: consultar'],
+  [
+    'reimbursement-batches:create',
+    'Lotes de reembolso: criar e incluir despesas (prestar conta)',
+  ],
+  ['reimbursement-batches:close', 'Lotes de reembolso: faturar ao cliente'],
+  ['reimbursement-batches:reopen', 'Lotes de reembolso: reabrir ou cancelar'],
+  ['project-finance:close', 'Financeiro do projeto: concluir'],
+  ['project-finance:reopen', 'Financeiro do projeto: reabrir'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });
+
+// Paridade financeira, etapa 1: parâmetros financeiros e cadastro de inventariantes.
+for (const [key, description] of [
+  ['finance-settings:read', 'Parâmetros financeiros: consultar'],
+  ['finance-settings:update', 'Parâmetros financeiros: criar nova versão'],
+  ['field-agents:export', 'Exportar inventariantes'],
+  [
+    'field-agent-documents:read',
+    'Documentos do inventariante: consultar e baixar',
+  ],
+  ['field-agent-documents:upload', 'Documentos do inventariante: anexar'],
+  ['field-agent-documents:remove', 'Documentos do inventariante: remover'],
+])
+  PERMISSION_SEEDS.push({
+    key,
+    resource: key.split(':')[0],
+    action: key.split(':')[1],
+    scope: PermissionScope.ORGANIZATION,
+    description,
+  });

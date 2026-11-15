@@ -599,7 +599,7 @@ export function DreEntryDetailPage() {
       <Link
         className="text-primary"
         to={
-          "/app/finance/dre?" +
+          "/app/finance/dre/statement?" +
           new URLSearchParams({
             ...scope(p),
             ...(r.projectId ? { project_id: String(r.projectId) } : {}),

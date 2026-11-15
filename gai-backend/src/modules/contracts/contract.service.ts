@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
+import { FinanceSettingsService } from '../finance-settings/finance-settings.service';
 import { ProjectEntity } from '../projects/infrastructure/persistence/project.entity';
 import { CompanyEntity } from '../companies/infrastructure/persistence/company.entity';
 import { isCivilDate } from '../../common/validation/civil-date';
@@ -34,7 +35,23 @@ export class ContractService {
   constructor(
     private readonly ds: DataSource,
     private readonly scope: ProjectScopeService,
+    private readonly financeSettings: FinanceSettingsService,
   ) {}
+  /** A origem comercial precisa existir na lista vigente dos parâmetros financeiros. */
+  private async assertOrigin(
+    m: EntityManager,
+    organizationId: number,
+    code: string | null | undefined,
+  ) {
+    if (!code) return;
+    const settings = await this.financeSettings.valuesAt(
+      organizationId,
+      undefined,
+      m,
+    );
+    if (!settings.commercial_origins.some((origin) => origin.code === code))
+      invalid('Origem comercial não cadastrada nos parâmetros financeiros.');
+  }
   private async project(
     m: EntityManager,
     projectId: number,
@@ -164,6 +181,7 @@ export class ContractService {
       const p = await this.project(m, projectId, actor, true),
         d = normalizeContract(dto),
         c = await this.company(m, p, d.company_id);
+      await this.assertOrigin(m, p.organizationId, d.commercial_origin_code);
       if (!['draft', 'active'].includes(d.status))
         invalid('Um contrato deve iniciar como rascunho ou ativo.');
       // The organization row serializes contract numbers across different projects.
@@ -211,6 +229,10 @@ export class ContractService {
       this.checkRevision(row, dto.revision, dto.reason);
       const d = normalizeContract(dto);
       await this.company(m, p, d.company_id);
+      if (
+        d.commercial_origin_code !== (row.data.commercial_origin_code ?? null)
+      )
+        await this.assertOrigin(m, p.organizationId, d.commercial_origin_code);
       for (const key of [
         'number',
         'company_id',
@@ -283,6 +305,8 @@ export class ContractService {
       ];
       if (!changed.some(Boolean))
         invalid('Informe uma alteração de valor, prazo ou escopo.');
+      if (dto.installments != null && dto.value_delta == null)
+        invalid('Parcelas só se aplicam a aditivo com alteração de valor.');
       const kindIndex = (
         { value: 0, term: 1, scope: 2 } as Record<string, number>
       )[dto.type];
@@ -303,6 +327,11 @@ export class ContractService {
         if (amount < 0n || amount > 999999999999999n)
           invalid('Valor vigente fora do limite contratual.');
         next.current_value = money(amount);
+        // Parcelas do valor do aditivo (padrão 1), guardadas no próprio contrato.
+        next.amendment_installments = {
+          ...(row.data.amendment_installments ?? {}),
+          [dto.identifier.trim()]: dto.installments ?? 1,
+        };
       }
       if (dto.ends_on != null) {
         if (

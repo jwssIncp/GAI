@@ -3,11 +3,26 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { TECHNICAL_REPORT_ENTITIES } from './modules/technical-reports/report.entity';
 import { TechnicalReportsModule } from './modules/technical-reports/technical-reports.module';
 import { DRE_ENTITIES } from './modules/managerial-dre/dre.entity';
+import { DRE_MONTHLY_ENTITIES } from './modules/managerial-dre/dre-monthly.entities';
 import { ManagerialDreModule } from './modules/managerial-dre/managerial-dre.module';
+import {
+  AssetTagOrderAuditLogEntity,
+  AssetTagOrderEntity,
+  AssetTagsModule,
+} from './modules/asset-tags/asset-tags.module';
+import { CASH_FLOW_PARITY_ENTITIES } from './modules/receivables/cash-flow-parity.entities';
+import {
+  CommissionAuditLogEntity,
+  CommissionEntity,
+  CommissionPartnerEntity,
+  CommissionsModule,
+} from './modules/commissions/commissions.module';
 import { RECEIVABLE_ENTITIES } from './modules/receivables/receivable.entity';
 import { ReceivablesModule } from './modules/receivables/receivables.module';
 import { BUDGET_ENTITIES } from './modules/budgets/budget.entity';
 import { BudgetsModule } from './modules/budgets/budgets.module';
+import { FinanceSettingsModule } from './modules/finance-settings/finance-settings.module';
+import { FinanceSettingsVersionEntity } from './modules/finance-settings/finance-settings.entity';
 import { CONTRACT_ENTITIES } from './modules/contracts/contract.entity';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { ASSISTED_ENTITIES } from './modules/assisted-reconciliation/assisted.entity';
@@ -54,6 +69,7 @@ import { OrganizationEntity } from './modules/organizations/infrastructure/persi
 import { FieldAgentsModule } from './modules/field-agents/field-agents.module';
 import { FieldAgentAuditLogEntity } from './modules/field-agents/infrastructure/persistence/field-agent-audit-log.entity';
 import { FieldAgentEntity } from './modules/field-agents/infrastructure/persistence/field-agent.entity';
+import { FieldAgentDocumentEntity } from './modules/field-agents/infrastructure/persistence/field-agent-document.entity';
 import { ProjectFieldAgentEntity } from './modules/field-agents/infrastructure/persistence/project-field-agent.entity';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import {
@@ -75,6 +91,11 @@ import { InventoryPendingIssueEntity } from './modules/inventory-pending-issues/
 import { PaymentsExpensesModule } from './modules/payments-expenses/payments-expenses.module';
 import { ExpenseAttachmentEntity } from './modules/payments-expenses/infrastructure/persistence/expense-attachment.entity';
 import { ExpenseEntity } from './modules/payments-expenses/infrastructure/persistence/expense.entity';
+import {
+  ExpenseAdvanceEntity,
+  ExpenseReimbursementBatchEntity,
+  ProjectFinancialClosureEntity,
+} from './modules/payments-expenses/infrastructure/persistence/expense-parity.entities';
 import { FieldAgentPaymentEntity } from './modules/payments-expenses/infrastructure/persistence/field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from './modules/payments-expenses/infrastructure/persistence/payment-expense-audit-log.entity';
 import { ImportSessionsModule } from './modules/import-sessions/import-sessions.module';
@@ -151,6 +172,7 @@ import { UsersModule } from './modules/users/users.module';
           ProjectEntity,
           ProjectAuditLogEntity,
           FieldAgentEntity,
+          FieldAgentDocumentEntity,
           ProjectFieldAgentEntity,
           FieldAgentAuditLogEntity,
           InventoryItemEntity,
@@ -165,6 +187,9 @@ import { UsersModule } from './modules/users/users.module';
           InventoryPendingIssueAuditLogEntity,
           FieldAgentPaymentEntity,
           ExpenseEntity,
+          ExpenseAdvanceEntity,
+          ExpenseReimbursementBatchEntity,
+          ProjectFinancialClosureEntity,
           ExpenseAttachmentEntity,
           PaymentExpenseAuditLogEntity,
           ImportSessionEntity,
@@ -182,8 +207,16 @@ import { UsersModule } from './modules/users/users.module';
           ...BUDGET_ENTITIES,
           ...RECEIVABLE_ENTITIES,
           ...DRE_ENTITIES,
+          ...DRE_MONTHLY_ENTITIES,
           ...TECHNICAL_REPORT_ENTITIES,
           ...DOCUMENT_ENTITIES,
+          FinanceSettingsVersionEntity,
+          AssetTagOrderEntity,
+          AssetTagOrderAuditLogEntity,
+          ...CASH_FLOW_PARITY_ENTITIES,
+          CommissionPartnerEntity,
+          CommissionEntity,
+          CommissionAuditLogEntity,
           CatalogAssetEntity,
           CatalogAssetAuditLogEntity,
           CompanyEntity,
@@ -223,7 +256,10 @@ import { UsersModule } from './modules/users/users.module';
     ContractsModule,
     BudgetsModule,
     ReceivablesModule,
+    FinanceSettingsModule,
     ManagerialDreModule,
+    AssetTagsModule,
+    CommissionsModule,
     TechnicalReportsModule,
     DocumentsModule,
     AssistedReconciliationModule,

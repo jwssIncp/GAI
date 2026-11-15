@@ -10,6 +10,8 @@ import {
   Query,
   Req,
   UseGuards,
+  Delete,
+  Res,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -18,7 +20,10 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import * as XLSX from 'xlsx';
+import { safeSpreadsheetText } from '../../project-dashboard/presentation/organization-overview.controller';
+import { RemunerationService } from '../application/services/remuneration.service';
 import { RequirePermissions } from '../../auth/presentation/decorators/require-permissions.decorator';
 import { PermissionsGuard } from '../../auth/presentation/guards/permissions.guard';
 import {
@@ -31,6 +36,8 @@ import {
   ExpenseInputDto,
   MarkAsPaidDto,
   PaymentInputDto,
+  RemunerationQueryDto,
+  ReopenPaymentDto,
   RejectExpenseDto,
 } from '../application/dto/payments-expenses-inputs';
 import {
@@ -59,7 +66,123 @@ interface AuthenticatedRequest extends Request {
 @Controller('projects/:projectId')
 @UseGuards(SessionAuthGuard, PermissionsGuard)
 export class PaymentsExpensesController {
-  constructor(private readonly service: PaymentsExpensesService) {}
+  constructor(
+    private readonly service: PaymentsExpensesService,
+    private readonly remuneration: RemunerationService,
+  ) {}
+
+  /** Tela B da Remuneração: contexto, vinculados, "a lançar", lançamentos e totais. */
+  @Get('remuneration')
+  @RequirePermissions('payments:read')
+  @ApiOperation({
+    summary: 'Remuneração do projeto (lançamentos, totais e a lançar)',
+  })
+  projectRemuneration(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: RemunerationQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.remuneration.projectRemuneration(
+      projectId,
+      query,
+      this.toActor(req),
+    );
+  }
+
+  @Get('remuneration/export')
+  @RequirePermissions('payments:read', 'payments:export')
+  @ApiOperation({ summary: 'Exportar os lançamentos filtrados (XLSX)' })
+  async exportRemuneration(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Query() query: RemunerationQueryDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    const data = await this.remuneration.projectRemuneration(
+      projectId,
+      query,
+      this.toActor(req),
+    );
+    const n = (v: string) => Number(v);
+    const status: Record<string, string> = {
+      pending: 'Pendente',
+      approved: 'Aprovado',
+      paid: 'Pago',
+      cancelled: 'Cancelado',
+    };
+    const rows = data.items.map((p) => ({
+      Inventariante: safeSpreadsheetText(p.field_agent_name),
+      UF: p.state ?? '',
+      'Data inicial': p.start_date,
+      'Data final': p.end_date,
+      'Data prevista de pagamento': p.expected_payment_date ?? '',
+      'Data de pagamento': p.payment_date ?? '',
+      Dias: p.days,
+      Diária: n(p.daily_rate),
+      Adicional: n(p.additional_amount),
+      Total: n(p.total_amount),
+      'Total manual': p.total_manual ? 'Sim' : 'Não',
+      Descontos: n(p.discount_amount),
+      Final: n(p.final_amount),
+      Status: status[p.status] ?? p.status,
+    }));
+    rows.push({
+      Inventariante: 'Total (sem cancelados)',
+      UF: '',
+      'Data inicial': '',
+      'Data final': '',
+      'Data prevista de pagamento': '',
+      'Data de pagamento': '',
+      Dias: '' as unknown as number,
+      Diária: '' as unknown as number,
+      Adicional: '' as unknown as number,
+      Total: n(data.totals.total_amount),
+      'Total manual': '',
+      Descontos: n(data.totals.discount_amount),
+      Final: n(data.totals.final_amount),
+      Status: '',
+    });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      XLSX.utils.json_to_sheet(rows),
+      'Remuneração',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="remuneracao-projeto-${projectId}.xlsx"`,
+    );
+    return res
+      .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .send(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  }
+
+  @Post('payments/:id/reopen')
+  @HttpCode(200)
+  @RequirePermissions('payments:read', 'payments:reopen')
+  @ApiOperation({
+    summary: 'Reabrir lançamento aprovado para edição (volta a pendente)',
+  })
+  reopenPayment(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ReopenPaymentDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.reopenPayment(projectId, id, dto, this.toActor(req));
+  }
+
+  @Delete('payments/:id')
+  @HttpCode(200)
+  @RequirePermissions('payments:read', 'payments:delete')
+  @ApiOperation({ summary: 'Excluir lançamento (exclusão lógica)' })
+  deletePayment(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.deletePayment(projectId, id, this.toActor(req));
+  }
 
   @Post('payments')
   @HttpCode(201)

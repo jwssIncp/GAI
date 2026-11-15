@@ -44,7 +44,7 @@ function mount(path: string) {
         <Routes>
           <Route path="/app/finance" element={<FinanceLayout />}>
             <Route path="dre" element={<DreLayout />}>
-              <Route index element={<DreReportPage />} />
+              <Route path="statement" element={<DreReportPage />} />
               <Route path="accounts" element={<DreAccountsPage />} />
               <Route path="entries" element={<p>Lista de eventos</p>} />
             </Route>
@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 describe("DRE nested navigation and explicit classification", () => {
   it("keeps both shared layouts and project scope across nonsequential navigation", async () => {
-    mount("/app/finance/dre?project_id=25");
+    mount("/app/finance/dre/statement?project_id=25");
     await screen.findByText("Cobertura incompleta não equivale a zero.");
     fireEvent.click(screen.getByRole("link", { name: "Plano de contas" }));
     await screen.findByRole("button", { name: "Nova conta gerencial" });
@@ -101,9 +101,9 @@ describe("DRE nested navigation and explicit classification", () => {
     ).toBeVisible();
   });
   it("allows clearing a project filter instead of retaining stale scope", async () => {
-    mount("/app/finance/dre?project_id=25");
+    mount("/app/finance/dre/statement?project_id=25");
     await screen.findByText("Cobertura incompleta não equivale a zero.");
-    fireEvent.change(screen.getByLabelText("Projeto (ID, opcional)"), {
+    fireEvent.change(screen.getByLabelText("Projeto"), {
       target: { value: "" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Consultar DRE" }));
@@ -158,5 +158,51 @@ describe("DRE nested navigation and explicit classification", () => {
         }),
       ),
     );
+  });
+  it("Demonstrativo sem parâmetros: avisa que é cálculo legado", async () => {
+    const legacy = { ...(await dreApi.report({})), mode: "legacy" as const, cutoff: null };
+    vi.mocked(dreApi.report).mockResolvedValue(legacy);
+    mount("/app/finance/dre/statement");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Cálculo legado: publique os parâmetros financeiros para ativar a DRE automática.",
+    );
+  });
+  it("Demonstrativo na DRE automática: informa que os valores passam a incluir o fluxo", async () => {
+    vi.mocked(dreApi.report).mockResolvedValue({ ...(await dreApi.report({})), mode: "monthly" as const, cutoff: "2026-09" });
+    mount("/app/finance/dre/statement");
+    expect(
+      await screen.findByText(/A partir de 09\/2026 os valores passam a incluir o fluxo de caixa/),
+    ).toBeInTheDocument();
+  });
+  it("Demonstrativo: projeto por nome no filtro e nas tabelas; margem indefinida e percentual em pt-BR", async () => {
+    const base = await dreApi.report({});
+    const calc = (gross: string | null, operating: string | null) => ({
+      currency: "BRL",
+      lines: ["revenue", "deductions", "net_revenue", "direct_cost", "gross_profit", "operating_expense", "operating_result", "financial_income", "financial_expense", "financial_result", "before_tax", "income_tax", "after_tax"].map((key) => {
+        const v = key === "revenue" ? "100.00" : key === "before_tax" ? "-13.84" : "0.00";
+        return { key, label: key === "revenue" ? "Receita bruta" : key === "before_tax" ? "Antes de tributos" : key, amount: v, known_amount: v, complete: true, groups: [], entry_ids: [] };
+      }),
+      gross_margin: gross,
+      operating_margin: operating,
+      known_gross_margin: gross,
+      known_operating_margin: operating,
+      complete: true,
+      unclassified_amount: "0.00",
+    });
+    vi.mocked(dreApi.report).mockResolvedValue({
+      ...base,
+      mode: "monthly" as const,
+      cutoff: "2026-09",
+      complete: true,
+      projects: [{ id: 44, name: "Projeto Sintético", code: "PS-44" }],
+      totals: [calc("12.5", null)],
+      by_project: [{ ...calc(null, null), project_id: 44 }],
+    } as never);
+    mount("/app/finance/dre/statement");
+    expect(await screen.findByRole("option", { name: "Projeto Sintético (PS-44)" })).toBeInTheDocument();
+    expect(screen.getByText("12,50%")).toBeInTheDocument();
+    expect(screen.getByText("Margem operacional validada").parentElement).toHaveTextContent("—");
+    const row = screen.getAllByText("Projeto Sintético (PS-44)").find((e) => e.closest("td"))!.closest("tr")!;
+    expect(row).toHaveTextContent(/-R\$\s?13,84/);
   });
 });

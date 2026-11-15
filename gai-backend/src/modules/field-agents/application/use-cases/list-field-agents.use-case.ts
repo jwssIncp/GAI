@@ -36,6 +36,7 @@ export class ListFieldAgentsUseCase {
       pageSize,
       organizationId,
       status: query.status,
+      state: query.state,
       search: query.search,
       deleted: query.deletion === 'deleted',
       excludeProjectId: query.exclude_project_id,

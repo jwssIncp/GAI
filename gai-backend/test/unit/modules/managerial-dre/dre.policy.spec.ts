@@ -104,4 +104,10 @@ describe('Managerial accrual formulas', () => {
     expect(() => months('2026-13', '2026-13')).toThrow();
     expect(() => months('2020-01', '2026-01')).toThrow();
   });
+  it('margem com receita irrisória fica indefinida (limite ±1.000%)', () => {
+    expect(percentage(-1029450n, 51n)).toBeNull();
+    expect(percentage(-1000n, 100n)).toBe('-1000.00');
+    expect(percentage(-1001n, 100n)).toBeNull();
+    expect(percentage(50n, 100n)).toBe('50.00');
+  });
 });

@@ -20,6 +20,10 @@ import {
 import { CreateFieldAgentDto } from '../dto/create-field-agent.dto';
 import { FieldAgentResponseDto } from '../dto/field-agent-response.dto';
 import {
+  ProjectStatusBlocksFieldAgentOperationError,
+  projectStatusBlocksFieldAgentOperation,
+} from '../errors/project-status-blocks-operation';
+import {
   duplicateFieldFromDatabase,
   fieldAgentConflict,
 } from '../errors/field-agent-conflict';
@@ -72,6 +76,7 @@ export class CreateFieldAgentUseCase {
         email: dto.email ?? null,
         phone: dto.phone ?? null,
         document: dto.document ?? null,
+        state: dto.state ?? null,
         status: FieldAgentStatus.ACTIVE,
         metadata: dto.metadata ?? null,
         createdAt: now,
@@ -90,22 +95,29 @@ export class CreateFieldAgentUseCase {
 
     let saved: FieldAgent;
     try {
-      saved = await this.repository.saveFieldAgentWithAudit(fieldAgent, {
-        organizationId,
-        fieldAgentId: 0,
-        operation: FieldAgentAuditOperation.CREATE,
-        performedBy: actor.id,
-        changes: {
-          organization_id: { before: null, after: organizationId },
-          name: { before: null, after: fieldAgent.name },
-          email: { before: null, after: fieldAgent.email },
-          phone: { before: null, after: fieldAgent.phone },
-          document: { before: null, after: fieldAgent.document },
-          user_id: { before: null, after: fieldAgent.userId },
-          status: { before: null, after: fieldAgent.status },
+      saved = await this.repository.saveFieldAgentWithAudit(
+        fieldAgent,
+        {
+          organizationId,
+          fieldAgentId: 0,
+          operation: FieldAgentAuditOperation.CREATE,
+          performedBy: actor.id,
+          changes: {
+            organization_id: { before: null, after: organizationId },
+            name: { before: null, after: fieldAgent.name },
+            email: { before: null, after: fieldAgent.email },
+            phone: { before: null, after: fieldAgent.phone },
+            document: { before: null, after: fieldAgent.document },
+            state: { before: null, after: fieldAgent.state },
+            user_id: { before: null, after: fieldAgent.userId },
+            status: { before: null, after: fieldAgent.status },
+          },
         },
-      });
+        dto.project_ids ?? [],
+      );
     } catch (error) {
+      if (error instanceof ProjectStatusBlocksFieldAgentOperationError)
+        throw projectStatusBlocksFieldAgentOperation(error.currentStatus);
       const duplicateField = duplicateFieldFromDatabase(error);
       if (duplicateField) throw fieldAgentConflict(duplicateField);
       throw error;

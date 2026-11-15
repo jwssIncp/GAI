@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { createConnection, Connection } from 'mysql2/promise';
 import { mkdirSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
 import { resolve } from 'path';
 import {
   createTestApp,
@@ -59,6 +60,7 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
     field_agent_id: agent,
     start_date: '2026-10-28',
     end_date: '2026-10-28',
+    expected_payment_date: '2026-11-05',
     daily_rate: rate,
   });
   const paymentUrl = (f: any, p: any) =>
@@ -223,20 +225,19 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
     db = await createConnection(dbOptions);
   });
   afterAll(async () => {
-    if (process.env.GAI_TEST_EVIDENCE_DIR) {
-      mkdirSync(process.env.GAI_TEST_EVIDENCE_DIR, { recursive: true });
-    }
-    writeFileSync(
+    // A evidência vai para uma pasta temporária (fora do repositório) e não
+    // reescreve o arquivo versionado em docs/. Para gravar em outro lugar,
+    // defina GAI_TEST_EVIDENCE_DIR.
+    const evidenceDir =
+      process.env.GAI_TEST_EVIDENCE_DIR ??
       resolve(
-        process.env.GAI_TEST_EVIDENCE_DIR ??
-          resolve(
-            __dirname,
-            process.env.GAI_TEST_MYSQL_WAVE1 === '1'
-              ? '../../../../docs/correcoes-onda-1-integridade-2026-10-28/evidencias'
-              : '../../../../docs/correcoes-onda-0-financeiro-2026-10-28/evidencias',
-          ),
-        'concurrency-after.json',
-      ),
+        tmpdir(),
+        'gai-test-evidence',
+        process.env.GAI_TEST_MYSQL_WAVE1 === '1' ? 'onda-1' : 'onda-0',
+      );
+    mkdirSync(evidenceDir, { recursive: true });
+    writeFileSync(
+      resolve(evidenceDir, 'concurrency-after.json'),
       JSON.stringify(evidence, null, 2),
     );
     await db?.end();

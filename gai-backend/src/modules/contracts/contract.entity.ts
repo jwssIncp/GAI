@@ -36,6 +36,8 @@ export interface ContractSnapshot extends ContractDataDto {
   current_scope: string | null;
   company_name: string;
   company_state: string | null;
+  /** Parcelas do valor de cada aditivo, por identificador do aditivo. */
+  amendment_installments?: Record<string, number>;
 }
 @Entity('project_contracts')
 @Index('uq_contract_number', ['organizationId', 'number'], { unique: true })

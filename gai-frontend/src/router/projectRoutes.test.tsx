@@ -39,6 +39,9 @@ vi.mock("@/features/projects/ProjectSummaryPage", () => ({
 vi.mock("@/features/inventory-items/ProjectInventoryItemsPage", () => ({
   ProjectInventoryItemsPage: () => <Probe title="Itens" />,
 }));
+vi.mock("@/features/remuneration/ProjectRemunerationPage", () => ({
+  ProjectRemunerationPage: () => <Probe title="Remuneração" />,
+}));
 vi.mock("@/features/finance/ProjectFinancePage", () => ({
   ProjectFinancePage: () => <Probe title="Financeiro" />,
 }));
@@ -53,6 +56,15 @@ vi.mock("@/features/accounting-items/ProjectAccountingItemsPage", () => ({
 }));
 vi.mock("@/features/project-preparation/ProjectPreparationPage", () => ({
   ProjectPreparationPage: () => <Probe title="Preparação" />,
+}));
+// O layout do projeto busca o painel (alertas das abas). Sem este mock a
+// busca ia por HTTP real à origem do jsdom (localhost:3000): a resposta — 401
+// da API local ou conexão recusada no CI — chegava em momento arbitrário e
+// re-renderizava o layout no meio dos cliques, deixando o teste lento e
+// dependente do ambiente.
+vi.mock("@/features/projects/projectQueries", async (original) => ({
+  ...(await original<object>()),
+  useProjectDashboard: () => ({ data: undefined }),
 }));
 
 const grants = [
@@ -85,6 +97,12 @@ const admin: CurrentUser = {
   ],
   permissions: grants.map((key) => ({ key, scope: "ORGANIZATION" })),
 };
+/**
+ * Cliques sem a espera de setTimeout entre os subeventos (delay: null): os
+ * mesmos eventos de ponteiro são disparados, mas o custo não cresce com a
+ * fila do event loop quando a máquina (ou o CI) está carregada.
+ */
+const ui = userEvent.setup({ delay: null });
 function setup(path = "/app/projects/31/summary", user = admin) {
   const router = createMemoryRouter(
     [
@@ -122,8 +140,8 @@ describe("Production project route tree: persistent navigation", () => {
   );
   afterAll(() => vi.unstubAllGlobals());
   async function go(nav: HTMLElement, group: string, tab: string) {
-    await userEvent.click(within(nav).getByRole("link", { name: group }));
-    await userEvent.click(await within(nav).findByRole("link", { name: tab }));
+    await ui.click(within(nav).getByRole("link", { name: group }));
+    await ui.click(await within(nav).findByRole("link", { name: tab }));
   }
 
   it("navigates continuously across groups, tabs, anchors, preparation and browser history without remounting navigation", async () => {
@@ -134,7 +152,8 @@ describe("Production project route tree: persistent navigation", () => {
     const wrapper = nav.closest("[data-project-id]");
     for (const [group, label, suffix, heading] of [
       ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
-      ["Financeiro", "Pagamentos e despesas", "finance", "Financeiro"],
+      ["Financeiro", "Remuneração", "finance/remuneration", "Remuneração"],
+      ["Financeiro", "Despesas", "finance", "Financeiro"],
       ["Inventário", "Pendências", "pending-issues", "Pendências"],
       ["Visão geral", "Dashboard", "dashboard", "Dashboard"],
       ["Contábil e laudo", "Base contábil", "accounting-items", "Contábil"],
@@ -201,7 +220,7 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       within(nav).getByRole("link", { name: "Preparação" }),
     ).toHaveAttribute("aria-current", "page");
-    await userEvent.click(screen.getByRole("link", { name: "Kick-off" }));
+    await ui.click(screen.getByRole("link", { name: "Kick-off" }));
     expect(
       screen.getByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
@@ -220,7 +239,9 @@ describe("Production project route tree: persistent navigation", () => {
   it("selects a group whose first visible tab leaves the workspace without navigating", async () => {
     const finance = {
       ...admin,
-      permissions: ["projects:read", "payments:read", "receivables:read", "cash-flow:read", "dre:read"].map(
+      // Sem payments:read/expenses:read: as abas internas (Remuneração, Despesas) ficam ocultas
+      // e a primeira aba visível do grupo é externa.
+      permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read"].map(
         (key) => ({ key, scope: "ORGANIZATION" as const }),
       ),
     };
@@ -228,8 +249,8 @@ describe("Production project route tree: persistent navigation", () => {
     const nav = await screen.findByRole("navigation", { name: "Abas do projeto" });
     const group = within(nav).getByRole("button", { name: "Financeiro" });
     expect(group).toHaveAttribute("aria-expanded", "false");
-    expect(within(nav).queryByRole("link", { name: "Pagamentos e despesas" })).not.toBeInTheDocument();
-    await userEvent.click(group);
+    expect(within(nav).queryByRole("link", { name: "Remuneração" })).not.toBeInTheDocument();
+    await ui.click(group);
     expect(router.state.location.pathname).toBe("/app/projects/31/summary");
     expect(group).toHaveAttribute("aria-expanded", "true");
     const tabs = within(nav).getByRole("group", { name: "Abas de Financeiro" });

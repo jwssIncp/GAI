@@ -22,7 +22,7 @@ export class FakeStorage implements StorageSigner {
   private authorized = new Map<string, PresignedUrlInput>();
   private objects = new Map<
     string,
-    { sizeBytes: number; checksum: string; mimeType: string }
+    { sizeBytes: number; checksum: string; mimeType: string; content?: Buffer }
   >();
   private key(input: PresignedUrlInput) {
     return `/${input.bucket}/${input.path}`;
@@ -46,6 +46,7 @@ export class FakeStorage implements StorageSigner {
       sizeBytes: number;
       checksum: string;
       mimeType: string;
+      content: Buffer;
     }> = {},
   ) {
     const key = new URL(url).pathname;
@@ -77,6 +78,25 @@ export class FakeStorage implements StorageSigner {
       });
     return { sizeBytes: object.sizeBytes, checksum: object.checksum };
   }
+  /** Entrega o conteúdo em pedaços pequenos, como o S3, para exercitar o streaming. */
+  async openObject(input: PresignedUrlInput) {
+    const object = this.objects.get(this.key(input));
+    if (!object)
+      throw new NotFoundException({
+        code: 'STORAGE_OBJECT_NOT_FOUND',
+        message: 'Stored object not found',
+      });
+    const content =
+      object.content ?? Buffer.from(`conteudo de teste ${input.path}`);
+    this.opened += 1;
+    return (async function* () {
+      await Promise.resolve();
+      for (let i = 0; i < content.length; i += 4)
+        yield new Uint8Array(content.subarray(i, i + 4));
+    })();
+  }
+  /** Quantos objetos foram abertos (o ZIP abre um por vez, sob demanda). */
+  opened = 0;
   async createDownloadUrl(input: PresignedUrlInput) {
     const object = this.objects.get(this.key(input));
     if (!object)

@@ -45,6 +45,14 @@ export class FieldAgentPaymentEntity {
     transformer: CIVIL_DATE_TRANSFORMER,
   })
   paymentDate!: Date | null;
+  /** Data PREVISTA de pagamento (obrigatória nos lançamentos novos). */
+  @Column({
+    name: 'expected_payment_date',
+    type: 'date',
+    nullable: true,
+    transformer: CIVIL_DATE_TRANSFORMER,
+  })
+  expectedPaymentDate!: Date | null;
   @Column({ type: 'int', unsigned: true, default: 0 }) days!: number;
   @Column({ name: 'daily_rate', type: 'decimal', precision: 15, scale: 2 })
   dailyRate!: string;
@@ -64,6 +72,17 @@ export class FieldAgentPaymentEntity {
     default: 0,
   })
   dailyTotal!: string;
+  /** dias × diária + adicional, ou o valor informado à mão (total_manual). */
+  @Column({
+    name: 'total_amount',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    default: '0.00',
+  })
+  totalAmount!: string;
+  @Column({ name: 'total_manual', type: 'boolean', default: false })
+  totalManual!: boolean;
   @Column({
     name: 'discount_amount',
     type: 'decimal',
@@ -96,6 +115,15 @@ export class FieldAgentPaymentEntity {
   paidById!: number | null;
   @Column({ name: 'paid_at', type: 'datetime', precision: 3, nullable: true })
   paidAt!: Date | null;
+  @Column({ name: 'reopened_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  reopenedById!: number | null;
+  @Column({
+    name: 'reopened_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  reopenedAt!: Date | null;
   @Column({ name: 'created_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
   createdById!: number | null;
   @Column({ name: 'updated_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })

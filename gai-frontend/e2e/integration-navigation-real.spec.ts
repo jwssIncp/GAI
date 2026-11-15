@@ -63,7 +63,7 @@ for (const width of [1440, 390]) for (const reader of [false, true]) {
     await page.reload();
     await expect(page.getByRole('link', { name: 'Retornar ao dashboard da organização' })).toBeVisible();
     const projectNav = () => page.getByRole('navigation', { name: 'Abas do projeto' });
-    const tabGroups: Record<string, [string, string]> = { Contratos: ['Comercial', 'Contratos'], Laudos: ['Contábil e laudo', 'Laudos'], 'Visão geral': ['Visão geral', 'Resumo'], Itens: ['Inventário', 'Itens e avaliação'], Orçamentos: ['Comercial', 'Orçamentos'], Financeiro: ['Financeiro', 'Pagamentos e despesas'], 'DRE Gerencial': ['Financeiro', 'DRE Gerencial'], Recebíveis: ['Financeiro', 'Recebíveis'], 'Fluxo de caixa': ['Financeiro', 'Fluxo de caixa'], 'Coordenação de Campo': ['Campo', 'Coordenação de campo'], Inventário: ['Inventário', 'Sessões e conciliação'], Preparação: ['Campo', 'Preparação'] };
+    const tabGroups: Record<string, [string, string]> = { Contratos: ['Comercial', 'Contratos'], Laudos: ['Contábil e laudo', 'Laudos'], 'Visão geral': ['Visão geral', 'Resumo'], Itens: ['Inventário', 'Itens e avaliação'], Orçamentos: ['Comercial', 'Orçamentos'], Financeiro: ['Financeiro', 'Despesas'], Remuneração: ['Financeiro', 'Remuneração'], 'DRE Gerencial': ['Financeiro', 'DRE Gerencial'], Recebíveis: ['Financeiro', 'Recebíveis'], 'Fluxo de caixa': ['Financeiro', 'Fluxo de caixa'], 'Coordenação de Campo': ['Campo', 'Coordenação de campo'], Inventário: ['Inventário', 'Sessões e conciliação'], Preparação: ['Campo', 'Preparação'] };
     const tab = (label: string) => openProjectTab(page, ...(tabGroups[label] ?? (() => { throw new Error('Aba sem grupo mapeado: ' + label); })()));
     for (const label of ['Contratos', 'Laudos']) {
       await tab(label);
@@ -98,11 +98,12 @@ for (const width of [1440, 390]) for (const reader of [false, true]) {
     await expect(page).toHaveURL(new RegExp(`/receivables/${fixture.receivable}\\?project_id=${fixture.project}`));
     await page.getByRole('button', { name: 'Histórico', exact: true }).click();
     const cashLoaded = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/finance/cash-flow' && response.request().method() === 'GET');
-    await page.getByRole('navigation', { name: 'Navegação financeira' }).getByRole('link', { name: 'Fluxo de caixa', exact: true }).click();
+    // Sem barra de abas no Financeiro (navegação pelo menu lateral): as telas filtradas por projeto abrem pela URL.
+    await page.goto(`/app/finance/cash-flow?project_id=${fixture.project}`);
     expect((await cashLoaded).status()).toBe(200);
     await expect(page).toHaveURL(new RegExp(`cash-flow\\?project_id=${fixture.project}`));
     const dreLoaded = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/finance/dre/report' && response.request().method() === 'GET');
-    await page.getByRole('navigation', { name: 'Navegação financeira' }).getByRole('link', { name: 'DRE Gerencial', exact: true }).click();
+    await page.goto(`/app/finance/dre?project_id=${fixture.project}`);
     expect((await dreLoaded).status()).toBe(200);
     await page.getByRole('link', { name: 'Classificações e ajustes', exact: true }).click();
     await page.reload();
