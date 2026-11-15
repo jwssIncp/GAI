@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { formatMoney } from "@/utils/format";
-import { CashFlowBlock, type BlockAction, type BlockKind } from "./CashFlowBlock";
+import {
+  CashFlowBlock,
+  type BlockAction,
+  type BlockKind,
+} from "./CashFlowBlock";
 import { IndicatorsPanel, SimulationBar } from "./CashFlowIndicators";
 import { useCashFlowIndicators } from "./useCashFlowIndicators";
 import {
@@ -24,16 +28,35 @@ import {
   type SaleSimulationInput,
 } from "./cashFlowBoardApi";
 
-const select = "h-10 max-w-full rounded-md border bg-background px-3 text-sm md:max-w-[16rem]";
+const select =
+  "h-10 max-w-full rounded-md border bg-background px-3 text-sm md:max-w-[16rem]";
 
-function Kpi({ label, value, hint, tone, simulated }: { label: string; value: string; hint?: string; tone?: "danger" | "warning"; simulated?: string }) {
+function Kpi({
+  label,
+  value,
+  hint,
+  tone,
+  simulated,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: "danger" | "warning";
+  simulated?: string;
+}) {
   const changed = simulated !== undefined && simulated !== value;
   const shown = changed ? simulated : value;
   const negative = shown.startsWith("-");
   return (
-    <div className={`rounded-lg border bg-card p-3 ${tone === "danger" ? "border-destructive/50" : tone === "warning" ? "border-warning/50" : changed ? "border-primary/60" : ""}`}>
+    <div
+      className={`rounded-lg border bg-card p-3 ${tone === "danger" ? "border-destructive/50" : tone === "warning" ? "border-warning/50" : changed ? "border-primary/60" : ""}`}
+    >
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-semibold tabular-nums ${negative || tone === "danger" ? "text-destructive" : ""}`}>{shown}</p>
+      <p
+        className={`text-lg font-semibold tabular-nums ${negative || tone === "danger" ? "text-destructive" : ""}`}
+      >
+        {shown}
+      </p>
       {changed ? (
         <p className="text-xs text-muted-foreground">
           sem a venda: <s>{value}</s> · simulado
@@ -44,28 +67,86 @@ function Kpi({ label, value, hint, tone, simulated }: { label: string; value: st
   );
 }
 
-const sumMoney = (a: string, b: string) => ((Math.round(Number(a) * 100) + Math.round(Number(b) * 100)) / 100).toFixed(2);
+const sumMoney = (a: string, b: string) =>
+  ((Math.round(Number(a) * 100) + Math.round(Number(b) * 100)) / 100).toFixed(
+    2,
+  );
 
 /** Cards do fluxo (mês, próximo mês e ano de referência); com simulação, os totais mostram o valor com a venda. */
-function KpiRows({ k, sim, projectFiltered }: { k: CashFlowKpis; sim?: CashFlowKpis; projectFiltered: boolean }) {
+function KpiRows({
+  k,
+  sim,
+  projectFiltered,
+}: {
+  k: CashFlowKpis;
+  sim?: CashFlowKpis;
+  projectFiltered: boolean;
+}) {
   const m = (v: string) => formatMoney(v);
   return (
-    <section aria-label={`Indicadores do fluxo de caixa (${k.currency})`} className="grid gap-2">
-      {k.currency !== "BRL" ? <p className="text-sm font-semibold">Valores em {k.currency} (não somados ao BRL)</p> : null}
+    <section
+      aria-label={`Indicadores do fluxo de caixa (${k.currency})`}
+      className="grid gap-2"
+    >
+      {k.currency !== "BRL" ? (
+        <p className="text-sm font-semibold">
+          Valores em {k.currency} (não somados ao BRL)
+        </p>
+      ) : null}
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi label={`Total previsto ${monthBr(k.month.reference)}`} value={m(k.month.total)} simulated={sim ? m(sim.month.total) : undefined} hint="(entradas − saídas) do mês" />
-        <Kpi label="Entradas do mês" value={m(sumMoney(k.month.in_realized, k.month.in_open))} hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`} />
-        <Kpi label="Saídas do mês" value={m(sumMoney(k.month.out_realized, k.month.out_open))} hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`} />
-        <Kpi label="Em atraso" value={m(k.overdue.in)} hint={`${k.overdue.in_count} entrada(s) · saídas ${m(k.overdue.out)} (${k.overdue.out_count})`} tone={k.overdue.in_count || k.overdue.out_count ? "danger" : undefined} />
-        <Kpi label={`Total previsto ${monthBr(k.next_month.reference)}`} value={m(k.next_month.total)} simulated={sim ? m(sim.next_month.total) : undefined} hint="entradas líquidas de IR − saídas" />
-        <Kpi label="Entradas do próximo mês (líquidas)" value={m(k.next_month.in_net)} hint={`bruto ${m(k.next_month.in_gross)}`} />
-        <Kpi label="Saídas do próximo mês" value={m(k.next_month.out)} hint="sem o IR (já descontado das entradas)" />
-        <Kpi label="Previsto não confirmado" value={m(k.proposed.amount)} hint={`${k.proposed.count} parcela(s) proposta(s)`} tone={k.proposed.count ? "warning" : undefined} />
+        <Kpi
+          label={`Total previsto ${monthBr(k.month.reference)}`}
+          value={m(k.month.total)}
+          simulated={sim ? m(sim.month.total) : undefined}
+          hint="(entradas − saídas) do mês"
+        />
+        <Kpi
+          label="Entradas do mês"
+          value={m(sumMoney(k.month.in_realized, k.month.in_open))}
+          hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`}
+        />
+        <Kpi
+          label="Saídas do mês"
+          value={m(sumMoney(k.month.out_realized, k.month.out_open))}
+          hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`}
+        />
+        <Kpi
+          label="Em atraso"
+          value={m(k.overdue.in)}
+          hint={`${k.overdue.in_count} entrada(s) · saídas ${m(k.overdue.out)} (${k.overdue.out_count})`}
+          tone={
+            k.overdue.in_count || k.overdue.out_count ? "danger" : undefined
+          }
+        />
+        <Kpi
+          label={`Total previsto ${monthBr(k.next_month.reference)}`}
+          value={m(k.next_month.total)}
+          simulated={sim ? m(sim.next_month.total) : undefined}
+          hint="entradas líquidas de IR − saídas"
+        />
+        <Kpi
+          label="Entradas do próximo mês (líquidas)"
+          value={m(k.next_month.in_net)}
+          hint={`bruto ${m(k.next_month.in_gross)}`}
+        />
+        <Kpi
+          label="Saídas do próximo mês"
+          value={m(k.next_month.out)}
+          hint="sem o IR (já descontado das entradas)"
+        />
+        <Kpi
+          label="Previsto não confirmado"
+          value={m(k.proposed.amount)}
+          hint={`${k.proposed.count} parcela(s) proposta(s)`}
+          tone={k.proposed.count ? "warning" : undefined}
+        />
         {k.year.dre_total != null ? (
           <Kpi
             label={`Total previsto ${k.year.reference} (DRE)`}
             value={m(k.year.dre_total)}
-            simulated={sim?.year.dre_total != null ? m(sim.year.dre_total) : undefined}
+            simulated={
+              sim?.year.dre_total != null ? m(sim.year.dre_total) : undefined
+            }
             hint={`resultado da DRE jan–dez · fluxo do ano: ${m(k.year.total)}`}
           />
         ) : (
@@ -79,22 +160,55 @@ function KpiRows({ k, sim, projectFiltered }: { k: CashFlowKpis; sim?: CashFlowK
             }
           />
         )}
-        <Kpi label={`A receber em ${k.year.reference} (líquido)`} value={m(k.year.in_open_net)} />
-        <Kpi label={`A pagar em ${k.year.reference}`} value={m(k.year.out_open)} hint="sem o IR" />
+        <Kpi
+          label={`A receber em ${k.year.reference} (líquido)`}
+          value={m(k.year.in_open_net)}
+        />
+        <Kpi
+          label={`A pagar em ${k.year.reference}`}
+          value={m(k.year.out_open)}
+          hint="sem o IR"
+        />
       </div>
     </section>
   );
 }
 
-type Dialog =
-  | { kind: "receive" | "reschedule" | "discard" | "redate" | "settle" | "repay"; items: FlowItem[] }
-  | null;
+type Dialog = {
+  kind: "receive" | "reschedule" | "discard" | "redate" | "settle" | "repay";
+  items: FlowItem[];
+} | null;
 
-const BLOCKS: Array<{ kind: BlockKind; title: string; groups: FlowItem["group"][]; direction: "in" | "out" }> = [
-  { kind: "billing", title: "Entradas de faturamento", groups: ["billing"], direction: "in" },
-  { kind: "reimbursement", title: "Entradas de reembolso e revenda de placas", groups: ["reimbursement", "other_in"], direction: "in" },
-  { kind: "to_reimburse", title: "Saídas para reembolsar", groups: ["to_reimburse"], direction: "out" },
-  { kind: "non_reimbursable", title: "Saídas não reembolsáveis", groups: ["non_reimbursable"], direction: "out" },
+const BLOCKS: Array<{
+  kind: BlockKind;
+  title: string;
+  groups: FlowItem["group"][];
+  direction: "in" | "out";
+}> = [
+  {
+    kind: "billing",
+    title: "Entradas de faturamento",
+    groups: ["billing"],
+    direction: "in",
+  },
+  {
+    kind: "reimbursement",
+    title: "Entradas de reembolso e revenda de placas",
+    groups: ["reimbursement", "other_in"],
+    direction: "in",
+  },
+  {
+    kind: "to_reimburse",
+    title: "Saídas para reembolsar",
+    groups: ["to_reimburse"],
+    direction: "out",
+  },
+  {
+    kind: "non_reimbursable",
+    title: "Saídas não reembolsáveis",
+    groups: ["non_reimbursable"],
+    direction: "out",
+  },
 ];
 
 /** Financeiro › Fluxo de caixa: filtro geral (na URL), avisos, simulação, cards, indicadores e os quatro blocos. */
@@ -123,24 +237,45 @@ export function CashFlowPage() {
       },
       { replace: true },
     );
-  const query = useMemo(() => ({ project_id: projectId, year, month }), [projectId, year, month]);
+  const query = useMemo(
+    () => ({ project_id: projectId, year, month }),
+    [projectId, year, month],
+  );
   const [sim, setSim] = useState<SaleSimulationInput | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
-  const [feedback, setFeedback] = useState<{ message: string; error?: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    error?: boolean;
+  } | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [details, setDetails] = useState(false);
-  const [balances, setBalances] = useState<Partial<Record<BlockKind, number | null>>>({});
-  const board = useQuery({ queryKey: cashFlowKeys.board(query), queryFn: () => cashFlowApi.board(query) });
+  const [balances, setBalances] = useState<
+    Partial<Record<BlockKind, number | null>>
+  >({});
+  const board = useQuery({
+    queryKey: cashFlowKeys.board(query),
+    queryFn: () => cashFlowApi.board(query),
+  });
   const indicators = useCashFlowIndicators(query, sim);
-  const onBalance = useCallback((kind: BlockKind, cents: number | null) => setBalances((b) => (b[kind] === cents ? b : { ...b, [kind]: cents })), []);
+  const onBalance = useCallback(
+    (kind: BlockKind, cents: number | null) =>
+      setBalances((b) => (b[kind] === cents ? b : { ...b, [kind]: cents })),
+    [],
+  );
 
   const run = useMutation({
     mutationFn: async (job: () => Promise<BatchResult>) => job(),
     onSuccess: async (r) => {
       setDialog(null);
       setResetKey((k) => k + 1);
-      const failures = r.results.filter((x) => !x.ok).map((x) => x.message).join("; ");
-      setFeedback({ message: `${r.done} item(ns) concluído(s).${failures ? ` Não concluídos: ${failures}` : ""}`, error: r.failed > 0 });
+      const failures = r.results
+        .filter((x) => !x.ok)
+        .map((x) => x.message)
+        .join("; ");
+      setFeedback({
+        message: `${r.done} item(ns) concluído(s).${failures ? ` Não concluídos: ${failures}` : ""}`,
+        error: r.failed > 0,
+      });
       await cache.invalidateQueries({ queryKey: cashFlowKeys.all });
     },
     onError: (e) => setFeedback({ message: (e as Error).message, error: true }),
@@ -155,25 +290,54 @@ export function CashFlowPage() {
         (showReversed || i.status !== "reversed") &&
         (!direction || i.direction === direction) &&
         (!onlyOpen || i.status === "open" || i.status === "proposed") &&
-        (!currentMonth || i.date.startsWith(now) || (i.overdue && i.status !== "realized")),
+        (!currentMonth ||
+          i.date.startsWith(now) ||
+          (i.overdue && i.status !== "realized")),
     );
   }, [data, direction, onlyOpen, currentMonth, showReversed]);
 
-  if (board.isLoading) return <LoadingState label="Carregando fluxo de caixa" />;
-  if (board.isError) return <ErrorState message={(board.error as Error).message} onRetry={() => void board.refetch()} />;
+  if (board.isLoading)
+    return <LoadingState label="Carregando fluxo de caixa" />;
+  if (board.isError)
+    return (
+      <ErrorState
+        message={(board.error as Error).message}
+        onRetry={() => void board.refetch()}
+      />
+    );
   if (!data) return null;
   const brl = data.kpis.find((k) => k.currency === "BRL") ?? data.kpis[0];
   const others = data.kpis.filter((k) => k !== brl);
-  const simKpis = indicators.data?.configured ? (indicators.data.simulation?.kpis ?? undefined) : undefined;
-  const years = [...new Set([Number(thisYear) - 1, Number(thisYear), Number(thisYear) + 1, Number(thisYear) + 2, ...(year !== "all" ? [Number(year)] : [])])].sort().map(String);
-  const shownBlocks = BLOCKS.filter((b) => !direction || b.direction === direction);
+  const simKpis = indicators.data?.configured
+    ? (indicators.data.simulation?.kpis ?? undefined)
+    : undefined;
+  const years = [
+    ...new Set([
+      Number(thisYear) - 1,
+      Number(thisYear),
+      Number(thisYear) + 1,
+      Number(thisYear) + 2,
+      ...(year !== "all" ? [Number(year)] : []),
+    ]),
+  ]
+    .sort()
+    .map(String);
+  const shownBlocks = BLOCKS.filter(
+    (b) => !direction || b.direction === direction,
+  );
   const visibleBalances = shownBlocks.map((b) => balances[b.kind]);
-  const balance = visibleBalances.reduce<number>((s, v) => s + (v ?? 0), 0) / 100;
+  const balance =
+    visibleBalances.reduce<number>((s, v) => s + (v ?? 0), 0) / 100;
   const someHidden = visibleBalances.some((v) => v === null);
   const tablesYear = data.tables_year ?? year;
 
   // ── avisos: uma linha de resumo, detalhes sob demanda ──
-  const alerts: Array<{ key: string; summary: string; detail: React.ReactNode; tone?: "warning" }> = [];
+  const alerts: Array<{
+    key: string;
+    summary: string;
+    detail: React.ReactNode;
+    tone?: "warning";
+  }> = [];
   if (data.alerts.proposed_count)
     alerts.push({
       key: "proposed",
@@ -181,8 +345,10 @@ export function CashFlowPage() {
       summary: `${data.alerts.proposed_count} proposta(s) não confirmada(s)`,
       detail: (
         <>
-          {data.alerts.proposed_count} origem(ns) com recebível previsto e não confirmado ({formatMoney(data.alerts.proposed_amount)}). Elas já contam no fluxo
-          como "previsto (não confirmado)"; confirme para virar recebível ou descarte com justificativa.
+          {data.alerts.proposed_count} origem(ns) com recebível previsto e não
+          confirmado ({formatMoney(data.alerts.proposed_amount)}). Elas já
+          contam no fluxo como "previsto (não confirmado)"; confirme para virar
+          recebível ou descarte com justificativa.
         </>
       ),
     });
@@ -193,9 +359,14 @@ export function CashFlowPage() {
       summary: `${data.alerts.missing_tax_count} entrada(s) sem parâmetro vigente`,
       detail: (
         <>
-          {data.alerts.missing_tax_count} entrada(s) sem parâmetro vigente (IR não calculado, sem valor de reserva).{" "}
-          <Link className="font-semibold underline" to={retroactiveSettingsUrl(data.alerts.missing_parameters_since)}>
-            Publicar versão dos parâmetros desde {civilBr(data.alerts.missing_parameters_since)}
+          {data.alerts.missing_tax_count} entrada(s) sem parâmetro vigente (IR
+          não calculado, sem valor de reserva).{" "}
+          <Link
+            className="font-semibold underline"
+            to={retroactiveSettingsUrl(data.alerts.missing_parameters_since)}
+          >
+            Publicar versão dos parâmetros desde{" "}
+            {civilBr(data.alerts.missing_parameters_since)}
           </Link>
         </>
       ),
@@ -208,9 +379,16 @@ export function CashFlowPage() {
         <>
           <span className="block">Sem proposta de recebível:</span>
           <ul className="list-disc pl-5">
-            {data.alerts.unproposed_contracts.map((c) => <li key={c.source_key}>{c.reason}</li>)}
+            {data.alerts.unproposed_contracts.map((c) => (
+              <li key={c.source_key}>{c.reason}</li>
+            ))}
           </ul>
-          <Link className="font-semibold underline" to="/app/finance/parameters">Ver parâmetros</Link>
+          <Link
+            className="font-semibold underline"
+            to="/app/finance/parameters"
+          >
+            Ver parâmetros
+          </Link>
         </>
       ),
     });
@@ -218,122 +396,256 @@ export function CashFlowPage() {
     alerts.push({
       key: "undated",
       summary: `${data.alerts.undated_payments} diária(s) sem data prevista`,
-      detail: <>{data.alerts.undated_payments} diária(s) em aberto sem data prevista ficam fora do fluxo (informe em Pagamento de inventariantes).</>,
+      detail: (
+        <>
+          {data.alerts.undated_payments} diária(s) em aberto sem data prevista
+          ficam fora do fluxo (informe em Pagamento de inventariantes).
+        </>
+      ),
     });
   if (projectId)
     alerts.push({
       key: "fixed",
       summary: "custos fixos fora (filtro de projeto)",
-      detail: <>Custos fixos não pertencem a projeto: com um projeto filtrado eles ficam fora das tabelas e dos cards, e o total do ano é o do fluxo do projeto (a DRE é da organização inteira).</>,
+      detail: (
+        <>
+          Custos fixos não pertencem a projeto: com um projeto filtrado eles
+          ficam fora das tabelas e dos cards, e o total do ano é o do fluxo do
+          projeto (a DRE é da organização inteira).
+        </>
+      ),
     });
   const warning = alerts.some((a) => a.tone === "warning");
 
-  const refsOf = (list: FlowItem[]) => list.map((i) => ({ receivable_id: Number(i.refs.receivable_id), installment_id: Number(i.refs.installment_id) }));
-  const eventsOf = (list: FlowItem[]) => list.map((i) => ({ receivable_id: Number(i.refs.receivable_id), event_id: Number(i.refs.event_id) }));
-  const settleKeys = (list: FlowItem[]) => list.map((i) => String(i.refs.settle_key));
-  const sourceKeys = (list: FlowItem[]) => [...new Set(list.map((i) => String(i.refs.source_key)))];
+  const refsOf = (list: FlowItem[]) =>
+    list.map((i) => ({
+      receivable_id: Number(i.refs.receivable_id),
+      installment_id: Number(i.refs.installment_id),
+    }));
+  const eventsOf = (list: FlowItem[]) =>
+    list.map((i) => ({
+      receivable_id: Number(i.refs.receivable_id),
+      event_id: Number(i.refs.event_id),
+    }));
+  const settleKeys = (list: FlowItem[]) =>
+    list.map((i) => String(i.refs.settle_key));
+  const sourceKeys = (list: FlowItem[]) => [
+    ...new Set(list.map((i) => String(i.refs.source_key))),
+  ];
   const onAction = (a: BlockAction) => {
     setFeedback(null);
-    if (a.kind === "confirm") run.mutate(() => cashFlowApi.confirm(sourceKeys(a.items)));
-    else if (a.kind === "undo") run.mutate(() => cashFlowApi.undoReceipts(eventsOf(a.items)));
-    else if (a.kind === "unsettle") run.mutate(() => cashFlowApi.settle(settleKeys(a.items), null));
-    else setDialog({ kind: a.kind as NonNullable<Dialog>["kind"], items: a.items });
+    if (a.kind === "confirm")
+      run.mutate(() => cashFlowApi.confirm(sourceKeys(a.items)));
+    else if (a.kind === "undo")
+      run.mutate(() => cashFlowApi.undoReceipts(eventsOf(a.items)));
+    else if (a.kind === "unsettle")
+      run.mutate(() => cashFlowApi.settle(settleKeys(a.items), null));
+    else
+      setDialog({
+        kind: a.kind as NonNullable<Dialog>["kind"],
+        items: a.items,
+      });
   };
 
   return (
     <div className="grid min-w-0 gap-4">
       <FilterPanel>
-        <select aria-label="Ano" className={select} value={year} onChange={(e) => setFilter({ year: e.target.value === thisYear ? null : e.target.value })}>
-          {years.map((y) => <option key={y} value={y}>{y}</option>)}
+        <select
+          aria-label="Ano"
+          className={select}
+          value={year}
+          onChange={(e) =>
+            setFilter({
+              year: e.target.value === thisYear ? null : e.target.value,
+            })
+          }
+        >
+          {years.map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
           <option value="all">Todos os anos</option>
         </select>
-        <select aria-label="Projeto" className={select} value={projectId ?? ""} onChange={(e) => setFilter({ project_id: e.target.value || null })}>
+        <select
+          aria-label="Projeto"
+          className={select}
+          value={projectId ?? ""}
+          onChange={(e) => setFilter({ project_id: e.target.value || null })}
+        >
           <option value="">Projeto: todos</option>
-          {data.projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {data.projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
         </select>
-        <select aria-label="Tipo" className={select} value={direction} onChange={(e) => setFilter({ tipo: e.target.value || null })}>
+        <select
+          aria-label="Tipo"
+          className={select}
+          value={direction}
+          onChange={(e) => setFilter({ tipo: e.target.value || null })}
+        >
           <option value="">Entradas e saídas</option>
           <option value="in">Entradas</option>
           <option value="out">Saídas</option>
         </select>
-        <Button type="button" size="sm" variant={currentMonth ? "soft" : "ghost"} aria-pressed={currentMonth} onClick={() => setFilter({ mes_atual: currentMonth ? null : "1", month: null })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={currentMonth ? "soft" : "ghost"}
+          aria-pressed={currentMonth}
+          onClick={() =>
+            setFilter({ mes_atual: currentMonth ? null : "1", month: null })
+          }
+        >
           Mês atual
         </Button>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={onlyOpen} onChange={(e) => setFilter({ em_aberto: e.target.checked ? "1" : null })} />
+          <input
+            type="checkbox"
+            checked={onlyOpen}
+            onChange={(e) =>
+              setFilter({ em_aberto: e.target.checked ? "1" : null })
+            }
+          />
           Somente em aberto
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={showReversed} onChange={(e) => setFilter({ estornos: e.target.checked ? "1" : null })} />
+          <input
+            type="checkbox"
+            checked={showReversed}
+            onChange={(e) =>
+              setFilter({ estornos: e.target.checked ? "1" : null })
+            }
+          />
           Mostrar estornos
         </label>
-        <Button type="button" size="sm" variant="ghost" onClick={() => setParams(new URLSearchParams(), { replace: true })}>Limpar filtros</Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => setParams(new URLSearchParams(), { replace: true })}
+        >
+          Limpar filtros
+        </Button>
       </FilterPanel>
       <p className="-mt-2 text-xs text-muted-foreground">
-        Tipo, "Somente em aberto", "Mês atual" e "Todos os anos" valem para as tabelas; os cards seguem o mês de referência ({monthBr(data.reference.month)}) e o ano{" "}
-        {data.reference.year}.
+        Tipo, "Somente em aberto", "Mês atual" e "Todos os anos" valem para as
+        tabelas; os cards seguem o mês de referência (
+        {monthBr(data.reference.month)}) e o ano {data.reference.year}.
       </p>
 
       {alerts.length ? (
-        <div role="status" className={`rounded-md border p-3 text-sm ${warning ? "border-warning/50 bg-warning/10" : ""}`}>
+        <div
+          role="status"
+          className={`rounded-md border p-3 text-sm ${warning ? "border-warning/50 bg-warning/10" : ""}`}
+        >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {warning ? <span aria-hidden="true">⚠</span> : null}
             <span>{alerts.map((a) => a.summary).join(" · ")}</span>
-            <Button type="button" size="sm" variant="ghost" aria-expanded={details} onClick={() => setDetails(!details)}>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              aria-expanded={details}
+              onClick={() => setDetails(!details)}
+            >
               {details ? "ocultar detalhes" : "ver detalhes"}
             </Button>
           </div>
           {details ? (
             <ul className="mt-2 grid gap-2">
-              {alerts.map((a) => <li key={a.key} className="rounded border bg-card p-2">{a.detail}</li>)}
+              {alerts.map((a) => (
+                <li key={a.key} className="rounded border bg-card p-2">
+                  {a.detail}
+                </li>
+              ))}
             </ul>
           ) : null}
         </div>
       ) : null}
 
-      <SimulationBar indicators={indicators} referenceMonth={data.reference.month} sim={sim} onSimulate={setSim} />
-      {brl ? <KpiRows k={brl} sim={simKpis} projectFiltered={Boolean(projectId)} /> : null}
-      {others.map((k) => <KpiRows key={k.currency} k={k} projectFiltered={Boolean(projectId)} />)}
+      <SimulationBar
+        indicators={indicators}
+        referenceMonth={data.reference.month}
+        sim={sim}
+        onSimulate={setSim}
+      />
+      {brl ? (
+        <KpiRows k={brl} sim={simKpis} projectFiltered={Boolean(projectId)} />
+      ) : null}
+      {others.map((k) => (
+        <KpiRows key={k.currency} k={k} projectFiltered={Boolean(projectId)} />
+      ))}
       <IndicatorsPanel indicators={indicators} simulating={Boolean(sim)} />
 
-      {feedback ? <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>{feedback.message}</p> : null}
+      {feedback ? (
+        <p
+          role={feedback.error ? "alert" : "status"}
+          className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
 
-      {shownBlocks.map((b) => (
-        <CashFlowBlock
-          key={b.kind}
-          kind={b.kind}
-          title={b.title}
-          rows={items.filter((i) => b.groups.includes(i.group))}
-          asOf={data.as_of}
-          tablesYear={tablesYear}
-          can={hasPermission}
-          busy={run.isPending}
-          resetKey={resetKey}
-          onAction={onAction}
-          onBalance={onBalance}
-        />
-      ))}
+      <div className="mt-2 grid gap-8">
+        {shownBlocks.map((b) => (
+          <CashFlowBlock
+            key={b.kind}
+            kind={b.kind}
+            title={b.title}
+            rows={items.filter((i) => b.groups.includes(i.group))}
+            asOf={data.as_of}
+            tablesYear={tablesYear}
+            can={hasPermission}
+            busy={run.isPending}
+            resetKey={resetKey}
+            onAction={onAction}
+            onBalance={onBalance}
+          />
+        ))}
+      </div>
       <p className="text-sm font-semibold">
-        Saldo das linhas exibidas (entradas − saídas): <span className={balance < 0 ? "text-destructive" : ""}>{formatMoney(balance)}</span>
-        {someHidden ? <span className="font-normal text-muted-foreground"> · blocos ocultos ficam fora</span> : null}
+        Saldo das linhas exibidas (entradas − saídas):{" "}
+        <span className={balance < 0 ? "text-destructive" : ""}>
+          {formatMoney(balance)}
+        </span>
+        {someHidden ? (
+          <span className="font-normal text-muted-foreground">
+            {" "}
+            · blocos ocultos ficam fora
+          </span>
+        ) : null}
       </p>
       <p className="text-xs text-muted-foreground">
-        Saídas vencidas e não pagas e entradas vencidas aparecem sempre, mesmo fora do ano ou do mês escolhido. Entradas pelo bruto e o IR como saída: o IR é
-        descontado uma vez só (valor da entrada de faturamento × % dos parâmetros vigente na data; reembolsos e revenda de placas sem IR). Custos fixos vêm da
-        DRE mensal a partir do mês de corte: "Lançado" é o valor lançado na DRE (não significa pago) e "Estimado" é a estimativa. Diárias têm baixa em
-        Pagamento de inventariantes.
+        Saídas vencidas e não pagas e entradas vencidas aparecem sempre, mesmo
+        fora do ano ou do mês escolhido. Entradas pelo bruto e o IR como saída:
+        o IR é descontado uma vez só (valor da entrada de faturamento × % dos
+        parâmetros vigente na data; reembolsos e revenda de placas sem IR).
+        Custos fixos vêm da DRE mensal a partir do mês de corte: "Lançado" é o
+        valor lançado na DRE (não significa pago) e "Estimado" é a estimativa.
+        Diárias têm baixa em Pagamento de inventariantes.
       </p>
 
       {dialog?.kind === "receive" || dialog?.kind === "settle" ? (
         <DateDialog
-          title={dialog.kind === "receive" ? `Marcar ${dialog.items.length} parcela(s) como recebida(s)` : `Pagar ${dialog.items.length} saída(s)`}
+          title={
+            dialog.kind === "receive"
+              ? `Marcar ${dialog.items.length} parcela(s) como recebida(s)`
+              : `Pagar ${dialog.items.length} saída(s)`
+          }
           label={dialog.kind === "receive" ? "Recebido em" : "Pago em"}
           today={data.as_of}
           max={data.as_of}
           busy={run.isPending}
           onClose={() => setDialog(null)}
           onConfirm={(date) =>
-            run.mutate(() => (dialog.kind === "receive" ? cashFlowApi.receive(refsOf(dialog.items), date) : cashFlowApi.settle(settleKeys(dialog.items), date)))
+            run.mutate(() =>
+              dialog.kind === "receive"
+                ? cashFlowApi.receive(refsOf(dialog.items), date)
+                : cashFlowApi.settle(settleKeys(dialog.items), date),
+            )
           }
         />
       ) : null}
@@ -345,7 +657,9 @@ export function CashFlowPage() {
           max={data.as_of}
           busy={run.isPending}
           onClose={() => setDialog(null)}
-          onConfirm={(date) => run.mutate(() => cashFlowApi.settle(settleKeys(dialog.items), date))}
+          onConfirm={(date) =>
+            run.mutate(() => cashFlowApi.settle(settleKeys(dialog.items), date))
+          }
         />
       ) : null}
       {dialog?.kind === "redate" ? (
@@ -358,7 +672,11 @@ export function CashFlowPage() {
           withReason
           busy={run.isPending}
           onClose={() => setDialog(null)}
-          onConfirm={(date, reason) => run.mutate(() => cashFlowApi.redateReceipts(eventsOf(dialog.items), date, reason!))}
+          onConfirm={(date, reason) =>
+            run.mutate(() =>
+              cashFlowApi.redateReceipts(eventsOf(dialog.items), date, reason!),
+            )
+          }
         />
       ) : null}
       {dialog?.kind === "reschedule" ? (
@@ -369,7 +687,11 @@ export function CashFlowPage() {
           withReason
           busy={run.isPending}
           onClose={() => setDialog(null)}
-          onConfirm={(date, reason) => run.mutate(() => cashFlowApi.reschedule(refsOf(dialog.items), date, reason!))}
+          onConfirm={(date, reason) =>
+            run.mutate(() =>
+              cashFlowApi.reschedule(refsOf(dialog.items), date, reason!),
+            )
+          }
         />
       ) : null}
       {dialog?.kind === "discard" ? (
@@ -381,7 +703,11 @@ export function CashFlowPage() {
           noDate
           busy={run.isPending}
           onClose={() => setDialog(null)}
-          onConfirm={(_d, reason) => run.mutate(() => cashFlowApi.discard(sourceKeys(dialog.items), reason!))}
+          onConfirm={(_d, reason) =>
+            run.mutate(() =>
+              cashFlowApi.discard(sourceKeys(dialog.items), reason!),
+            )
+          }
         />
       ) : null}
     </div>
@@ -415,26 +741,59 @@ function DateDialog({
   const [date, setDate] = useState(today);
   const [reason, setReason] = useState("");
   const future = Boolean(max && date && date > max);
-  const invalid = (!noDate && (!date || future)) || (withReason && reason.trim().length < 5);
+  const invalid =
+    (!noDate && (!date || future)) || (withReason && reason.trim().length < 5);
   return (
     <ModalForm open onOpenChange={(o) => !o && onClose()} title={title}>
-      <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); if (!invalid) onConfirm(date, reason.trim()); }}>
+      <form
+        className="grid gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!invalid) onConfirm(date, reason.trim());
+        }}
+      >
         {help ? <p className="text-sm text-muted-foreground">{help}</p> : null}
         {!noDate ? (
           <FormField label={label}>
-            <Input type="date" aria-label={label} value={date} max={max} onChange={(e) => setDate(e.target.value)} />
-            {future ? <span role="alert" className="text-xs text-destructive">Data futura não é aceita.</span> : null}
+            <Input
+              type="date"
+              aria-label={label}
+              value={date}
+              max={max}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            {future ? (
+              <span role="alert" className="text-xs text-destructive">
+                Data futura não é aceita.
+              </span>
+            ) : null}
           </FormField>
         ) : null}
         {withReason ? (
           <FormField label="Justificativa">
-            <textarea aria-label="Justificativa" className="min-h-16 rounded-md border bg-background px-3 py-2 text-sm" value={reason} onChange={(e) => setReason(e.target.value)} />
-            <span className="text-xs text-muted-foreground">Mínimo de 5 caracteres; fica na auditoria.</span>
+            <textarea
+              aria-label="Justificativa"
+              className="min-h-16 rounded-md border bg-background px-3 py-2 text-sm"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <span className="text-xs text-muted-foreground">
+              Mínimo de 5 caracteres; fica na auditoria.
+            </span>
           </FormField>
         ) : null}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={busy}>Cancelar</Button>
-          <Button type="submit" loading={busy} disabled={invalid}>Confirmar</Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={busy}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" loading={busy} disabled={invalid}>
+            Confirmar
+          </Button>
         </div>
       </form>
     </ModalForm>

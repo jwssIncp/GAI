@@ -45,6 +45,11 @@ function mount(permissions = all, url = "/app/finance/cash-flow", userId = 1) {
   );
 }
 
+/** Mostra todas as situações de um bloco (a visão inicial é "Em aberto"). */
+async function showAll(u: ReturnType<typeof userEvent.setup>, title: string) {
+  await u.click(within(screen.getByRole("group", { name: `Filtros de ${title}` })).getByRole("button", { name: "Todos" }));
+}
+
 const item = (key: string, p: Partial<FlowItem>): FlowItem => ({
   key,
   direction: "in",
@@ -157,9 +162,11 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
 
     const billing = within(screen.getByRole("region", { name: "Tabela: Entradas de faturamento" }));
     expect(billing.getByText("167 dia(s)")).toBeInTheDocument();
-    expect(billing.getByText("Previsto (não confirmado)")).toBeInTheDocument();
+    expect(billing.getByText("Não confirmado").closest("td")).toHaveAttribute("title", "Previsto, não confirmado");
+    // visão inicial "Em aberto": a recebida fica fora; vencida e proposta ficam
+    expect(billing.queryByText("Recebido")).not.toBeInTheDocument();
     const outs = within(screen.getByRole("region", { name: "Tabela: Saídas não reembolsáveis" }));
-    expect(outs.getByText("35 dia(s) em atraso").closest("tr")).toHaveClass("bg-destructive/[0.07]");
+    expect(outs.getByTitle("35 dia(s) em atraso").closest("tr")).toHaveClass("bg-destructive/[0.07]");
     // IR, diárias e custos fixos não têm seleção (sem baixa no fluxo)
     expect(outs.queryByLabelText(/Selecionar IR/)).not.toBeInTheDocument();
     expect(outs.queryByLabelText(/Selecionar Diárias/)).not.toBeInTheDocument();
@@ -167,14 +174,25 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
   });
 
   it("saldo das linhas exibidas desconta o IR uma vez (entradas pelo bruto, IR como saída)", async () => {
+    const u = userEvent.setup();
     mount();
     await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" });
-    // entradas: 3.000 + 4.000 + 4.000 + 1.500 + 800 + 420 = 13.720
+    // em aberto: 3.000 + 4.000 + 1.500 + 800 + 420 − (450 + 1.000 + 100 + 3.021 + 6.000)
+    expect(screen.getByText(/Saldo das linhas exibidas/)).toHaveTextContent("-R$ 851,00");
+    for (const t of ["Entradas de faturamento", "Entradas de reembolso e revenda de placas", "Saídas para reembolsar", "Saídas não reembolsáveis"]) await showAll(u, t);
+    // todos — entradas: 3.000 + 4.000 + 4.000 + 1.500 + 800 + 420 = 13.720
     // saídas: IR 533,20 + 450 + 1.000 + 1.000 (diárias) + 100 + 3.021 + 6.000 = 12.104,20
     expect(screen.getByText(/Saldo das linhas exibidas/)).toHaveTextContent("R$ 1.615,80");
     // rodapé do faturamento: bruto e líquido (o IR aparece só como saída)
     const billing = within(screen.getByRole("region", { name: "Tabela: Entradas de faturamento" }));
     expect(billing.getByText("Subtotal (4)").closest("tr")).toHaveTextContent(/R\$\s?12\.500,00.*R\$\s?10\.833,75/);
+    // IR: uma linha por mês, com as entradas no detalhe (sem seleção)
+    const outs = within(screen.getByRole("region", { name: "Tabela: Saídas não reembolsáveis" }));
+    const ir = outs.getByText("IR sobre o faturamento de 11/2026").closest("tr")!;
+    expect(ir).toHaveTextContent("R$ 533,20");
+    expect(within(ir).queryByRole("checkbox")).not.toBeInTheDocument();
+    await u.click(outs.getByRole("button", { name: /IR sobre o faturamento de 11\/2026/ }));
+    expect(within(outs.getByRole("list", { name: "Itens de IR sobre o faturamento de 11/2026" })).getByText(/IR 13,33% sobre Contrato CT-A/)).toBeInTheDocument();
   });
 
   it("confirmar propostas e marcar recebido com data, pela barra do próprio bloco", async () => {
@@ -199,6 +217,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     const u = userEvent.setup();
     mount();
     const billing = within(await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" }));
+    await showAll(u, "Entradas de faturamento");
     await u.click(billing.getByLabelText("Selecionar Contrato CT-A 10/11/2026"));
     await u.click(within(screen.getByRole("toolbar")).getByRole("button", { name: "Alterar data de recebimento (1)" }));
     const dialog = within(screen.getByRole("dialog"));
@@ -234,6 +253,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     await waitFor(() => expect(mocks.settle).toHaveBeenCalledWith(["expense:3"], "2026-11-14"));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     // baixa feita no fluxo: pode mudar a data ou desfazer
+    await u.click(within(screen.getByRole("group", { name: "Filtros de Saídas não reembolsáveis" })).getByRole("button", { name: "Pagos" }));
     await u.click(outs.getByLabelText("Selecionar Gasolina (cód. 9) 11/11/2026"));
     await u.click(bar().getByRole("button", { name: "Alterar data de pagamento (1)" }));
     dialog = within(screen.getByRole("dialog"));
@@ -251,6 +271,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     const u = userEvent.setup();
     mount();
     const billing = within(await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" }));
+    await showAll(u, "Entradas de faturamento");
     expect(billing.queryByText("Estornado")).not.toBeInTheDocument();
     await u.click(screen.getByLabelText("Mostrar estornos"));
     const row = (await billing.findByText("Estornado")).closest("tr")!;
@@ -266,6 +287,8 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     expect(within(region).queryAllByRole("checkbox")).toHaveLength(0);
     const outs = within(screen.getByRole("region", { name: "Tabela: Saídas não reembolsáveis" }));
     expect(outs.queryAllByRole("checkbox")).toHaveLength(0);
+    await showAll(u, "Entradas de faturamento");
+    expect(within(region).getByText("Recebido")).toBeInTheDocument();
     await u.click(screen.getByLabelText("Somente em aberto"));
     expect(within(region).queryByText("Recebido")).not.toBeInTheDocument();
     expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
@@ -276,18 +299,23 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     mount();
     const region = await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" });
     const filters = within(screen.getByRole("group", { name: "Filtros de Entradas de faturamento" }));
+    expect(filters.getByRole("button", { name: "Em aberto" })).toHaveAttribute("aria-pressed", "true");
     await u.selectOptions(filters.getByLabelText("Parcela"), "last");
     expect(within(region).getAllByRole("row").filter((r) => r.closest("tbody"))).toHaveLength(1); // 3/3
     expect(within(region).getByText("3/3")).toBeInTheDocument();
     await u.click(filters.getByRole("button", { name: "Limpar filtros" }));
+    await u.click(filters.getByRole("button", { name: "Todos" }));
     await u.selectOptions(filters.getByLabelText("Mês"), "11");
     // nov: CA#1 recebida; a vencida de 05/2026 continua visível
     expect(within(region).getByText("10/11/2026", { selector: "td" })).toBeInTheDocument();
     expect(within(region).getByText("167 dia(s)")).toBeInTheDocument();
     expect(within(region).queryByText("02/02/2027")).not.toBeInTheDocument();
+    // "Recebidos": a recebida fica e a vencida continua visível (nunca escondida)
     await u.click(filters.getByRole("button", { name: "Recebidos" }));
-    expect(within(region).queryByText("167 dia(s)")).not.toBeInTheDocument();
+    expect(within(region).getByText("10/11/2026", { selector: "td" })).toBeInTheDocument();
+    expect(within(region).getByText("167 dia(s)")).toBeInTheDocument();
     await u.click(filters.getByRole("button", { name: "Limpar filtros" }));
+    expect(filters.getByRole("button", { name: "Em aberto" })).toHaveAttribute("aria-pressed", "true");
     await u.type(filters.getByLabelText("Buscar em Entradas de faturamento"), "aditivo");
     expect(within(region).getAllByRole("row").filter((r) => r.closest("tbody"))).toHaveLength(1);
     // o filtro geral (projeto) continua valendo junto
@@ -299,13 +327,13 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     mount();
     const region = await screen.findByRole("region", { name: "Tabela: Entradas de reembolso e revenda de placas" });
     const t = within(region);
-    for (const h of ["Data do lote", "Data prevista", "Recebido em", "Projeto", "Descrição", "Origem", "Status", "Valor"]) expect(t.getByRole("columnheader", { name: h })).toBeInTheDocument();
+    for (const h of ["Lote", "Data prevista", "Recebido em", "Projeto", "Descrição", "Origem", "Status", "Valor"]) expect(t.getByRole("columnheader", { name: h })).toBeInTheDocument();
     const lot = t.getByText("Reembolso — lote L-1").closest("tr")!;
     expect(lot).toHaveTextContent("05/11/2026");
     await u.click(t.getByRole("button", { name: /Reembolso — lote L-1/ }));
     const list = within(t.getByRole("list", { name: "Itens de Reembolso — lote L-1" }));
     expect(list.getByText("Hotel (cód. 4)")).toBeInTheDocument();
-    expect(t.getByText("Placas de patrimônio (revenda)")).toBeInTheDocument();
+    expect(t.getByText("Placas (revenda)")).toHaveAttribute("title", "Placas de patrimônio (revenda)");
     expect(t.getByText("Reembolsos (1)").closest("tr")).toHaveTextContent("R$ 800,00");
     expect(t.getByText("Revenda de placas (1)").closest("tr")).toHaveTextContent("R$ 420,00");
     expect(t.getByText("Subtotal (2)").closest("tr")).toHaveTextContent("R$ 1.220,00");
@@ -355,10 +383,15 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     await u.click(within(screen.getByRole("region", { name: "Saídas para reembolsar" })).getByRole("button", { name: "Ocultar" }));
     expect(screen.queryByRole("region", { name: "Tabela: Saídas para reembolsar" })).not.toBeInTheDocument();
     expect(screen.getByText(/blocos ocultos ficam fora/)).toBeInTheDocument();
+    // recolhido: o cabeçalho continua com o subtotal
+    expect(screen.getByLabelText("Subtotal de Saídas para reembolsar")).toHaveTextContent("R$ 100,00");
+    await showAll(u, "Saídas não reembolsáveis");
     first.unmount();
     const again = mount();
     await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" });
     expect(screen.queryByRole("region", { name: "Tabela: Saídas para reembolsar" })).not.toBeInTheDocument();
+    // o filtro escolhido no bloco também foi lembrado
+    expect(within(screen.getByRole("group", { name: "Filtros de Saídas não reembolsáveis" })).getByRole("button", { name: "Todos" })).toHaveAttribute("aria-pressed", "true");
     again.unmount();
     mount(all, "/app/finance/cash-flow", 2);
     expect(await screen.findByRole("region", { name: "Tabela: Saídas para reembolsar" })).toBeInTheDocument();

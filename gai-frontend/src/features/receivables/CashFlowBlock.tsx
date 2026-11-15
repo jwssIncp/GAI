@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/utils/format";
 import { civilBr, type FlowItem } from "./cashFlowBoardApi";
-import { useViewPreference } from "./useViewPreference";
+import { useViewPreference, useViewState } from "./useViewPreference";
 
 export type BlockKind = "billing" | "reimbursement" | "to_reimburse" | "non_reimbursable";
 
@@ -12,7 +12,7 @@ export type BlockAction =
   | { kind: "confirm" | "undo" | "unsettle"; items: FlowItem[] }
   | { kind: "discard" | "receive" | "reschedule" | "redate" | "settle" | "repay"; items: FlowItem[] };
 
-const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Previsto (não confirmado)", reversed: "Estornado" };
+const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Não confirmado", reversed: "Estornado" };
 const STATUS_OUT: Record<FlowItem["status"], string> = { realized: "Pago", open: "A pagar", proposed: "Previsto", reversed: "Estornado" };
 /** Permissão de baixa no fluxo por origem da saída (a mesma que o servidor exige). */
 const SETTLE_PERMISSION: Record<string, string> = {
@@ -25,7 +25,77 @@ const select = "h-10 max-w-full rounded-md border bg-background px-3 text-sm";
 const cents = (v: string) => Math.round(Number(v) * 100);
 const total = (rows: FlowItem[], f: (i: FlowItem) => string = (i) => i.gross) => rows.reduce((s, i) => s + cents(f(i)), 0) / 100;
 
+type BlockFilters = {
+  project: string;
+  year: string;
+  month: string;
+  view: "open" | "done" | "all";
+  currentMonth: boolean;
+  search: string;
+  installment: string;
+  origin: string;
+};
+const DEFAULT_FILTERS: BlockFilters = { project: "", year: "", month: "", view: "open", currentMonth: false, search: "", installment: "", origin: "" };
+const isFilters = (v: unknown): v is BlockFilters => {
+  if (!v || typeof v !== "object") return false;
+  const f = v as Record<string, unknown>;
+  return (
+    ["project", "year", "month", "search", "installment", "origin"].every((k) => typeof f[k] === "string") &&
+    ["open", "done", "all"].includes(String(f.view)) &&
+    typeof f.currentMonth === "boolean"
+  );
+};
+/** Rótulo curto da origem (o nome completo fica na dica). */
+const SHORT_ORIGIN: Record<string, string> = {
+  asset_tag: "Placas (revenda)",
+  asset_tag_cost: "Placas (custo)",
+  to_bill: "Sem lote",
+  income_tax: "IR",
+};
+const shortOrigin = (i: FlowItem) => SHORT_ORIGIN[i.origin] ?? i.origin_label;
+
 const isFixedCost = (i: FlowItem) => i.origin === "fixed_cost";
+
+/**
+ * IR: uma linha por mês ("IR sobre o faturamento de MM/AAAA") no lugar de uma
+ * por entrada, com as entradas que a compõem no detalhe. Os totais não mudam
+ * (rodapé e saldo somam as linhas originais).
+ */
+function groupIncomeTax(rows: FlowItem[]): FlowItem[] {
+  const months = new Map<string, FlowItem[]>();
+  for (const i of rows) if (i.origin === "income_tax") months.set(i.date.slice(0, 7), [...(months.get(i.date.slice(0, 7)) ?? []), i]);
+  const out: FlowItem[] = [];
+  const done = new Set<string>();
+  for (const i of rows) {
+    if (i.origin !== "income_tax") {
+      out.push(i);
+      continue;
+    }
+    const m = i.date.slice(0, 7);
+    if (done.has(m)) continue;
+    done.add(m);
+    const parts = months.get(m)!;
+    const [y, mm] = m.split("-").map(Number);
+    const last = new Date(Date.UTC(y, mm, 0)).toISOString().slice(0, 10);
+    const allRealized = parts.every((p) => p.status === "realized");
+    out.push({
+      ...i,
+      key: `ir-month:${m}`,
+      date: last,
+      expected_on: last,
+      realized_on: allRealized ? (parts.map((p) => p.realized_on ?? p.date).sort().at(-1) ?? null) : null,
+      status: allRealized ? "realized" : parts.some((p) => p.status === "reversed") && parts.every((p) => p.status === "reversed") ? "reversed" : "open",
+      gross: (parts.reduce((s, p) => s + cents(p.gross), 0) / 100).toFixed(2),
+      net: (parts.reduce((s, p) => s + cents(p.net), 0) / 100).toFixed(2),
+      project_id: null,
+      project_name: "—",
+      description: `IR sobre o faturamento de ${m.slice(5)}/${m.slice(0, 4)}`,
+      details: parts.map((p) => ({ date: p.date, description: `${p.project_name} · ${p.description}`, amount: p.gross })),
+      refs: { months: m },
+    });
+  }
+  return out;
+}
 function statusLabel(i: FlowItem) {
   if (isFixedCost(i)) return i.refs.fixed_cost === "estimate" ? "Estimado" : "Lançado";
   return (i.direction === "in" ? STATUS_IN : STATUS_OUT)[i.status];
@@ -51,14 +121,20 @@ type Props = {
 export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, resetKey, onAction, onBalance }: Props) {
   const inflow = kind === "billing" || kind === "reimbursement";
   const [hidden, setHidden] = useViewPreference(`cash-flow.block.${kind}.hidden`, false);
-  const [project, setProject] = useState("");
-  const [year, setYear] = useState("");
-  const [month, setMonth] = useState("");
-  const [view, setView] = useState<"open" | "done" | "all">("all");
-  const [currentMonth, setCurrentMonth] = useState(false);
-  const [search, setSearch] = useState("");
-  const [installment, setInstallment] = useState("");
-  const [origin, setOrigin] = useState("");
+  // Filtros do bloco: lembrados junto com o Ocultar/Mostrar; a visão inicial é "Em aberto".
+  const [filters, setFilters] = useViewState(`cash-flow.block.${kind}.filters`, DEFAULT_FILTERS, isFilters);
+  const { project, year, month, view, currentMonth, search, installment, origin } = filters;
+  const set = <K extends keyof BlockFilters>(k: K) => (v: BlockFilters[K]) => setFilters({ ...filters, [k]: v });
+  const [setProject, setYear, setMonth, setView, setCurrentMonth, setSearch, setInstallment, setOrigin] = [
+    set("project"),
+    set("year"),
+    set("month"),
+    set("view"),
+    set("currentMonth"),
+    set("search"),
+    set("installment"),
+    set("origin"),
+  ];
   const [selection, setSelection] = useState<{ reset: number; keys: string[] }>({ reset: resetKey, keys: [] });
   const [expanded, setExpanded] = useState<string[]>([]);
   const selected = selection.reset === resetKey ? selection.keys : [];
@@ -89,7 +165,8 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
       if (project && (i.project_id == null ? "none" : String(i.project_id)) !== project) return false;
       if (origin && i.origin_label !== origin) return false;
       if (view === "open" && !(i.status === "open" || i.status === "proposed")) return false;
-      if (view === "done" && !(i.status === "realized" && !isFixedCost(i))) return false;
+      // Vencidas em aberto aparecem em qualquer situação (nunca escondidas).
+      if (view === "done" && !(i.status === "realized" && !isFixedCost(i)) && !keepOverdue(i)) return false;
       if (year && !i.date.startsWith(year) && !keepOverdue(i)) return false;
       if (month && i.date.slice(5, 7) !== month && !keepOverdue(i)) return false;
       if (currentMonth && !i.date.startsWith(now) && !keepOverdue(i)) return false;
@@ -102,6 +179,9 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
       return true;
     });
   }, [rows, project, origin, view, year, month, currentMonth, installment, search, asOf]);
+
+  // Linhas da tabela: o IR vira uma linha por mês (detalhe com as entradas); totais pelas linhas originais.
+  const display = useMemo(() => (kind === "non_reimbursable" ? groupIncomeTax(shown) : shown), [kind, shown]);
 
   // Saldo das linhas exibidas (estornadas ficam fora, como nos cards).
   const signed = shown.reduce((s, i) => (i.status === "reversed" ? s : s + (i.direction === "in" ? 1 : -1) * cents(i.gross)), 0);
@@ -147,51 +227,42 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
     );
   };
 
-  const clear = () => {
-    setProject("");
-    setYear("");
-    setMonth("");
-    setView("all");
-    setCurrentMonth(false);
-    setSearch("");
-    setInstallment("");
-    setOrigin("");
-  };
+  const clear = () => setFilters(DEFAULT_FILTERS);
   const done = inflow ? "Recebidos" : "Pagos";
-  const count = `${shown.length} lançamento${shown.length === 1 ? "" : "s"}${selected.length ? ` · ${chosen.length} selecionado(s)` : ""}`;
+  const count = `${display.length} lançamento${display.length === 1 ? "" : "s"}${selected.length ? ` · ${chosen.length} selecionado(s)` : ""}`;
   const regionId = `cash-flow-block-${kind}`;
 
   // ── colunas ──
-  const dateCell = (v: string | null | undefined) => <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{civilBr(v ?? null) || "—"}</td>;
+  const dateCell = (v: string | null | undefined) => <td className="whitespace-nowrap border-b px-2 py-1.5 tabular-nums">{civilBr(v ?? null) || "—"}</td>;
   const projectCell = (i: FlowItem) => (
-    <td className="min-w-[9rem] max-w-[16rem] border-b px-2 py-2" title={i.project_name}>
+    <td className="min-w-[9rem] max-w-[16rem] border-b px-2 py-1.5 min-[1400px]:max-w-[22rem]" title={i.project_name}>
       <span className="line-clamp-2 break-words">{i.project_name}</span>
     </td>
   );
   const valueCell = (v: string, muted = false) => (
-    <td className={`whitespace-nowrap border-b px-2 py-2 text-right tabular-nums ${muted ? "text-muted-foreground" : ""}`}>{formatMoney(v)}</td>
+    <td className={`whitespace-nowrap border-b px-2 py-1.5 text-right tabular-nums ${muted ? "text-muted-foreground" : ""}`}>{formatMoney(v)}</td>
   );
   const statusCell = (i: FlowItem, withOverdue: boolean) => (
-    <td className="min-w-[6rem] border-b px-2 py-2">
+    <td className="min-w-[5.5rem] border-b px-2 py-1.5 min-[1400px]:whitespace-nowrap" title={i.status === "proposed" ? "Previsto, não confirmado" : undefined}>
       {statusLabel(i)}
       {i.status === "reversed" && i.refs.reversed_on ? <span className="block text-xs text-muted-foreground">estornado em {civilBr(String(i.refs.reversed_on))}</span> : null}
-      {withOverdue && i.overdue ? <span className="block text-xs font-semibold text-destructive">{i.overdue_days} dia(s) em atraso</span> : null}
+      {withOverdue && i.overdue ? <span className="ml-1 text-xs font-semibold text-destructive" title={`${i.overdue_days} dia(s) em atraso`}>· {i.overdue_days} d<span className="sr-only"> em atraso</span></span> : null}
     </td>
   );
   const descriptionCell = (i: FlowItem) => {
     const open = expanded.includes(i.key);
     const fixed = isFixedCost(i);
     return (
-      <td className="min-w-[10rem] max-w-[20rem] border-b px-2 py-2" title={i.description}>
+      <td className="min-w-[10rem] max-w-[20rem] border-b px-2 py-1.5" title={i.description}>
         {i.details?.length ? (
           <button
             type="button"
-            className="text-left underline-offset-2 hover:underline"
+            className="flex text-left underline-offset-2 hover:underline"
             aria-expanded={open}
             onClick={() => setExpanded((e) => (open ? e.filter((k) => k !== i.key) : [...e, i.key]))}
           >
-            <span aria-hidden="true">{open ? "▾ " : "▸ "}</span>
-            <span className="break-words">{i.description}</span>
+            <span aria-hidden="true" className="shrink-0 pr-1">{open ? "▾" : "▸"}</span>
+            <span className="line-clamp-2 break-words">{i.description}</span>
             <span className="sr-only"> (ver itens)</span>
           </button>
         ) : (
@@ -210,22 +281,22 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
     billing: [
       ["Data prevista", (i) => dateCell(i.expected_on ?? i.date)],
       ["Recebido em", (i) => dateCell(i.realized_on)],
-      ["Em atraso", (i) => <td className="whitespace-nowrap border-b px-2 py-2">{i.overdue ? <span className="font-semibold text-destructive">{i.overdue_days} dia(s)</span> : ""}</td>],
+      ["Em atraso", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5">{i.overdue ? <span className="font-semibold text-destructive">{i.overdue_days} dia(s)</span> : ""}</td>],
       ["Projeto", projectCell],
-      ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-2" title={i.description}>{i.origin_label}</td>],
-      ["Parcela", (i) => <td className={`whitespace-nowrap border-b px-2 py-2 ${i.installment && i.installment.number === i.installment.of && i.installment.of > 1 ? "font-semibold" : ""}`}>{i.installment ? `${i.installment.number}/${i.installment.of}` : ""}</td>],
+      ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={`${i.origin_label} · ${i.description}`}>{shortOrigin(i)}</td>],
+      ["Parcela", (i) => <td className={`whitespace-nowrap border-b px-2 py-1.5 ${i.installment && i.installment.number === i.installment.of && i.installment.of > 1 ? "font-semibold" : ""}`}>{i.installment ? `${i.installment.number}/${i.installment.of}` : ""}</td>],
       ["Status", (i) => statusCell(i, false)],
       ["Valor bruto", (i) => valueCell(i.gross), true],
       ["Valor líquido", (i) => valueCell(i.net, true), true],
-      ["% do contrato", (i) => <td className="whitespace-nowrap border-b px-2 py-2 text-right tabular-nums">{i.contract_pct ? `${i.contract_pct.replace(".", ",")}%` : ""}</td>, true],
+      ["% do contrato", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5 text-right tabular-nums">{i.contract_pct ? `${i.contract_pct.replace(".", ",")}%` : ""}</td>, true],
     ],
     reimbursement: [
-      ["Data do lote", (i) => dateCell(i.reference_on)],
+      ["Lote", (i) => dateCell(i.reference_on)],
       ["Data prevista", (i) => dateCell(i.expected_on ?? i.date)],
       ["Recebido em", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
-      ["Origem", (i) => <td className="min-w-[7rem] border-b px-2 py-2">{i.origin_label}</td>],
+      ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
       ["Status", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
@@ -235,7 +306,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
       ["Pago em", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
-      ["Origem", (i) => <td className="min-w-[7rem] border-b px-2 py-2">{i.origin_label}</td>],
+      ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
       ["Status", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
@@ -244,7 +315,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
       ["Pago em", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
-      ["Origem", (i) => <td className="min-w-[7rem] border-b px-2 py-2">{i.origin_label}</td>],
+      ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
       ["Status", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
@@ -253,6 +324,8 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
   const width = cols.length + 1;
   const resale = shown.filter((i) => i.origin === "asset_tag");
   const reimbursements = shown.filter((i) => i.origin !== "asset_tag");
+  /** Subtotal do bloco (o mesmo do rodapé), visível também com o bloco recolhido. */
+  const subtotal = total(shown);
   const footer: Array<[string, number, number?]> =
     kind === "billing"
       ? [[`Subtotal (${shown.length})`, total(shown), total(shown, (i) => i.net)]]
@@ -262,14 +335,17 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
             [`Revenda de placas (${resale.length})`, total(resale)],
             [`Subtotal (${shown.length})`, total(shown)],
           ]
-        : [[`${kind === "to_reimburse" ? "Total do período" : "Saldo do período"} (${shown.length})`, total(shown)]];
+        : [[`${kind === "to_reimburse" ? "Total do período" : "Saldo do período"} (${display.length})`, total(shown)]];
 
   return (
     <section className="premium-panel" aria-labelledby={`${regionId}-title`}>
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-3">
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-sidebar px-4 py-3 text-sidebar-foreground">
         <h2 id={`${regionId}-title`} className="text-base font-semibold">{title}</h2>
-        <span className="text-sm text-muted-foreground">{count}</span>
-        <Button type="button" size="sm" variant="ghost" className="ml-auto" aria-expanded={!hidden} aria-controls={regionId} onClick={() => setHidden(!hidden)}>
+        <span className="rounded-full bg-sidebar-accent px-2 py-0.5 text-xs text-sidebar-foreground">{count}</span>
+        <span className="ml-auto text-sm text-sidebar-muted" aria-label={`Subtotal de ${title}`}>
+          Subtotal <strong className="tabular-nums text-sidebar-foreground">{formatMoney(subtotal)}</strong>
+        </span>
+        <Button type="button" size="sm" variant="ghost" className="text-sidebar-foreground hover:border-sidebar-border hover:bg-sidebar-accent" aria-expanded={!hidden} aria-controls={regionId} onClick={() => setHidden(!hidden)}>
           {hidden ? "Mostrar" : "Ocultar"}
         </Button>
       </header>
@@ -343,7 +419,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
             <table className="w-full min-w-[46rem] border-separate border-spacing-0 text-left text-sm lg:min-w-0">
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
-                  <th className="w-8 border-b px-2 py-2">
+                  <th className="w-8 border-b px-2 py-1.5">
                     {selectable.length ? (
                       <input
                         type="checkbox"
@@ -354,13 +430,13 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                     ) : <span className="sr-only">Selecionar</span>}
                   </th>
                   {cols.map(([h, , right]) => (
-                    <th key={h} scope="col" className={`border-b px-2 py-2 align-bottom font-semibold ${right ? "text-right" : ""}`}>{h}</th>
+                    <th key={h} scope="col" className={`whitespace-nowrap border-b px-2 py-1.5 align-bottom font-semibold ${right ? "text-right" : ""}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {shown.length ? (
-                  shown.map((i) => {
+                {display.length ? (
+                  display.map((i) => {
                     const canPick = eligible(i).length > 0;
                     const open = expanded.includes(i.key);
                     return (
@@ -378,7 +454,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                                     : ""
                           }
                         >
-                          <td className="border-b px-2 py-2">
+                          <td className="border-b px-2 py-1.5">
                             {canPick ? (
                               <input
                                 type="checkbox"
