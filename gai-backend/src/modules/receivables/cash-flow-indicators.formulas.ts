@@ -45,6 +45,12 @@ export interface MarginInput {
   incomeTax?: string;
   /** % de IR do parâmetro (como o INVESTOR: pctLiq). */
   incomeTaxPct?: string;
+  /**
+   * Parte da receita sujeita a esse IR (faturamento). Revenda de placas (já
+   * líquida dos impostos) e reembolsos não pagam o IR de novo: o IR efetivo é
+   * % do parâmetro × faturamento ÷ receita. Ausente: toda a receita.
+   */
+  taxedRevenue?: string;
   fieldAgents: string;
   nonReimbursable: string;
   commissions: string;
@@ -60,7 +66,12 @@ export function contributionMargin(i: MarginInput) {
   if (cents(i.revenue) === 0n) return null;
   const ir =
     i.incomeTaxPct !== undefined
-      ? pctUnits(i.incomeTaxPct)
+      ? i.taxedRevenue !== undefined
+        ? div(
+            pctUnits(i.incomeTaxPct) * cents(i.taxedRevenue),
+            cents(i.revenue),
+          )
+        : pctUnits(i.incomeTaxPct)
       : ratio(i.incomeTax ?? '0.00', i.revenue)!;
   const agents = ratio(i.fieldAgents, i.revenue)!;
   const nonReimb = ratio(i.nonReimbursable, i.revenue)!;

@@ -432,6 +432,10 @@ export function windowShares(ctx: GridContext) {
     return a ? abs(actualCell(ctx, a, m).value) : 0n;
   };
   let revenue = 0n;
+  // Receita sujeita ao IR do faturamento (revenda de placas e reembolsos não
+  // pagam esse IR de novo): a conta da receita de faturamento.
+  let taxed = 0n;
+  const billing = account('billing_revenue');
   let fieldAgents = 0n;
   let nonReimbursable = 0n;
   let commissions = 0n;
@@ -442,6 +446,7 @@ export function windowShares(ctx: GridContext) {
     if (r === 0n) continue;
     used++;
     revenue += r;
+    taxed += billing ? abs(actualCell(ctx, billing, m).value) : r;
     fieldAgents += pick('field_agents', m);
     nonReimbursable += pick('non_reimbursable_expenses', m);
     commissions += pick('commissions', m);
@@ -451,6 +456,7 @@ export function windowShares(ctx: GridContext) {
     to: addMonth(current, -1),
     months_with_revenue: used,
     revenue: fromCents(revenue),
+    taxed_revenue: fromCents(taxed > revenue ? revenue : taxed),
     field_agents: fromCents(fieldAgents),
     non_reimbursable: fromCents(nonReimbursable),
     commissions: fromCents(commissions),

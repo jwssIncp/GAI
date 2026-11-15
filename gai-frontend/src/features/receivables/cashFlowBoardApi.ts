@@ -77,7 +77,7 @@ export const monthBr = (value: string) => value.split("-").reverse().join("/");
 
 export type FixedCostItem = { key: string; label: string; mode: string; amount: string | null; available: boolean };
 export type CashFlowIndicatorValues = {
-  window: { from: string; to: string; revenue: string; months_with_revenue: number; missing_accounts: string[] };
+  window: { from: string; to: string; revenue: string; taxed_revenue?: string; months_with_revenue: number; missing_accounts: string[] };
   contribution_margin: {
     mc: string;
     mce: string;

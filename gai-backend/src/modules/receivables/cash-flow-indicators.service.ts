@@ -109,13 +109,13 @@ export class CashFlowIndicatorsService {
         simulation: null,
       };
     this.assertSimulation(simulation, today);
-    if (!internals.margin)
+    if (!internals.margin || !internals.saleMargin)
       throw new BadRequestException({
         code: 'SIMULATION_NO_HISTORY',
         message:
           'Sem receita na DRE dos 12 meses anteriores: não há % histórico de inventariantes e despesas para simular a venda.',
       });
-    const mu = internals.margin.units;
+    const mu = internals.saleMargin.units;
     const extra = await this.simulate(org, simulation, today, mu);
     // Meses (atual e próximo): pelos movimentos da venda (líquido de IR −
     // inventariantes − não reembolsáveis), como o simMes do INVESTOR.
@@ -149,9 +149,9 @@ export class CashFlowIndicatorsService {
       simulation: {
         input: simulation,
         basis: {
-          field_agents_pct: internals.margin.field_agents_pct,
-          non_reimbursable_pct: internals.margin.non_reimbursable_pct,
-          mc: internals.margin.mc,
+          field_agents_pct: internals.saleMargin.field_agents_pct,
+          non_reimbursable_pct: internals.saleMargin.non_reimbursable_pct,
+          mc: internals.saleMargin.mc,
           year_sale: yearSale,
           sale_result: effect.result,
           client_share: effect.client_share,
@@ -172,12 +172,15 @@ export class CashFlowIndicatorsService {
           ...original.indicators,
           projected_result: projected,
           year_revenue: yearRevenue,
-          accounting_break_even: accountingBreakEven(projected, mu.mce),
+          accounting_break_even: accountingBreakEven(
+            projected,
+            internals.margin.units.mce,
+          ),
           economic_break_even: economicBreakEven(
             projected,
             yearRevenue,
             params.economic_break_even_margin_pct,
-            mu.mce,
+            internals.margin.units.mce,
           ),
           net_margin: netMargin(
             projected,
@@ -230,6 +233,7 @@ export class CashFlowIndicatorsService {
     const margin = contributionMargin({
       revenue: win.revenue,
       incomeTaxPct: p.income_tax_pct,
+      taxedRevenue: win.taxed_revenue,
       fieldAgents: win.field_agents,
       nonReimbursable: win.non_reimbursable,
       commissions: win.commissions,
@@ -283,6 +287,15 @@ export class CashFlowIndicatorsService {
     return {
       internals: {
         margin,
+        // Venda simulada é faturamento: IR cheio do parâmetro na margem dela.
+        saleMargin: contributionMargin({
+          revenue: win.revenue,
+          incomeTaxPct: p.income_tax_pct,
+          fieldAgents: win.field_agents,
+          nonReimbursable: win.non_reimbursable,
+          commissions: win.commissions,
+          partnerPct: p.partner_commission_pct,
+        }),
         result,
         yearRevenue,
         nonReimbursableYear: nonReimbYear,
@@ -293,6 +306,7 @@ export class CashFlowIndicatorsService {
           from: win.from,
           to: win.to,
           revenue: win.revenue,
+          taxed_revenue: win.taxed_revenue,
           months_with_revenue: win.months_with_revenue,
           missing_accounts: win.missing,
         },

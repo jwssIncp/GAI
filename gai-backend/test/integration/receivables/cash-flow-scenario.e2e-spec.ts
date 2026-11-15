@@ -903,6 +903,7 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       from: '2025-11',
       to: '2026-10',
       revenue: '80000.00',
+      taxed_revenue: '80000.00', // toda a receita da janela é faturamento
       months_with_revenue: 8,
       missing_accounts: [],
     });

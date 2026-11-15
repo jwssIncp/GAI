@@ -289,4 +289,39 @@ describe('DRE mensal (fórmulas)', () => {
     expect(lineOf(g, 'variable_costs').values[10]).toBe('1700.00');
     expect(lineOf(g, 'revenue').values[10]).toBe('4200.00');
   });
+
+  it('janela: receita sujeita ao IR = conta de faturamento (revenda de placas fica fora)', () => {
+    const w = windowShares(
+      ctx({
+        accounts: [
+          {
+            id: 1,
+            code: '1.01',
+            name: 'R',
+            group: 'revenue',
+            post_operational: false,
+          },
+          {
+            id: 9,
+            code: '1.04',
+            name: 'Revenda de placas',
+            group: 'revenue',
+            post_operational: false,
+          },
+        ],
+        rules: { billing_revenue: 1, asset_tags_revenue: 9 },
+        flow: new Map([
+          ['billing_revenue|2026-10', 600000n],
+          ['asset_tags_revenue|2026-10', 400000n],
+        ]),
+        entered: new Map(),
+        closed: new Map(),
+      }),
+    );
+    expect(w).toMatchObject({
+      revenue: '10000.00',
+      taxed_revenue: '6000.00',
+      months_with_revenue: 1,
+    });
+  });
 });

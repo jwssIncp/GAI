@@ -174,4 +174,30 @@ describe('indicadores do fluxo de caixa (fórmulas)', () => {
       }),
     ).toBeNull();
   });
+
+  it('IR da MC só sobre o faturamento: revenda de placas (já líquida) e reembolsos não pagam IR de novo', () => {
+    // receita 10.000 = 6.000 faturamento + 4.000 revenda de placas; IR 13,33% × 0,6 = 7,998%
+    const m = contributionMargin({
+      revenue: '10000.00',
+      incomeTaxPct: '13.33',
+      taxedRevenue: '6000.00',
+      fieldAgents: '0.00',
+      nonReimbursable: '0.00',
+      commissions: '0.00',
+      partnerPct: '0.00',
+    })!;
+    expect(m.income_tax_pct).toBe('8.00'); // 7,998%
+    expect(m.mc).toBe('92.00');
+    // sem a informação: IR cheio sobre toda a receita (venda simulada é faturamento)
+    expect(
+      contributionMargin({
+        revenue: '10000.00',
+        incomeTaxPct: '13.33',
+        fieldAgents: '0.00',
+        nonReimbursable: '0.00',
+        commissions: '0.00',
+        partnerPct: '0.00',
+      })!.mc,
+    ).toBe('86.67');
+  });
 });

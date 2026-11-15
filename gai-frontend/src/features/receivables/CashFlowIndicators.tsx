@@ -139,7 +139,7 @@ export function CashFlowIndicators({ query }: { query: BoardQuery }) {
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           <div>
             <p className="font-semibold">
-              Margem de contribuição ({monthBr(o.window.from)} a {monthBr(o.window.to)}, receita {formatMoney(o.window.revenue)})
+              Margem de contribuição ({monthBr(o.window.from)} a {monthBr(o.window.to)}, receita {formatMoney(o.window.revenue)}{o.window.taxed_revenue && o.window.taxed_revenue !== o.window.revenue ? `; IR sobre o faturamento de ${formatMoney(o.window.taxed_revenue)}` : ""})
             </p>
             {mc ? (
               <table className="mt-1 w-full text-sm">
