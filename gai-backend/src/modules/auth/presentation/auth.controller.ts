@@ -44,7 +44,7 @@ import {
 import { SessionAuthGuard } from './guards/session-auth.guard';
 
 interface AuthenticatedRequest extends Request {
-  user?: { id: number; sessionId: string };
+  user?: { id: number; sessionId: string; sessionExpiresAt?: Date };
 }
 
 @ApiTags('Auth')
@@ -131,7 +131,12 @@ export class AuthController {
   @ApiOkResponse({ type: CurrentUserDto })
   @ApiUnauthorizedResponse()
   async me(@Req() req: AuthenticatedRequest) {
-    return this.getCurrentUserUseCase.execute(req.user!.id);
+    // A sessão web é estendida a cada requisição: o front sincroniza a validade
+    // por aqui (sem isso, desligaria em "login + TTL" mesmo com uso contínuo).
+    return {
+      ...(await this.getCurrentUserUseCase.execute(req.user!.id)),
+      session_expires_at: req.user!.sessionExpiresAt?.toISOString() ?? null,
+    };
   }
 
   @Post('password-reset/request')
