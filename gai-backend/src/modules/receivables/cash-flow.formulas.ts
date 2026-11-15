@@ -153,6 +153,10 @@ export interface FlowItem {
   description: string;
   /** Referências para as ações (baixa, estorno, reprogramar, confirmar, pagar). */
   refs: Record<string, string | number | null>;
+  /** Data do fato: data da despesa (saídas) ou data do lote (reembolsos). */
+  reference_on?: string | null;
+  /** Composição (itens do lote de reembolso ou das despesas a reembolsar). */
+  details?: Array<{ date: string; description: string; amount: string }>;
 }
 
 interface Bucket {

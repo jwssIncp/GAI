@@ -26,6 +26,7 @@ import type { ProjectActorContext } from '../projects/application/services/proje
 import { ProjectEntity } from '../projects/infrastructure/persistence/project.entity';
 import {
   addDays,
+  addMonths,
   amendmentProposal,
   cashFlowKpis,
   cents,
@@ -53,12 +54,12 @@ const ORIGIN_LABEL: Record<string, string> = {
   budget: 'Orçamento',
   reimbursement: 'Reembolso',
   to_bill: 'A reembolsar (sem lote faturado)',
-  asset_tag: 'Placas',
-  asset_tag_cost: 'Placas (fornecedor)',
+  asset_tag: 'Placas de patrimônio (revenda)',
+  asset_tag_cost: 'Placas de patrimônio (custo)',
   field_agent_payment: 'Diárias',
-  expense: 'Despesa',
+  expense: 'Despesas',
   income_tax: 'Imposto de Renda',
-  commission: 'Comissão',
+  commission: 'Comissões',
 };
 const br = (civilDate: string) => civilDate.split('-').reverse().join('/');
 const civil = (v: Date | string | null | undefined) =>
@@ -91,11 +92,20 @@ export interface Proposal {
 export interface BoardQuery {
   organization_id?: number;
   project_id?: number;
+  /** Ano das tabelas (AAAA) ou "all" (todos; os cards seguem o mês de referência). */
   year?: string;
   month?: string;
   /** Data de referência para "em atraso" (padrão: hoje). */
   as_of?: string;
 }
+
+/** Saídas acrescentadas ao fluxo depois do cálculo (custos fixos da DRE). */
+export type ExtraItems = (
+  all: Awaited<ReturnType<CashFlowBoardService['items']>>,
+  years: string[],
+  org: number,
+  today: string,
+) => Promise<FlowItem[]>;
 
 type BatchResult = {
   done: number;
@@ -141,7 +151,11 @@ export class CashFlowBoardService {
   }
 
   /** Quadro e os movimentos completos calculados (reaproveitados pela DRE). */
-  async boardWithItems(q: BoardQuery, actor: ProjectActorContext) {
+  async boardWithItems(
+    q: BoardQuery,
+    actor: ProjectActorContext,
+    extra?: ExtraItems,
+  ) {
     const org = this.receivables.org(actor, q.organization_id);
     await this.receivables.require(actor, [
       'cash-flow:read',
@@ -152,16 +166,27 @@ export class CashFlowBoardService {
     this.paramCache.clear();
     const today = q.as_of ?? civilToday();
     const month = q.month ?? today.slice(0, 7);
-    const year = q.year ?? month.slice(0, 4);
+    // "all": tabelas de todos os anos; os cards seguem o ano do mês de referência.
+    const allYears = q.year === 'all';
+    const year = !q.year || allYears ? month.slice(0, 4) : q.year;
     const all = await this.items(org, today);
     const scoped = q.project_id
       ? all.items.filter((i) => i.project_id === q.project_id)
-      : all.items;
+      : [...all.items];
+    // Custos fixos (sem projeto): só sem filtro de projeto.
+    if (extra && !q.project_id) {
+      const next = addMonths(`${month}-01`, 1).slice(0, 4);
+      const years = new Set([year, next]);
+      if (allYears) for (const i of all.items) years.add(i.date.slice(0, 4));
+      scoped.push(...(await extra(all, [...years].sort(), org, today)));
+    }
     // Tabelas: o ano escolhido + tudo o que está em aberto e vencido (nunca escondido).
     const visible = scoped
       .filter(
         (i) =>
-          i.date.startsWith(year) || (i.overdue && i.status !== 'realized'),
+          allYears ||
+          i.date.startsWith(year) ||
+          (i.overdue && i.status !== 'realized'),
       )
       .sort(
         (a, b) => a.date.localeCompare(b.date) || a.key.localeCompare(b.key),
@@ -172,6 +197,8 @@ export class CashFlowBoardService {
     const board = {
       as_of: today,
       reference: { month, year },
+      /** Ano das tabelas: o de referência ou "all". */
+      tables_year: allYears ? 'all' : year,
       kpis: cashFlowKpis(scoped, { month, year }),
       alerts: {
         proposed_count: new Set(proposed.map((i) => i.refs.source_key)).size,
@@ -274,6 +301,43 @@ export class CashFlowBoardService {
       });
     };
 
+    const expenses = (
+      await m.find(ExpenseEntity, { where: { organizationId: org } })
+    ).filter(
+      (e) => !e.deletedAt && !['cancelled', 'rejected'].includes(e.status),
+    );
+    const batches = await m.find(ExpenseReimbursementBatchEntity, {
+      where: { organizationId: org },
+    });
+    const expenseLabel = (e: ExpenseEntity) =>
+      `${e.reasonCode ?? e.description}${e.projectSequence ? ` (cód. ${e.projectSequence})` : ''}`;
+    const detailOf = (list: ExpenseEntity[]) =>
+      list
+        .map((e) => ({
+          date: civil(e.expenseDate)!,
+          description: expenseLabel(e),
+          amount: dec(e.amount),
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    /** Lote de reembolso: data do lote e despesas que o compõem. */
+    const batchInfo = (b: ExpenseReimbursementBatchEntity | undefined) =>
+      b
+        ? {
+            reference_on: civil(b.batchDate),
+            details: detailOf(
+              expenses.filter(
+                (e) => Number(e.reimbursementBatchId) === Number(b.id),
+              ),
+            ),
+          }
+        : {};
+    const batchById = new Map(batches.map((b) => [Number(b.id), b]));
+    const batchByReceivable = new Map(
+      batches
+        .filter((b) => b.receivableId)
+        .map((b) => [Number(b.receivableId), b]),
+    );
+
     // ───── Entradas: recebíveis confirmados ─────
     const receivables = await m.find(ReceivableEntity, {
       where: { organizationId: org },
@@ -314,6 +378,9 @@ export class CashFlowBoardService {
             of: n,
           },
           description: r.data.description,
+          ...(group === 'reimbursement'
+            ? batchInfo(batchByReceivable.get(Number(r.id)))
+            : {}),
         };
         const make = async (
           item: Omit<FlowItem, 'overdue' | 'overdue_days' | 'net' | 'derived'>,
@@ -388,6 +455,9 @@ export class CashFlowBoardService {
         realized_on: null,
         status: 'proposed' as const,
         description: `${p.description} (previsto, não confirmado)`,
+        ...(p.origin === 'reimbursement'
+          ? batchInfo(batchById.get(p.source_id))
+          : {}),
       };
       for (const inst of p.installments) {
         const item = {
@@ -406,18 +476,16 @@ export class CashFlowBoardService {
     }
 
     // ───── Entradas: a reembolsar sem lote faturado (informativo, doc 06 §7.2) ─────
-    const expenses = (
-      await m.find(ExpenseEntity, { where: { organizationId: org } })
-    ).filter(
-      (e) => !e.deletedAt && !['cancelled', 'rejected'].includes(e.status),
-    );
-    const batches = await m.find(ExpenseReimbursementBatchEntity, {
-      where: { organizationId: org },
-    });
     const batchStatus = new Map(batches.map((b) => [Number(b.id), b.status]));
     const toBill = new Map<
       string,
-      { projectId: number; date: string; total: bigint; count: number }
+      {
+        projectId: number;
+        date: string;
+        total: bigint;
+        count: number;
+        list: ExpenseEntity[];
+      }
     >();
     for (const e of expenses) {
       const status = e.reimbursementBatchId
@@ -438,9 +506,11 @@ export class CashFlowBoardService {
         date,
         total: 0n,
         count: 0,
+        list: [],
       };
       g.total += cents(dec(e.amount));
       g.count++;
+      g.list.push(e);
       toBill.set(key, g);
     }
     for (const g of toBill.values())
@@ -460,6 +530,8 @@ export class CashFlowBoardService {
         contract_pct: null,
         description: `${g.count} despesa(s) reembolsável(is) ainda não faturada(s) ao cliente`,
         refs: {},
+        reference_on: null,
+        details: detailOf(g.list),
       });
 
     // ───── Saídas: diárias (baixa só em Pagamento de inventariantes) ─────
@@ -517,7 +589,7 @@ export class CashFlowBoardService {
       const projectId = Number(e.projectId);
       const group =
         e.expenseType === 'reimbursable' ? 'to_reimburse' : 'non_reimbursable';
-      const label = `${e.reasonCode ?? e.description}${e.projectSequence ? ` (cód. ${e.projectSequence})` : ''}`;
+      const label = expenseLabel(e);
       const paidAt =
         e.status === ExpenseStatus.PAID && e.paidAt ? civil(e.paidAt) : null;
       const shared = {
@@ -527,6 +599,7 @@ export class CashFlowBoardService {
         origin: 'expense',
         origin_label: ORIGIN_LABEL.expense,
         contract_pct: null,
+        reference_on: civil(e.expenseDate),
       };
       const settleable = (
         key: string,
@@ -981,6 +1054,43 @@ export class CashFlowBoardService {
             command_key: `cf-${randomUUID()}`,
             reason: 'Desfeito no fluxo de caixa',
             reversed_on: civilToday(),
+          },
+          actor,
+        );
+      },
+    );
+  }
+
+  /**
+   * Alterar a data de recebimento: estorno + novo recebimento na nova data, na
+   * mesma transação de cada recebível (exige receber e estornar).
+   */
+  async redateReceipts(
+    items: Array<{ receivable_id: number; event_id: number }>,
+    receivedOn: string,
+    reason: string,
+    actor: ProjectActorContext,
+  ) {
+    await this.receivables.require(actor, [
+      'cash-flow:read',
+      'receivables:read',
+      'receivables:receive',
+      'receivables:reverse',
+    ]);
+    assertNotFuture(receivedOn, 'A data de recebimento');
+    return this.each(
+      items.map((i) => `${i.receivable_id}:${i.event_id}`),
+      async (key) => {
+        const [id, eventId] = key.split(':').map(Number);
+        const d = await this.receivables.detail(id, actor);
+        await this.receivables.redateReceipt(
+          id,
+          eventId,
+          {
+            revision: d.revision,
+            command_key: `cf-${randomUUID()}`,
+            reason,
+            received_on: receivedOn,
           },
           actor,
         );

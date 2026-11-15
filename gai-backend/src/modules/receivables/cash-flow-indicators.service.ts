@@ -4,6 +4,7 @@ import { civilToday } from '../finance-settings/finance-settings.policy';
 import type { ProjectActorContext } from '../projects/application/services/project-scope.service';
 import { CashFlowBoardService } from './cash-flow-board.service';
 import {
+  addMonths,
   cashFlowKpis,
   cents,
   type FlowItem,
@@ -72,7 +73,8 @@ export class CashFlowIndicatorsService {
     ]);
     const today = q.as_of ?? civilToday();
     const month = q.month ?? today.slice(0, 7);
-    const year = q.year ?? month.slice(0, 4);
+    // "all" vale só para as tabelas: os indicadores seguem o mês de referência.
+    const year = !q.year || q.year === 'all' ? month.slice(0, 4) : q.year;
     let params;
     try {
       params = await this.settings.valuesAt(org, today);
@@ -93,6 +95,14 @@ export class CashFlowIndicatorsService {
     const dre = await this.monthly.context(org, today, computed);
     if (!dre)
       return { configured: false as const, as_of: today, reference: ref };
+    // Custos fixos da DRE, como no quadro (mesmos cards; sem projeto filtrado).
+    if (!q.project_id)
+      all.push(
+        ...this.monthly.fixedCosts(dre, [
+          year,
+          addMonths(`${month}-01`, 1).slice(0, 4),
+        ]),
+      );
     const { internals, ...original } = this.compute(
       all,
       params,

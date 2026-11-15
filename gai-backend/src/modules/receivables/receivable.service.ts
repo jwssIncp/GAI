@@ -570,7 +570,16 @@ export class ReceivableService {
     perform: (
       m: EntityManager,
       row: R,
-    ) => Promise<{ details: Record<string, unknown>; extra?: Partial<E> }>,
+    ) => Promise<{
+      details: Record<string, unknown>;
+      extra?: Partial<E>;
+      /** Eventos gravados antes do principal, na mesma transação (cada um com sua revisão). */
+      preceding?: Array<{
+        operation: string;
+        details: Record<string, unknown>;
+        extra: Partial<E>;
+      }>;
+    }>,
   ) {
     const fingerprint = hash({ id, operation, dto });
     if (dto.reason.trim().length < 5)
@@ -592,7 +601,20 @@ export class ReceivableService {
       if (row.cancelled) conflict('Recebível cancelado não admite alterações.');
       const result = await perform(m, row);
       const previous = row.revision;
-      row.revision++;
+      for (const [n, p] of (result.preceding ?? []).entries()) {
+        row.revision = previous + 1 + n;
+        await this.event(
+          m,
+          row,
+          actor,
+          `${dto.command_key}:${n + 1}`,
+          hash({ fingerprint, n }),
+          p.operation,
+          { reason: dto.reason, ...p.details },
+          p.extra,
+        );
+      }
+      row.revision = previous + 1 + (result.preceding?.length ?? 0);
       const updated = await m
         .createQueryBuilder()
         .update(R)
@@ -731,6 +753,61 @@ export class ReceivableService {
       };
     });
   }
+  /**
+   * Alterar a data de um recebimento: estorno do recebimento original (data de
+   * hoje) e novo recebimento do mesmo valor na nova data, na mesma transação.
+   * Data futura recusada; os dois eventos ficam na trilha do recebível.
+   */
+  redateReceipt(
+    id: number,
+    eventId: number,
+    dto: FinanceCommandDto & { received_on: string },
+    actor: ProjectActorContext,
+  ) {
+    return this.mutate(id, dto, actor, 'receipt', async (m, row) => {
+      const d = await this.detailFrom(m, row),
+        e = d.events.find((x) => x.id === eventId && x.operation === 'receipt');
+      if (!e || !e.amount || !e.effectiveOn)
+        invalid('Recebimento não encontrado neste recebível.');
+      if (d.events.some((r) => r.reversesId === e.id))
+        conflict('Recebimento já estornado.');
+      civil(dto.received_on);
+      assertNotFuture(dto.received_on, 'A data de recebimento');
+      if (dto.received_on < row.data.issued_on)
+        invalid('Data de recebimento anterior à emissão.');
+      if (dto.received_on === e.effectiveOn)
+        conflict('A data de recebimento já é essa.');
+      const today = new Date().toISOString().slice(0, 10);
+      const before = e.details;
+      return {
+        preceding: [
+          {
+            operation: 'reversal',
+            details: { original_event_id: e.id, redated_to: dto.received_on },
+            extra: {
+              installmentId: e.installmentId,
+              reversesId: e.id,
+              amount: decimal(-scaled(e.amount)),
+              effectiveOn: today,
+            },
+          },
+        ],
+        details: {
+          method: text(before.method) || 'Baixa no fluxo de caixa',
+          reference: `${text(before.reference) || 'recebimento'}·${dto.received_on}·${e.id}`,
+          notes: text(before.notes),
+          redates_event_id: e.id,
+          before: e.effectiveOn,
+          after: dto.received_on,
+        },
+        extra: {
+          installmentId: e.installmentId,
+          amount: e.amount,
+          effectiveOn: dto.received_on,
+        },
+      };
+    });
+  }
   cancel(id: number, dto: FinanceCommandDto, actor: ProjectActorContext) {
     return this.mutate(id, dto, actor, 'cancel', async (m, row) => {
       const d = await this.detailFrom(m, row);
@@ -743,4 +820,8 @@ export class ReceivableService {
 }
 function scaledPositive(value: string) {
   return value.startsWith('-') ? -scaled(value.slice(1)) : scaled(value);
+}
+/** Texto de um campo livre dos detalhes do evento (não texto → vazio). */
+function text(value: unknown): string {
+  return typeof value === 'string' ? value : '';
 }

@@ -40,7 +40,8 @@ import { DreMonthlyService } from '../managerial-dre/dre-monthly.service';
 export class CashFlowBoardQueryDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) organization_id?: number;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) project_id?: number;
-  @IsOptional() @Matches(/^\d{4}$/) year?: string;
+  /** AAAA ou "all" (tabelas de todos os anos). */
+  @IsOptional() @Matches(/^(\d{4}|all)$/) year?: string;
   @IsOptional() @Matches(/^\d{4}-\d{2}$/) month?: string;
   @IsOptional() @IsCivilDate() as_of?: string;
 }
@@ -87,6 +88,10 @@ class UndoReceiptDto {
   @Type(() => EventRefDto)
   items!: EventRefDto[];
 }
+class RedateReceiptDto extends UndoReceiptDto {
+  @IsCivilDate() received_on!: string;
+  @IsString() @MinLength(5) @MaxLength(2000) reason!: string;
+}
 class RescheduleDto {
   @IsArray()
   @ArrayMinSize(1)
@@ -122,15 +127,26 @@ export class CashFlowBoardController {
   @Get('board')
   @RequirePermissions('cash-flow:read')
   async get(@Query() q: CashFlowBoardQueryDto, @Req() req: Request) {
-    const {
-      board: b,
-      all,
-      org,
-    } = await this.board.boardWithItems(q, this.actor(req));
+    // Custos fixos da DRE entram como saídas (sem projeto: só sem filtro de
+    // projeto). O contexto da DRE reaproveita o fluxo já calculado.
+    let ctx: Awaited<ReturnType<DreMonthlyService['context']>> = null;
+    const { board: b } = await this.board.boardWithItems(
+      q,
+      this.actor(req),
+      async (all, years, org, today) => {
+        ctx = await this.monthly.context(org, today, all);
+        return ctx ? this.monthly.fixedCosts(ctx, years, q.year === 'all') : [];
+      },
+    );
     // Total do ano = resultado final da DRE mensal jan–dez (como o INVESTOR);
-    // o total do fluxo continua em year.total.
-    // Mesmo cálculo do fluxo reaproveitado pela DRE (uma vez por consulta).
-    const grid = await this.monthly.grid(org, b.reference.year, b.as_of, all);
+    // o total do fluxo continua em year.total. Com projeto filtrado a DRE (da
+    // organização inteira) não se aplica: o card mostra o total do fluxo.
+    const context = ctx as Awaited<
+      ReturnType<DreMonthlyService['context']>
+    > | null;
+    const grid = context
+      ? this.monthly.gridFrom(context, b.reference.year)
+      : null;
     const dreTotal =
       grid?.lines.find((l) => l.key === 'final_result')?.total ?? null;
     return {
@@ -189,6 +205,23 @@ export class CashFlowBoardController {
   @RequirePermissions('cash-flow:read', 'receivables:reverse')
   undo(@Body() dto: UndoReceiptDto, @Req() req: Request) {
     return this.board.undoReceipts(dto.items, this.actor(req));
+  }
+
+  /** Alterar a data de recebimento (estorno + novo recebimento, mesma transação). */
+  @Post('receipts/redate')
+  @HttpCode(200)
+  @RequirePermissions(
+    'cash-flow:read',
+    'receivables:receive',
+    'receivables:reverse',
+  )
+  redate(@Body() dto: RedateReceiptDto, @Req() req: Request) {
+    return this.board.redateReceipts(
+      dto.items,
+      dto.received_on,
+      dto.reason,
+      this.actor(req),
+    );
   }
 
   @Post('reschedule')

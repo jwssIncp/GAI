@@ -25,6 +25,8 @@ type Item = {
   gross: string;
   net: string;
   project_name: string;
+  project_id: number | null;
+  currency: string;
   installment: { number: number; of: number } | null;
   refs: Record<string, string | number | null>;
 };
@@ -930,7 +932,10 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       operating_result: '-27647.20',
       final_result: '-33689.20',
       estimates: 6,
-      cash_flow_total: '3016.90',
+      // Fluxo do ano com os custos fixos da DRE a partir do corte (set–dez):
+      // 4.01 6.000 × 4 + 4.03 (600 + 900 + 600 + 600) + 4.04 3.021 × 2 = 32.742
+      // → 3.016,90 − 32.742 = −29.725,10.
+      cash_flow_total: '-29725.10',
     });
     expect(ind.partner_commission).toMatchObject({
       quarters: ['0.00', '0.00', '0.00', '0.00'],
@@ -948,8 +953,12 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
     expect(brl.year.dre_total).toBe('-33689.20');
-    expect(brl.year.total).toBe('3016.90');
+    expect(brl.year.total).toBe('-29725.10');
     expect(r.kpis.year.dre_total).toBe('-33689.20');
+    // Mesmos cards no quadro e nos indicadores
+    expect(r.kpis.month).toEqual(brl.month);
+    expect(r.kpis.next_month).toEqual(brl.next_month);
+    expect(r.kpis.year.out_open).toBe(brl.year.out_open);
   });
 
   /**
@@ -957,8 +966,10 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
    * 01/2027, 02/2027, despesas da empresa. % históricos: inventariantes 20%,
    * não reemb. 5%. 5.000 → IR 666,50 + 1.000 + 250; 3.000 → 399,90 + 600 + 150;
    * 2.000 → 266,60 + 400 + 100.
-   * 12/2026: 5.000 − 666,50 − 1.000 − 250 = +3.083,50 → −2.250 → 833,50.
-   * 01/2027: 3.000 − 399,90 − 600 − 150 = +1.850,10 → 11.453,75 → 13.303,85.
+   * 12/2026: 5.000 − 666,50 − 1.000 − 250 = +3.083,50 → −2.250 − custos fixos
+   * de dez (4.01 6.000 + 4.03 600 + 4.04 3.021 = 9.621) = −11.871 → −8.787,50.
+   * 01/2027: 3.000 − 399,90 − 600 − 150 = +1.850,10 → 11.453,75 → 13.303,85
+   * (sem custo fixo: estimativa só no ano corrente).
    * Ano: 5.000 × MC 50,003% = 2.500,15 → DRE −33.689,20 → −31.189,05.
    * PEC = 31.189,05/0,55003 = 56.704,27; PEE = (8.900 + 31.189,05)/0,45003
    * = 89.080,84; margem líquida = −31.189,05/(89.000 − 5.365,18) = −37,29%.
@@ -993,7 +1004,7 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       sale_result: '2500.15',
       client_share: '0.00',
     });
-    expect(s.kpis.month.total).toBe('833.50');
+    expect(s.kpis.month.total).toBe('-8787.50');
     expect(s.kpis.next_month.total).toBe('13303.85');
     expect(s.kpis.year.dre_total).toBe('-31189.05');
     expect(s.indicators.projected_result).toBe('-31189.05');
@@ -1016,7 +1027,8 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const brl = (await board()).kpis.find(
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
-    expect(brl.month.total).toBe('-2250.00');
+    // dez: −2.250 do fluxo − 9.621 de custos fixos = −11.871 (= resultado final da DRE de dez)
+    expect(brl.month.total).toBe('-11871.00');
     expect(brl.year.dre_total).toBe('-33689.20');
     // mês passado: recusado; mês atual: parcela cai hoje (14/11), não no dia 1º
     const base =
@@ -1098,11 +1110,13 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const nov = afterUndo.kpis.find(
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
-    // 11/2026 sem o recebimento estornado: entradas 0; saídas pagas 1.333,20 − IR 533,20 = 800,00
+    // 11/2026 sem o recebimento estornado: entradas 0; saídas pagas 1.333,20 − IR 533,20 = 800,00;
+    // a pagar = custos fixos de nov (6.000 + 600 + 3.021 = 9.621, estimados)
     expect(nov.month).toMatchObject({
       in_realized: '0.00',
       out_realized: '800.00',
-      total: '-800.00',
+      out_open: '9621.00',
+      total: '-10421.00',
     });
     // Descartar a proposta do aditivo (com justificativa): some e não volta enquanto não mudar
     const amendmentKey = (await board('as_of=2026-11-14&year=2027')).items.find(
@@ -1411,5 +1425,132 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     );
     for (const l of now.totals[0].lines)
       expect(sheet.get(l.label)).toBe(Number(l.known_amount));
+  });
+
+  /**
+   * Alterar a data de recebimento (fluxo de caixa com paridade): estorno do
+   * recebimento original e novo recebimento na nova data, na mesma transação
+   * (dois eventos seguidos na trilha do recebível); data futura recusada; exige
+   * receber e estornar.
+   */
+  it('alterar data de recebimento: estorno + novo recebimento na mesma transação, futura recusada', async () => {
+    const open = (await board('as_of=2026-11-14&year=all')).items.find(
+      (i) =>
+        i.origin === 'contract' && i.status === 'open' && i.refs.installment_id,
+    )!;
+    await api('post', '/finance/cash-flow/receipts')
+      .send({
+        items: [
+          {
+            receivable_id: open.refs.receivable_id,
+            installment_id: open.refs.installment_id,
+          },
+        ],
+        received_on: '2026-11-10',
+      })
+      .expect(200);
+    const realizedOf = async () =>
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) =>
+          i.status === 'realized' &&
+          i.origin === 'contract' &&
+          i.refs.receivable_id === open.refs.receivable_id,
+      )!;
+    const received = await realizedOf();
+    expect(received.date).toBe('2026-11-10');
+    const ref = {
+      receivable_id: received.refs.receivable_id,
+      event_id: received.refs.event_id,
+    };
+    // sem justificativa: recusado pela validação
+    await api('post', '/finance/cash-flow/receipts/redate')
+      .send({ items: [ref], received_on: '2026-11-12' })
+      .expect(400);
+    // data futura: recusada antes de tocar no recebível
+    const future = await api('post', '/finance/cash-flow/receipts/redate')
+      .send({
+        items: [ref],
+        received_on: '2099-01-01',
+        reason: 'Data informada pelo banco',
+      })
+      .expect(400);
+    expect(future.body.code).toBe('FUTURE_SETTLEMENT_DATE');
+    await api('post', '/finance/cash-flow/receipts/redate', user)
+      .send({
+        items: [ref],
+        received_on: '2026-11-12',
+        reason: 'Data informada pelo banco',
+      })
+      .expect(403);
+    const done = (
+      await api('post', '/finance/cash-flow/receipts/redate')
+        .send({
+          items: [ref],
+          received_on: '2026-11-12',
+          reason: 'Data informada pelo banco',
+        })
+        .expect(200)
+    ).body;
+    expect(done).toMatchObject({ done: 1, failed: 0 });
+    const after = (await board('as_of=2026-11-14&year=all')).items.filter(
+      (i) =>
+        i.origin === 'contract' &&
+        i.refs.receivable_id === open.refs.receivable_id &&
+        i.installment?.number === open.installment?.number,
+    );
+    expect(
+      after
+        .filter((i) => i.status !== 'open')
+        .map((i) => `${i.status} ${i.date} ${i.gross}`)
+        .sort(),
+    ).toEqual([
+      `realized 2026-11-12 ${open.gross}`,
+      `reversed 2026-11-10 ${open.gross}`,
+    ]);
+    // a parcela não volta a ficar em aberto (o valor foi recebido de novo)
+    expect(after.some((i) => i.status === 'open')).toBe(false);
+    // trilha: estorno e novo recebimento em revisões seguidas, com a justificativa
+    const detail = (
+      await api(
+        'get',
+        `/finance/receivables/${String(open.refs.receivable_id)}`,
+      ).expect(200)
+    ).body as {
+      events: Array<{
+        operation: string;
+        revision: number;
+        effectiveOn: string | null;
+        details: Record<string, unknown>;
+      }>;
+    };
+    const last = detail.events.slice(-2);
+    expect(last.map((e) => e.operation)).toEqual(['reversal', 'receipt']);
+    expect(last[1].revision).toBe(last[0].revision + 1);
+    expect(String(last[1].effectiveOn).slice(0, 10)).toBe('2026-11-12');
+    expect(last[0].details).toMatchObject({
+      reason: 'Data informada pelo banco',
+      redated_to: '2026-11-12',
+    });
+    expect(last[1].details).toMatchObject({
+      before: '2026-11-10',
+      after: '2026-11-12',
+    });
+    // mesma data: recusada no item (nada muda)
+    const same = (
+      await api('post', '/finance/cash-flow/receipts/redate')
+        .send({
+          items: [
+            {
+              receivable_id: ref.receivable_id,
+              event_id: (await realizedOf()).refs.event_id,
+            },
+          ],
+          received_on: '2026-11-12',
+          reason: 'Mesma data de novo',
+        })
+        .expect(200)
+    ).body;
+    expect(same).toMatchObject({ done: 0, failed: 1 });
+    expect(same.results[0].message).toContain('já é essa');
   });
 });

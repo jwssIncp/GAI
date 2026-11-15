@@ -24,6 +24,7 @@ import {
   toCents,
   windowShares,
 } from './dre-monthly.formulas';
+import { fixedCostFlowItems } from './dre-fixed-costs.formulas';
 
 const SOURCED = ['receivable', 'expense', 'payment'];
 export const EMPTY_LAYOUT: DreLayoutData = {
@@ -228,6 +229,28 @@ export class DreMonthlyService {
       window: windowShares(c.ctx),
       warnings: c.warnings,
     };
+  }
+
+  /**
+   * Custos fixos da DRE como saídas do fluxo (lançado ou estimado), nos anos
+   * pedidos; com `withValues`, também nos anos que têm valor lançado na DRE.
+   */
+  fixedCosts(
+    c: NonNullable<Awaited<ReturnType<DreMonthlyService['context']>>>,
+    years: string[],
+    withValues = false,
+  ) {
+    const all = new Set(years);
+    if (withValues) {
+      for (const key of c.ctx.entered.keys())
+        all.add(key.split('|')[1].slice(0, 4));
+      for (const key of c.ctx.classified.keys())
+        all.add(key.split('|')[1].slice(0, 4));
+      for (const month of c.ctx.closed.keys()) all.add(month.slice(0, 4));
+    }
+    return [...all]
+      .sort()
+      .flatMap((y) => fixedCostFlowItems(buildGrid(c.ctx, y)));
   }
 
   async flowItems(org: number, today: string) {
