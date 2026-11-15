@@ -23,6 +23,10 @@ export type FlowItem = {
   contract_pct: string | null;
   description: string;
   refs: Record<string, string | number | null>;
+  /** Data do fato: data da despesa (saídas) ou data do lote (reembolsos). */
+  reference_on?: string | null;
+  /** Composição do lote de reembolso ou das despesas a reembolsar. */
+  details?: Array<{ date: string; description: string; amount: string }>;
 };
 
 export type CashFlowKpis = {
@@ -38,6 +42,8 @@ export type CashFlowKpis = {
 export type CashFlowBoard = {
   as_of: string;
   reference: { month: string; year: string };
+  /** Ano das tabelas: o de referência ou "all". */
+  tables_year?: string;
   kpis: CashFlowKpis[];
   alerts: {
     proposed_count: number;
@@ -51,6 +57,7 @@ export type CashFlowBoard = {
   items: FlowItem[];
 };
 
+/** year: AAAA ou "all" (tabelas de todos os anos; os cards seguem o mês de referência). */
 export type BoardQuery = { project_id?: number; year?: string; month?: string };
 export type BatchResult = { done: number; failed: number; results: Array<{ key: string; ok: boolean; message?: string }> };
 type InstallmentRef = { receivable_id: number; installment_id: number };
@@ -63,6 +70,9 @@ export const cashFlowApi = {
   discard: (keys: string[], reason: string) => post<BatchResult>("/proposals/discard", { keys, reason }),
   receive: (items: InstallmentRef[], received_on: string) => post<BatchResult>("/receipts", { items, received_on }),
   undoReceipts: (items: Array<{ receivable_id: number; event_id: number }>) => post<BatchResult>("/receipts/undo", { items }),
+  /** Alterar a data de recebimento: estorno + novo recebimento na nova data (mesma transação). */
+  redateReceipts: (items: Array<{ receivable_id: number; event_id: number }>, received_on: string, reason: string) =>
+    post<BatchResult>("/receipts/redate", { items, received_on, reason }),
   reschedule: (items: InstallmentRef[], due_on: string, reason: string) => post<BatchResult>("/reschedule", { items, due_on, reason }),
   settle: (keys: string[], paid_on: string | null) => post<BatchResult>("/outflows/settle", { keys, paid_on }),
 };

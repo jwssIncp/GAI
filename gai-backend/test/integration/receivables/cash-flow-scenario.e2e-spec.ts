@@ -25,6 +25,8 @@ type Item = {
   gross: string;
   net: string;
   project_name: string;
+  project_id: number | null;
+  currency: string;
   installment: { number: number; of: number } | null;
   refs: Record<string, string | number | null>;
 };
@@ -930,7 +932,10 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       operating_result: '-27647.20',
       final_result: '-33689.20',
       estimates: 6,
-      cash_flow_total: '3016.90',
+      // Fluxo do ano com os custos fixos da DRE a partir do corte (set–dez):
+      // 4.01 6.000 × 4 + 4.03 (600 + 900 + 600 + 600) + 4.04 3.021 × 2 = 32.742
+      // → 3.016,90 − 32.742 = −29.725,10.
+      cash_flow_total: '-29725.10',
     });
     expect(ind.partner_commission).toMatchObject({
       quarters: ['0.00', '0.00', '0.00', '0.00'],
@@ -948,8 +953,12 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
     expect(brl.year.dre_total).toBe('-33689.20');
-    expect(brl.year.total).toBe('3016.90');
+    expect(brl.year.total).toBe('-29725.10');
     expect(r.kpis.year.dre_total).toBe('-33689.20');
+    // Mesmos cards no quadro e nos indicadores
+    expect(r.kpis.month).toEqual(brl.month);
+    expect(r.kpis.next_month).toEqual(brl.next_month);
+    expect(r.kpis.year.out_open).toBe(brl.year.out_open);
   });
 
   /**
@@ -957,8 +966,10 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
    * 01/2027, 02/2027, despesas da empresa. % históricos: inventariantes 20%,
    * não reemb. 5%. 5.000 → IR 666,50 + 1.000 + 250; 3.000 → 399,90 + 600 + 150;
    * 2.000 → 266,60 + 400 + 100.
-   * 12/2026: 5.000 − 666,50 − 1.000 − 250 = +3.083,50 → −2.250 → 833,50.
-   * 01/2027: 3.000 − 399,90 − 600 − 150 = +1.850,10 → 11.453,75 → 13.303,85.
+   * 12/2026: 5.000 − 666,50 − 1.000 − 250 = +3.083,50 → −2.250 − custos fixos
+   * de dez (4.01 6.000 + 4.03 600 + 4.04 3.021 = 9.621) = −11.871 → −8.787,50.
+   * 01/2027: 3.000 − 399,90 − 600 − 150 = +1.850,10 → 11.453,75 → 13.303,85
+   * (sem custo fixo: estimativa só no ano corrente).
    * Ano: 5.000 × MC 50,003% = 2.500,15 → DRE −33.689,20 → −31.189,05.
    * PEC = 31.189,05/0,55003 = 56.704,27; PEE = (8.900 + 31.189,05)/0,45003
    * = 89.080,84; margem líquida = −31.189,05/(89.000 − 5.365,18) = −37,29%.
@@ -993,7 +1004,7 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       sale_result: '2500.15',
       client_share: '0.00',
     });
-    expect(s.kpis.month.total).toBe('833.50');
+    expect(s.kpis.month.total).toBe('-8787.50');
     expect(s.kpis.next_month.total).toBe('13303.85');
     expect(s.kpis.year.dre_total).toBe('-31189.05');
     expect(s.indicators.projected_result).toBe('-31189.05');
@@ -1016,7 +1027,8 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const brl = (await board()).kpis.find(
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
-    expect(brl.month.total).toBe('-2250.00');
+    // dez: −2.250 do fluxo − 9.621 de custos fixos = −11.871 (= resultado final da DRE de dez)
+    expect(brl.month.total).toBe('-11871.00');
     expect(brl.year.dre_total).toBe('-33689.20');
     // mês passado: recusado; mês atual: parcela cai hoje (14/11), não no dia 1º
     const base =
@@ -1098,11 +1110,13 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const nov = afterUndo.kpis.find(
       (k) => (k.currency as unknown as string) === 'BRL',
     )!;
-    // 11/2026 sem o recebimento estornado: entradas 0; saídas pagas 1.333,20 − IR 533,20 = 800,00
+    // 11/2026 sem o recebimento estornado: entradas 0; saídas pagas 1.333,20 − IR 533,20 = 800,00;
+    // a pagar = custos fixos de nov (6.000 + 600 + 3.021 = 9.621, estimados)
     expect(nov.month).toMatchObject({
       in_realized: '0.00',
       out_realized: '800.00',
-      total: '-800.00',
+      out_open: '9621.00',
+      total: '-10421.00',
     });
     // Descartar a proposta do aditivo (com justificativa): some e não volta enquanto não mudar
     const amendmentKey = (await board('as_of=2026-11-14&year=2027')).items.find(
@@ -1411,5 +1425,429 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     );
     for (const l of now.totals[0].lines)
       expect(sheet.get(l.label)).toBe(Number(l.known_amount));
+  });
+
+  /**
+   * Consistência (fluxo de caixa com paridade): no estado final do cenário
+   * (modelo padrão aplicado: revenda de placas → 1.04), para cada mês aberto
+   * de 11/2026 a 12/2027 (ago–out/2026 estão fechados e congelados: podem
+   * divergir de propósito), sem filtro de projeto:
+   * - subtotal de cada bloco da tela = célula da DRE da conta associada ao tipo
+   *   de movimento (busca pela associação, nunca pelo código: cada organização
+   *   tem seu plano);
+   * - linhas de custo fixo = célula da conta de origem (lançado + estimado);
+   * - saldo do mês (entradas − saídas) = resultado final da DRE do mês (o
+   *   cenário não tem outros lançamentos nesses meses);
+   * - IR descontado uma vez: bruto − saídas com IR = líquido − saídas sem IR;
+   * - cards = soma das linhas; quadro = indicadores.
+   */
+  it('consistência: blocos e cards do fluxo = DRE mensal (por associação) = indicadores; IR uma vez', async () => {
+    type GridAccount = {
+      id: number;
+      code: string;
+      flow_kinds: string[];
+      cells: Array<{ month: string; value: string; estimate: string | null }>;
+    };
+    type Grid = {
+      accounts: GridAccount[];
+      lines: Array<{ key: string; values: string[] }>;
+      months: string[];
+    };
+    const grids: Record<string, Grid> = {};
+    for (const y of ['2026', '2027'])
+      grids[y] = (await dreView(`year=${y}&as_of=2026-11-14`))
+        .grid as unknown as Grid;
+    const c = (v: string | number) => Math.round(Number(v) * 100);
+    const sum = (list: Item[], f: (i: Item) => string = (i) => i.gross) =>
+      list.reduce((s, i) => s + c(f(i)), 0);
+    const cellOfKind = (kind: string, month: string) => {
+      const a = grids[month.slice(0, 4)].accounts.find((x) =>
+        x.flow_kinds.includes(kind),
+      );
+      expect(a).toBeDefined(); // todo tipo usado tem conta associada
+      return c(a!.cells.find((x) => x.month === month)!.value);
+    };
+    const all = await board('as_of=2026-11-14&month=2026-11&year=all');
+    expect((all as unknown as { tables_year: string }).tables_year).toBe('all');
+    const live = all.items.filter(
+      (i) => i.status !== 'reversed' && i.currency === 'BRL',
+    );
+    const blocks = (rows: Item[]) => ({
+      billing: rows.filter((i) => i.group === 'billing'),
+      reimbursement: rows.filter(
+        (i) =>
+          (i.group === 'reimbursement' || i.group === 'other_in') &&
+          i.origin !== 'asset_tag',
+      ),
+      resale: rows.filter((i) => i.origin === 'asset_tag'),
+      to_reimburse: rows.filter((i) => i.group === 'to_reimburse'),
+      non_reimbursable: rows.filter((i) => i.group === 'non_reimbursable'),
+    });
+    const months = [...grids['2026'].months.slice(10), ...grids['2027'].months];
+    let checked = 0;
+    for (const month of months) {
+      const rows = live.filter((i) => i.date.startsWith(month));
+      const b = blocks(rows);
+      expect([month, 'faturamento', sum(b.billing)]).toEqual([
+        month,
+        'faturamento',
+        cellOfKind('billing_revenue', month),
+      ]);
+      expect([month, 'reembolso', sum(b.reimbursement)]).toEqual([
+        month,
+        'reembolso',
+        cellOfKind('reimbursement_revenue', month),
+      ]);
+      expect([month, 'revenda', sum(b.resale)]).toEqual([
+        month,
+        'revenda',
+        cellOfKind('asset_tags_revenue', month),
+      ]);
+      expect([month, 'a reembolsar', sum(b.to_reimburse)]).toEqual([
+        month,
+        'a reembolsar',
+        cellOfKind('reimbursable_expenses', month),
+      ]);
+      const nr = (origin: string, only?: (i: Item) => boolean) =>
+        sum(
+          b.non_reimbursable.filter(
+            (i) => i.origin === origin && (!only || only(i)),
+          ),
+        );
+      for (const [origin, kind] of [
+        ['income_tax', 'income_tax'],
+        ['field_agent_payment', 'field_agents'],
+        ['expense', 'non_reimbursable_expenses'],
+        ['commission', 'commissions'],
+        ['asset_tag_cost', 'asset_tags'],
+      ])
+        expect([month, origin, nr(origin)]).toEqual([
+          month,
+          origin,
+          cellOfKind(kind, month),
+        ]);
+      // Custos fixos: cada linha = célula da conta de origem (lançado + estimado)
+      const fixed = b.non_reimbursable.filter((i) => i.origin === 'fixed_cost');
+      const byAccount = new Map<number, number>();
+      for (const i of fixed)
+        byAccount.set(
+          Number(i.refs.account_id),
+          (byAccount.get(Number(i.refs.account_id)) ?? 0) + c(i.gross),
+        );
+      for (const [id, value] of byAccount) {
+        const a = grids[month.slice(0, 4)].accounts.find((x) => x.id === id)!;
+        expect(a.flow_kinds).toEqual([]); // conta não alimentada pelo fluxo
+        expect([month, a.code, value]).toEqual([
+          month,
+          a.code,
+          c(a.cells.find((x) => x.month === month)!.value),
+        ]);
+      }
+      // Saldo do mês = resultado final da DRE do mês
+      const ins = rows.filter((i) => i.direction === 'in');
+      const outs = rows.filter((i) => i.direction === 'out');
+      const final = grids[month.slice(0, 4)].lines.find(
+        (l) => l.key === 'final_result',
+      )!.values[Number(month.slice(5)) - 1];
+      expect([month, 'saldo', sum(ins) - sum(outs)]).toEqual([
+        month,
+        'saldo',
+        c(final),
+      ]);
+      // IR uma vez: bruto − saídas (com IR) = líquido − saídas (sem IR)
+      const noTax = outs.filter((i) => i.origin !== 'income_tax');
+      expect(sum(ins) - sum(outs)).toBe(sum(ins, (i) => i.net) - sum(noTax));
+      if (rows.length) checked++;
+    }
+    expect(checked).toBeGreaterThanOrEqual(3); // nov e dez/2026, jan/2027
+
+    // Cards = linhas (nov/2026 e dez/2026), sem contar o IR duas vezes
+    const brl = all.kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    const nov = live.filter((i) => i.date.startsWith('2026-11'));
+    const dec = live.filter(
+      (i) => i.date.startsWith('2026-12') && i.status !== 'realized',
+    );
+    const novIn = nov.filter((i) => i.direction === 'in');
+    const novOut = nov.filter((i) => i.direction === 'out');
+    expect(c(brl.month.total)).toBe(sum(novIn) - sum(novOut));
+    expect(c(brl.month.in_realized) + c(brl.month.in_open)).toBe(sum(novIn));
+    expect(c(brl.month.out_realized) + c(brl.month.out_open)).toBe(sum(novOut));
+    const decIn = dec.filter((i) => i.direction === 'in');
+    const decOutNoTax = dec.filter(
+      (i) => i.direction === 'out' && i.origin !== 'income_tax',
+    );
+    expect(c(brl.next_month.in_net)).toBe(sum(decIn, (i) => i.net));
+    expect(c(brl.next_month.out)).toBe(sum(decOutNoTax));
+    expect(c(brl.next_month.total)).toBe(
+      sum(decIn, (i) => i.net) - sum(decOutNoTax),
+    );
+    // Total do ano no card = resultado final da DRE 2026
+    const dreYear = grids['2026'].lines
+      .find((l) => l.key === 'final_result')!
+      .values.reduce((s, v) => s + c(v), 0);
+    expect(brl.year.dre_total).toBe((dreYear / 100).toFixed(2));
+    // Quadro = indicadores (mesmos cards para o mesmo filtro)
+    const ind = (
+      await api(
+        'get',
+        '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-11&year=all',
+      ).expect(200)
+    ).body;
+    expect(ind.kpis.month).toEqual(brl.month);
+    expect(ind.kpis.next_month).toEqual(brl.next_month);
+    expect(ind.kpis.year.dre_total).toBe(brl.year.dre_total);
+
+    // Com projeto filtrado: sem custos fixos (não são de projeto) e sem o total da DRE
+    const alfaBoard = await board(
+      `as_of=2026-11-14&month=2026-11&year=all&project_id=${alfa}`,
+    );
+    expect(alfaBoard.items.some((i) => i.origin === 'fixed_cost')).toBe(false);
+    expect(alfaBoard.items.every((i) => i.project_id === alfa)).toBe(true);
+    expect(
+      alfaBoard.kpis.find((k) => (k.currency as unknown as string) === 'BRL')!
+        .year.dre_total,
+    ).toBeNull();
+  });
+
+  /**
+   * Alterar a data de recebimento (fluxo de caixa com paridade): estorno do
+   * recebimento original e novo recebimento na nova data, na mesma transação
+   * (dois eventos seguidos na trilha do recebível); data futura recusada; exige
+   * receber e estornar.
+   */
+  it('alterar data de recebimento: estorno + novo recebimento na mesma transação, futura recusada', async () => {
+    const open = (await board('as_of=2026-11-14&year=all')).items.find(
+      (i) =>
+        i.origin === 'contract' && i.status === 'open' && i.refs.installment_id,
+    )!;
+    await api('post', '/finance/cash-flow/receipts')
+      .send({
+        items: [
+          {
+            receivable_id: open.refs.receivable_id,
+            installment_id: open.refs.installment_id,
+          },
+        ],
+        received_on: '2026-11-10',
+      })
+      .expect(200);
+    const realizedOf = async () =>
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) =>
+          i.status === 'realized' &&
+          i.origin === 'contract' &&
+          i.refs.receivable_id === open.refs.receivable_id,
+      )!;
+    const received = await realizedOf();
+    expect(received.date).toBe('2026-11-10');
+    const ref = {
+      receivable_id: received.refs.receivable_id,
+      event_id: received.refs.event_id,
+    };
+    // sem justificativa: recusado pela validação
+    await api('post', '/finance/cash-flow/receipts/redate')
+      .send({ items: [ref], received_on: '2026-11-12' })
+      .expect(400);
+    // data futura: recusada antes de tocar no recebível
+    const future = await api('post', '/finance/cash-flow/receipts/redate')
+      .send({
+        items: [ref],
+        received_on: '2099-01-01',
+        reason: 'Data informada pelo banco',
+      })
+      .expect(400);
+    expect(future.body.code).toBe('FUTURE_SETTLEMENT_DATE');
+    await api('post', '/finance/cash-flow/receipts/redate', user)
+      .send({
+        items: [ref],
+        received_on: '2026-11-12',
+        reason: 'Data informada pelo banco',
+      })
+      .expect(403);
+    const done = (
+      await api('post', '/finance/cash-flow/receipts/redate')
+        .send({
+          items: [ref],
+          received_on: '2026-11-12',
+          reason: 'Data informada pelo banco',
+        })
+        .expect(200)
+    ).body;
+    expect(done).toMatchObject({ done: 1, failed: 0 });
+    const after = (await board('as_of=2026-11-14&year=all')).items.filter(
+      (i) =>
+        i.origin === 'contract' &&
+        i.refs.receivable_id === open.refs.receivable_id &&
+        i.installment?.number === open.installment?.number,
+    );
+    expect(
+      after
+        .filter((i) => i.status !== 'open')
+        .map((i) => `${i.status} ${i.date} ${i.gross}`)
+        .sort(),
+    ).toEqual([
+      `realized 2026-11-12 ${open.gross}`,
+      `reversed 2026-11-10 ${open.gross}`,
+    ]);
+    // a parcela não volta a ficar em aberto (o valor foi recebido de novo)
+    expect(after.some((i) => i.status === 'open')).toBe(false);
+    // trilha: estorno e novo recebimento em revisões seguidas, com a justificativa
+    const detail = (
+      await api(
+        'get',
+        `/finance/receivables/${String(open.refs.receivable_id)}`,
+      ).expect(200)
+    ).body as {
+      events: Array<{
+        operation: string;
+        revision: number;
+        effectiveOn: string | null;
+        details: Record<string, unknown>;
+      }>;
+    };
+    const last = detail.events.slice(-2);
+    expect(last.map((e) => e.operation)).toEqual(['reversal', 'receipt']);
+    expect(last[1].revision).toBe(last[0].revision + 1);
+    expect(String(last[1].effectiveOn).slice(0, 10)).toBe('2026-11-12');
+    expect(last[0].details).toMatchObject({
+      reason: 'Data informada pelo banco',
+      redated_to: '2026-11-12',
+    });
+    expect(last[1].details).toMatchObject({
+      before: '2026-11-10',
+      after: '2026-11-12',
+    });
+    // mesma data: recusada no item (nada muda)
+    const same = (
+      await api('post', '/finance/cash-flow/receipts/redate')
+        .send({
+          items: [
+            {
+              receivable_id: ref.receivable_id,
+              event_id: (await realizedOf()).refs.event_id,
+            },
+          ],
+          received_on: '2026-11-12',
+          reason: 'Mesma data de novo',
+        })
+        .expect(200)
+    ).body;
+    expect(same).toMatchObject({ done: 0, failed: 1 });
+    expect(same.results[0].message).toContain('já é essa');
+  });
+
+  /**
+   * Competência fechada (10/2026 foi fechada na DRE mais acima): alterar a data
+   * de recebimento ou de pagamento é recusado se a data original OU a nova cair
+   * em mês fechado; a mensagem indica o mês e pede a reabertura.
+   */
+  it('alterar data em competência fechada: recebimento e pagamento, data original e nova data', async () => {
+    const setOct = (closed: boolean) =>
+      ds.query('UPDATE dre_periods SET closed = ? WHERE month = ?', [
+        closed,
+        '2026-10',
+      ]);
+    const closedMsg = (m: string) => {
+      expect(m).toContain('10/2026');
+      expect(m).toContain('fechada');
+      expect(m).toContain('reabra a competência');
+    };
+    // ── recebimento ──
+    const realized = async () =>
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) =>
+          i.origin === 'contract' &&
+          i.status === 'realized' &&
+          i.date === '2026-11-12',
+      )!;
+    const redate = async (eventItem: Item, on: string) =>
+      (
+        await api('post', '/finance/cash-flow/receipts/redate')
+          .send({
+            items: [
+              {
+                receivable_id: eventItem.refs.receivable_id,
+                event_id: eventItem.refs.event_id,
+              },
+            ],
+            received_on: on,
+            reason: 'Data informada pelo banco',
+          })
+          .expect(200)
+      ).body as {
+        done: number;
+        failed: number;
+        results: Array<{ message?: string }>;
+      };
+    const r1 = await realized();
+    // nova data em mês fechado
+    let res = await redate(r1, '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // reaberta, a mudança para 10/2026 passa; fechada de novo, a data original
+    // (10/2026) impede voltar para 11/2026
+    await setOct(false);
+    expect(await redate(r1, '2026-10-20')).toMatchObject({ done: 1 });
+    await setOct(true);
+    const inOct = (await board('as_of=2026-11-14&year=all')).items.find(
+      (i) =>
+        i.origin === 'contract' &&
+        i.status === 'realized' &&
+        i.refs.receivable_id === r1.refs.receivable_id &&
+        i.date === '2026-10-20',
+    )!;
+    res = await redate(inOct, '2026-11-13');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // nada mudou: segue recebido em 20/10/2026
+    expect(
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) => i.refs.event_id === inOct.refs.event_id,
+      ),
+    ).toMatchObject({ status: 'realized', date: '2026-10-20' });
+
+    // ── pagamento (comissão e despesa com baixa no fluxo) ──
+    const settle = async (key: string, paid_on: string | null) =>
+      (
+        await api('post', '/finance/cash-flow/outflows/settle')
+          .send({ keys: [key], paid_on })
+          .expect(200)
+      ).body as {
+        done: number;
+        failed: number;
+        results: Array<{ message?: string }>;
+      };
+    const items = (await board('as_of=2026-11-14&year=all')).items;
+    const commission = String(
+      items.find((i) => i.origin === 'commission')!.refs.settle_key,
+    );
+    expect(await settle(commission, '2026-11-13')).toMatchObject({ done: 1 });
+    // nova data em mês fechado
+    res = await settle(commission, '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // data original em mês fechado
+    await setOct(false);
+    expect(await settle(commission, '2026-10-20')).toMatchObject({ done: 1 });
+    await setOct(true);
+    res = await settle(commission, '2026-11-13');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    // despesa parcelada baixada no fluxo (12/11/2026): nova data em mês fechado
+    const expense = items.find(
+      (i) =>
+        String(i.refs.settle_key).startsWith('expense:') &&
+        i.refs.settled_here === 1,
+    )!;
+    res = await settle(String(expense.refs.settle_key), '2026-10-20');
+    expect(res).toMatchObject({ done: 0, failed: 1 });
+    closedMsg(res.results[0].message!);
+    expect(
+      (await board('as_of=2026-11-14&year=all')).items.find(
+        (i) => i.key === expense.key,
+      ),
+    ).toMatchObject({ status: 'realized', date: expense.date });
   });
 });
