@@ -477,11 +477,11 @@ describe('Batch valuations real HTTP, SQL atomicity and source preservation', ()
       type: ExportJobType.VALUATION_BATCHES_XLSX,
     } as ExportJobEntity);
     const book = XLSX.read(buffer, { type: 'buffer' });
-    const rows = XLSX.utils.sheet_to_json<{ ['Operacao ID']: number }>(
-      book.Sheets['Avaliacoes em lote'],
+    const rows = XLSX.utils.sheet_to_json<{ ['Operação ID']: number }>(
+      book.Sheets['Avaliações em lote'],
     );
     expect(rows).toHaveLength(2);
-    expect(rows[0]['Operacao ID']).toBe(b.id);
+    expect(rows[0]['Operação ID']).toBe(b.id);
     const role = await ds
       .getRepository(RoleEntity)
       .findOneByOrFail({ name: 'Operador', organizationId: 1 });

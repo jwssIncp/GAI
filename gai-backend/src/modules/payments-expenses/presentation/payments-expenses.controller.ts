@@ -1,3 +1,4 @@
+import { applyFormats } from '../../export-jobs/application/services/export-cell-format';
 import {
   Body,
   Controller,
@@ -143,11 +144,24 @@ export class PaymentsExpensesController {
       Status: '',
     });
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.json_to_sheet(rows),
-      'Remuneração',
-    );
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    applyFormats(sheet, rows.length, [
+      null,
+      null,
+      'date',
+      'date',
+      'date',
+      'date',
+      'number',
+      'money',
+      'money',
+      'money',
+      null,
+      'money',
+      'money',
+      null,
+    ]);
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Remuneração');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename="remuneracao-projeto-${projectId}.xlsx"`,

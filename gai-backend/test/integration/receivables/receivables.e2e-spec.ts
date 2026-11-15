@@ -639,13 +639,34 @@ describe('Receivables HTTP with disposable MySQL', () => {
       .getRepository(ExportJobEntity)
       .findOneByOrFail({ id: e.id });
     const buffer = await app.get(ExportWorkbookBuilderService).build(job);
-    const wb = XLSX.read(buffer, { type: 'buffer' });
+    const wb = XLSX.read(buffer, { type: 'buffer', cellNF: true });
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(
       wb.Sheets['Recebíveis'],
     );
     expect(
       rows.some((r) => String(r['Descrição']).startsWith("'=HYPERLINK")),
     ).toBe(true);
+    // Valores como número (formato R$) e situação como na tela, não código cru
+    const sheet = wb.Sheets['Recebíveis'];
+    const header = (
+      XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1 })[0] as string[]
+    ).indexOf('Original');
+    const cell = sheet[
+      XLSX.utils.encode_cell({ r: 1, c: header })
+    ] as XLSX.CellObject;
+    expect(cell).toMatchObject({ t: 'n', z: '"R$" #,##0.00;-"R$" #,##0.00' });
+    expect(typeof cell.v).toBe('number');
+    const labels = new Set(rows.map((r) => String(r['Status'])));
+    for (const raw of ['open', 'partial', 'paid', 'cancelled'])
+      expect(labels.has(raw)).toBe(false);
+    // filtros legíveis
+    const filters = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+      wb.Sheets['Filtros'],
+    );
+    expect(filters).toContainEqual({
+      Campo: 'Exportação',
+      Valor: 'Recebíveis',
+    });
     await get(`/finance/exports/${e.id}`, user).expect(403);
     const p = await ds
       .getRepository(PermissionEntity)

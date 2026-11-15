@@ -1,3 +1,4 @@
+import type { CellFormat } from '../export-jobs/application/services/export-cell-format';
 import {
   ConflictException,
   GoneException,
@@ -24,8 +25,78 @@ export interface FinanceWorkbook {
     name: string;
     headers: string[];
     rows: (string | number | boolean | null)[][];
+    /** Formato de cada coluna no Excel (moeda, data, mês…); nulo = como está. */
+    formats?: Array<CellFormat | null>;
   }>;
 }
+/** Rótulos da planilha = rótulos da tela (nunca o código interno em inglês). */
+const STATUS: Record<string, string> = {
+  open: 'Em aberto',
+  partial: 'Parcial',
+  paid: 'Quitado',
+  cancelled: 'Cancelado',
+  overdue: 'Vencido',
+};
+const DIRECTION: Record<string, string> = { in: 'Entrada', out: 'Saída' };
+const VIEW: Record<string, string> = {
+  all: 'Previsto e realizado',
+  expected: 'Previsto',
+  actual: 'Realizado',
+};
+const SOURCE: Record<string, string> = {
+  receivable_installment: 'Parcela de recebível',
+  receivable_event: 'Recebimento',
+  expense: 'Despesa',
+  expense_installment: 'Parcela de despesa',
+  field_agent_payment: 'Diária de inventariante',
+};
+const OPERATION: Record<string, string> = {
+  create: 'Criação',
+  edit: 'Edição',
+  receipt: 'Recebimento',
+  reversal: 'Estorno',
+  cancel: 'Cancelamento',
+  reschedule: 'Reprogramação',
+};
+const KIND: Record<string, string> = {
+  receivables: 'Recebíveis',
+  installments: 'Parcelas',
+  receipts: 'Recebimentos',
+  expected: 'Fluxo previsto',
+  actual: 'Fluxo realizado',
+  statement: 'Fluxo de caixa',
+};
+const FILTER: Record<string, string> = {
+  organization_id: 'Organização (ID)',
+  company_id: 'Cliente (ID)',
+  project_id: 'Projeto (ID)',
+  contract_id: 'Contrato (ID)',
+  date_from: 'De',
+  date_to: 'Até',
+  status: 'Situação',
+  view: 'Visão',
+  direction: 'Direção',
+  kind: 'Exportação',
+};
+const label = (
+  map: Record<string, string>,
+  v: string | number | null | undefined,
+) => (v === null || v === undefined ? null : (map[String(v)] ?? String(v)));
+const br = (v: string) => v.split('-').reverse().join('/');
+/** Valor de filtro legível: datas dd/mm/aaaa e códigos pelo rótulo da tela. */
+const filterValue = (k: string, v: unknown) => {
+  const s =
+    typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+      ? String(v)
+      : JSON.stringify(v);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return br(s);
+  if (k === 'status') return label(STATUS, s);
+  if (k === 'view') return label(VIEW, s);
+  if (k === 'direction') return label({ ...DIRECTION, all: 'Todas' }, s);
+  if (k === 'kind') return label(KIND, s);
+  return s;
+};
+
 @Injectable()
 export class FinanceExportService {
   constructor(
@@ -80,7 +151,7 @@ export class FinanceExportService {
             'Status',
           ],
           rows: report.movements.map((r) => [
-            r.source,
+            label(SOURCE, r.source),
             r.source_id,
             r.receivable_id,
             r.installment_id,
@@ -88,13 +159,29 @@ export class FinanceExportService {
             r.project_id,
             r.contract_id,
             r.currency,
-            r.direction,
-            r.view,
+            label(DIRECTION, r.direction),
+            label(VIEW, r.view),
             r.on,
             r.amount,
             r.description,
-            r.status,
+            label(STATUS, r.status),
           ]),
+          formats: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            'date',
+            'money',
+            null,
+            null,
+          ],
         });
         sheets.push({
           name: 'Indicadores',
@@ -118,6 +205,7 @@ export class FinanceExportService {
             t.actual_net,
             t.projected_net,
           ]),
+          formats: [null, ...Array<CellFormat>(7).fill('money')],
         });
         sheets.push({
           name: 'Limitações',
@@ -162,9 +250,22 @@ export class FinanceExportService {
               r.amount,
               r.received,
               r.open,
-              r.status,
+              label(STATUS, r.status),
               r.sourceKey,
             ]),
+            formats: [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              'money',
+              'money',
+              'money',
+              null,
+              null,
+            ],
           });
         else if (dto.kind === 'installments')
           sheets.push({
@@ -197,9 +298,20 @@ export class FinanceExportService {
                   i.amount,
                   i.received,
                   i.open,
-                  i.status,
+                  label(STATUS, i.status),
                 ]),
             ),
+            formats: [
+              null,
+              null,
+              null,
+              'date',
+              null,
+              'money',
+              'money',
+              'money',
+              null,
+            ],
           });
         else
           sheets.push({
@@ -233,7 +345,7 @@ export class FinanceExportService {
                   r.id,
                   e.id,
                   e.installmentId,
-                  e.operation,
+                  label(OPERATION, e.operation),
                   e.effectiveOn,
                   r.currency,
                   e.amount,
@@ -244,6 +356,20 @@ export class FinanceExportService {
                   e.recordedAt.toISOString(),
                 ]),
             ),
+            formats: [
+              null,
+              null,
+              null,
+              null,
+              'date',
+              null,
+              'money',
+              null,
+              null,
+              null,
+              null,
+              'datetime',
+            ],
           });
       }
       if (sheets.some((s) => s.rows.length > 50000))
@@ -251,9 +377,9 @@ export class FinanceExportService {
       sheets.push({
         name: 'Filtros',
         headers: ['Campo', 'Valor'],
-        rows: Object.entries({ ...dto.filters, kind: dto.kind }).map(
-          ([k, v]) => [k, String(v)],
-        ),
+        rows: Object.entries({ ...dto.filters, kind: dto.kind })
+          .filter(([, v]) => v !== undefined && v !== null && v !== '')
+          .map(([k, v]) => [FILTER[k] ?? k, filterValue(k, v)]),
       });
       const permissions = [
           ...new Set(keys.filter((k) => k !== 'export-jobs:create')),

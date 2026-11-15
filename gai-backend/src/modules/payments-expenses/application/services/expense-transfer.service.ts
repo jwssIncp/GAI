@@ -1,4 +1,8 @@
 import {
+  applyFormats,
+  type CellFormat,
+} from '../../../export-jobs/application/services/export-cell-format';
+import {
   BadRequestException,
   ConflictException,
   HttpException,
@@ -154,17 +158,25 @@ export function parseCivilDate(value: unknown): string | null {
     : null;
 }
 
-/** CSV para Excel em português: separador ";", BOM e todas as células entre aspas. */
+/**
+ * CSV para Excel em português: separador ";", BOM, todas as células entre
+ * aspas e decimal com vírgula (com ponto, o Excel pt-BR lê 1234.5 como texto
+ * ou como milhar).
+ */
 export function toCsv(rows: Array<Array<string | number | null>>): string {
+  const text = (v: string | number | null) =>
+    typeof v === 'number' && !Number.isInteger(v)
+      ? v.toFixed(2).replace('.', ',')
+      : cellText(v);
   const cell = (v: string | number | null) =>
-    `"${cellText(v).replace(/"/g, '""')}"`;
+    `"${text(v).replace(/"/g, '""')}"`;
   return '﻿' + rows.map((r) => r.map(cell).join(';')).join('\r\n') + '\r\n';
 }
 
 const EXPORT_HEADER = [
   'Cód',
   'Data',
-  'Técnico',
+  'Inventariante',
   'Motivo',
   'Observação',
   'Tipo de despesa',
@@ -188,8 +200,29 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: 'Rejeitada',
   cancelled: 'Cancelada',
 };
-const br = (civil: string | null) =>
+const brDate = (civil: string | null) =>
   civil ? civil.split('-').reverse().join('/') : '';
+/** Formato de cada coluna no Excel (mesma ordem de EXPORT_HEADER). */
+const EXPORT_FORMATS: Array<CellFormat | null> = [
+  null,
+  'date',
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  'date',
+  'money',
+  'money',
+  'money',
+  null,
+  null,
+  'date',
+  null,
+  null,
+];
 
 /**
  * Exportar (Excel/CSV), importar (Excel/CSV com apelidos de cabeçalho e
@@ -206,8 +239,16 @@ export class ExpenseTransferService {
     @Inject(STORAGE_SIGNER) private readonly storage: StorageSigner,
   ) {}
 
-  /** Linhas exportadas: o cabeçalho e cada linha têm sempre o mesmo número de colunas. */
-  exportRows(items: ExpenseBoardItem[]): Array<Array<string | number | null>> {
+  /**
+   * Linhas exportadas: o cabeçalho e cada linha têm sempre o mesmo número de
+   * colunas. No CSV as datas saem dd/mm/aaaa; no Excel, como data (`iso`).
+   */
+  exportRows(
+    items: ExpenseBoardItem[],
+    dates: 'br' | 'iso' = 'br',
+  ): Array<Array<string | number | null>> {
+    const br = (civil: string | null) =>
+      dates === 'iso' ? (civil ?? '') : brDate(civil);
     return [
       EXPORT_HEADER,
       ...items.map((i) => [
@@ -251,7 +292,7 @@ export class ExpenseTransferService {
     return {
       fileName: `${base}.xlsx`,
       mimeType: XLSX_MIME,
-      content: this.workbook(rows, data.items),
+      content: this.workbook(this.exportRows(data.items, 'iso'), data.items),
     };
   }
 
@@ -261,6 +302,7 @@ export class ExpenseTransferService {
   ): Buffer {
     const book = XLSX.utils.book_new();
     const sheet = XLSX.utils.aoa_to_sheet(rows);
+    applyFormats(sheet, rows.length - 1, EXPORT_FORMATS);
     const counted = items.filter((i) => COUNTED_EXPENSE(i.status));
     XLSX.utils.sheet_add_aoa(
       sheet,
@@ -275,6 +317,11 @@ export class ExpenseTransferService {
       ],
       { origin: -1 },
     );
+    // total em R$ (linha depois da linha em branco)
+    const total = sheet[
+      XLSX.utils.encode_cell({ r: rows.length + 1, c: 10 })
+    ] as XLSX.CellObject | undefined;
+    if (total) total.z = '"R$" #,##0.00;-"R$" #,##0.00';
     XLSX.utils.book_append_sheet(book, sheet, 'Despesas');
     return XLSX.write(book, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
   }
