@@ -1,3 +1,4 @@
+import { localToday } from "@/utils/format";
 import { api } from "@/api/http";
 export type Filters = Record<string, string>;
 export type Payment = {
@@ -193,5 +194,6 @@ export function percent(value: string | null | undefined) {
   if (value === null || value === undefined) return "—";
   return `${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
-export const today = () => new Date().toISOString().slice(0, 10);
+/** Hoje no fuso do usuário (não em UTC: depois das 21h seria amanhã). */
+export const today = () => localToday();
 export const cls = "w-full rounded-lg border bg-background p-2 text-sm";

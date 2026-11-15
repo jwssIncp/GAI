@@ -10,7 +10,9 @@ import {
   assertNewVersionStart,
   civilToday,
   defaultFinanceSettingsValues,
+  monthsBetween,
   normalizeFinanceSettingsValues,
+  resolveCutoff,
   versionInForce,
 } from '../../../../src/modules/finance-settings/finance-settings.policy';
 
@@ -328,5 +330,67 @@ describe('Parâmetros financeiros: mês de corte da DRE automática (por organiz
     expect(
       code(() => assertCutoff('2026-09', '2026-11-01', prev, ['2026-10'])),
     ).toBe('NO_ERROR');
+  });
+});
+
+describe('Corte herdado entre versões dos parâmetros', () => {
+  const prev = [
+    { validFrom: '2026-01-01', cutoff: '2026-09', version: 1 },
+    { validFrom: '2026-06-01', cutoff: '2026-09', version: 2 },
+  ];
+  const fail = (f: () => unknown) => {
+    try {
+      f();
+      return null;
+    } catch (error) {
+      return (
+        error as { getResponse(): Record<string, unknown> }
+      ).getResponse();
+    }
+  };
+
+  it('1ª versão: sem corte informado, vale o mês de início', () => {
+    expect(resolveCutoff(undefined, '2026-03-10', [], false)).toBe('2026-03');
+    expect(resolveCutoff('2026-05', '2026-03-10', [], false)).toBe('2026-05');
+  });
+
+  it('versão nova herda o corte da anterior (sem corte ou com o mesmo)', () => {
+    expect(resolveCutoff(undefined, '2026-11-16', prev, false)).toBe('2026-09');
+    expect(resolveCutoff('2026-09', '2026-11-16', prev, false)).toBe('2026-09');
+  });
+
+  it('versão retroativa (antes da primeira) herda o corte da primeira', () => {
+    expect(resolveCutoff(undefined, '2025-12-01', prev, false)).toBe('2026-09');
+  });
+
+  it('corte diferente sem confirmação é recusado com os meses que mudam de regime', () => {
+    const r = fail(() => resolveCutoff('2026-11', '2026-11-16', prev, false));
+    expect(r).toMatchObject({
+      code: 'CUTOFF_CHANGE_NOT_CONFIRMED',
+      details: {
+        inherited: '2026-09',
+        requested: '2026-11',
+        months: ['2026-09', '2026-10'],
+      },
+    });
+    expect(r?.message).toBe(
+      'A versão nova herda o corte da DRE da versão 2 (09/2026). Mudar para 11/2026 faz os meses 09/2026 a 10/2026 deixarem de ser alimentados pelo fluxo de caixa (volta a valer o lançado ou importado). Confirme a mudança do corte para publicar.',
+    );
+    expect(
+      fail(() => resolveCutoff('2026-08', '2026-11-16', prev, false)),
+    ).toMatchObject({ details: { months: ['2026-08'] } });
+  });
+
+  it('com confirmação explícita, o corte novo vale', () => {
+    expect(resolveCutoff('2026-11', '2026-11-16', prev, true)).toBe('2026-11');
+  });
+
+  it('meses entre dois cortes', () => {
+    expect(monthsBetween('2026-11', '2027-02')).toEqual([
+      '2026-11',
+      '2026-12',
+      '2027-01',
+    ]);
+    expect(monthsBetween('2026-09', '2026-09')).toEqual([]);
   });
 });

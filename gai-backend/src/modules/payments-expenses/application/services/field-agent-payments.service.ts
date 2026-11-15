@@ -1,3 +1,4 @@
+import { assertDreMonthsOpen } from '../../../managerial-dre/dre-closed-period';
 import {
   BadRequestException,
   ConflictException,
@@ -557,7 +558,12 @@ export class FieldAgentPaymentsService {
           `A data de pagamento do lançamento #${id}`,
           today,
         );
-      await this.assertOpenPeriod(organizationId, id);
+      await this.assertOpenPeriod(
+        organizationId,
+        id,
+        'Não é possível registrar o pagamento',
+        [dateFor(id)],
+      );
       return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.MARK_PAYMENT_AS_PAID,
         changes: payment.markAsPaid(
@@ -570,21 +576,38 @@ export class FieldAgentPaymentsService {
     });
   }
 
-  /** Lançamento classificado na DRE em competência fechada não muda (pagar, voltar, reagendar). */
-  private async assertOpenPeriod(organizationId: number, id: number) {
-    const closed = await this.remuneration.closedPeriodsFor(organizationId, id);
-    if (closed.length)
-      throw new ConflictException({
-        code: 'DRE_PERIOD_CLOSED',
-        message: `Classificado na DRE em competência fechada (${closed.join(', ')}).`,
-      });
+  /**
+   * Competência fechada da DRE não muda (pagar, voltar, reagendar): nem pela
+   * classificação manual (regime anterior ao corte) nem pelas datas que levam
+   * o lançamento ao fluxo — prevista, de pagamento e a nova.
+   */
+  private async assertOpenPeriod(
+    organizationId: number,
+    id: number,
+    action: string,
+    dates: Array<Date | string | null | undefined> = [],
+  ) {
+    const row = await this.ds
+      .getRepository(FieldAgentPaymentEntity)
+      .findOne({ where: { id, organizationId } });
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      [row?.expectedPaymentDate, row?.paymentDate, ...dates],
+      action,
+      await this.remuneration.closedPeriodsFor(organizationId, id),
+    );
   }
 
   /** Voltar para em aberto (D-C), com permissão própria; bloqueado em competência fechada da DRE. */
   async revert(ids: number[], actor: PaymentsExpensesActorContext) {
     const organizationId = this.organization(actor);
     return this.each(ids, async (id) => {
-      await this.assertOpenPeriod(organizationId, id);
+      await this.assertOpenPeriod(
+        organizationId,
+        id,
+        'Não é possível desfazer o pagamento',
+      );
       return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.REVERT_PAYMENT,
         changes: payment.revertPayment(actor.id),
@@ -605,7 +628,14 @@ export class FieldAgentPaymentsService {
     );
     if (dto.kind === 'payment')
       assertNotFuture(dto.date, 'A data de pagamento');
-    await this.assertOpenPeriod(organizationId, id);
+    await this.assertOpenPeriod(
+      organizationId,
+      id,
+      dto.kind === 'payment'
+        ? 'Não é possível alterar a data de pagamento'
+        : 'Não é possível alterar a data prevista',
+      [date],
+    );
     try {
       await this.mutate(id, actor, (payment) =>
         dto.kind === 'payment'

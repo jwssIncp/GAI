@@ -23,3 +23,14 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
   { label: 'Parâmetros financeiros', to: '/app/finance/parameters', icon: SlidersHorizontal, permissions: ['finance-settings:read'], section: 'management' },
   { label: 'Empresas', to: '/app/companies', icon: Building2, permissions: ['companies:read'], section: 'commercial' },
 ];
+
+/**
+ * Permissões da tela de um item do menu: a rota usa a MESMA lista do menu
+ * (uma fonte só), para nunca mostrar um item que cai em acesso negado nem
+ * abrir por link uma tela cuja API recusa.
+ */
+export function navigationPermissions(to: string): string[] {
+  const item = navigation.find((i) => i.to === to);
+  if (!item) throw new Error(`Rota fora do menu: ${to}`);
+  return item.permissions ?? [];
+}

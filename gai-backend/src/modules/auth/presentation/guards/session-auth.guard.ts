@@ -44,6 +44,8 @@ export interface AuthenticatedUser {
   primaryRole: UserRole | null;
   organizationId: number | null;
   sessionId: string;
+  /** Validade da sessão depois desta requisição (a sessão web desliza com o uso). */
+  sessionExpiresAt?: Date;
   roleAssignments: AssignedRole[];
   permissions: Array<{ key: string; scope: PermissionScope }>;
 }
@@ -206,6 +208,7 @@ export class SessionAuthGuard implements CanActivate {
       primaryRole: this.roleAuth.resolvePrimaryRole(systemRoles),
       organizationId: user.organizationId,
       sessionId: session.id,
+      sessionExpiresAt: expiresAt,
       roleAssignments,
       permissions,
       allowedProjectIds,

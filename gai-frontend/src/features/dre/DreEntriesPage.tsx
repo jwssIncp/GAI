@@ -1,3 +1,4 @@
+import { localMonth } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -53,7 +54,7 @@ export function DreEntryForm({
       account_id: String(a.account?.id ?? ""),
     })) ?? [
       {
-        month: new Date().toISOString().slice(0, 7),
+        month: localMonth(),
         amount: source?.amount ?? "",
         account_id: "",
       },
@@ -289,7 +290,7 @@ export function DreEntryForm({
             setAllocations((rows) => [
               ...rows,
               {
-                month: new Date().toISOString().slice(0, 7),
+                month: localMonth(),
                 amount: "",
                 account_id: "",
               },
@@ -605,10 +606,10 @@ export function DreEntryDetailPage() {
             ...(r.projectId ? { project_id: String(r.projectId) } : {}),
             start_month:
               r.data.allocations[0]?.month ??
-              new Date().toISOString().slice(0, 7),
+              localMonth(),
             end_month:
               r.data.allocations.at(-1)?.month ??
-              new Date().toISOString().slice(0, 7),
+              localMonth(),
           })
         }
       >

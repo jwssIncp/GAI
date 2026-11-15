@@ -1,9 +1,12 @@
+import { assertDreMonthsOpen } from '../../../managerial-dre/dre-closed-period';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { DataSource, In, IsNull } from 'typeorm';
+import { DataSource, In, IsNull, Like } from 'typeorm';
+import { ExpenseEntity } from '../../infrastructure/persistence/expense.entity';
+import { CashOutflowSettlementEntity } from '../../../receivables/cash-flow-parity.entities';
 import { ContractEntity } from '../../../contracts/contract.entity';
 import { ExpenseInstallmentEntity } from '../../../expense-accountabilities/expense-accountability.entity';
 import { FinanceSettingsService } from '../../../finance-settings/finance-settings.service';
@@ -115,13 +118,54 @@ export class ExpenseRulesService {
       .sort();
   }
 
-  async assertDreOpen(organizationId: number, expenseId: number) {
-    const closed = await this.closedDreMonths(organizationId, expenseId);
-    if (closed.length)
-      throw new ConflictException({
-        code: 'DRE_PERIOD_CLOSED',
-        message: `Despesa classificada na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
+  /** Datas pelas quais a despesa entra no fluxo: lançamento, faturada, paga, parcelas e baixas do fluxo. */
+  async expenseDates(organizationId: number, expenseId: number) {
+    const e = await this.ds
+      .getRepository(ExpenseEntity)
+      .findOne({ where: { id: expenseId, organizationId } });
+    const installments = await this.ds
+      .getRepository(ExpenseInstallmentEntity)
+      .find({ where: { organizationId, expenseId } });
+    const settled = await this.ds
+      .getRepository(CashOutflowSettlementEntity)
+      .find({
+        where: [
+          { organizationId, sourceKey: `expense:${expenseId}` },
+          { organizationId, sourceKey: Like(`expense:${expenseId}:%`) },
+        ],
       });
+    return [
+      civil(e?.expenseDate),
+      civil(e?.invoicedPaymentDate),
+      civil(e?.paidAt),
+      ...installments.map((i) => civil(i.dueDate)),
+      ...settled.map((s) => civil(s.paidOn)),
+    ];
+  }
+
+  /**
+   * Competência fechada da DRE não muda: recusa se a despesa estiver
+   * classificada em mês fechado (regime anterior ao corte) ou se alguma data
+   * atual ou nova (`dates`) cair em mês fechado. `expenseId` nulo = despesa nova.
+   */
+  async assertDreOpen(
+    organizationId: number,
+    expenseId: number | null,
+    action = 'Não é possível alterar a despesa',
+    dates: Array<Date | string | null | undefined> = [],
+  ) {
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      [
+        ...(expenseId
+          ? await this.expenseDates(organizationId, expenseId)
+          : []),
+        ...dates,
+      ],
+      action,
+      expenseId ? await this.closedDreMonths(organizationId, expenseId) : [],
+    );
   }
 
   /** Despesa num lote já faturado ao cliente não muda de tipo, valor nem lote. */

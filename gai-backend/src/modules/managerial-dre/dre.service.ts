@@ -62,6 +62,7 @@ import type { DreReport } from './dre.report';
 import { DreRecognitionRuleEntity } from './dre-monthly.entities';
 import { RULE_LABELS } from './dre-monthly.formulas';
 import { DreMonthlyService } from './dre-monthly.service';
+import { monthlyStatement } from './dre-statement.formulas';
 import { civilToday } from '../finance-settings/finance-settings.policy';
 const SOURCE_READS = ['receivables:read', 'expenses:read', 'payments:read'];
 const sourcePermission = (kind: string): string | undefined =>
@@ -1399,7 +1400,6 @@ export class DreService {
     org: number,
   ): DreReport {
     const rows = this.monthly.reportRows(c, range, f.project_id);
-    const all = [...DRE_GROUPS];
     const periods = c.periods;
     const unclassified = c.entries.flatMap((e) =>
       e.data.status === 'draft' &&
@@ -1426,25 +1426,23 @@ export class DreService {
       filters: f,
       generated_at: new Date().toISOString(),
       complete: true,
-      totals: [{ currency: 'BRL', ...calculateDre(rows, all, false) }],
+      totals: [{ currency: 'BRL', ...monthlyStatement(rows, c.ctx.accounts) }],
       monthly: range.map((month) => ({
         month,
         currency: 'BRL',
         closed: periods.find((p) => p.month === month)?.closed ?? false,
-        ...calculateDre(
+        ...monthlyStatement(
           rows.filter((r) => r.month === month),
-          all,
-          false,
+          c.ctx.accounts,
         ),
       })),
       by_project: [...new Set(rows.map((r) => r.project_id))].map(
         (project_id) => ({
           project_id,
           currency: 'BRL',
-          ...calculateDre(
+          ...monthlyStatement(
             rows.filter((r) => r.project_id === project_id),
-            all,
-            false,
+            c.ctx.accounts,
           ),
         }),
       ),
@@ -1493,10 +1491,9 @@ export class DreService {
           totals: [
             {
               currency: 'BRL',
-              ...calculateDre(
+              ...monthlyStatement(
                 this.monthly.reportRows(c, other, f.project_id),
-                all,
-                false,
+                c.ctx.accounts,
               ),
             },
           ],

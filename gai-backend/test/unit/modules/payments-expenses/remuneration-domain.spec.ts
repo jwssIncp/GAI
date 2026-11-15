@@ -1,3 +1,4 @@
+import { closedPeriodError } from '../../../../src/modules/managerial-dre/dre-closed-period';
 import 'reflect-metadata';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { FieldAgentPayment } from '../../../../src/modules/payments-expenses/domain/entities/field-agent-payment';
@@ -197,7 +198,10 @@ describe('Remuneração: criação valida tudo antes de gravar (nada de registro
       scope,
       { setContext: jest.fn() } as never,
       {} as never,
-      {} as never,
+      // Sem competência fechada: a criação segue para a gravação.
+      {
+        assertPaymentMonthsOpen: jest.fn().mockResolvedValue(undefined),
+      } as never,
       {} as never,
     );
   }
@@ -306,7 +310,11 @@ describe('Remuneração: reabrir respeita competência fechada na DRE (D-D)', ()
       .spyOn(scope, 'assertCanAccessOrganization')
       .mockImplementation(() => undefined);
     const remuneration = {
-      closedPeriodsFor: jest.fn().mockResolvedValue(closed),
+      assertPaymentMonthsOpen: jest.fn(
+        async (_org: number, _id: number, action: string) => {
+          if (closed.length) throw closedPeriodError(action, closed);
+        },
+      ),
     };
     return {
       repo,
@@ -331,7 +339,11 @@ describe('Remuneração: reabrir respeita competência fechada na DRE (D-D)', ()
     await expect(
       s.reopenPayment(3, 7, { reason: 'Corrigir diária' }, actor as never),
     ).rejects.toMatchObject({ response: { code: 'DRE_PERIOD_CLOSED' } });
-    expect(remuneration.closedPeriodsFor).toHaveBeenCalledWith(1, 7);
+    expect(remuneration.assertPaymentMonthsOpen).toHaveBeenCalledWith(
+      1,
+      7,
+      'Não é possível reabrir a diária',
+    );
     expect(repo.mutatePaymentWithAudit).not.toHaveBeenCalled();
   });
 

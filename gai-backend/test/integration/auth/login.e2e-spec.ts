@@ -66,6 +66,14 @@ describe('Auth - Login/Logout/Me (e2e)', () => {
     const body = response.body as unknown as CurrentUserBody;
 
     expect(body.login).toBe('platform.admin');
+    // a sessão web desliza com o uso: o /me informa a validade já estendida
+    const extended = (body as unknown as { session_expires_at: string })
+      .session_expires_at;
+    expect(new Date(extended).getTime()).toBeGreaterThanOrEqual(
+      new Date(
+        (loginBody as unknown as { expires_at: string }).expires_at,
+      ).getTime(),
+    );
     expect(body.permissions).toEqual(
       expect.arrayContaining([{ key: 'projects:read', scope: 'ORGANIZATION' }]),
     );

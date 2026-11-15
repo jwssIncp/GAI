@@ -6,6 +6,15 @@ import { clearStoredSession, readStoredSession, writeStoredSession } from '@/api
 import { AuthContext } from './AuthContext';
 import type { CurrentUser, LoginRequest } from '@/types/api';
 
+/** Maior atraso aceito por setTimeout (2³¹−1 ms, ~24,8 dias); acima disso o navegador dispara na hora. */
+export const MAX_TIMER_DELAY = 2_147_483_647;
+
+/** Instante (ms) de uma validade; inválida (NaN) conta como já expirada. */
+const expiryTime = (value: string) => {
+  const at = new Date(value).getTime();
+  return Number.isFinite(at) ? at : 0;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [user, setUser] = useState<CurrentUser | null>(null);
@@ -32,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setBootstrapping(false);
       return;
     }
-    if (new Date(stored.expiresAt).getTime() <= Date.now()) {
+    if (expiryTime(stored.expiresAt) <= Date.now()) {
       clear();
       setBootstrapping(false);
       return;
@@ -43,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const currentUser = await authApi.me();
       if (generation !== sessionGeneration.current || readStoredSession()?.accessToken !== stored.accessToken) return;
       setUser(currentUser);
-      writeStoredSession({ ...stored, user: currentUser });
+      const extended = currentUser.session_expires_at ?? stored.expiresAt;
+      setExpiresAt(extended);
+      writeStoredSession({ ...stored, expiresAt: extended, user: currentUser });
     } catch {
       if (generation === sessionGeneration.current && readStoredSession()?.accessToken === stored.accessToken) clear();
     } finally {
@@ -60,8 +71,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!expiresAt) return;
-    const delay = Math.max(new Date(expiresAt).getTime() - Date.now(), 0);
-    const timer = window.setTimeout(clear, delay);
+    // Prazos acima de ~24,8 dias estouram o setTimeout (dispararia na hora e
+    // deslogaria): espera em etapas de no máximo MAX_TIMER_DELAY e reconfere.
+    const at = expiryTime(expiresAt);
+    let timer: number | undefined;
+    const arm = () => {
+      const left = at - Date.now();
+      if (left <= 0) {
+        clear();
+        return;
+      }
+      timer = window.setTimeout(arm, Math.min(left, MAX_TIMER_DELAY));
+    };
+    arm();
     return () => window.clearTimeout(timer);
   }, [clear, expiresAt]);
 
@@ -76,7 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const stored = readStoredSession();
         if (!disposed && stored?.accessToken === accessToken) {
           setUser(currentUser);
-          writeStoredSession({ ...stored, user: currentUser });
+          // A sessão web desliza com o uso: acompanha a validade do servidor.
+          const extended = currentUser.session_expires_at ?? stored.expiresAt;
+          setExpiresAt(extended);
+          writeStoredSession({ ...stored, expiresAt: extended, user: currentUser });
         }
       } catch { /* HTTP 401 uses the existing session-expired event. */ }
     };

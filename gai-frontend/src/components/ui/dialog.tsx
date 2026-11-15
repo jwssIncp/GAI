@@ -50,10 +50,15 @@ export function DrawerForm({ open, onOpenChange, title, children }: { open: bool
   );
 }
 
-export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, busy = false }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void; busy?: boolean }) {
+export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, busy = false, error }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void; busy?: boolean; /** Falha da ação: aparece no diálogo, que continua aberto. */ error?: string | null }) {
   return (
     <ModalForm open={open} onOpenChange={onOpenChange} title={title}>
       <p className="text-sm text-muted-foreground">{description}</p>
+      {error ? (
+        <p role="alert" className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground">
+          {error}
+        </p>
+      ) : null}
       <div className="mt-7 flex flex-col-reverse justify-end gap-2 sm:flex-row">
         <Button type="button" variant="secondary" disabled={busy} onClick={() => onOpenChange(false)}>
           Cancelar

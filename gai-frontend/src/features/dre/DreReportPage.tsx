@@ -1,3 +1,4 @@
+import { localMonth } from "@/utils/format";
 import { navigationContext } from "@/features/projects/navigationContext";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
@@ -28,9 +29,28 @@ import {
   type Line,
   percent,
 } from "./dreApi";
-const current = () => new Date().toISOString().slice(0, 7);
+const current = () => localMonth();
 const value = (t: Calculated, key: string) =>
   t.lines.find((l) => l.key === key)?.known_amount ?? "0.00";
+/**
+ * Linhas usadas nos cards, no gráfico e na comparação por projeto. No modo
+ * "DRE automática" são as mesmas da DRE mensal (com o pós-operacional e o
+ * resultado final); no cálculo legado, as das classificações.
+ */
+const KEYS = {
+  monthly: {
+    cards: ["revenue", "net_revenue", "total_costs", "operating_result", "post_operational", "final_result"],
+    costs: "variable_costs",
+    expenses: "fixed_costs",
+    result: "final_result",
+  },
+  legacy: {
+    cards: ["revenue", "net_revenue", "direct_cost", "operating_expense", "operating_result", "before_tax"],
+    costs: "direct_cost",
+    expenses: "operating_expense",
+    result: "before_tax",
+  },
+} as const;
 export function DreReportPage() {
   const [p, setP] = useSearchParams(),
     { user } = useAuth(),
@@ -54,6 +74,7 @@ export function DreReportPage() {
     [kind, setKind] = useState("statement"),
     [job, setJob] = useState<number>(),
     [error, setError] = useState("");
+  const keys = KEYS[q.data?.mode === "monthly" ? "monthly" : "legacy"];
   const exportStatus = useQuery({
     queryKey: ["dre", "export", job],
     queryFn: () => dreApi.exportStatus(job!),
@@ -224,15 +245,9 @@ export function DreReportPage() {
                   {t.complete ? "Revisado" : "Valores apurados parciais"}
                 </h3>
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {[
-                    "revenue",
-                    "net_revenue",
-                    "direct_cost",
-                    "operating_expense",
-                    "operating_result",
-                    "before_tax",
-                  ].map((key) => {
-                    const l = t.lines.find((l) => l.key === key)!;
+                  {KEYS[q.data.mode === "monthly" ? "monthly" : "legacy"].cards.map((key) => {
+                    const l = t.lines.find((l) => l.key === key);
+                    if (!l) return null;
                     return (
                       <MetricCard
                         key={key}
@@ -366,9 +381,9 @@ export function DreReportPage() {
                         .map((m) => ({
                           month: m.month,
                           Receita: Number(value(m, "revenue")),
-                          Custos: Number(value(m, "direct_cost")),
-                          Despesas: Number(value(m, "operating_expense")),
-                          Resultado: Number(value(m, "before_tax")),
+                          Custos: Number(value(m, keys.costs)),
+                          Despesas: Number(value(m, keys.expenses)),
+                          Resultado: Number(value(m, keys.result)),
                         }))}
                     >
                       <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
@@ -419,7 +434,7 @@ export function DreReportPage() {
                 },
                 {
                   header: "Resultado parcial",
-                  cell: (r) => money(value(r, "before_tax"), r.currency),
+                  cell: (r) => money(value(r, keys.result), r.currency),
                 },
               ]}
             />

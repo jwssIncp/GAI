@@ -1,3 +1,4 @@
+import { civilToday } from '../../../finance-settings/finance-settings.policy';
 import { randomUUID } from 'crypto';
 import { assertNotFuture } from '../../../../common/finance/settlement-date';
 import {
@@ -140,6 +141,12 @@ export class PaymentsExpensesService {
           deletedAt: null,
         }),
     );
+    await this.remuneration.assertPaymentMonthsOpen(
+      project.organizationId,
+      null,
+      'Não é possível lançar a diária',
+      [payment.toProps().expectedPaymentDate],
+    );
     const saved = await this.repo.savePaymentWithAudit(payment, {
       organizationId: project.organizationId,
       projectId,
@@ -194,6 +201,13 @@ export class PaymentsExpensesService {
     dto: PaymentInputDto,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
+    const current = await this.findPayment(projectId, id, actor);
+    await this.remuneration.assertPaymentMonthsOpen(
+      current.organizationId,
+      id,
+      'Não é possível alterar a diária',
+      [this.expectedDate(dto)],
+    );
     return this.mutatePayment(projectId, id, actor, (payment) => {
       const startDate = this.requiredDate(dto.start_date, 'start_date');
       const endDate = this.requiredDate(dto.end_date, 'end_date');
@@ -239,15 +253,12 @@ export class PaymentsExpensesService {
     const project = await this.getProject(projectId, actor, false);
     assertNotFuture(dto.payment_date, 'A data de pagamento');
     // Mesma regra da tela consolidada: não paga o que está em competência fechada da DRE.
-    const closed = await this.remuneration.closedPeriodsFor(
+    await this.remuneration.assertPaymentMonthsOpen(
       project.organizationId,
       id,
+      'Não é possível registrar o pagamento',
+      [dto.payment_date],
     );
-    if (closed.length)
-      throw new ConflictException({
-        code: 'DRE_PERIOD_CLOSED',
-        message: `Lançamento classificado na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
-      });
     // Decisão D-A: com "exigir aprovação", só aprovados são pagos. Sem parâmetros
     // vigentes, mantém o comportamento anterior do GAI (pendente ou aprovado).
     let requireApproval = false;
@@ -275,15 +286,11 @@ export class PaymentsExpensesService {
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
     const current = await this.findPayment(projectId, id, actor);
-    const closed = await this.remuneration.closedPeriodsFor(
+    await this.remuneration.assertPaymentMonthsOpen(
       current.organizationId,
       id,
+      'Não é possível reabrir a diária',
     );
-    if (closed.length)
-      throw new ConflictException({
-        code: 'DRE_PERIOD_CLOSED',
-        message: `Lançamento classificado na DRE em competência fechada (${closed.join(', ')}). Reabra a competência antes.`,
-      });
     return this.mutatePayment(projectId, id, actor, (payment) => ({
       organizationId: payment.organizationId,
       projectId,
@@ -302,6 +309,12 @@ export class PaymentsExpensesService {
     id: number,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
+    const current = await this.findPayment(projectId, id, actor);
+    await this.remuneration.assertPaymentMonthsOpen(
+      current.organizationId,
+      id,
+      'Não é possível excluir a diária',
+    );
     return this.mutatePayment(projectId, id, actor, (payment) => ({
       organizationId: payment.organizationId,
       projectId,
@@ -316,6 +329,12 @@ export class PaymentsExpensesService {
     id: number,
     actor: PaymentsExpensesActorContext,
   ): Promise<PaymentResponseDto> {
+    const current = await this.findPayment(projectId, id, actor);
+    await this.remuneration.assertPaymentMonthsOpen(
+      current.organizationId,
+      id,
+      'Não é possível cancelar a diária',
+    );
     return this.paymentTransition(projectId, id, actor, 'cancel');
   }
   async paymentSummary(
@@ -343,6 +362,16 @@ export class PaymentsExpensesService {
       project.organizationId,
       projectId,
       dto,
+    );
+    await this.expenseRules.assertDreOpen(
+      project.organizationId,
+      null,
+      'Não é possível lançar a despesa',
+      [
+        dto.expense_date,
+        fields.invoicedPaymentDate,
+        ...(installments ?? []).map((i) => i.due_date),
+      ],
     );
     const now = new Date();
     const expense = new Expense({
@@ -446,6 +475,16 @@ export class PaymentsExpensesService {
       dto,
       expense.toProps(),
     );
+    await this.expenseRules.assertDreOpen(
+      expense.organizationId,
+      id,
+      'Não é possível alterar a despesa',
+      [
+        dto.expense_date,
+        fields.invoicedPaymentDate,
+        ...(installments ?? []).map((i) => i.due_date),
+      ],
+    );
     const changes = this.expenseRule(() =>
       expense.updateFields({
         ...fields,
@@ -489,7 +528,11 @@ export class PaymentsExpensesService {
     await this.getProject(projectId, actor, true);
     await this.expenseRules.assertFinanceOpen(projectId);
     await this.expenseRules.assertNotBilled(expense.reimbursementBatchId);
-    await this.expenseRules.assertDreOpen(expense.organizationId, id);
+    await this.expenseRules.assertDreOpen(
+      expense.organizationId,
+      id,
+      'Não é possível reabrir a despesa',
+    );
     const changes = this.expenseRule(() =>
       expense.reopen(actor.id, new Date()),
     );
@@ -804,6 +847,19 @@ export class PaymentsExpensesService {
   ) {
     const expense = await this.findExpense(projectId, id, actor);
     await this.getProject(projectId, actor, true);
+    // Pagar, rejeitar ou cancelar tira a despesa do mês previsto (ou a põe no
+    // mês pago): nenhum deles pode estar em competência fechada.
+    if (action !== 'approve')
+      await this.expenseRules.assertDreOpen(
+        expense.organizationId,
+        id,
+        action === 'paid'
+          ? 'Não é possível marcar a despesa como paga'
+          : action === 'reject'
+            ? 'Não é possível rejeitar a despesa'
+            : 'Não é possível cancelar a despesa',
+        action === 'paid' ? [civilToday()] : [],
+      );
     const changes = this.expenseRule(() =>
       action === 'approve'
         ? expense.approve(actor.id, new Date())

@@ -89,4 +89,78 @@ describe('Parâmetros financeiros retroativos (e2e)', () => {
   it('depois da última, no passado, é aceito', async () => {
     await publish('2026-11-10').expect(201);
   });
+
+  /**
+   * Corte herdado: a versão nova herda o mês de corte da anterior; o padrão
+   * "mês de início" só vale para a 1ª versão. Mudar o corte exige confirmação.
+   */
+  it('versão nova só com outro IR não altera o corte; mudar o corte exige confirmação', async () => {
+    const versions = async () =>
+      (await api('get', '/finance-settings').expect(200)).body
+        .versions as Array<{
+        version: number;
+        valid_from: string;
+        values: Record<string, unknown>;
+      }>;
+    const last = (await versions())[0];
+    const inherited = last.values.dre_regime_cutoff_month as string;
+    // Só o IR muda; o cliente manda os valores padrão (corte = mês de início).
+    const onlyTax = {
+      ...defaults,
+      income_tax_pct: '15.00',
+      dre_regime_cutoff_month: '2026-11',
+    };
+    const created = (
+      await api('post', '/finance-settings')
+        .send({ valid_from: '2026-11-12', reason: 'Novo IR', values: onlyTax })
+        .expect(inherited === '2026-11' ? 201 : 409)
+    ).body;
+    if (inherited !== '2026-11') {
+      // recusado: o corte mudaria sem confirmação, e a resposta diz o impacto
+      expect(created).toMatchObject({
+        code: 'CUTOFF_CHANGE_NOT_CONFIRMED',
+        details: { inherited, requested: '2026-11' },
+      });
+      expect(created.message).toContain('Confirme a mudança do corte');
+    }
+    // sem informar o corte: herda o da versão anterior
+    const { dre_regime_cutoff_month: _drop, ...noCutoff } = onlyTax;
+    void _drop;
+    await api('post', '/finance-settings')
+      .send({ valid_from: '2026-11-13', reason: 'Novo IR', values: noCutoff })
+      .expect(201);
+    let v = (await versions())[0];
+    expect(v.values).toMatchObject({
+      income_tax_pct: '15.00',
+      dre_regime_cutoff_month: inherited,
+    });
+    // corte diferente sem confirmar: 409 com os meses que mudam de regime
+    const other = inherited === '2026-12' ? '2026-11' : '2026-12';
+    const refused = (
+      await api('post', '/finance-settings')
+        .send({
+          valid_from: '2026-11-14',
+          reason: 'Muda o corte',
+          values: { ...noCutoff, dre_regime_cutoff_month: other },
+        })
+        .expect(409)
+    ).body;
+    expect(refused).toMatchObject({
+      code: 'CUTOFF_CHANGE_NOT_CONFIRMED',
+      details: { inherited, requested: other },
+    });
+    expect(refused.details.months.length).toBeGreaterThan(0);
+    expect((await versions())[0].version).toBe(v.version);
+    // com confirmação explícita: aceito
+    await api('post', '/finance-settings')
+      .send({
+        valid_from: '2026-11-14',
+        reason: 'Muda o corte',
+        values: { ...noCutoff, dre_regime_cutoff_month: other },
+        change_cutoff: true,
+      })
+      .expect(201);
+    v = (await versions())[0];
+    expect(v.values.dre_regime_cutoff_month).toBe(other);
+  });
 });

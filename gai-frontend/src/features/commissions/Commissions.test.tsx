@@ -72,6 +72,16 @@ describe("Comissões", () => {
     mocks.create.mockResolvedValue({ id: 9 });
   });
 
+  it("exclusão recusada mostra o motivo no diálogo (antes falhava sem mensagem)", async () => {
+    mocks.remove.mockRejectedValue(new Error("Não é possível excluir a comissão: a competência 01/2026 está fechada na DRE. Reabra a competência 01/2026 na DRE (exige permissão e justificativa) e lance novamente."));
+    mount();
+    await userEvent.click((await screen.findAllByRole("button", { name: "Excluir comissão de Ana (Ação) em Alfa" }))[0]);
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Confirmar" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Não é possível excluir a comissão: a competência 01/2026 está fechada na DRE. Reabra a competência 01/2026 na DRE (exige permissão e justificativa) e lance novamente.");
+    expect(mocks.remove).toHaveBeenCalledTimes(1);
+  });
+
   it("KPIs em R$ com atrasadas em destaque, status automático e valor manual marcado", async () => {
     mount();
     const kpis = within(await screen.findByRole("region", { name: "Indicadores das comissões" }));

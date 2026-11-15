@@ -25,6 +25,7 @@ import { BudgetsPage } from "@/features/budgets/BudgetsPage";
 import { BudgetPricingPage } from "@/features/budgets/BudgetPricingPage";
 import { BudgetDetailPage } from "@/features/budgets/BudgetDetailPage";
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { navigationPermissions } from "@/constants/navigation";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { AppLayout } from "@/layouts/AppLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -176,16 +177,19 @@ export const router = createBrowserRouter([
                   { path: "parameters", element: <FinanceSettingsPage /> },
                 ],
               },
-              {
-                element: <ProtectedRoute permissions={["payments:read"]} />,
-                children: [
-                  { path: "remuneration", element: <RemunerationProjectsPage /> },
-                  { path: "field-agent-payments", element: <FieldAgentPaymentsPage /> },
-                  { path: "expenses", element: <ExpenseProjectsPage /> },
-                  { path: "asset-tags", element: <AssetTagsPage /> },
-                  { path: "commissions", element: <CommissionsPage /> },
-                ],
-              },
+              // Mesma permissão do item do menu (uma fonte só: navigation.ts).
+              ...(
+                [
+                  ["remuneration", <RemunerationProjectsPage />],
+                  ["field-agent-payments", <FieldAgentPaymentsPage />],
+                  ["expenses", <ExpenseProjectsPage />],
+                  ["asset-tags", <AssetTagsPage />],
+                  ["commissions", <CommissionsPage />],
+                ] as const
+              ).map(([path, element]) => ({
+                element: <ProtectedRoute permissions={navigationPermissions(`/app/finance/${path}`)} />,
+                children: [{ path, element }],
+              })),
             ],
           },
           {

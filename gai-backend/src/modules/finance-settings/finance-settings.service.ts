@@ -17,6 +17,7 @@ import {
   assertNewVersionStart,
   civilToday,
   defaultFinanceSettingsValues,
+  resolveCutoff,
   invalid,
   missingSettings,
   normalizeFinanceSettingsValues,
@@ -185,6 +186,17 @@ export class FinanceSettingsService {
         previous.map((row) => row.validFrom),
         civilToday(),
         closed.map((row) => row.month),
+      );
+      // Corte herdado da versão vizinha; mudar exige confirmação explícita.
+      values.dre_regime_cutoff_month = resolveCutoff(
+        values.dre_regime_cutoff_month,
+        dto.valid_from,
+        previous.map((row) => ({
+          validFrom: row.validFrom,
+          cutoff: row.values.dre_regime_cutoff_month,
+          version: row.version,
+        })),
+        dto.change_cutoff === true,
       );
       assertCutoff(
         values.dre_regime_cutoff_month,

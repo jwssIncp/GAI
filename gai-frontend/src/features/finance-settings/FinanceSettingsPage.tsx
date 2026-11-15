@@ -12,6 +12,8 @@ import {
   FIXED_COST_MODE_LABEL,
   financeSettingsApi,
   financeSettingsKeys,
+  monthsBetween,
+  neighbourVersion,
   nextValidFrom,
   uncoveredSince,
   type FinanceSettingsOverview,
@@ -39,6 +41,9 @@ const slug = (label: string) =>
 
 type FixedCostItem = keyof FinanceSettingsValues["fixed_cost_item_modes"];
 /** Modo do item de custo fixo; no modo fixo, mostra o valor ao lado. */
+/** "2026-09" → "09/2026". */
+const monthLabel = (month: string) => month.split("-").reverse().join("/");
+
 function fixedCostLabel(v: FinanceSettingsValues, item: FixedCostItem) {
   const mode = v.fixed_cost_item_modes[item];
   const amount = v.fixed_cost_item_amounts?.[item];
@@ -145,19 +150,31 @@ function VersionForm({
   onCancel: () => void;
 }) {
   const cache = useQueryClient();
+  const [validFrom, setValidFromState] = useState(() => startDate ?? nextValidFrom(overview));
+  // Corte da DRE automática: a versão nova herda o da versão vizinha (mudar
+  // exige ação explícita, com o aviso do impacto). Só na 1ª versão o padrão é
+  // o mês de início, enquanto o usuário não escolher outro.
+  const neighbour = neighbourVersion(overview.versions, validFrom);
+  const inherited = neighbour?.values.dre_regime_cutoff_month ?? null;
+  const [changingCutoff, setChangingCutoff] = useState(false);
   const [values, setValues] = useState<FinanceSettingsValues>(() => {
     const v = structuredClone(initial);
-    const start = startDate ?? nextValidFrom(overview);
-    return overview.versions.length || !start ? v : { ...v, dre_regime_cutoff_month: start.slice(0, 7) };
+    if (inherited) return { ...v, dre_regime_cutoff_month: inherited };
+    return validFrom ? { ...v, dre_regime_cutoff_month: validFrom.slice(0, 7) } : v;
   });
-  const [validFrom, setValidFromState] = useState(() => startDate ?? nextValidFrom(overview));
-  // Corte da DRE automática: na 1ª versão acompanha o mês de início (por
-  // organização), enquanto o usuário não escolher outro.
-  const [cutoffTouched, setCutoffTouched] = useState(overview.versions.length > 0);
+  const [cutoffTouched, setCutoffTouched] = useState(false);
   const setValidFrom = (date: string) => {
     setValidFromState(date);
-    if (!cutoffTouched && /^\d{4}-\d{2}/.test(date)) setValues((current) => ({ ...current, dre_regime_cutoff_month: date.slice(0, 7) }));
+    const next = neighbourVersion(overview.versions, date)?.values.dre_regime_cutoff_month;
+    if (next && !changingCutoff) setValues((current) => ({ ...current, dre_regime_cutoff_month: next }));
+    else if (!next && !cutoffTouched && /^\d{4}-\d{2}/.test(date))
+      setValues((current) => ({ ...current, dre_regime_cutoff_month: date.slice(0, 7) }));
   };
+  const cutoffChanged = Boolean(inherited) && values.dre_regime_cutoff_month !== inherited;
+  const regimeMonths =
+    cutoffChanged && inherited && /^\d{4}-\d{2}$/.test(values.dre_regime_cutoff_month)
+      ? monthsBetween(...([inherited, values.dre_regime_cutoff_month].sort() as [string, string]))
+      : [];
   const gap = uncoveredSince(overview);
   const until = overview.coverage_start && validFrom < overview.coverage_start ? overview.coverage_start : null;
   const [reason, setReason] = useState(
@@ -165,7 +182,12 @@ function VersionForm({
   );
   const save = useMutation({
     mutationFn: (payload: FinanceSettingsValues) =>
-      financeSettingsApi.publish({ valid_from: validFrom, reason, values: payload }),
+      financeSettingsApi.publish({
+        valid_from: validFrom,
+        reason,
+        values: payload,
+        ...(cutoffChanged ? { change_cutoff: true } : {}),
+      }),
     onSuccess: async () => {
       await cache.invalidateQueries({ queryKey: financeSettingsKeys.all });
       onCancel();
@@ -396,16 +418,62 @@ function VersionForm({
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-2 font-semibold">Recebíveis e DRE</legend>
         {integer("first_installment_days_after_contract", "Prazo da 1ª parcela (dias após o contrato)")}
-        <FormField label="Mês de corte do regime da DRE" hint="A partir deste mês a DRE é alimentada pelo fluxo de caixa. Não pode ser antes do início dos parâmetros da organização.">
+        <FormField
+          label="Mês de corte do regime da DRE"
+          hint={
+            inherited && neighbour
+              ? `Herdado da versão ${neighbour.version} (${monthLabel(inherited)}). A partir deste mês a DRE é alimentada pelo fluxo de caixa.`
+              : "A partir deste mês a DRE é alimentada pelo fluxo de caixa. Não pode ser antes do início dos parâmetros da organização."
+          }
+        >
           <Input
             type="month"
             value={values.dre_regime_cutoff_month}
+            disabled={Boolean(inherited) && !changingCutoff}
             onChange={(event) => {
               setCutoffTouched(true);
               set("dre_regime_cutoff_month", event.target.value);
             }}
           />
         </FormField>
+        {inherited ? (
+          <div className="flex flex-col justify-end gap-2 sm:col-span-2">
+            {changingCutoff ? (
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-fit"
+                onClick={() => {
+                  setChangingCutoff(false);
+                  set("dre_regime_cutoff_month", inherited);
+                }}
+              >
+                Manter o corte herdado
+              </Button>
+            ) : (
+              <Button type="button" variant="secondary" className="w-fit" onClick={() => setChangingCutoff(true)}>
+                Alterar o corte
+              </Button>
+            )}
+            {regimeMonths.length ? (
+              <p role="alert" className="rounded-lg border border-warning/40 bg-warning-subtle p-3 text-sm text-warning-text">
+                {`Mudar o corte de ${monthLabel(inherited)} para ${monthLabel(values.dre_regime_cutoff_month)}: ${
+                  regimeMonths.length > 1
+                    ? `os meses ${monthLabel(regimeMonths[0])} a ${monthLabel(regimeMonths[regimeMonths.length - 1])}`
+                    : `o mês ${monthLabel(regimeMonths[0])}`
+                } ${
+                  values.dre_regime_cutoff_month > inherited
+                    ? regimeMonths.length > 1
+                      ? "deixam de ser alimentados pelo fluxo de caixa e voltam a valer o lançado ou importado"
+                      : "deixa de ser alimentado pelo fluxo de caixa e volta a valer o lançado ou importado"
+                    : regimeMonths.length > 1
+                      ? "passam a ser alimentados pelo fluxo de caixa"
+                      : "passa a ser alimentado pelo fluxo de caixa"
+                }. Competência fechada nesse intervalo impede a mudança.`}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-2 font-semibold">Listas</legend>

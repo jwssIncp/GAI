@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -178,6 +178,55 @@ describe("Parâmetros financeiros", () => {
     expect(amount).toBeRequired();
     await userEvent.selectOptions(within(form).getByLabelText("Back-office"), "fixed");
     expect(within(form).getByLabelText("Back-office: valor fixo (R$/mês)")).toBeRequired();
+  });
+
+  it("versão nova herda o corte da anterior: só outro IR não muda o corte", async () => {
+    mocks.get.mockResolvedValue({ data: { ...empty, current: version, versions: [version] } });
+    mocks.post.mockResolvedValue({ data: version });
+    renderPage(user(["finance-settings:read", "finance-settings:update"]));
+    await userEvent.click(await screen.findByRole("button", { name: "Nova versão" }));
+    const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
+    const cutoff = within(form).getByLabelText("Mês de corte do regime da DRE");
+    expect(cutoff).toHaveValue("2026-09");
+    expect(cutoff).toBeDisabled();
+    expect(within(form).getByText("Herdado da versão 1 (09/2026)", { exact: false })).toBeInTheDocument();
+    const tax = within(form).getByLabelText("IR sobre faturamento");
+    await userEvent.clear(tax);
+    await userEvent.type(tax, "15");
+    await userEvent.type(within(form).getByLabelText("Justificativa"), "Novo IR do contrato");
+    await userEvent.click(within(form).getByRole("button", { name: "Salvar versão" }));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledTimes(1));
+    const payload = mocks.post.mock.calls[0][1];
+    expect(payload.values).toMatchObject({ income_tax_pct: "15", dre_regime_cutoff_month: "2026-09" });
+    expect(payload).not.toHaveProperty("change_cutoff");
+  });
+
+  it("mudar o corte exige ação explícita, mostra os meses que mudam de regime e confirma no envio", async () => {
+    mocks.get.mockResolvedValue({ data: { ...empty, current: version, versions: [version] } });
+    mocks.post.mockResolvedValue({ data: version });
+    renderPage(user(["finance-settings:read", "finance-settings:update"]));
+    await userEvent.click(await screen.findByRole("button", { name: "Nova versão" }));
+    const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
+    await userEvent.click(within(form).getByRole("button", { name: "Alterar o corte" }));
+    const cutoff = within(form).getByLabelText("Mês de corte do regime da DRE");
+    expect(cutoff).toBeEnabled();
+    fireEvent.change(cutoff, { target: { value: "2026-11" } });
+    expect(within(form).getByRole("alert")).toHaveTextContent(
+      "Mudar o corte de 09/2026 para 11/2026: os meses 09/2026 a 10/2026 deixam de ser alimentados pelo fluxo de caixa e voltam a valer o lançado ou importado.",
+    );
+    // desistir volta ao corte herdado (travado); alterar de novo para publicar
+    await userEvent.click(within(form).getByRole("button", { name: "Manter o corte herdado" }));
+    expect(within(form).getByLabelText("Mês de corte do regime da DRE")).toHaveValue("2026-09");
+    expect(within(form).getByLabelText("Mês de corte do regime da DRE")).toBeDisabled();
+    await userEvent.click(within(form).getByRole("button", { name: "Alterar o corte" }));
+    fireEvent.change(within(form).getByLabelText("Mês de corte do regime da DRE"), { target: { value: "2026-11" } });
+    await userEvent.type(within(form).getByLabelText("Justificativa"), "Corte novo combinado");
+    await userEvent.click(within(form).getByRole("button", { name: "Salvar versão" }));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledTimes(1));
+    expect(mocks.post.mock.calls[0][1]).toMatchObject({
+      change_cutoff: true,
+      values: { dre_regime_cutoff_month: "2026-11" },
+    });
   });
 
   it("nova versão começa hoje, ou no dia seguinte à última vigência", () => {

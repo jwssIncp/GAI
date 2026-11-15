@@ -183,10 +183,15 @@ export function CommissionsPage() {
       {partnersOpen ? <PartnersDialog canEdit={canPartners} onClose={() => setPartnersOpen(false)} onChanged={() => void refresh()} /> : null}
       <ConfirmDialog
         open={Boolean(removing)}
-        onOpenChange={(o) => !o && setRemoving(null)}
+        onOpenChange={(o) => {
+          if (o) return;
+          setRemoving(null);
+          remove.reset();
+        }}
         title="Excluir comissão"
         description={removing ? `Excluir a comissão de ${removing.partner_name} em ${removing.project_name} (${formatMoney(removing.amount)})?` : ""}
         busy={remove.isPending}
+        error={remove.isError ? (remove.error as Error).message : null}
         onConfirm={() => removing && remove.mutate(removing.id)}
       />
     </div>

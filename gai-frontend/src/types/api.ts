@@ -73,6 +73,8 @@ export type CurrentUser = {
   role_assignments: RoleAssignment[];
   /** Omitted only by older API versions. An empty array means no grants. */
   permissions?: EffectivePermission[];
+  /** Validade da sessão web já estendida pelo uso (só no GET /auth/me). */
+  session_expires_at?: string | null;
 };
 
 export type LoginRequest = { identifier: string; password: string };
