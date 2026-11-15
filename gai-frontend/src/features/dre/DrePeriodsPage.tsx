@@ -1,3 +1,4 @@
+import { formatDateTime, formatMonth } from "@/utils/format";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -74,7 +75,7 @@ export function DrePeriodsPage() {
             items={q.data}
             getKey={(r) => r.id}
             columns={[
-              { header: "Competência", cell: (r) => r.month },
+              { header: "Competência", cell: (r) => formatMonth(r.month) },
               {
                 header: "Estado",
                 cell: (r) => (r.closed ? "Fechada" : "Reaberta"),
@@ -95,14 +96,14 @@ export function DrePeriodsPage() {
                       variant="secondary"
                       onClick={() => setHistoryMonth(r.month)}
                     >
-                      Histórico {r.month}
+                      Histórico {formatMonth(r.month)}
                     </Button>
                     {hasPermission("dre:periods") && (
                       <Button
                         variant="secondary"
                         onClick={() => open(r.closed ? "reopen" : "close", r)}
                       >
-                        {r.closed ? "Reabrir" : "Fechar"} {r.month}
+                        {r.closed ? "Reabrir" : "Fechar"} {formatMonth(r.month)}
                       </Button>
                     )}
                     {hasPermission("dre:periods") && r.closed && r.has_grid === false && (
@@ -114,7 +115,7 @@ export function DrePeriodsPage() {
                           setError("");
                         }}
                       >
-                        Congelar coluna {r.month}
+                        Congelar coluna {formatMonth(r.month)}
                       </Button>
                     )}
                   </div>
@@ -349,7 +350,7 @@ export function DrePeriodsPage() {
                 { header: "Autor", cell: (r) => r.actorId },
                 {
                   header: "Data",
-                  cell: (r) => new Date(r.recordedAt).toLocaleString("pt-BR"),
+                  cell: (r) => formatDateTime(String(r.recordedAt)),
                 },
               ]}
             />

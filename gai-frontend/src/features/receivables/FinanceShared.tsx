@@ -1,3 +1,4 @@
+import { EXPORT_STATUS } from "@/utils/format";
 import { navigationContext } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -173,7 +174,7 @@ export function ExportFinance({
         )}
       {id && (
         <span className="text-sm">
-          Exportação #{id}: {q.data?.status ?? "aguardando"}
+          Exportação #{id}: {q.data ? (EXPORT_STATUS[q.data.status] ?? q.data.status) : "Na fila"}
         </span>
       )}
       {(error || q.error || q.data?.error_message) && (

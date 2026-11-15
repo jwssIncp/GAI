@@ -41,7 +41,7 @@ describe("Competências da DRE (etapa 10)", () => {
     dre.periods.mockResolvedValue([period("2026-09", { closed: false, revision: 0 })]);
     closing.checklist.mockResolvedValueOnce({ month: "2026-09", cutoff: "2026-09", automatic: true, blockers: [{ code: "unmapped_kinds", message: "Movimentos de 09/2026 sem conta associada na DRE: Inventariantes (diárias)." }], warnings: [] });
     mount();
-    await userEvent.click(await screen.findByRole("button", { name: "Fechar 2026-09" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Fechar 09/2026" }));
     expect(await screen.findByText(/sem conta associada/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Confirmar fechamento" })).toBeDisabled();
     // o formulário antigo (grupos revisados / fechamento parcial) não aparece na DRE automática
@@ -53,7 +53,7 @@ describe("Competências da DRE (etapa 10)", () => {
     closing.checklist.mockResolvedValue({ month: "2026-09", cutoff: "2026-09", automatic: true, blockers: [], warnings: [{ code: "open_items", message: "1 movimento(s) ainda previstos com data em 09/2026 serão congelados como estão.", count: 1, amount: "20.00" }] });
     dre.close.mockResolvedValue({});
     mount();
-    await userEvent.click(await screen.findByRole("button", { name: "Fechar 2026-09" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Fechar 09/2026" }));
     const ack = await screen.findByRole("checkbox", { name: /Ciente: 1 movimento/ });
     expect(ack).toBeRequired();
     await userEvent.click(ack);
@@ -77,7 +77,7 @@ describe("Competências da DRE (etapa 10)", () => {
     });
     closing.freeze.mockResolvedValue({});
     mount();
-    await userEvent.click(await screen.findByRole("button", { name: "Congelar coluna 2026-08" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Congelar coluna 08/2026" }));
     const row = (await screen.findByText("Receita bruta")).closest("tr")!;
     expect(within(row).getAllByRole("cell").map((c) => c.textContent)).toEqual(["Receita bruta", "R$ 0,00", "R$ 10.000,00", "R$ 10.000,00"]);
     await userEvent.click(screen.getByRole("button", { name: "Congelar coluna" }));

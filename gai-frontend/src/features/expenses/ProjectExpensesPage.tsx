@@ -24,7 +24,7 @@ import { ConfirmDialog, DrawerForm } from "@/components/ui/dialog";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { useDebouncedValue } from "@/features/field-agents/useDebouncedValue";
 import { ExpenseAttachmentsPanel } from "@/features/finance/ExpenseAttachmentsPanel";
-import { formatMoney } from "@/utils/format";
+import { formatDate, formatMoney } from "@/utils/format";
 import type { Expense } from "@/types/api";
 import { ExpenseFormDialog } from "./ExpenseFormDialog";
 import { AccountDialog, AdvancesDialog, BatchesPanel, ImportDialog, ReasonDialog, ZipDialog } from "./ExpenseDialogs";
@@ -153,7 +153,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-success/40 bg-success/10 p-3 text-sm">
           <span>
             <Lock size={15} className="mr-1 inline" />
-            Financeiro concluído em {new Date(data.closure.closed_at).toLocaleDateString("pt-BR")}
+            Financeiro concluído em {formatDate(data.closure.closed_at)}
             {data.closure.closed_by ? ` por ${data.closure.closed_by}` : ""}: {data.closure.reason}. Despesas, adiantamentos e lotes ficam bloqueados.
           </span>
           {hasPermission("project-finance:reopen") ? (

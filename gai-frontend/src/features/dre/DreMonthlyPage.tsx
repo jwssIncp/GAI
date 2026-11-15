@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { formatMoney } from "@/utils/format";
+import { formatDateTime, formatMoney } from "@/utils/format";
 import {
   dreClosingApi,
   dreMonthlyApi,
@@ -342,7 +342,7 @@ function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: Dr
                 {d.movements.map((m, i) => (
                   <li key={i} className="flex justify-between gap-2">
                     <span>{m.date.split("-").reverse().join("/")} · {m.project_name} · {m.description}</span>
-                    <span className="tabular-nums">{m.sign < 0 ? "−" : ""}{formatMoney(m.gross)}</span>
+                    <span className={`tabular-nums ${m.sign < 0 ? "text-destructive" : ""}`}>{formatMoney(m.sign < 0 ? -Number(m.gross) : m.gross)}</span>
                   </li>
                 ))}
               </ul>
@@ -354,7 +354,7 @@ function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: Dr
               <ul className="mt-1 grid gap-1">
                 {d.versions.map((v) => (
                   <li key={v.revision}>
-                    #{v.revision} · {v.amount === null ? "apagado" : formatMoney(v.amount)} · {v.origin === "import" ? "importação" : "lançamento"} · {new Date(v.recorded_at).toLocaleString("pt-BR")} · {v.reason}
+                    #{v.revision} · {v.amount === null ? "apagado" : formatMoney(v.amount)} · {v.origin === "import" ? "importação" : "lançamento"} · {formatDateTime(v.recorded_at)} · {v.reason}
                   </li>
                 ))}
               </ul>

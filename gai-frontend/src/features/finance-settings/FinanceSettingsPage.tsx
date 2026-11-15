@@ -1,3 +1,4 @@
+import { formatDateTime, formatPercent } from "@/utils/format";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,7 +8,6 @@ import { FormField } from "@/components/base/FormField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { formatDateTime } from "@/utils/format";
 import {
   FIXED_COST_MODE_LABEL,
   financeSettingsApi,
@@ -25,7 +25,7 @@ import {
 const MB = 1024 * 1024;
 /** Data civil (AAAA-MM-DD) sem conversão de fuso. */
 const formatDate = (value: string) => value.split("-").reverse().join("/");
-const pct = (value: string) => `${value.replace(".", ",")}%`;
+const pct = (value: string) => formatPercent(value);
 const brl = (value: string) =>
   Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const mb = (bytes: number) =>

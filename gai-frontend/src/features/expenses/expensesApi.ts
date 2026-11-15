@@ -1,3 +1,4 @@
+import { formatCivilDate, formatPercent } from "@/utils/format";
 import { api } from "@/api/http";
 
 export type ExpenseType = "reimbursable" | "non_reimbursable";
@@ -275,8 +276,8 @@ export function saveBlob(blob: Blob, name: string) {
   URL.revokeObjectURL(url);
 }
 
-export const civilBr = (value: string | null | undefined) => (value ? value.split("-").reverse().join("/") : "");
-export const pctBr = (value: string | null) => (value === null ? "—" : `${value.replace(".", ",")}%`);
+export const civilBr = formatCivilDate;
+export const pctBr = (value: string | null) => formatPercent(value);
 
 /** Parcelas iguais (D-E): cota arredondada, resto na última, vencimentos +1…n meses (mesma regra da API). */
 export function equalInstallments(amount: string, count: number, purchaseDate: string): Installment[] {

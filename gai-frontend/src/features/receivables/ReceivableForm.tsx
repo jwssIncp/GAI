@@ -1,3 +1,4 @@
+import { formatCivilDate, parseCivilDate } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -102,7 +103,7 @@ export function ReceivableForm() {
                     ...(mode === "percentages"
                       ? { percentages: list("percentages") }
                       : {}),
-                    ...(v("dates") ? { dates: list("dates") } : {}),
+                    ...(v("dates") ? { dates: list("dates").map(parseCivilDate) } : {}),
                   },
           };
           setPreview(await financeApi.preview(dto));
@@ -257,7 +258,7 @@ export function ReceivableForm() {
             <textarea
               className={cls}
               name="dates"
-              placeholder="AAAA-MM-DD, um por linha"
+              placeholder="dd/mm/aaaa, uma por linha"
             />
           </label>
         </fieldset>
@@ -297,7 +298,7 @@ export function ReceivableForm() {
             getKey={(i) => i.position}
             columns={[
               { header: "Parcela", cell: (i) => i.position },
-              { header: "Vencimento", cell: (i) => i.due_on },
+              { header: "Vencimento", cell: (i) => formatCivilDate(i.due_on) },
               {
                 header: "Valor",
                 cell: (i) => money(i.amount, preview.data.currency),

@@ -1,4 +1,4 @@
-import { localMonth } from "@/utils/format";
+import { EXPORT_STATUS, formatMonth, localMonth } from "@/utils/format";
 import { navigationContext } from "@/features/projects/navigationContext";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
@@ -338,7 +338,7 @@ export function DreReportPage() {
                           r.entry_id + ":" + r.month + ":" + r.account_code
                         }
                         columns={[
-                          { header: "Competência", cell: (r) => r.month },
+                          { header: "Competência", cell: (r) => formatMonth(r.month) },
                           {
                             header: "Reconhecimento",
                             cell: (r) => (
@@ -379,7 +379,7 @@ export function DreReportPage() {
                       data={q
                         .data!.monthly.filter((m) => m.currency === t.currency)
                         .map((m) => ({
-                          month: m.month,
+                          month: formatMonth(m.month),
                           Receita: Number(value(m, "revenue")),
                           Custos: Number(value(m, keys.costs)),
                           Despesas: Number(value(m, keys.expenses)),
@@ -410,7 +410,7 @@ export function DreReportPage() {
               getKey={(r) => r.entry_id + ":" + r.month + ":" + r.account_code}
               columns={[
                 { header: "Conta", cell: (r) => r.account_name },
-                { header: "Competência", cell: (r) => r.month },
+                { header: "Competência", cell: (r) => formatMonth(r.month) },
                 {
                   header: "Projeto",
                   cell: (r) => projectLabel(r.project_id),
@@ -454,7 +454,7 @@ export function DreReportPage() {
                     </Link>
                   ),
                 },
-                { header: "Competência", cell: (r) => r.month },
+                { header: "Competência", cell: (r) => formatMonth(r.month) },
                 {
                   header: "Valor fora das linhas classificadas",
                   cell: (r) => money(r.amount, r.currency),
@@ -577,7 +577,7 @@ export function DreReportPage() {
                 Baixar XLSX da DRE
               </Button>
             )}
-          <span className="text-sm">{exportStatus.data?.status}</span>
+          <span className="text-sm">{exportStatus.data ? (EXPORT_STATUS[exportStatus.data.status] ?? exportStatus.data.status) : null}</span>
         </div>
       )}
       {(error || exportStatus.error || exportStatus.data?.error_message) && (
