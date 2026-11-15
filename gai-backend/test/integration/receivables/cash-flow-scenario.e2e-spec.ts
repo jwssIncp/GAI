@@ -1428,6 +1428,190 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
   });
 
   /**
+   * Consistência (fluxo de caixa com paridade): no estado final do cenário
+   * (modelo padrão aplicado: revenda de placas → 1.04), para cada mês aberto
+   * de 11/2026 a 12/2027 (ago–out/2026 estão fechados e congelados: podem
+   * divergir de propósito), sem filtro de projeto:
+   * - subtotal de cada bloco da tela = célula da DRE da conta associada ao tipo
+   *   de movimento (busca pela associação, nunca pelo código: cada organização
+   *   tem seu plano);
+   * - linhas de custo fixo = célula da conta de origem (lançado + estimado);
+   * - saldo do mês (entradas − saídas) = resultado final da DRE do mês (o
+   *   cenário não tem outros lançamentos nesses meses);
+   * - IR descontado uma vez: bruto − saídas com IR = líquido − saídas sem IR;
+   * - cards = soma das linhas; quadro = indicadores.
+   */
+  it('consistência: blocos e cards do fluxo = DRE mensal (por associação) = indicadores; IR uma vez', async () => {
+    type GridAccount = {
+      id: number;
+      code: string;
+      flow_kinds: string[];
+      cells: Array<{ month: string; value: string; estimate: string | null }>;
+    };
+    type Grid = {
+      accounts: GridAccount[];
+      lines: Array<{ key: string; values: string[] }>;
+      months: string[];
+    };
+    const grids: Record<string, Grid> = {};
+    for (const y of ['2026', '2027'])
+      grids[y] = (await dreView(`year=${y}&as_of=2026-11-14`))
+        .grid as unknown as Grid;
+    const c = (v: string | number) => Math.round(Number(v) * 100);
+    const sum = (list: Item[], f: (i: Item) => string = (i) => i.gross) =>
+      list.reduce((s, i) => s + c(f(i)), 0);
+    const cellOfKind = (kind: string, month: string) => {
+      const a = grids[month.slice(0, 4)].accounts.find((x) =>
+        x.flow_kinds.includes(kind),
+      );
+      expect(a).toBeDefined(); // todo tipo usado tem conta associada
+      return c(a!.cells.find((x) => x.month === month)!.value);
+    };
+    const all = await board('as_of=2026-11-14&month=2026-11&year=all');
+    expect((all as unknown as { tables_year: string }).tables_year).toBe('all');
+    const live = all.items.filter(
+      (i) => i.status !== 'reversed' && i.currency === 'BRL',
+    );
+    const blocks = (rows: Item[]) => ({
+      billing: rows.filter((i) => i.group === 'billing'),
+      reimbursement: rows.filter(
+        (i) =>
+          (i.group === 'reimbursement' || i.group === 'other_in') &&
+          i.origin !== 'asset_tag',
+      ),
+      resale: rows.filter((i) => i.origin === 'asset_tag'),
+      to_reimburse: rows.filter((i) => i.group === 'to_reimburse'),
+      non_reimbursable: rows.filter((i) => i.group === 'non_reimbursable'),
+    });
+    const months = [...grids['2026'].months.slice(10), ...grids['2027'].months];
+    let checked = 0;
+    for (const month of months) {
+      const rows = live.filter((i) => i.date.startsWith(month));
+      const b = blocks(rows);
+      expect([month, 'faturamento', sum(b.billing)]).toEqual([
+        month,
+        'faturamento',
+        cellOfKind('billing_revenue', month),
+      ]);
+      expect([month, 'reembolso', sum(b.reimbursement)]).toEqual([
+        month,
+        'reembolso',
+        cellOfKind('reimbursement_revenue', month),
+      ]);
+      expect([month, 'revenda', sum(b.resale)]).toEqual([
+        month,
+        'revenda',
+        cellOfKind('asset_tags_revenue', month),
+      ]);
+      expect([month, 'a reembolsar', sum(b.to_reimburse)]).toEqual([
+        month,
+        'a reembolsar',
+        cellOfKind('reimbursable_expenses', month),
+      ]);
+      const nr = (origin: string, only?: (i: Item) => boolean) =>
+        sum(
+          b.non_reimbursable.filter(
+            (i) => i.origin === origin && (!only || only(i)),
+          ),
+        );
+      for (const [origin, kind] of [
+        ['income_tax', 'income_tax'],
+        ['field_agent_payment', 'field_agents'],
+        ['expense', 'non_reimbursable_expenses'],
+        ['commission', 'commissions'],
+        ['asset_tag_cost', 'asset_tags'],
+      ])
+        expect([month, origin, nr(origin)]).toEqual([
+          month,
+          origin,
+          cellOfKind(kind, month),
+        ]);
+      // Custos fixos: cada linha = célula da conta de origem (lançado + estimado)
+      const fixed = b.non_reimbursable.filter((i) => i.origin === 'fixed_cost');
+      const byAccount = new Map<number, number>();
+      for (const i of fixed)
+        byAccount.set(
+          Number(i.refs.account_id),
+          (byAccount.get(Number(i.refs.account_id)) ?? 0) + c(i.gross),
+        );
+      for (const [id, value] of byAccount) {
+        const a = grids[month.slice(0, 4)].accounts.find((x) => x.id === id)!;
+        expect(a.flow_kinds).toEqual([]); // conta não alimentada pelo fluxo
+        expect([month, a.code, value]).toEqual([
+          month,
+          a.code,
+          c(a.cells.find((x) => x.month === month)!.value),
+        ]);
+      }
+      // Saldo do mês = resultado final da DRE do mês
+      const ins = rows.filter((i) => i.direction === 'in');
+      const outs = rows.filter((i) => i.direction === 'out');
+      const final = grids[month.slice(0, 4)].lines.find(
+        (l) => l.key === 'final_result',
+      )!.values[Number(month.slice(5)) - 1];
+      expect([month, 'saldo', sum(ins) - sum(outs)]).toEqual([
+        month,
+        'saldo',
+        c(final),
+      ]);
+      // IR uma vez: bruto − saídas (com IR) = líquido − saídas (sem IR)
+      const noTax = outs.filter((i) => i.origin !== 'income_tax');
+      expect(sum(ins) - sum(outs)).toBe(sum(ins, (i) => i.net) - sum(noTax));
+      if (rows.length) checked++;
+    }
+    expect(checked).toBeGreaterThanOrEqual(3); // nov e dez/2026, jan/2027
+
+    // Cards = linhas (nov/2026 e dez/2026), sem contar o IR duas vezes
+    const brl = all.kpis.find(
+      (k) => (k.currency as unknown as string) === 'BRL',
+    )!;
+    const nov = live.filter((i) => i.date.startsWith('2026-11'));
+    const dec = live.filter(
+      (i) => i.date.startsWith('2026-12') && i.status !== 'realized',
+    );
+    const novIn = nov.filter((i) => i.direction === 'in');
+    const novOut = nov.filter((i) => i.direction === 'out');
+    expect(c(brl.month.total)).toBe(sum(novIn) - sum(novOut));
+    expect(c(brl.month.in_realized) + c(brl.month.in_open)).toBe(sum(novIn));
+    expect(c(brl.month.out_realized) + c(brl.month.out_open)).toBe(sum(novOut));
+    const decIn = dec.filter((i) => i.direction === 'in');
+    const decOutNoTax = dec.filter(
+      (i) => i.direction === 'out' && i.origin !== 'income_tax',
+    );
+    expect(c(brl.next_month.in_net)).toBe(sum(decIn, (i) => i.net));
+    expect(c(brl.next_month.out)).toBe(sum(decOutNoTax));
+    expect(c(brl.next_month.total)).toBe(
+      sum(decIn, (i) => i.net) - sum(decOutNoTax),
+    );
+    // Total do ano no card = resultado final da DRE 2026
+    const dreYear = grids['2026'].lines
+      .find((l) => l.key === 'final_result')!
+      .values.reduce((s, v) => s + c(v), 0);
+    expect(brl.year.dre_total).toBe((dreYear / 100).toFixed(2));
+    // Quadro = indicadores (mesmos cards para o mesmo filtro)
+    const ind = (
+      await api(
+        'get',
+        '/finance/cash-flow/indicators?as_of=2026-11-14&month=2026-11&year=all',
+      ).expect(200)
+    ).body;
+    expect(ind.kpis.month).toEqual(brl.month);
+    expect(ind.kpis.next_month).toEqual(brl.next_month);
+    expect(ind.kpis.year.dre_total).toBe(brl.year.dre_total);
+
+    // Com projeto filtrado: sem custos fixos (não são de projeto) e sem o total da DRE
+    const alfaBoard = await board(
+      `as_of=2026-11-14&month=2026-11&year=all&project_id=${alfa}`,
+    );
+    expect(alfaBoard.items.some((i) => i.origin === 'fixed_cost')).toBe(false);
+    expect(alfaBoard.items.every((i) => i.project_id === alfa)).toBe(true);
+    expect(
+      alfaBoard.kpis.find((k) => (k.currency as unknown as string) === 'BRL')!
+        .year.dre_total,
+    ).toBeNull();
+  });
+
+  /**
    * Alterar a data de recebimento (fluxo de caixa com paridade): estorno do
    * recebimento original e novo recebimento na nova data, na mesma transação
    * (dois eventos seguidos na trilha do recebível); data futura recusada; exige
