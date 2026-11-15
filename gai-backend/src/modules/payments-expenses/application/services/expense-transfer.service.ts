@@ -342,14 +342,27 @@ export class ExpenseTransferService {
       });
     let matrix: unknown[][];
     try {
-      const book = XLSX.read(file.buffer, {
-        type: 'buffer',
-        cellDates: true,
-        // CSV: sem inferência de tipo ("1.234,56" e "03/10/2026" ficam como texto e
-        // são lidos no padrão brasileiro). Excel: células numéricas e datas reais.
-        raw: true,
-        codepage: 65001,
-      });
+      // CSV com BOM do UTF-8 (o que a própria exportação gera, para o Excel):
+      // sem tirar o BOM, a 1ª célula vira lixo e o ";" deixa de separar campos.
+      const bom =
+        file.buffer.length >= 3 &&
+        file.buffer[0] === 0xef &&
+        file.buffer[1] === 0xbb &&
+        file.buffer[2] === 0xbf;
+      const book = bom
+        ? XLSX.read(file.buffer.subarray(3).toString('utf8'), {
+            type: 'string',
+            cellDates: true,
+            raw: true,
+          })
+        : XLSX.read(file.buffer, {
+            type: 'buffer',
+            cellDates: true,
+            // CSV: sem inferência de tipo ("1.234,56" e "03/10/2026" ficam como texto e
+            // são lidos no padrão brasileiro). Excel: células numéricas e datas reais.
+            raw: true,
+            codepage: 65001,
+          });
       const sheet = book.Sheets[book.SheetNames[0]];
       matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
         header: 1,

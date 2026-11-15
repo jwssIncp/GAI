@@ -207,4 +207,29 @@ describe("Financial navigation through real nested routes", () => {
     await waitFor(() => expect(financeApi.create).toHaveBeenCalledTimes(1));
     expect(vi.mocked(financeApi.create).mock.calls[0][1]).toBe("a".repeat(64));
   });
+
+  it("vencimentos personalizados aceitam dd/mm/aaaa e aaaa-mm-dd (um por linha)", async () => {
+    vi.mocked(financeApi.preview).mockResolvedValue({
+      preview_hash: "b".repeat(64),
+      data: row.data,
+      plan: { rows: [] },
+    });
+    mount("/app/finance/receivables/new");
+    for (const [label, value] of [
+      ["Cliente (ID)", "1"],
+      ["Descrição", "SINTETICO datas"],
+      ["Valor total (decimal)", "10.00"],
+      ["Justificativa", "Teste sintético"],
+      ["Vencimentos personalizados (opcional)", "31/01/2026\n2026-02-28"],
+    ])
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    expect(screen.getByLabelText("Vencimentos personalizados (opcional)")).toHaveAttribute(
+      "placeholder",
+      "dd/mm/aaaa, uma por linha",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Gerar prévia de parcelas" }));
+    await waitFor(() => expect(financeApi.preview).toHaveBeenCalled());
+    const dto = vi.mocked(financeApi.preview).mock.calls.at(-1)![0];
+    expect(dto.payment).toMatchObject({ dates: ["2026-01-31", "2026-02-28"] });
+  });
 });

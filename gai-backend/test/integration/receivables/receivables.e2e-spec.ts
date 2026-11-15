@@ -627,6 +627,55 @@ describe('Receivables HTTP with disposable MySQL', () => {
     expect(report.totals[0].expected_out).toBe('0.00');
     expect(report.totals[0].actual_out).toBe('10.01');
   });
+  it('XLSX financeiro: vencimento e data da baixa são datas reais, no mesmo dia da tela', async () => {
+    const r = await create(
+      input({
+        amount: '50.00',
+        payment: { mode: 'equal', count: 1, first_due_on: '2026-02-28' },
+      }),
+    );
+    await post(
+      `/finance/receivables/${r.id}/receipts`,
+      receipt(r, '50.00', { received_on: '2026-02-27' }),
+    ).expect(201);
+    const sheetOf = async (kind: string, name: string) => {
+      const e = (
+        await post('/finance/exports', { kind, filters: {} }).expect(201)
+      ).body;
+      const job = await ds
+        .getRepository(ExportJobEntity)
+        .findOneByOrFail({ id: e.id });
+      const buffer = await app.get(ExportWorkbookBuilderService).build(job);
+      return XLSX.read(buffer, { type: 'buffer', cellNF: true }).Sheets[name];
+    };
+    /** Dia (AAAA-MM-DD) de uma célula de data, conferindo que é data real. */
+    const days = (sheet: XLSX.WorkSheet, header: string, idCol: string) => {
+      const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1 });
+      const h = rows[0] as string[];
+      return rows.slice(1).map((row, i) => {
+        const cell = sheet[
+          XLSX.utils.encode_cell({ r: i + 1, c: h.indexOf(header) })
+        ] as XLSX.CellObject;
+        expect(cell).toMatchObject({ t: 'n', z: 'dd/mm/yyyy' });
+        const d = XLSX.SSF.parse_date_code(cell.v);
+        return [
+          row[h.indexOf(idCol)],
+          `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`,
+        ];
+      });
+    };
+    expect(
+      days(
+        await sheetOf('installments', 'Parcelas'),
+        'Vencimento',
+        'Recebível',
+      ),
+    ).toContainEqual([r.id, '2026-02-28']);
+    expect(
+      days(await sheetOf('receipts', 'Recebimentos'), 'Data', 'Recebível'),
+    ).toContainEqual([r.id, '2026-02-27']);
+  });
+
   it('exports through existing processor and revalidates catalog on download', async () => {
     await create(input({ description: '=HYPERLINK("bad")' }));
     const e = (
