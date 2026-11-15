@@ -1,3 +1,4 @@
+import { assertNoLooseClosedMonth } from './dre-closed-period';
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { EntityManager } from 'typeorm';
@@ -108,6 +109,11 @@ export class DreMonthlyCommandsService {
   ) {
     await this.dre.require(actor, ['dre:read', 'dre:configure']);
     return this.dre.command(f, dto, actor, 'monthly-rules', async (m, org) => {
+      await assertNoLooseClosedMonth(
+        m,
+        org,
+        'Não é possível alterar as regras da DRE',
+      );
       const changed: Record<string, number | null> = {};
       for (const [kind, accountId] of Object.entries(dto.rules)) {
         if (!RULE_KINDS.includes(kind as RuleKind))
@@ -163,6 +169,11 @@ export class DreMonthlyCommandsService {
       });
       if ((prior?.revision ?? 0) !== dto.revision)
         conflict('Layout alterado por outra pessoa. Atualize.');
+      await assertNoLooseClosedMonth(
+        m,
+        org,
+        'Não é possível alterar o layout da DRE',
+      );
       const ids = [...dto.hidden, ...dto.summary, ...dto.post_operational];
       for (const id of new Set(ids))
         if (
@@ -750,6 +761,11 @@ export class DreDefaultModelService {
       actor,
       'monthly-default-model',
       async (m, org) => {
+        await assertNoLooseClosedMonth(
+          m,
+          org,
+          'Não é possível aplicar o modelo padrão',
+        );
         const { plan, layout } = await this.current(m, org);
         const reason = `${dto.reason.trim()} (modelo ${plan.version})`;
         const ids = new Map<string, number>();

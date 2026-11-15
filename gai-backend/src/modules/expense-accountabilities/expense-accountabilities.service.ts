@@ -1,3 +1,4 @@
+import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import { monthlyDueDate } from './monthly-due-date.policy';
 import {
   ConflictException,
@@ -307,6 +308,13 @@ export class ExpenseAccountabilitiesService {
       dto.count,
     );
     const first = this.date(dto.first_due_date);
+    // As parcelas entram no fluxo (e na DRE) pelo vencimento.
+    await assertDreMonthsOpen(
+      this.dataSource.manager,
+      project.organizationId,
+      Array.from({ length: dto.count }, (_, i) => monthlyDueDate(first, i)),
+      'Não é possível gerar as parcelas',
+    );
     return this.dataSource.transaction(async (manager) => {
       const rows = [] as ExpenseInstallmentEntity[];
       for (let i = 0; i < dto.count; i++) {

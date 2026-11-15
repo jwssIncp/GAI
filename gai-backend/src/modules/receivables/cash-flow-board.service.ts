@@ -44,9 +44,7 @@ import {
   ReceivableProposalDecisionEntity,
 } from './cash-flow-parity.entities';
 import { hash } from './receivable.policy';
-import { assertDreMonthsOpen } from './dre-closed-period';
-import { CommissionEntity } from '../commissions/commission.entity';
-import { AssetTagOrderEntity } from '../asset-tags/asset-tag-order.entity';
+import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import { ReceivableEntity } from './receivable.entity';
 import { ReceivableService } from './receivable.service';
 
@@ -1152,17 +1150,9 @@ export class CashFlowBoardService {
       const id = Number(rawId);
       if (kind === 'commission') {
         await this.receivables.require(actor, ['commissions:edit']);
-        const row = await this.ds.manager.findOne(CommissionEntity, {
-          where: { id, organizationId: org },
-        });
-        await this.assertRepayOpen(org, row?.paidOn, paidOn);
         await this.commissions.update(id, { paid_on: paidOn }, actor);
       } else if (kind === 'asset_tag_order') {
         await this.receivables.require(actor, ['asset-tag-orders:edit']);
-        const row = await this.ds.manager.findOne(AssetTagOrderEntity, {
-          where: { id, organizationId: org },
-        });
-        await this.assertRepayOpen(org, row?.supplierPaidOn, paidOn);
         await this.tags.update(
           id,
           paidOn ? { supplier_paid_on: paidOn } : { supplier_paid: false },
@@ -1200,7 +1190,33 @@ export class CashFlowBoardService {
           throw new ConflictException({
             message: 'Saída sem baixa feita no fluxo.',
           });
-        await this.assertRepayOpen(org, before, paidOn);
+        if (before !== paidOn) {
+          // Pagar, alterar a data ou desfazer: a saída sai do mês previsto ou
+          // do mês pago e entra em outro; nenhum deles pode estar fechado.
+          const due =
+            parts.length === 4
+              ? (
+                  await this.ds.manager.findOne(ExpenseInstallmentEntity, {
+                    where: {
+                      organizationId: org,
+                      expenseId: id,
+                      installmentNumber: Number(parts[3]),
+                    },
+                  })
+                )?.dueDate
+              : (civil(expense.invoicedPaymentDate) ??
+                civil(expense.expenseDate));
+          await assertDreMonthsOpen(
+            this.ds.manager,
+            org,
+            [due, before, paidOn],
+            !paidOn
+              ? 'Não é possível desfazer o pagamento'
+              : before
+                ? 'Não é possível alterar a data de pagamento'
+                : 'Não é possível registrar o pagamento',
+          );
+        }
         await repo.save(
           current
             ? Object.assign(current, { paidOn, updatedById: actor.id })
@@ -1224,25 +1240,6 @@ export class CashFlowBoardService {
           message: 'Esta saída não tem baixa no fluxo.',
         });
     });
-  }
-
-  /**
-   * Alterar a data de pagamento (já pago → nova data): recusado se a data
-   * original ou a nova cair em competência fechada da DRE.
-   */
-  private async assertRepayOpen(
-    org: number,
-    before: string | Date | null | undefined,
-    paidOn: string | null,
-  ) {
-    const original = before ? civil(before) : null;
-    if (!original || !paidOn || original === paidOn) return;
-    await assertDreMonthsOpen(
-      this.ds.manager,
-      org,
-      [original, paidOn],
-      'Não é possível alterar a data de pagamento',
-    );
   }
 
   private async audit(

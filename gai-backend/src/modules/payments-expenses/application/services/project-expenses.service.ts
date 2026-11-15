@@ -735,7 +735,11 @@ export class ProjectExpensesService {
     return this.each(ids, async (id) => {
       const expense = await this.expense(project.organizationId, projectId, id);
       await this.rules.assertNotBilled(expense.reimbursementBatchId);
-      await this.rules.assertDreOpen(project.organizationId, id);
+      await this.rules.assertDreOpen(
+        project.organizationId,
+        id,
+        'Não é possível mudar o tipo da despesa',
+      );
       const changes = this.rule(() => expense.changeType(actor.id, type));
       if (!Object.keys(changes).length) return;
       // Reembolsável que vira não reembolsável sai do lote aberto.
@@ -763,7 +767,11 @@ export class ProjectExpensesService {
     return this.each(ids, async (id) => {
       const expense = await this.expense(project.organizationId, projectId, id);
       await this.rules.assertNotBilled(expense.reimbursementBatchId);
-      await this.rules.assertDreOpen(project.organizationId, id);
+      await this.rules.assertDreOpen(
+        project.organizationId,
+        id,
+        'Não é possível excluir a despesa',
+      );
       const changes = this.rule(() => {
         const out = expense.remove(actor.id, new Date());
         if (expense.reimbursementBatchId)

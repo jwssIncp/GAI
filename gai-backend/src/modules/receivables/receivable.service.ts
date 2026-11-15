@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { assertNotFuture } from '../../common/finance/settlement-date';
-import { assertDreMonthsOpen } from './dre-closed-period';
+import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import {
   ProjectScopeService,
   ProjectActorContext,
@@ -403,6 +403,12 @@ export class ReceivableService {
         }))
       )
         conflict('Esta origem já gerou um recebível, inclusive se cancelado.');
+      await assertDreMonthsOpen(
+        m,
+        org,
+        p.plan.rows.map((i) => i.due_on),
+        'Não é possível criar o recebível',
+      );
       const row = await m.save(
         R,
         m.create(R, {
@@ -683,6 +689,12 @@ export class ReceivableService {
         )
       )
         conflict('Referência de recebimento já registrada neste recebível.');
+      await assertDreMonthsOpen(
+        m,
+        row.organizationId,
+        [i.dueOn, dto.received_on],
+        'Não é possível registrar o recebimento',
+      );
       return {
         details: {
           method: dto.method.trim(),
@@ -712,6 +724,12 @@ export class ReceivableService {
       if (dto.due_on < row.data.issued_on)
         invalid('A nova data não pode ser anterior à emissão.');
       if (dto.due_on === i.dueOn) conflict('A data prevista já é essa.');
+      await assertDreMonthsOpen(
+        m,
+        row.organizationId,
+        [i.dueOn, dto.due_on],
+        'Não é possível alterar a data prevista',
+      );
       await m.update(
         I,
         { id: i.id, organizationId: row.organizationId },
@@ -743,6 +761,12 @@ export class ReceivableService {
         dto.reversed_on > new Date().toISOString().slice(0, 10)
       )
         invalid('Data de estorno fora do intervalo recebimento/hoje.');
+      await assertDreMonthsOpen(
+        m,
+        row.organizationId,
+        [e.effectiveOn, dto.reversed_on],
+        'Não é possível estornar o recebimento',
+      );
       return {
         details: { original_event_id: e.id },
         extra: {
@@ -820,6 +844,12 @@ export class ReceivableService {
       const d = await this.detailFrom(m, row);
       if (scaled(d.received) !== 0n)
         conflict('Estorne explicitamente os recebimentos antes de cancelar.');
+      await assertDreMonthsOpen(
+        m,
+        row.organizationId,
+        d.installments.map((i) => i.dueOn),
+        'Não é possível cancelar o recebível',
+      );
       row.cancelled = true;
       return { details: { previous_status: d.status } };
     });

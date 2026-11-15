@@ -1,3 +1,4 @@
+import { assertDreMonthsOpen } from '../../../managerial-dre/dre-closed-period';
 import {
   BadRequestException,
   ForbiddenException,
@@ -440,5 +441,30 @@ export class RemunerationService {
       where: { organizationId, month: In(months), closed: true },
     });
     return closed.map((p) => p.month).sort();
+  }
+
+  /**
+   * Diária em competência fechada não muda: nem pela classificação manual
+   * (regime anterior ao corte) nem pelas datas que a levam ao fluxo — prevista,
+   * de pagamento e as novas. `paymentId` nulo = lançamento novo.
+   */
+  async assertPaymentMonthsOpen(
+    organizationId: number,
+    paymentId: number | null,
+    action: string,
+    dates: Array<Date | string | null | undefined> = [],
+  ) {
+    const row = paymentId
+      ? await this.ds
+          .getRepository(FieldAgentPaymentEntity)
+          .findOne({ where: { id: paymentId, organizationId } })
+      : null;
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      [row?.expectedPaymentDate, row?.paymentDate, ...dates],
+      action,
+      paymentId ? await this.closedPeriodsFor(organizationId, paymentId) : [],
+    );
   }
 }

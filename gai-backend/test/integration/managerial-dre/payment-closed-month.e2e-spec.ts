@@ -122,7 +122,9 @@ describe('Pagamento de inventariantes × competência fechada da DRE (e2e)', () 
       const r = (await post(path, body).expect(200)).body;
       expect(r.done).toBe(0);
       expect(r.results[0].ok).toBe(false);
-      expect(r.results[0].message).toContain(MONTH);
+      expect(r.results[0].message).toContain(
+        'a competência 10/2026 está fechada na DRE. Reabra a competência 10/2026 na DRE (exige permissão e justificativa) e lance novamente.',
+      );
     };
     await refusedItem('/field-agent-payments/pay', {
       ids: [open],

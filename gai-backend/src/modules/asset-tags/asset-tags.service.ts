@@ -1,3 +1,4 @@
+import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import {
   BadRequestException,
   ForbiddenException,
@@ -333,6 +334,17 @@ export class AssetTagsService {
   async remove(id: number, actor: AssetTagActor) {
     const organizationId = this.organization(actor);
     const current = await this.find(organizationId, id);
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      [
+        current.supplierPaidOn ??
+          current.supplierExpectedPaymentOn ??
+          current.orderedOn,
+        current.clientReceivedOn ?? current.clientExpectedReceiptOn,
+      ],
+      'Não é possível excluir o pedido de placas',
+    );
     await this.ds.transaction(async (m) => {
       await m.getRepository(AssetTagOrderEntity).softDelete({ id });
       await m.getRepository(AssetTagOrderAuditLogEntity).save({
@@ -497,6 +509,7 @@ export class AssetTagsService {
     for (const key of Object.keys(b) as Array<keyof typeof b>)
       if (JSON.stringify(a?.[key] ?? null) !== JSON.stringify(b[key] ?? null))
         changes[key] = { before: a?.[key] ?? null, after: b[key] };
+    await this.assertOpenMonths(organizationId, a, b, Object.keys(changes));
     const saved = await this.ds.transaction(async (m) => {
       const row = await m.getRepository(AssetTagOrderEntity).save(o);
       if (Object.keys(changes).length)
@@ -513,6 +526,73 @@ export class AssetTagsService {
       id: Number(saved.id),
       changed: Object.keys(changes).map((k) => FIELD_LABEL[k] ?? k),
     };
+  }
+
+  /**
+   * O pedido entra no fluxo (e na DRE) em dois eventos: o custo (pago, previsto
+   * ou pedido) e a revenda (recebida ou prevista). Mudar o que compõe um evento
+   * mexe no mês antigo e no novo; nenhum pode estar em competência fechada.
+   */
+  private async assertOpenMonths(
+    organizationId: number,
+    a: Record<string, unknown> | null,
+    b: Record<string, unknown>,
+    changed: string[],
+  ) {
+    const COST = [
+      'project_id',
+      'ordered_on',
+      'quantity',
+      'sequence_start',
+      'sequence_end',
+      'unit_cost',
+      'supplier_payment_status',
+      'supplier_expected_payment_on',
+      'supplier_paid_on',
+      'expense_type_override',
+    ];
+    const RECEIPT = [
+      'project_id',
+      'quantity',
+      'sequence_start',
+      'sequence_end',
+      'unit_price',
+      'client_expected_receipt_on',
+      'client_received_on',
+    ];
+    const date = (s: Record<string, unknown> | null, ...keys: string[]) =>
+      s
+        ? ((keys.map((k) => s[k]).find(Boolean) as string | undefined) ?? null)
+        : null;
+    const cost = (s: Record<string, unknown> | null) =>
+      date(s, 'supplier_paid_on', 'supplier_expected_payment_on', 'ordered_on');
+    const receipt = (s: Record<string, unknown> | null) =>
+      date(s, 'client_received_on', 'client_expected_receipt_on');
+    const dates: Array<string | null> = [];
+    if (changed.some((k) => COST.includes(k))) dates.push(cost(a), cost(b));
+    if (changed.some((k) => RECEIPT.includes(k)))
+      dates.push(receipt(a), receipt(b));
+    if (!dates.length) return;
+    const only = (key: string) =>
+      changed.every((k) => k === key || k === 'supplier_payment_status');
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      dates,
+      !a
+        ? 'Não é possível lançar o pedido de placas'
+        : only('supplier_paid_on')
+          ? !b.supplier_paid_on
+            ? 'Não é possível desfazer o pagamento ao fornecedor'
+            : a.supplier_paid_on
+              ? 'Não é possível alterar a data de pagamento ao fornecedor'
+              : 'Não é possível registrar o pagamento ao fornecedor'
+          : only('client_received_on')
+            ? !b.client_received_on
+              ? 'Não é possível desfazer o recebimento da revenda'
+              : 'Não é possível registrar o recebimento da revenda'
+            : 'Não é possível alterar o pedido de placas',
+    );
   }
 
   private async find(organizationId: number, id: number) {

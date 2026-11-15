@@ -65,7 +65,10 @@ function service(
   const ds = {
     getRepository: (e: unknown) => ({
       find: jest.fn().mockResolvedValue(tables.get(e) ?? []),
+      findOne: jest.fn().mockResolvedValue(null),
     }),
+    // Nenhuma competência fechada pelas datas (a classificação vem do mock).
+    manager: { find: jest.fn().mockResolvedValue([]) },
   };
   const settings = {
     valuesAt: jest.fn().mockResolvedValue({ require_approval: true }),
@@ -446,7 +449,8 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
     const result = await ctx.s.revert([1], actor);
     expect(result.results[0]).toMatchObject({
       ok: false,
-      message: 'Classificado na DRE em competência fechada (2026-11).',
+      message:
+        'Não é possível desfazer o pagamento: a competência 11/2026 está fechada na DRE. Reabra a competência 11/2026 na DRE (exige permissão e justificativa) e lance novamente.',
     });
     expect(p.status).toBe(PaymentStatus.PAID);
   });

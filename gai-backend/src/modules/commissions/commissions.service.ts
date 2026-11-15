@@ -1,3 +1,4 @@
+import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import {
   BadRequestException,
   ConflictException,
@@ -248,6 +249,12 @@ export class CommissionsService {
   async remove(id: number, actor: CommissionActor) {
     const organizationId = this.organization(actor);
     const c = await this.find(organizationId, id);
+    await assertDreMonthsOpen(
+      this.ds.manager,
+      organizationId,
+      [c.paidOn ?? c.expectedPaymentOn],
+      'Não é possível excluir a comissão',
+    );
     await this.ds.transaction(async (m) => {
       await m.getRepository(CommissionEntity).softDelete({ id });
       await this.audit(
@@ -359,6 +366,28 @@ export class CommissionsService {
     for (const key of Object.keys(b) as Array<keyof typeof b>)
       if (JSON.stringify(a?.[key] ?? null) !== JSON.stringify(b[key] ?? null))
         changes[key] = { before: a?.[key] ?? null, after: b[key] };
+    // A comissão entra no fluxo (e na DRE) na data paga ou, sem ela, na prevista:
+    // mudar valor, projeto ou datas mexe no mês antigo e no novo.
+    if (Object.keys(changes).some((k) => k !== 'notes' && k !== 'partner_id')) {
+      const onlyPaid = Object.keys(changes).every((k) => k === 'paid_on');
+      await assertDreMonthsOpen(
+        this.ds.manager,
+        organizationId,
+        [
+          a && (a.paid_on ?? a.expected_payment_on),
+          b.paid_on ?? b.expected_payment_on,
+        ],
+        !a
+          ? 'Não é possível lançar a comissão'
+          : onlyPaid && !b.paid_on
+            ? 'Não é possível desfazer o pagamento da comissão'
+            : onlyPaid
+              ? a.paid_on
+                ? 'Não é possível alterar a data de pagamento da comissão'
+                : 'Não é possível registrar o pagamento da comissão'
+              : 'Não é possível alterar a comissão',
+      );
+    }
     const saved = await this.ds.transaction(async (m) => {
       const row = await m.getRepository(CommissionEntity).save(c);
       if (Object.keys(changes).length)
