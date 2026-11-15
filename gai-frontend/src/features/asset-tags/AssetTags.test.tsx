@@ -79,6 +79,15 @@ describe("Placas de patrimônio", () => {
     mocks.create.mockResolvedValue({ id: 3 });
   });
 
+  it("exclusão recusada mostra o motivo no diálogo (antes falhava sem mensagem)", async () => {
+    mocks.remove.mockRejectedValue(new Error("Não é possível excluir o pedido de placas: a competência 10/2026 está fechada na DRE. Reabra a competência 10/2026 na DRE (exige permissão e justificativa) e lance novamente."));
+    mount();
+    await userEvent.click(await screen.findByRole("button", { name: "Excluir pedido P-1" }));
+    const dialog = await screen.findByRole("dialog");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Confirmar" }));
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Não é possível excluir o pedido de placas: a competência 10/2026 está fechada na DRE. Reabra a competência 10/2026 na DRE (exige permissão e justificativa) e lance novamente.");
+  });
+
   it("KPIs, líquido com o % dos parâmetros, lucro negativo em vermelho e qtd da sequência só leitura", async () => {
     mount();
     const kpis = within(await screen.findByRole("region", { name: "Indicadores das placas" }));

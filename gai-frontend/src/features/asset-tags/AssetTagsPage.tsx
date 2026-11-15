@@ -220,10 +220,15 @@ export function AssetTagsPage() {
       {creating ? <NewOrderDialog data={data} projectId={filters.project_id} onClose={() => setCreating(false)} onSaved={async () => { setCreating(false); await cache.invalidateQueries({ queryKey: assetTagsKeys.all }); }} /> : null}
       <ConfirmDialog
         open={Boolean(removing)}
-        onOpenChange={(o) => !o && setRemoving(null)}
+        onOpenChange={(o) => {
+          if (o) return;
+          setRemoving(null);
+          remove.reset();
+        }}
         title="Excluir pedido de placas"
         description={removing ? `Excluir o pedido ${removing.proposal_number ?? `#${removing.id}`} (${qty(removing.quantity)} placas, ${removing.project_name})?` : ""}
         busy={remove.isPending}
+        error={remove.isError ? (remove.error as Error).message : null}
         onConfirm={() => removing && remove.mutate(removing.id)}
       />
     </div>

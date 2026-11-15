@@ -1,3 +1,4 @@
+import { localToday } from "@/utils/format";
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { companiesApi, projectsApi, usersApi } from "@/api/endpoints";
@@ -269,7 +270,7 @@ export function BudgetForm({
           name="prepared_on"
           type="date"
           required
-          defaultValue={d?.prepared_on ?? new Date().toISOString().slice(0, 10)}
+          defaultValue={d?.prepared_on ?? localToday()}
         />
       </label>
       <label className="grid gap-1 text-sm">
