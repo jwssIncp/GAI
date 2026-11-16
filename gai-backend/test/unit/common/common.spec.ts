@@ -160,7 +160,14 @@ describe('RolesGuard', () => {
         getRequest: () => ({ user: { systemRoles: [UserRole.ORG_USER] } }),
       }),
     };
-    expect(guard.canActivate(context as never)).toBe(false);
+    expect(() => guard.canActivate(context as never)).toThrow(
+      expect.objectContaining({
+        response: {
+          code: 'FORBIDDEN',
+          message: 'Você não tem permissão para esta ação.',
+        },
+      }),
+    );
   });
 });
 

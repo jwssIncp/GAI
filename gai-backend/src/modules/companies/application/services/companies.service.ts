@@ -21,6 +21,10 @@ import {
   normalizeBrazilianPhone,
 } from '../../../field-agents/domain/validation/brazilian-contact';
 import { UserRole } from '../../../auth/domain/enums/user.enums';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../../../auth/application/services/user-names';
 import { CompanyStatus } from '../../domain/enums/company-status.enum';
 import { CompanyUnitStatus } from '../../domain/enums/company-unit-status.enum';
 import {
@@ -76,13 +80,13 @@ export class CompaniesService {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
     if (!organization.isActive()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Company cannot be created for inactive organization',
+        message: 'Não é possível cadastrar cliente em organização inativa.',
       });
     }
     const document = this.normalizeDocument(dto.document);
@@ -171,7 +175,22 @@ export class CompaniesService {
   ): Promise<CompanyResponseDto> {
     const company = await this.findCompanyOrFail(id);
     this.scope.assertCanAccessOrganization(actor, company.organizationId);
-    return CompanyResponseDto.fromEntity(company);
+    // Detalhe: nomes da organização e de quem criou/alterou (a tela não mostra "#id").
+    const [organization, users] = await Promise.all([
+      this.organizations.findById(Number(company.organizationId)),
+      loadUserNames(this.projects.manager, [
+        company.createdById,
+        company.updatedById,
+      ]),
+    ]);
+    return {
+      ...CompanyResponseDto.fromEntity(company),
+      organization_name: organization
+        ? organization.tradeName || organization.legalName
+        : null,
+      created_by_name: userNameOf(users, company.createdById),
+      updated_by_name: userNameOf(users, company.updatedById),
+    };
   }
 
   async updateCompany(
@@ -290,7 +309,7 @@ export class CompaniesService {
     if (company.status === nextStatus) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Company status blocks this operation',
+        message: 'A situação do cliente não permite esta operação.',
       });
     }
     const beforeStatus = company.status;
@@ -326,7 +345,7 @@ export class CompaniesService {
     if (company.status !== CompanyStatus.ACTIVE) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Company status blocks this operation',
+        message: 'A situação do cliente não permite esta operação.',
       });
     }
     const unit = new CompanyUnitEntity();
@@ -443,7 +462,7 @@ export class CompaniesService {
     if (unit.status === nextStatus) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Company unit status blocks this operation',
+        message: 'A situação da unidade não permite esta operação.',
       });
     }
     const beforeStatus = unit.status;
@@ -479,7 +498,7 @@ export class CompaniesService {
     if (!project.companyId) {
       throw new ConflictException({
         code: 'PROJECT_HAS_NO_COMPANY',
-        message: 'Project has no company linked',
+        message: 'O projeto não tem cliente vinculado.',
         details: { project_id: projectId },
       });
     }
@@ -501,42 +520,42 @@ export class CompaniesService {
       case 'project_not_found':
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Project not found',
+          message: 'Projeto não encontrado.',
         });
       case 'project_has_no_company':
         throw new ConflictException({
           code: 'PROJECT_HAS_NO_COMPANY',
-          message: 'Project has no company linked',
+          message: 'O projeto não tem cliente vinculado.',
           details: { project_id: projectId },
         });
       case 'project_status_blocks':
         throw new ConflictException({
           code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-          message: 'Project status blocks this operation',
+          message: 'A situação do projeto não permite esta operação.',
           details: { current_status: result.currentStatus },
         });
       case 'unit_not_found':
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Company unit not found',
+          message: 'Unidade não encontrada.',
         });
       case 'unit_scope_mismatch':
         throw new ConflictException({
           code: 'PROJECT_UNIT_SCOPE_MISMATCH',
           message:
-            'Project and company unit must belong to the same company and organization',
+            'O projeto e a unidade precisam ser do mesmo cliente e da mesma organização.',
           details: { company_unit_id: dto.company_unit_id },
         });
       case 'unit_inactive':
         throw new ConflictException({
           code: 'COMPANY_UNIT_STATUS_BLOCKS_OPERATION',
-          message: 'Company unit status blocks this operation',
+          message: 'A situação da unidade não permite esta operação.',
           details: { company_unit_id: dto.company_unit_id },
         });
       case 'already_assigned':
         throw new ConflictException({
           code: 'PROJECT_UNIT_ALREADY_ASSIGNED',
-          message: 'Company unit already assigned to project',
+          message: 'A unidade já está vinculada ao projeto.',
           details: { company_unit_id: dto.company_unit_id },
         });
     }
@@ -584,35 +603,34 @@ export class CompaniesService {
       case 'project_not_found':
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Project not found',
+          message: 'Projeto não encontrado.',
         });
       case 'project_status_blocks':
         throw new ConflictException({
           code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-          message: 'Project status blocks this operation',
+          message: 'A situação do projeto não permite esta operação.',
           details: { current_status: result.currentStatus },
         });
       case 'assignment_not_found':
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Project unit assignment not found',
+          message: 'Vínculo da unidade com o projeto não encontrado.',
         });
       case 'already_removed':
         throw new ConflictException({
           code: 'PROJECT_UNIT_ALREADY_REMOVED',
-          message: 'Project unit assignment is already removed',
+          message: 'O vínculo da unidade com o projeto já foi removido.',
           details: { company_unit_id: unitId },
         });
       case 'unit_not_found':
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Company unit not found',
+          message: 'Unidade não encontrada.',
         });
       case 'unit_scope_mismatch':
         throw new ConflictException({
           code: 'PROJECT_UNIT_SCOPE_MISMATCH',
-          message:
-            'Project and company unit must belong to the same organization',
+          message: 'O projeto e a unidade precisam ser da mesma organização.',
           details: { company_unit_id: unitId },
         });
     }
@@ -627,13 +645,13 @@ export class CompaniesService {
       throw new ConflictException({
         code: 'CONFLICT',
         message:
-          'Project cannot be linked to company from another organization',
+          'O projeto não pode ser vinculado a cliente de outra organização.',
       });
     }
     if (company.status !== CompanyStatus.ACTIVE) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project cannot be created for inactive company',
+        message: 'Não é possível criar projeto para cliente inativo.',
       });
     }
   }
@@ -643,7 +661,7 @@ export class CompaniesService {
     if (!company) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Company not found',
+        message: 'Cliente não encontrado.',
       });
     }
     return company;
@@ -657,7 +675,7 @@ export class CompaniesService {
     if (!unit || unit.companyId !== companyId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Company unit not found',
+        message: 'Unidade não encontrada.',
       });
     }
     return unit;
@@ -668,7 +686,7 @@ export class CompaniesService {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     return project;
@@ -687,7 +705,7 @@ export class CompaniesService {
     if (existing) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Company document already exists in organization',
+        message: 'Já existe um cliente com este documento na organização.',
       });
     }
   }
@@ -699,8 +717,8 @@ export class CompaniesService {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
         message:
-          'CNPJ invalido. Confira os 14 caracteres e os digitos verificadores.',
-        details: [{ field: 'document', message: 'CNPJ invalido.' }],
+          'CNPJ inválido. Confira os 14 caracteres e os dígitos verificadores.',
+        details: [{ field: 'document', message: 'CNPJ inválido.' }],
       });
     }
     return document;
@@ -720,7 +738,7 @@ export class CompaniesService {
     if (!actor.permissions?.includes(permission))
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Sem permissao para alterar a situacao da empresa.',
+        message: 'Sem permissão para alterar a situação da empresa.',
       });
   }
 
@@ -767,7 +785,7 @@ export class CompaniesService {
     if (!cleaned || cleaned.length < 2) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: `${field} is required`,
+        message: `${field}: campo obrigatório.`,
       });
     }
     return cleaned;

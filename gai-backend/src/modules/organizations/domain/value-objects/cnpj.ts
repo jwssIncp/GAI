@@ -9,9 +9,9 @@ export class Cnpj {
     if (digits.length !== 14) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'CNPJ must contain exactly 14 digits',
+        message: 'O CNPJ deve ter exatamente 14 dígitos.',
         details: [
-          { field: 'cnpj', message: 'CNPJ must contain exactly 14 digits' },
+          { field: 'cnpj', message: 'O CNPJ deve ter exatamente 14 dígitos.' },
         ],
       });
     }
@@ -19,16 +19,26 @@ export class Cnpj {
     if (/^(\d)\1+$/.test(digits)) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Invalid CNPJ',
-        details: [{ field: 'cnpj', message: 'Invalid CNPJ check digits' }],
+        message: 'CNPJ inválido.',
+        details: [
+          {
+            field: 'cnpj',
+            message: 'CNPJ com dígitos verificadores inválidos.',
+          },
+        ],
       });
     }
 
     if (!Cnpj.isValidCheckDigits(digits)) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Invalid CNPJ',
-        details: [{ field: 'cnpj', message: 'Invalid CNPJ check digits' }],
+        message: 'CNPJ inválido.',
+        details: [
+          {
+            field: 'cnpj',
+            message: 'CNPJ com dígitos verificadores inválidos.',
+          },
+        ],
       });
     }
 

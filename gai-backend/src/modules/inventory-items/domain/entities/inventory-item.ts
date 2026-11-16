@@ -115,7 +115,7 @@ export class InventoryItem {
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === InventoryItemStatus.INACTIVE) {
-      throw new Error('Inventory item is already inactive');
+      throw new Error('O item de inventário já está inativo.');
     }
     const beforeStatus = this.props.status;
     const beforeDeletedAt = this.props.deletedAt;
@@ -132,7 +132,7 @@ export class InventoryItem {
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== InventoryItemStatus.INACTIVE) {
-      throw new Error('Only inactive inventory items can be reactivated');
+      throw new Error('Só itens de inventário inativos podem ser reativados.');
     }
     const beforeDeletedAt = this.props.deletedAt;
     this.props.status = InventoryItemStatus.PENDING;
@@ -180,7 +180,7 @@ export class InventoryItem {
       return;
     }
     if (!/^\d{1,13}(\.\d{1,2})?$/.test(value)) {
-      throw new Error('monetary values must be decimal strings');
+      throw new Error('Os valores em R$ devem ser números decimais.');
     }
   }
 
@@ -189,7 +189,7 @@ export class InventoryItem {
       return;
     }
     if (!Number.isInteger(value) || value < 1900 || value > 2100) {
-      throw new Error('year must be between 1900 and 2100');
+      throw new Error('O ano deve estar entre 1900 e 2100.');
     }
   }
 }

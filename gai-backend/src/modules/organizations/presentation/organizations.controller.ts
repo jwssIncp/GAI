@@ -28,7 +28,9 @@ import {
   ApiValidationErrorResponse,
 } from '../../../common/swagger/api-error-responses';
 import { UserRole } from '../../auth/domain/enums/user.enums';
+import { RequirePermissions } from '../../auth/presentation/decorators/require-permissions.decorator';
 import { Roles } from '../../auth/presentation/decorators/roles.decorator';
+import { PermissionsGuard } from '../../auth/presentation/guards/permissions.guard';
 import { RolesGuard } from '../../auth/presentation/guards/roles.guard';
 import { SessionAuthGuard } from '../../auth/presentation/guards/session-auth.guard';
 import { CreateOrganizationDto } from '../application/dto/create-organization.dto';
@@ -52,7 +54,9 @@ interface AuthenticatedRequest extends Request {
 @ApiTags('Organizations')
 @ApiBearerAuth()
 @Controller('organizations')
-@UseGuards(SessionAuthGuard, RolesGuard)
+// Mesma regra do front: só PLATFORM_ADMIN e só com organizations:read/write
+// no catálogo (o permissions:sync do release garante as duas chaves).
+@UseGuards(SessionAuthGuard, RolesGuard, PermissionsGuard)
 @Roles(UserRole.PLATFORM_ADMIN)
 export class OrganizationsController {
   constructor(
@@ -65,6 +69,7 @@ export class OrganizationsController {
   ) {}
 
   @Post()
+  @RequirePermissions('organizations:write')
   @HttpCode(201)
   @ApiOperation({
     summary: 'Cadastrar organization',
@@ -80,7 +85,7 @@ export class OrganizationsController {
   @ApiForbiddenResponse()
   @ApiConflictResponse(
     'CNPJ já cadastrado',
-    'Organization with this CNPJ already exists',
+    'Já existe uma organização com este CNPJ.',
   )
   async create(
     @Body() dto: CreateOrganizationDto,
@@ -90,6 +95,7 @@ export class OrganizationsController {
   }
 
   @Get()
+  @RequirePermissions('organizations:read')
   @ApiOperation({
     summary: 'Listar organizations (paginado)',
     description:
@@ -104,6 +110,7 @@ export class OrganizationsController {
   }
 
   @Get(':id')
+  @RequirePermissions('organizations:read')
   @ApiOperation({
     summary: 'Consultar organization por ID',
     description: 'Fluxos: 200 encontrada | 401 | 403 | 404 inexistente',
@@ -118,6 +125,7 @@ export class OrganizationsController {
   }
 
   @Patch(':id')
+  @RequirePermissions('organizations:write')
   @ApiOperation({
     summary: 'Atualizar organization',
     description:
@@ -138,6 +146,7 @@ export class OrganizationsController {
   }
 
   @Post(':id/deactivate')
+  @RequirePermissions('organizations:write')
   @HttpCode(200)
   @ApiOperation({
     summary: 'Desativar organization',
@@ -150,7 +159,7 @@ export class OrganizationsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Organization já inativa',
-    'Organization is already inactive',
+    'A organização já está inativa.',
   )
   async deactivate(
     @Param('id', ParseIntPipe) id: number,
@@ -160,6 +169,7 @@ export class OrganizationsController {
   }
 
   @Post(':id/activate')
+  @RequirePermissions('organizations:write')
   @HttpCode(200)
   @ApiOperation({
     summary: 'Reativar organization',
@@ -170,10 +180,7 @@ export class OrganizationsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
-  @ApiConflictResponse(
-    'Organization já ativa',
-    'Organization is already active',
-  )
+  @ApiConflictResponse('Organization já ativa', 'A organização já está ativa.')
   async activate(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,

@@ -236,7 +236,12 @@ describe('Assisted reconciliation HTTP, persistence and domain integration', () 
     expect(
       (await get(f.base + `/candidates/${c.id}/history`).expect(200)).body
         .items[0],
-    ).toMatchObject({ action: 'approved', reason: dto.reason, revision: 2 });
+    ).toMatchObject({
+      action: 'approved',
+      reason: dto.reason,
+      revision: 2,
+      actorName: expect.any(String),
+    });
     const next = await generate(f);
     await post(
       f.base + `/candidates/${next.items[0].id}/decisions`,

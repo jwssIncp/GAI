@@ -63,6 +63,16 @@ const ORIGIN_LABEL: Record<string, string> = {
   commission: 'Comissões',
 };
 const br = (civilDate: string) => civilDate.split('-').reverse().join('/');
+/** Justificativa de desfazer baixa: mesma regra do estorno no recebível. */
+const undoReason = (reason: string | null | undefined) => {
+  const why = (reason ?? '').trim();
+  if (why.length < 5)
+    throw new BadRequestException({
+      code: 'VALIDATION_ERROR',
+      message: 'Justificativa significativa obrigatória.',
+    });
+  return why;
+};
 const civil = (v: Date | string | null | undefined) =>
   v == null
     ? null
@@ -1032,9 +1042,10 @@ export class CashFlowBoardService {
     );
   }
 
-  /** Desfazer recebimento = estorno (com data de hoje). */
+  /** Desfazer recebimento = estorno (com data de hoje), com a justificativa no histórico. */
   async undoReceipts(
     items: Array<{ receivable_id: number; event_id: number }>,
+    reason: string,
     actor: ProjectActorContext,
   ) {
     await this.receivables.require(actor, [
@@ -1042,6 +1053,7 @@ export class CashFlowBoardService {
       'receivables:read',
       'receivables:reverse',
     ]);
+    const why = undoReason(reason);
     return this.each(
       items.map((i) => `${i.receivable_id}:${i.event_id}`),
       async (key) => {
@@ -1053,7 +1065,7 @@ export class CashFlowBoardService {
           {
             revision: d.revision,
             command_key: `cf-${randomUUID()}`,
-            reason: 'Desfeito no fluxo de caixa',
+            reason: `Desfeito no fluxo de caixa: ${why}`,
             reversed_on: civilToday(),
           },
           actor,
@@ -1140,17 +1152,21 @@ export class CashFlowBoardService {
     keys: string[],
     paidOn: string | null,
     actor: ProjectActorContext,
-    organizationId?: number,
+    options: { organizationId?: number; reason?: string } = {},
   ) {
-    const org = this.receivables.org(actor, organizationId);
+    const org = this.receivables.org(actor, options.organizationId);
     await this.receivables.require(actor, ['cash-flow:read']);
     assertNotFuture(paidOn, 'A data de pagamento');
+    // Desfazer a baixa exige justificativa (fica na auditoria do fluxo).
+    const why = paidOn === null ? undoReason(options.reason) : null;
     return this.each(keys, async (key) => {
       const [kind, rawId] = key.split(':');
       const id = Number(rawId);
       if (kind === 'commission') {
         await this.receivables.require(actor, ['commissions:edit']);
         await this.commissions.update(id, { paid_on: paidOn }, actor);
+        if (why)
+          await this.audit(org, actor, 'UNDO_OUTFLOW', key, { reason: why });
       } else if (kind === 'asset_tag_order') {
         await this.receivables.require(actor, ['asset-tag-orders:edit']);
         await this.tags.update(
@@ -1158,6 +1174,8 @@ export class CashFlowBoardService {
           paidOn ? { supplier_paid_on: paidOn } : { supplier_paid: false },
           actor,
         );
+        if (why)
+          await this.audit(org, actor, 'UNDO_OUTFLOW', key, { reason: why });
       } else if (kind === 'expense') {
         await this.receivables.require(actor, ['expenses:mark-as-paid']);
         const expense = await this.ds.manager.findOne(ExpenseEntity, {
@@ -1233,7 +1251,9 @@ export class CashFlowBoardService {
           actor,
           paidOn ? 'SETTLE_OUTFLOW' : 'UNDO_OUTFLOW',
           key,
-          { paid_on: { before, after: paidOn } },
+          why
+            ? { paid_on: { before, after: paidOn }, reason: why }
+            : { paid_on: { before, after: paidOn } },
         );
       } else
         throw new ConflictException({

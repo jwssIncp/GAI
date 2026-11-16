@@ -143,7 +143,11 @@ import { UsersModule } from './modules/users/users.module';
       },
     }),
     // Tracker is req.ip (ThrottlerGuard default); see common/http/trust-proxy.
-    ThrottlerModule.forRoot([resolveThrottleDefaults()]),
+    ThrottlerModule.forRoot({
+      throttlers: [resolveThrottleDefaults()],
+      errorMessage:
+        'Muitas tentativas em pouco tempo. Aguarde um pouco e tente de novo.',
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: () => ({

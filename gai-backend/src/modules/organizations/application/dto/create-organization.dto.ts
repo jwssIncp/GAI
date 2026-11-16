@@ -34,7 +34,7 @@ export class CreateOrganizationDto {
     example: '11222333000181',
   })
   @IsString()
-  @Matches(/^\d{14}$/, { message: 'cnpj must contain exactly 14 digits' })
+  @Matches(/^\d{14}$/, { message: 'cnpj: deve ter exatamente 14 dígitos.' })
   cnpj!: string;
 
   @ApiPropertyOptional({ format: 'email', example: 'contato@exemplo.com.br' })

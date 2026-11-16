@@ -181,7 +181,7 @@ export class ExportJobsController {
   @ApiOperation({ summary: 'Cancelar exportacao pendente ou em processamento' })
   @ApiOkResponse({ type: ExportJobResponseDto })
   @ApiConflictResponse({
-    description: 'Status nao permite cancelamento',
+    description: 'A situação não permite cancelamento.',
     type: ErrorResponseDto,
   })
   cancel(
@@ -198,7 +198,8 @@ export class ExportJobsController {
   @ApiOperation({ summary: 'Criar nova tentativa para exportacao terminal' })
   @ApiCreatedResponse({ type: ExportJobResponseDto })
   @ApiConflictResponse({
-    description: 'Status nao permite retry ou ja existe retry ativo',
+    description:
+      'A situação não permite nova tentativa ou já existe uma ativa.',
     type: ErrorResponseDto,
   })
   retry(

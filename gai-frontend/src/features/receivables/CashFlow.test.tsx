@@ -233,6 +233,23 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     await waitFor(() => expect(mocks.redateReceipts).toHaveBeenCalledWith([{ receivable_id: 9, event_id: 77 }], "2026-11-12", "Data informada pelo banco"));
   });
 
+  it("desfazer recebimento pede justificativa e a envia no estorno", async () => {
+    const u = userEvent.setup();
+    mount();
+    const billing = within(await screen.findByRole("region", { name: "Tabela: Entradas de faturamento" }));
+    await showAll(u, "Entradas de faturamento");
+    await u.click(billing.getByLabelText("Selecionar Contrato CT-A 10/11/2026"));
+    await u.click(within(screen.getByRole("toolbar")).getByRole("button", { name: "Desfazer recebimento (1)" }));
+    const dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByText("Desfazer 1 recebimento(s)?")).toBeInTheDocument();
+    expect(dialog.getByRole("button", { name: "Desfazer recebimento" })).toBeDisabled();
+    await u.type(dialog.getByLabelText("Justificativa"), "abc");
+    expect(dialog.getByRole("button", { name: "Desfazer recebimento" })).toBeDisabled();
+    await u.type(dialog.getByLabelText("Justificativa"), " lançado errado");
+    await u.click(dialog.getByRole("button", { name: "Desfazer recebimento" }));
+    await waitFor(() => expect(mocks.undoReceipts).toHaveBeenCalledWith([{ receivable_id: 9, event_id: 77 }], "abc lançado errado"));
+  });
+
   it("reprogramar exige justificativa; pagar, alterar a data e desfazer o pagamento de uma saída", async () => {
     const u = userEvent.setup();
     mount();
@@ -268,8 +285,11 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     expect(mocks.settle).not.toHaveBeenLastCalledWith(["expense:9"], null);
     dialog = within(screen.getByRole("dialog"));
     expect(dialog.getByText("Desfazer 1 pagamento(s)?")).toBeInTheDocument();
+    // ...e justificativa (mínimo de 5 caracteres), como o estorno no recebível
+    expect(dialog.getByRole("button", { name: "Desfazer pagamento" })).toBeDisabled();
+    await u.type(dialog.getByLabelText("Justificativa"), "Pago por engano");
     await u.click(dialog.getByRole("button", { name: "Desfazer pagamento" }));
-    await waitFor(() => expect(mocks.settle).toHaveBeenLastCalledWith(["expense:9"], null));
+    await waitFor(() => expect(mocks.settle).toHaveBeenLastCalledWith(["expense:9"], null, "Pago por engano"));
   });
 
   it("estornos ficam escondidos por padrão; \"Mostrar estornos\" exibe com status Estornado", async () => {

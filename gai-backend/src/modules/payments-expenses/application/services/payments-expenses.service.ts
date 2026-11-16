@@ -653,7 +653,7 @@ export class PaymentsExpensesService {
     if (attachment.status !== ExpenseAttachmentStatus.PENDING_UPLOAD)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only pending attachments can be confirmed',
+        message: 'Só comprovantes pendentes podem ser confirmados.',
       });
     const props = attachment.toProps();
     const verified = await this.storageSigner.verifyUpload({
@@ -707,7 +707,7 @@ export class PaymentsExpensesService {
     if (attachment.status !== ExpenseAttachmentStatus.UPLOADED)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only uploaded attachments can be downloaded',
+        message: 'Só comprovantes já enviados podem ser baixados.',
       });
     const signed = await this.storageSigner.createDownloadUrl({
       bucket: attachment.bucket,
@@ -809,7 +809,7 @@ export class PaymentsExpensesService {
           if (payment.toProps().deletedAt)
             throw new NotFoundException({
               code: 'NOT_FOUND',
-              message: 'Payment not found',
+              message: 'Pagamento não encontrado.',
             });
           if (
             !ProjectStatusTransitionPolicy.allowsOperationalMutation(
@@ -818,7 +818,7 @@ export class PaymentsExpensesService {
           )
             throw new ConflictException({
               code: 'CONFLICT',
-              message: 'Project status blocks this operation',
+              message: 'A situação do projeto não permite esta operação.',
             });
           return mutate(payment);
         },
@@ -826,7 +826,7 @@ export class PaymentsExpensesService {
       if (!saved)
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Payment not found',
+          message: 'Pagamento não encontrado.',
         });
       return PaymentResponseDto.fromDomain(saved);
     } catch (error) {
@@ -897,7 +897,7 @@ export class PaymentsExpensesService {
     if (!project)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
     if (mutation) this.scope.assertProjectAllowsMutation(project);
@@ -912,7 +912,9 @@ export class PaymentsExpensesService {
       throw new ConflictException({
         code: 'EXPENSE_STATE_CONFLICT',
         message:
-          error instanceof Error ? error.message : 'Invalid expense state',
+          error instanceof Error
+            ? error.message
+            : 'Situação da despesa inválida.',
       });
     }
   }
@@ -967,7 +969,7 @@ export class PaymentsExpensesService {
     if (!agent || agent.organizationId !== organizationId)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Invalid field_agent_id',
+        message: 'Inventariante inválido.',
       });
     if (requireActive && !agent.isActive())
       throw new ConflictException({
@@ -984,7 +986,7 @@ export class PaymentsExpensesService {
     )
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'field_agent is not assigned to project',
+        message: 'O inventariante não está vinculado ao projeto.',
       });
   }
   private async findPayment(
@@ -996,7 +998,7 @@ export class PaymentsExpensesService {
     if (!payment || payment.projectId !== projectId)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Payment not found',
+        message: 'Pagamento não encontrado.',
       });
     this.scope.assertCanAccessOrganization(actor, payment.organizationId);
     return payment;
@@ -1010,7 +1012,7 @@ export class PaymentsExpensesService {
     if (!expense || expense.projectId !== projectId)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Expense not found',
+        message: 'Despesa não encontrada.',
       });
     this.scope.assertCanAccessOrganization(actor, expense.organizationId);
     return expense;
@@ -1026,7 +1028,7 @@ export class PaymentsExpensesService {
     if (!attachment || attachment.expenseId !== expense.id)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Attachment not found',
+        message: 'Comprovante não encontrado.',
       });
     return attachment;
   }
@@ -1079,7 +1081,7 @@ export class PaymentsExpensesService {
     if (!date)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: `${field} must be a real date`,
+        message: `${field}: deve ser uma data válida.`,
       });
     return date;
   }

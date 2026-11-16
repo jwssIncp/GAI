@@ -179,7 +179,7 @@ export class TypeOrmCompaniesRepository {
       ) {
         throw new ConflictException({
           code: 'CONFLICT',
-          message: 'CNPJ ja cadastrado nesta organizacao.',
+          message: 'CNPJ já cadastrado nesta organização.',
         });
       }
       throw error;

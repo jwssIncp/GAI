@@ -19,7 +19,7 @@ export class ProjectScopeService {
       if (!requestedOrganizationId)
         throw new ForbiddenException({
           code: 'FORBIDDEN',
-          message: 'Select an authorized organization',
+          message: 'Selecione uma organização à qual você tenha acesso.',
         });
       return requestedOrganizationId;
     }
@@ -27,7 +27,7 @@ export class ProjectScopeService {
     if (!actor.organizationId || !Number.isSafeInteger(actor.organizationId)) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -40,7 +40,7 @@ export class ProjectScopeService {
 
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -55,7 +55,7 @@ export class ProjectScopeService {
     if (!actor.organizationId || !Number.isSafeInteger(actor.organizationId)) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -65,7 +65,7 @@ export class ProjectScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -83,7 +83,7 @@ export class ProjectScopeService {
     if (actor.organizationId !== organizationId) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }

@@ -48,6 +48,8 @@ export interface Pricing {
   values: PricingValues;
   reason: string;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   recordedAt: string;
 }
 export interface Sizing {
@@ -174,6 +176,8 @@ export interface Version {
   hash: string;
   reason: string;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   recordedAt: string;
 }
 export interface Budget {
@@ -198,6 +202,8 @@ export interface BudgetDetail extends Budget {
     details: { from?: string; to?: string; version_id?: number };
     reason: string;
     actorId: number;
+    /** Nome de quem registrou (nulo: usuário removido). */
+    actor_name?: string | null;
     recordedAt: string;
   }[];
 }

@@ -38,7 +38,7 @@ export class UpdateCatalogAssetStatusUseCase {
     if (!catalogAsset) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Catalog asset not found',
+        message: 'Item do catálogo não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, catalogAsset.organizationId);
@@ -55,7 +55,7 @@ export class UpdateCatalogAssetStatusUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Catalog asset status blocks this operation',
+            : 'A situação do item do catálogo não permite esta operação.',
       });
     }
 

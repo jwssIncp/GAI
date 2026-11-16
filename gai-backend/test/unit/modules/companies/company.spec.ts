@@ -20,7 +20,7 @@ describe('Company domain and scope', () => {
           metadata: null,
           deletedAt: null,
         }),
-    ).toThrow('name must have at least 2 characters');
+    ).toThrow('O nome deve ter pelo menos 2 caracteres.');
 
     expect(
       () =>
@@ -32,7 +32,7 @@ describe('Company domain and scope', () => {
           code: null,
           status: CompanyUnitStatus.ACTIVE,
         }),
-    ).toThrow('name must have at least 2 characters');
+    ).toThrow('O nome deve ter pelo menos 2 caracteres.');
   });
 
   it('exposes status guards for project and unit assignment rules', () => {

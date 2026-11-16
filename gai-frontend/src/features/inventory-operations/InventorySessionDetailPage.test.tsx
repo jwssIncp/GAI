@@ -102,6 +102,7 @@ const initialRound: InventoryRound = {
   reason: null,
   status: 'finished',
   requested_by_id: 1,
+  requested_by_name: 'Ana Coordenadora',
   created_by_id: 1,
   started_at: '2026-08-20T10:00:00.000Z',
   finished_at: '2026-08-20T11:00:00.000Z',
@@ -128,6 +129,7 @@ const observation: InventoryObservation = {
   round_id: 22,
   inventory_item_id: 11,
   field_agent_id: 7,
+  field_agent_name: 'Maria Souza',
   prior_observation_id: 30,
   idempotency_key: 'idem-observation-31',
   result: 'divergent',
@@ -156,6 +158,7 @@ const evidence: InventoryEvidence = {
   checksum: null,
   status: 'uploaded',
   created_by_id: 7,
+  created_by_name: 'Pedro Campo',
   confirmed_at: '2026-08-20T12:20:00.000Z',
   created_at: '2026-08-20T12:19:00.000Z',
   updated_at: '2026-08-20T12:20:00.000Z',
@@ -230,14 +233,14 @@ describe('InventorySessionDetailPage', () => {
     expect(mocks.listRounds).toHaveBeenCalledWith(10, 5, expect.objectContaining({ page: 1, page_size: 20 }));
   });
 
-  it('recupera a nova rodada apos reinventario e nova montagem', async () => {
+  it('recupera a nova rodada após reinventário e nova montagem', async () => {
     const round3 = { ...currentRound, id: 23, round_number: 3, reason: 'Nova conferência' };
     const session3 = { ...activeSession, current_round_id: 23 };
     mocks.getSession.mockResolvedValueOnce(activeSession).mockResolvedValue(session3);
     mocks.listRounds.mockResolvedValueOnce(page([currentRound, initialRound])).mockResolvedValue(page([round3, currentRound, initialRound]));
     mocks.requestReinventory.mockResolvedValue(round3);
     const view = renderPage();
-    await userEvent.click(await screen.findByRole('button', { name: 'Solicitar reinventario' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Solicitar reinventário' }));
     await userEvent.type(screen.getByRole('combobox', { name: 'Item divergente' }), 'notebook');
     await userEvent.click(await screen.findByRole('option', { name: /Notebook Dell \(PAT-0011\)/ }));
     await userEvent.type(screen.getByLabelText('Motivo'), 'Nova conferência');
@@ -310,6 +313,7 @@ describe('InventorySessionDetailPage', () => {
     renderPage();
     await userEvent.click((await screen.findAllByRole('button', { name: 'Abrir' }))[0]);
     expect(await screen.findByText('evidence.webp')).toBeInTheDocument();
+    expect(screen.getByText(/por Pedro Campo/)).toBeInTheDocument();
     const file = new File(['image'], 'nova.webp', { type: 'image/webp' });
     await userEvent.upload(screen.getByLabelText('Anexar evidência'), file);
     await waitFor(() => expect(mocks.confirmEvidenceUpload).toHaveBeenCalledWith(10, 5, 22, 31, 41, { size_bytes: file.size }));
@@ -327,6 +331,12 @@ describe('InventorySessionDetailPage', () => {
     expect(screen.queryByText('#11')).not.toBeInTheDocument();
     expect(screen.queryByText('#7')).not.toBeInTheDocument();
     expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-items/11');
+  });
+
+  it('mostra o solicitante da rodada pelo nome, nunca pelo ID', async () => {
+    renderPage();
+    expect((await screen.findAllByText('Ana Coordenadora')).length).toBeGreaterThan(0);
+    expect(screen.queryByText('#1')).not.toBeInTheDocument();
   });
 
   it('filtros de observação são combobox com nome e enviam os IDs à API', async () => {

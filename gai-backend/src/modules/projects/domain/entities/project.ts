@@ -1,3 +1,4 @@
+import { ProjectStatusBlocksOperationError } from '../errors/project-status-blocks-operation.error';
 import { ProjectType } from '../enums/project-type.enum';
 import { ProjectStatus } from '../enums/project-status.enum';
 import {
@@ -147,7 +148,7 @@ export class Project {
     updatedById: number | null;
   }): Record<string, { before: unknown; after: unknown }> {
     if (this.blocksOperationalMutation()) {
-      throw new Error('Project status blocks this operation');
+      throw new ProjectStatusBlocksOperationError();
     }
 
     const nextStartDate =
@@ -284,7 +285,7 @@ export class Project {
   ): Record<string, { before: unknown; after: unknown }> {
     const before = this.props.status;
     if (before === status) {
-      throw new Error('Project status blocks this operation');
+      throw new ProjectStatusBlocksOperationError();
     }
     this.props.status = status;
     this.props.updatedById = actorId;
@@ -293,7 +294,9 @@ export class Project {
 
   private assertDateRange(startDate: Date | null, endDate: Date | null): void {
     if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
-      throw new Error('end_date cannot be earlier than start_date');
+      throw new Error(
+        'A data de término não pode ser anterior à data de início.',
+      );
     }
   }
 

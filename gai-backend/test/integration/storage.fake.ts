@@ -65,7 +65,7 @@ export class FakeStorage implements StorageSigner {
     if (!object)
       throw new NotFoundException({
         code: 'STORAGE_OBJECT_NOT_FOUND',
-        message: 'Stored object not found',
+        message: 'Arquivo não encontrado no armazenamento.',
       });
     if (
       object.sizeBytes !== input.sizeBytes ||
@@ -84,7 +84,7 @@ export class FakeStorage implements StorageSigner {
     if (!object)
       throw new NotFoundException({
         code: 'STORAGE_OBJECT_NOT_FOUND',
-        message: 'Stored object not found',
+        message: 'Arquivo não encontrado no armazenamento.',
       });
     const content =
       object.content ?? Buffer.from(`conteudo de teste ${input.path}`);
@@ -102,12 +102,12 @@ export class FakeStorage implements StorageSigner {
     if (!object)
       throw new NotFoundException({
         code: 'STORAGE_OBJECT_NOT_FOUND',
-        message: 'Stored object not found',
+        message: 'Arquivo não encontrado no armazenamento.',
       });
     if (input.checksum !== object.checksum)
       throw new ConflictException({
         code: 'STORAGE_CHECKSUM_MISMATCH',
-        message: 'Object integrity mismatch',
+        message: 'O arquivo não passou na verificação de integridade.',
       });
     return {
       url: `https://storage.test${this.key(input)}?X-Amz-Signature=mock&operation=GET`,

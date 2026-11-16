@@ -19,7 +19,7 @@ export function valuationValues(dto: CreateAssetValuationDto) {
   if (dto.new_value == null && dto.used_value == null)
     throw new ConflictException({
       code: 'VALUATION_REQUIRES_VALUE',
-      message: 'At least one value is required',
+      message: 'Informe pelo menos um valor.',
     });
   if (
     dto.notes != null &&

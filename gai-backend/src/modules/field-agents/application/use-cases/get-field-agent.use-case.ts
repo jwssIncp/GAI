@@ -25,7 +25,7 @@ export class GetFieldAgentUseCase {
     if (!fieldAgent) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Field agent not found',
+        message: 'Inventariante não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, fieldAgent.organizationId);

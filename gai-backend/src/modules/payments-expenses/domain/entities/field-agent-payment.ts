@@ -89,7 +89,9 @@ export class FieldAgentPayment {
   ): Record<string, { before: unknown; after: unknown }> {
     this.assertNotPaid();
     if (this.props.status !== PaymentStatus.PENDING) {
-      throw new PaymentStateConflict('Only pending payments can be updated');
+      throw new PaymentStateConflict(
+        'Só pagamentos pendentes podem ser alterados.',
+      );
     }
     const previousDailyTotal = this.props.dailyTotal;
     const previousTotal = this.props.totalAmount;
@@ -125,7 +127,9 @@ export class FieldAgentPayment {
   ): Record<string, { before: unknown; after: unknown }> {
     this.assertNotPaid();
     if (this.props.status !== PaymentStatus.PENDING)
-      throw new PaymentStateConflict('Only pending payments can be approved');
+      throw new PaymentStateConflict(
+        'Só pagamentos pendentes podem ser aprovados.',
+      );
     const changes = this.statusChange(PaymentStatus.APPROVED);
     changes.approved_by_id = {
       before: this.props.approvedById,
@@ -159,7 +163,7 @@ export class FieldAgentPayment {
       )
     )
       throw new PaymentStateConflict(
-        'Only pending or approved payments can be marked as paid',
+        'Só pagamentos pendentes ou aprovados podem ser pagos.',
       );
     const effectivePaymentDate = paymentDate ?? paidAt;
     this.assertDates(
@@ -324,7 +328,7 @@ export class FieldAgentPayment {
       this.props.paidById !== null
     )
       throw new PaymentStateConflict(
-        'Payment already has a settlement; mutation is not allowed',
+        'O pagamento já foi pago; não é possível alterá-lo.',
       );
   }
 
@@ -392,11 +396,13 @@ export class FieldAgentPayment {
 
   private assertMoney(value: string): void {
     if (!/^\d{1,13}(\.\d{1,2})?$/.test(value))
-      throw new Error('monetary values must be decimal strings');
+      throw new Error('Os valores em R$ devem ser números decimais.');
   }
   private assertDays(value: number): void {
     if (!Number.isInteger(value) || value < 0)
-      throw new Error('days must be an integer greater than or equal to zero');
+      throw new Error(
+        'O número de dias deve ser um inteiro maior ou igual a zero.',
+      );
   }
   private assertDates(
     startDate: Date,

@@ -70,12 +70,16 @@ export const cashFlowApi = {
   confirm: (keys: string[]) => post<BatchResult>("/proposals/confirm", { keys }),
   discard: (keys: string[], reason: string) => post<BatchResult>("/proposals/discard", { keys, reason }),
   receive: (items: InstallmentRef[], received_on: string) => post<BatchResult>("/receipts", { items, received_on }),
-  undoReceipts: (items: Array<{ receivable_id: number; event_id: number }>) => post<BatchResult>("/receipts/undo", { items }),
+  /** Desfazer recebimento (estorno) com justificativa, que fica no histórico do recebível. */
+  undoReceipts: (items: Array<{ receivable_id: number; event_id: number }>, reason: string) =>
+    post<BatchResult>("/receipts/undo", { items, reason }),
   /** Alterar a data de recebimento: estorno + novo recebimento na nova data (mesma transação). */
   redateReceipts: (items: Array<{ receivable_id: number; event_id: number }>, received_on: string, reason: string) =>
     post<BatchResult>("/receipts/redate", { items, received_on, reason }),
   reschedule: (items: InstallmentRef[], due_on: string, reason: string) => post<BatchResult>("/reschedule", { items, due_on, reason }),
-  settle: (keys: string[], paid_on: string | null) => post<BatchResult>("/outflows/settle", { keys, paid_on }),
+  /** paid_on nulo desfaz a baixa e exige justificativa (fica na auditoria do fluxo). */
+  settle: (keys: string[], paid_on: string | null, reason?: string) =>
+    post<BatchResult>("/outflows/settle", reason === undefined ? { keys, paid_on } : { keys, paid_on, reason }),
 };
 
 export const cashFlowKeys = {

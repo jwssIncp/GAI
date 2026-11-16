@@ -20,6 +20,10 @@ import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import { UserStatus } from '../auth/domain/enums/user.enums';
 import { hasAllPermissions } from '../auth/application/services/permission-access';
 import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
+import {
   PERMISSION_RESOLVER,
   type PermissionResolver,
 } from '../auth/domain/ports/permission-resolver.port';
@@ -120,11 +124,19 @@ export class BudgetService {
     return version;
   }
   async pricing(filters: BudgetListDto, actor: ProjectActorContext) {
-    return this.ds.getRepository(BudgetPricingEntity).find({
+    const rows = await this.ds.getRepository(BudgetPricingEntity).find({
       where: { organizationId: this.org(actor, filters.organization_id) },
       order: { id: 'DESC' },
       take: 1000,
     });
+    const names = await loadUserNames(
+      this.ds.manager,
+      rows.map((r) => r.actorId),
+    );
+    return rows.map((r) => ({
+      ...r,
+      actor_name: userNameOf(names, r.actorId),
+    }));
   }
   async publish(
     dto: PublishPricingDto,
@@ -600,16 +612,29 @@ export class BudgetService {
   async detail(id: number, actor: ProjectActorContext) {
     return this.ds.transaction('REPEATABLE READ', async (m) => {
       const row = await this.budget(m, id, actor);
+      const versions = await m.find(BudgetVersionEntity, {
+        where: { budgetId: id, organizationId: row.organizationId },
+        order: { version: 'DESC' },
+      });
+      const audit = await m.find(BudgetAuditEntity, {
+        where: { budgetId: id, organizationId: row.organizationId },
+        order: { revision: 'DESC' },
+      });
+      // Nomes de quem registrou cada versão e evento, numa consulta só.
+      const names = await loadUserNames(m, [
+        ...versions.map((v) => v.actorId),
+        ...audit.map((a) => a.actorId),
+      ]);
       return {
         ...row,
-        versions: await m.find(BudgetVersionEntity, {
-          where: { budgetId: id, organizationId: row.organizationId },
-          order: { version: 'DESC' },
-        }),
-        audit: await m.find(BudgetAuditEntity, {
-          where: { budgetId: id, organizationId: row.organizationId },
-          order: { revision: 'DESC' },
-        }),
+        versions: versions.map((v) => ({
+          ...v,
+          actor_name: userNameOf(names, v.actorId),
+        })),
+        audit: audit.map((a) => ({
+          ...a,
+          actor_name: userNameOf(names, a.actorId),
+        })),
       };
     });
   }

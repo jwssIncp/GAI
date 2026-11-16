@@ -41,6 +41,10 @@ interface Total {
   unknown_recurring_count: number;
 }
 interface Group {
+  /** Chave estável vinda da API: ID da empresa ou o valor agrupado. */
+  key: string;
+  /** Só no agrupamento por empresa. */
+  company_id?: number;
   label: string;
   count: number;
   totals: Total[];
@@ -389,9 +393,8 @@ export function CommercialOverview({
               </h3>
               <DataTable
                 caption={`Distribuição por ${String(title).toLowerCase()}`}
-                // Chave estável pela posição na lista da API (ordenada pelo valor
-                // agrupado; empresas pelo ID): nomes de empresa podem se repetir.
-                items={(groups as Group[]).map((g, i) => ({ ...g, key: `${String(title)}:${i}` }))}
+                // Chave da API (empresa pelo ID: nomes de empresa podem se repetir).
+                items={groups as Group[]}
                 getKey={(g) => g.key}
                 columns={[
                   { header: String(title), cell: (g) => g.label },

@@ -12,6 +12,7 @@ import { ConfirmDialog, DrawerForm, ModalForm } from '@/components/ui/dialog';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { canMutateProjectOperations } from '@/features/projects/projectLifecycle';
 import { formatDate, formatDateTime } from '@/utils/format';
+import { userLabel } from '@/utils/userName';
 import {
   AnswerForm,
   CreatePreparationForm,
@@ -307,7 +308,7 @@ function PreparationDetail({
               (u) => u.id === instance.responsible_user_id,
             )?.label ??
               (instance.responsible_user_id
-                ? `Usuário #${instance.responsible_user_id}`
+                ? userLabel(instance.responsible_user_name)
                 : 'Não definido')}
           </p>
           <p>
@@ -316,8 +317,8 @@ function PreparationDetail({
           </p>
           {instance.approved_at ? (
             <p>
-              Aprovação: {formatDateTime(instance.approved_at)} · usuário #
-              {instance.approved_by_id}
+              Aprovação: {formatDateTime(instance.approved_at)} ·{' '}
+              {userLabel(instance.approved_by_name)}
             </p>
           ) : null}
           {instance.notes ? (
@@ -547,11 +548,11 @@ function QuestionCard({
               (user) => user.id === answer.responsible_user_id,
             )?.label ??
               (answer.responsible_user_id
-                ? `Usuário #${answer.responsible_user_id}`
+                ? userLabel(answer.responsible_user_name)
                 : 'Não definido')}{' '}
             · Prazo: {formatDate(answer.due_date)}
             {answer.answered_at
-              ? ` · Respondido em ${formatDateTime(answer.answered_at)} por usuário #${answer.answered_by_id}`
+              ? ` · Respondido em ${formatDateTime(answer.answered_at)} por ${userLabel(answer.answered_by_name)}`
               : ''}
           </p>
         </>
@@ -609,8 +610,8 @@ function HistoryPanel({
                 {names[item.operation] ?? item.operation}
               </h3>
               <p className="my-2 text-xs text-muted-foreground">
-                {formatDateTime(item.created_at)} · usuário #
-                {item.performed_by_id}
+                {formatDateTime(item.created_at)} ·{' '}
+                {userLabel(item.performed_by_name)}
               </p>
               <details className="text-xs">
                 <summary className="cursor-pointer text-primary">

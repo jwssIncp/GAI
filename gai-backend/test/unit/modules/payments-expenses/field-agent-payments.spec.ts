@@ -303,6 +303,7 @@ function payment(
 
 describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', () => {
   function withRepo(payments: Map<number, FieldAgentPayment>) {
+    const audits: unknown[] = [];
     const repo = {
       findPaymentById: jest.fn((id: number) =>
         Promise.resolve(payments.get(id) ?? null),
@@ -314,12 +315,12 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
           fn: (p: FieldAgentPayment, s: string) => unknown,
         ) => {
           const p = payments.get(id)!;
-          fn(p, 'active');
+          audits.push(fn(p, 'active'));
           return Promise.resolve(p);
         },
       ),
     };
-    return { repo, ...service([], { repo }) };
+    return { repo, audits, ...service([], { repo }) };
   }
 
   it('"hoje" grava a data de hoje, NÃO a previsão (bug do INVESTOR)', async () => {
@@ -423,7 +424,14 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
   it('voltar para em aberto: aprovado volta a aprovado, limpa só a baixa e mantém a previsão (D-C)', async () => {
     const p = payment(PaymentStatus.APPROVED);
     p.markAsPaid(9, new Date(), d('2026-11-13'), true);
-    await withRepo(new Map([[1, p]])).s.revert([1], actor);
+    const ctx = withRepo(new Map([[1, p]]));
+    await ctx.s.revert([1], 'Pagamento lançado em duplicidade', actor);
+    // A justificativa vai para a auditoria do lançamento.
+    const entry = ctx.audits[0] as { changes: Record<string, unknown> };
+    expect(entry.changes.reason).toEqual({
+      before: null,
+      after: 'Pagamento lançado em duplicidade',
+    });
     const x = p.toProps();
     expect([
       x.status,
@@ -432,6 +440,17 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
       x.paidAt,
       x.expectedPaymentDate,
     ]).toEqual([PaymentStatus.APPROVED, null, null, null, d('2026-11-20')]);
+  });
+
+  it('voltar para em aberto sem justificativa é recusado, sem mexer no lançamento', async () => {
+    const p = payment(PaymentStatus.APPROVED);
+    p.markAsPaid(9, new Date(), d('2026-11-13'), true);
+    await expect(
+      withRepo(new Map([[1, p]])).s.revert([1], '  ab ', actor),
+    ).rejects.toMatchObject({
+      response: { message: 'Justificativa significativa obrigatória.' },
+    });
+    expect(p.status).toBe(PaymentStatus.PAID);
   });
 
   it('pago direto (sem exigência de aprovação) volta a pendente', () => {
@@ -446,7 +465,11 @@ describe('Pagamento de inventariantes: baixa em lote e voltar para em aberto', (
     p.markAsPaid(9, new Date(), d('2026-11-13'), true);
     const ctx = withRepo(new Map([[1, p]]));
     ctx.remuneration.closedPeriodsFor.mockResolvedValue(['2026-11']);
-    const result = await ctx.s.revert([1], actor);
+    const result = await ctx.s.revert(
+      [1],
+      'Pagamento lançado por engano',
+      actor,
+    );
     expect(result.results[0]).toMatchObject({
       ok: false,
       message:

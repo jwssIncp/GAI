@@ -45,7 +45,7 @@ export class CreateInventoryItemUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
@@ -115,7 +115,7 @@ export class CreateInventoryItemUseCase {
     return new BadRequestException({
       code: 'VALIDATION_ERROR',
       message:
-        error instanceof Error ? error.message : 'Invalid inventory item',
+        error instanceof Error ? error.message : 'Item de inventário inválido.',
     });
   }
 }

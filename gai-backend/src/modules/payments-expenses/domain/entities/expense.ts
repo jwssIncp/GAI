@@ -54,9 +54,10 @@ export const EXPENSE_EDITABLE = [
 
 export class Expense {
   constructor(private readonly props: ExpenseProps) {
-    if (!props.description.trim()) throw new Error('description is required');
+    if (!props.description.trim())
+      throw new Error('A descrição é obrigatória.');
     if (!/^\d{1,13}(\.\d{1,2})?$/.test(props.amount))
-      throw new Error('amount must be a decimal string');
+      throw new Error('O valor deve ser um número decimal.');
   }
   get id(): number {
     return this.props.id;
@@ -117,7 +118,7 @@ export class Expense {
   }
   /** O motivo da rejeição vai para coluna própria: o motivo original da despesa fica intacto. */
   reject(actorId: number, now: Date, reason: string) {
-    if (!reason.trim()) throw new Error('reason is required');
+    if (!reason.trim()) throw new Error('Informe o motivo.');
     const changes = this.transition(
       ExpenseStatus.REJECTED,
       actorId,
@@ -200,14 +201,12 @@ export class Expense {
         this.props.status,
       )
     )
-      throw new Error(
-        'Only pending or approved expenses can be marked as paid',
-      );
+      throw new Error('Só despesas pendentes ou aprovadas podem ser pagas.');
     return this.transition(ExpenseStatus.PAID, actorId, 'paid', now);
   }
   cancel(actorId: number): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === ExpenseStatus.PAID)
-      throw new Error('Paid expenses cannot be cancelled');
+      throw new Error('Despesas pagas não podem ser canceladas.');
     const before = this.props.status;
     this.props.status = ExpenseStatus.CANCELLED;
     this.props.updatedById = actorId;
@@ -223,7 +222,7 @@ export class Expense {
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === ExpenseStatus.PAID)
-      throw new Error('Paid expenses cannot change status');
+      throw new Error('Despesas pagas não podem mudar de situação.');
     const before = this.props.status;
     this.props.status = status;
     this.props.updatedById = actorId;

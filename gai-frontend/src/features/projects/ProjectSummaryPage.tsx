@@ -12,6 +12,7 @@ import {
 import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { companiesApi, organizationsApi } from '@/api/endpoints';
+import { ApiError } from '@/api/http';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
 import { PageContainer } from '@/components/base/PageContainer';
@@ -67,7 +68,7 @@ export function ProjectSummaryPage() {
     <PageContainer>
       <PageHeader
         title={title}
-        description="Workspace operacional do projeto, com indicadores consolidados pelo backend e atalhos para os módulos de campo."
+        description="Workspace operacional do projeto, com indicadores consolidados e atalhos para os módulos de campo."
         action={projectData ? <ProjectActions project={projectData} /> : null}
       />
       {project.isLoading || dashboard.isLoading ? <LoadingState label="Carregando workspace do projeto" /> : null}
@@ -165,8 +166,8 @@ function MetricGrid({ summary }: { summary: ProjectSummary }) {
       <MetricCard label="Imagens" value={summary.images.total_images} hint={`${summary.images.pending_upload_images} pendentes de upload`} icon={<Image size={18} />} />
       <MetricCard label="Base contábil" value={summary.accounting.total_accounting_items} hint={`${summary.accounting.matched_accounting_items} conciliados`} icon={<FileSpreadsheet size={18} />} />
       <MetricCard label="Pendências abertas" value={summary.pending_issues.open_pending_issues} hint={`${summary.pending_issues.critical_pending_issues} críticas`} icon={<AlertTriangle size={18} />} />
-      <MetricCard label="Financeiro total" value={financial ? formatMoney(financial.financial_total_amount) : 'Pendente'} hint={financial ? `${financial.pending_payments} pagamentos pendentes` : 'Métrica pendente no backend ou não solicitada.'} icon={<CircleDollarSign size={18} />} />
-      <MetricCard label="Importações em processamento" value={imports?.processing_import_sessions ?? 'Pendente'} hint={imports ? `${imports.failed_import_sessions} com falha` : 'Métrica pendente no backend ou não solicitada.'} icon={<FileUp size={18} />} />
+      <MetricCard label="Financeiro total" value={financial ? formatMoney(financial.financial_total_amount) : 'Pendente'} hint={financial ? `${financial.pending_payments} pagamentos pendentes` : 'Indicador ainda indisponível.'} icon={<CircleDollarSign size={18} />} />
+      <MetricCard label="Importações em processamento" value={imports?.processing_import_sessions ?? 'Pendente'} hint={imports ? `${imports.failed_import_sessions} com falha` : 'Indicador ainda indisponível.'} icon={<FileUp size={18} />} />
       <MetricCard label="Exportações concluídas" value={exports?.finished_export_jobs ?? 0} hint={exports ? `${exports.failed_export_jobs} com falha` : 'Nenhum job registrado.'} icon={<FileDown size={18} />} />
     </div>
   );
@@ -180,7 +181,7 @@ function ProjectProgress({ project, summary }: { project: Project; summary: Proj
         <p className="eyebrow">Performance</p>
         <h2 className="mt-2 text-lg font-bold tracking-tight">Progresso do projeto</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Percentual calculado no backend a partir dos itens avaliados sobre o total operacional.
+          Percentual calculado a partir dos itens avaliados sobre o total operacional.
         </p>
       </div>
       <div className="grid gap-3">
@@ -266,11 +267,11 @@ function QuickActions({ project }: { project: Project }) {
 function ModuleSummary({ projectId, summary }: { projectId: number; summary: ProjectSummary }) {
   const modules = [
     { title: 'Itens inventariados', description: `${summary.inventory.pending_items} pendentes, ${summary.inventory.divergent_items} divergentes e ${summary.inventory.not_found_items} não encontrados.`, to: `/app/projects/${projectId}/inventory-items`, permissions: ['inventory-items:read'] },
-    { title: 'Inventário operacional', description: 'Sessões, rodadas, observações, reinventarios e conciliações versionadas.', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
+    { title: 'Inventário operacional', description: 'Sessões, rodadas, observações, reinventários e conciliações versionadas.', to: `/app/projects/${projectId}/inventory/sessions`, permissions: ['inventory-sessions:read'] },
     { title: 'Base contábil', description: `${summary.accounting.total_accounting_items} itens, ${summary.accounting.matched_accounting_items} conciliados e ${summary.accounting.divergent_accounting_items} divergentes.`, to: `/app/projects/${projectId}/accounting-items`, permissions: ['inventory-accounting-items:read'] },
     { title: 'Pendências', description: `${summary.pending_issues.open_pending_issues} abertas, ${summary.pending_issues.resolved_pending_issues} resolvidas e ${summary.pending_issues.critical_pending_issues} críticas.`, to: `/app/projects/${projectId}/pending-issues`, permissions: ['inventory-pending-issues:read'] },
     { title: 'Financeiro', description: summary.financial ? `${formatMoney(summary.financial.financial_total_amount)} em pagamentos e despesas.` : 'Resumo financeiro não retornado pelo dashboard.', to: `/app/projects/${projectId}/finance`, permissions: ['payments:read', 'expenses:read'] },
-    { title: 'Prestação de contas', description: 'Despesas elegíveis, fechamento e parcelas com total do backend.', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
+    { title: 'Prestação de contas', description: 'Despesas elegíveis, fechamento e parcelas com total calculado pelo sistema.', to: `/app/projects/${projectId}/finance/accountabilities`, permissions: ['expense-accountabilities:read'] },
     { title: 'Importações', description: summary.imports ? `${summary.imports.total_import_sessions} sessões, ${summary.imports.processing_import_sessions} em processamento e ${summary.imports.failed_import_sessions} com falha.` : 'Resumo de importações não retornado pelo dashboard.', to: `/app/projects/${projectId}/import-sessions`, permissions: ['import-sessions:read'] },
     { title: 'Exportações', description: summary.exports ? `${summary.exports.total_export_jobs} jobs, ${summary.exports.finished_export_jobs} concluídos e ${summary.exports.failed_export_jobs} com falha.` : 'Nenhuma exportação registrada.', to: `/app/projects/${projectId}/export-jobs`, permissions: ['export-jobs:read'] },
   ];
@@ -312,7 +313,7 @@ function RecentActivity({ activity }: { activity?: ProjectSummary['recent_activi
       <p className="eyebrow">Timeline</p>
       <h2 className="mt-2 text-lg font-bold tracking-tight">Atividades recentes</h2>
       {!activity || !hasAny ? (
-        <p className="mt-2 text-sm text-muted-foreground">Atividades recentes dependem de endpoint de auditoria/eventos no backend. O dashboard atual retorna apenas alguns marcos agregados.</p>
+        <p className="mt-2 text-sm text-muted-foreground">O histórico detalhado de atividades ainda não está disponível. Por enquanto, aparecem apenas alguns marcos do projeto.</p>
       ) : (
         <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {rows.map((row) => <Info key={row.label} label={row.label} value={formatDateTime(row.value)} />)}
@@ -370,8 +371,9 @@ function buildAlerts(project: Project, summary: ProjectSummary): Alert[] {
 
 function ProjectError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const message = error instanceof Error ? error.message : 'Não foi possível carregar o workspace do projeto.';
-  if (message.includes('404') || message.toLowerCase().includes('not_found')) {
-    return <EmptyState title="Projeto não encontrado" description="O backend retornou NOT_FOUND para este projeto." />;
+  // Decide pelo status/código da API, não pelo texto (que é traduzido).
+  if (error instanceof ApiError && (error.status === 404 || error.code === 'NOT_FOUND')) {
+    return <EmptyState title="Projeto não encontrado" description="Este projeto não existe ou foi removido." />;
   }
   return <ErrorState message={message} onRetry={onRetry} />;
 }

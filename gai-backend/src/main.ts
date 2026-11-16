@@ -1,11 +1,11 @@
 import './crypto-polyfill';
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { applyTrustProxy } from './common/http/trust-proxy';
 import { ErrorResponseDto } from './common/swagger/error-response.dto';
+import { createValidationPipe } from './common/validation/validation-exception.factory';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -21,13 +21,7 @@ async function bootstrap() {
     .filter(Boolean);
   app.enableCors({ origin: corsOrigins, credentials: true });
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+  app.useGlobalPipes(createValidationPipe());
 
   // Public API docs only where explicitly allowed (disabled in production via
   // SWAGGER_ENABLED=false; the official mobile contract is docs/onda-4…/openapi.yaml).

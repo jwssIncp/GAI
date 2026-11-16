@@ -194,7 +194,7 @@ export class UsersController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Último PLATFORM_ADMIN ativo',
-    'Cannot deactivate the last active PLATFORM_ADMIN',
+    'Não é possível desativar o último administrador da plataforma ativo.',
   )
   async deactivate(
     @Param('id', ParseIntPipe) id: number,

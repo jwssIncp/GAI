@@ -16,6 +16,10 @@ import { CompanyUnitEntity } from '../companies/infrastructure/persistence/compa
 import { ProjectUnitEntity } from '../companies/infrastructure/persistence/project-unit.entity';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import { UserStatus } from '../auth/domain/enums/user.enums';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
 import { PreparationRepository } from './preparation.repository';
 import {
   CreatePreparationDto,
@@ -89,7 +93,7 @@ export class PreparationService {
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     return project;
   }
@@ -432,10 +436,16 @@ export class PreparationService {
         order: { id: 'DESC' },
         take: 100,
       });
-    const items = await Promise.all(
-      instances.map(async (row) =>
-        this.view(row, await this.repo.answers(row)),
-      ),
+    const loaded = await Promise.all(
+      instances.map(async (row) => ({
+        row,
+        answers: await this.repo.answers(row),
+      })),
+    );
+    // Nomes de responsáveis, aprovadores e quem respondeu, numa consulta só.
+    const names = await this.userNames(loaded);
+    const items = loaded.map(({ row, answers }) =>
+      this.view(row, answers, names),
     );
     return { items, limit: 100 };
   }
@@ -548,9 +558,26 @@ export class PreparationService {
       );
     if (changed.affected !== 1) this.conflict();
   }
+  /** Nomes (em lote) dos usuários citados nas preparações e respostas. */
+  private userNames(
+    loaded: Array<{
+      row: ProjectPreparationEntity;
+      answers: PreparationAnswerEntity[];
+    }>,
+  ) {
+    return loadUserNames(
+      this.repo.manager,
+      loaded.flatMap(({ row, answers }) => [
+        row.responsibleUserId,
+        row.approvedById,
+        ...answers.flatMap((a) => [a.responsibleUserId, a.answeredById]),
+      ]),
+    );
+  }
   private view(
     row: ProjectPreparationEntity,
     answers: PreparationAnswerEntity[],
+    names: Map<number, string>,
   ) {
     const enabled = applicability(row.snapshot.questions, answers);
     return {
@@ -564,10 +591,12 @@ export class PreparationService {
       revision: row.revision,
       status: row.status,
       responsible_user_id: row.responsibleUserId,
+      responsible_user_name: userNameOf(names, row.responsibleUserId),
       scheduled_date: row.scheduledDate,
       due_date: row.dueDate,
       notes: row.notes,
       approved_by_id: row.approvedById,
+      approved_by_name: userNameOf(names, row.approvedById),
       approved_at: row.approvedAt,
       created_at: row.createdAt,
       updated_at: row.updatedAt,
@@ -581,8 +610,10 @@ export class PreparationService {
           value: a?.value ?? null,
           notes: a?.notes ?? null,
           responsible_user_id: a?.responsibleUserId ?? null,
+          responsible_user_name: userNameOf(names, a?.responsibleUserId),
           due_date: a?.dueDate ?? null,
           answered_by_id: a?.answeredById ?? null,
+          answered_by_name: userNameOf(names, a?.answeredById),
           answered_at: a?.answeredAt ?? null,
           allocations: allocations(a?.value ?? null),
         };
@@ -592,7 +623,9 @@ export class PreparationService {
   async get(projectId: number, id: number, actor: ProjectActorContext) {
     const project = await this.project(projectId, actor);
     const row = await this.scopedInstance(project, id);
-    return this.view(row, await this.repo.answers(row));
+    const answers = await this.repo.answers(row);
+    const names = await this.userNames([{ row, answers }]);
+    return this.view(row, answers, names);
   }
   async update(
     projectId: number,
@@ -844,11 +877,16 @@ export class PreparationService {
         order: { id: 'DESC' },
         take: 50,
       });
+    const names = await loadUserNames(
+      this.repo.manager,
+      rows.map((row) => row.performedById),
+    );
     return {
       items: rows.map((row) => ({
         id: row.id,
         operation: row.operation,
         performed_by_id: row.performedById,
+        performed_by_name: userNameOf(names, row.performedById),
         created_at: row.createdAt,
         changes: row.changes,
       })),

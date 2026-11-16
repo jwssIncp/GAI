@@ -229,7 +229,7 @@ export class TypeOrmUserManagementRepository implements UserManagementRepository
               throw new ConflictException({
                 code: 'CONFLICT',
                 message:
-                  'Revoke incompatible assignments before changing organization',
+                  'Remova as atribuições incompatíveis antes de trocar a organização.',
               });
             }
           }

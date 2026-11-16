@@ -37,14 +37,14 @@ export class DeactivateOrganizationUseCase {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
 
     if (organization.status === OrganizationStatus.INACTIVE) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Organization is already inactive',
+        message: 'A organização já está inativa.',
       });
     }
 

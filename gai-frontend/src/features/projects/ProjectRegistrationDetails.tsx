@@ -6,6 +6,7 @@ import { ErrorState, LoadingState } from "@/components/base/States";
 import { formatDateTime } from "@/utils/format";
 import type { Project } from "@/types/api";
 import { formatProjectDate, projectTypeLabels } from "./projectFields";
+import { userLabel } from "@/utils/userName";
 
 export function ProjectRegistrationDetails({ project }: { project: Project }) {
   const [page, setPage] = useState(1);
@@ -104,7 +105,7 @@ export function ProjectRegistrationDetails({ project }: { project: Project }) {
                 {operationLabels[entry.operation] || entry.operation} ·{" "}
                 {formatDateTime(entry.created_at)} ·{" "}
                 {entry.performed_by
-                  ? `Usuário #${entry.performed_by}`
+                  ? userLabel(entry.performed_by_name)
                   : "Sistema"}
               </summary>
               <dl className="mt-4 grid gap-3 text-sm">

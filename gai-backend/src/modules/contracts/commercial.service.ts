@@ -134,6 +134,11 @@ export class CommercialService {
                   : (r.data[key] ?? 'Não informado')) === value,
             );
             return {
+              /** Chave estável do grupo: o ID da empresa ou o próprio valor agrupado. */
+              key: value,
+              ...(key === 'company_name'
+                ? { company_id: group[0].companyId }
+                : {}),
               label:
                 key === 'company_name' ? group[0].data.company_name : value,
               count: group.length,

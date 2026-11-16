@@ -41,7 +41,7 @@ export class PermissionsGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -53,7 +53,7 @@ export class PermissionsGuard implements CanActivate {
     if (!allowed) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 

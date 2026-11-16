@@ -113,7 +113,7 @@ export class ProjectDashboardAnalyticsService {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
@@ -247,7 +247,7 @@ export class ProjectDashboardAnalyticsService {
     if (period === ProjectDashboardPeriod.CUSTOM) {
       if (!query.date_from || !query.date_to) {
         throw this.validation(
-          'date_from and date_to are required for custom period',
+          'Informe a data inicial e a final para o período personalizado.',
         );
       }
       dateFrom = this.startOfDay(query.date_from);
@@ -266,12 +266,16 @@ export class ProjectDashboardAnalyticsService {
 
     if (dateFrom && dateTo) {
       if (dateFrom > dateTo) {
-        throw this.validation('date_from must be before or equal to date_to');
+        throw this.validation(
+          'A data inicial deve ser anterior ou igual à final.',
+        );
       }
       const rangeDays =
         Math.floor((dateTo.getTime() - dateFrom.getTime()) / 86400000) + 1;
       if (rangeDays > 366) {
-        throw this.validation('Custom date range cannot exceed 366 days');
+        throw this.validation(
+          'O período personalizado não pode passar de 366 dias.',
+        );
       }
     }
 

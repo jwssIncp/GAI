@@ -39,7 +39,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
+      message: 'Erro inesperado. Tente de novo; se continuar, avise o suporte.',
     });
 
     this.logger.error(

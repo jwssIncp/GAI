@@ -96,6 +96,6 @@ describe('Organizations - Error flows (e2e)', () => {
       .expect(409);
 
     expect(response.body.code).toBe('CONFLICT');
-    expect(response.body.message).toContain('inactive');
+    expect(response.body.message).toContain('já está inativa');
   });
 });

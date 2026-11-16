@@ -58,7 +58,7 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Importações</h2>
-          <p className="text-sm text-muted-foreground">Histórico de arquivos XLSX processados pelo backend.</p>
+          <p className="text-sm text-muted-foreground">Histórico de arquivos XLSX processados.</p>
         </div>
         <PermissionGate permissions={['inventory-accounting-items:import']}>
           <Button type="button" onClick={() => setImportOpen(true)}><FileSpreadsheet size={17} /> Importar XLSX</Button>
@@ -92,7 +92,7 @@ export function AccountingImportsPanel({ projectId }: { projectId: number }) {
               </div>
             ))}
           </div>
-        ) : <EmptyState title="Sem erros registrados" description="O backend não retornou erros para este batch." />}
+        ) : <EmptyState title="Sem erros registrados" description="Nenhum erro foi registrado nesta importação." />}
       </ModalForm>
     </section>
   );

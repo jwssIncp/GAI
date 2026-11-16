@@ -1063,12 +1063,39 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       status: 'realized',
       date: '2026-11-13',
     });
+    // Desfazer a baixa exige justificativa (mínimo de 5 caracteres).
     await api('post', '/finance/cash-flow/outflows/settle')
       .send({ keys: [commission.refs.settle_key], paid_on: null })
+      .expect(400);
+    await api('post', '/finance/cash-flow/outflows/settle')
+      .send({
+        keys: [commission.refs.settle_key],
+        paid_on: null,
+        reason: 'Pagamento lançado por engano',
+      })
       .expect(200);
+    const [undoLog] = await ds.query(
+      "SELECT changes FROM cash_flow_audit_logs WHERE operation='UNDO_OUTFLOW' AND target_key=?",
+      [commission.refs.settle_key],
+    );
+    expect(
+      typeof undoLog.changes === 'string'
+        ? JSON.parse(undoLog.changes)
+        : undoLog.changes,
+    ).toMatchObject({ reason: 'Pagamento lançado por engano' });
     const received = (await board()).items.find(
       (i) => i.origin === 'contract' && i.status === 'realized',
     )!;
+    await api('post', '/finance/cash-flow/receipts/undo')
+      .send({
+        items: [
+          {
+            receivable_id: received.refs.receivable_id,
+            event_id: received.refs.event_id,
+          },
+        ],
+      })
+      .expect(400);
     expect(
       (
         await api('post', '/finance/cash-flow/receipts/undo')
@@ -1079,10 +1106,23 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
                 event_id: received.refs.event_id,
               },
             ],
+            reason: 'Recebimento lançado por engano',
           })
           .expect(200)
       ).body.done,
     ).toBe(1);
+    // A justificativa fica no histórico do recebível (evento de estorno).
+    const history = (
+      await api(
+        'get',
+        `/finance/receivables/${received.refs.receivable_id}`,
+      ).expect(200)
+    ).body as {
+      events: Array<{ operation: string; details: { reason?: string } }>;
+    };
+    expect(
+      history.events.find((e) => e.operation === 'reversal')?.details.reason,
+    ).toBe('Desfeito no fluxo de caixa: Recebimento lançado por engano');
     // Estorno: o recebimento fica "estornado" (sem linha negativa), o IR acompanha,
     // a parcela volta a aparecer em aberto (02/12/2026) e os KPIs deixam o estornado de fora.
     const afterUndo = await board('as_of=2026-11-14&year=2026');
@@ -1894,7 +1934,7 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
     const settle = async (key: string, paid_on: string | null) =>
       (
         await api('post', '/finance/cash-flow/outflows/settle')
-          .send({ keys: [key], paid_on })
+          .send({ keys: [key], paid_on, reason: 'Ajuste de baixa no teste' })
           .expect(200)
       ).body as {
         done: number;

@@ -21,7 +21,7 @@ export interface FieldAgentProps {
 export class FieldAgent {
   constructor(private readonly props: FieldAgentProps) {
     if (props.name.trim().length < 2) {
-      throw new Error('name must have at least 2 characters');
+      throw new Error('O nome deve ter pelo menos 2 caracteres.');
     }
   }
 
@@ -97,7 +97,7 @@ export class FieldAgent {
     });
     this.applyChange(changes, 'name', fields.name, (value) => {
       if (value.trim().length < 2) {
-        throw new Error('name must have at least 2 characters');
+        throw new Error('O nome deve ter pelo menos 2 caracteres.');
       }
       this.props.name = value;
     });
@@ -122,34 +122,35 @@ export class FieldAgent {
 
   deactivate(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === FieldAgentStatus.INACTIVE) {
-      throw new Error('Field agent is already inactive');
+      throw new Error('O inventariante já está inativo.');
     }
     return this.changeStatus(FieldAgentStatus.INACTIVE);
   }
 
   reactivate(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== FieldAgentStatus.INACTIVE) {
-      throw new Error('Only inactive field agents can be reactivated');
+      throw new Error('Só inventariantes inativos podem ser reativados.');
     }
     return this.changeStatus(FieldAgentStatus.ACTIVE);
   }
 
   block(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === FieldAgentStatus.BLOCKED) {
-      throw new Error('Field agent is already blocked');
+      throw new Error('O inventariante já está bloqueado.');
     }
     return this.changeStatus(FieldAgentStatus.BLOCKED);
   }
 
   unblock(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== FieldAgentStatus.BLOCKED) {
-      throw new Error('Only blocked field agents can be unblocked');
+      throw new Error('Só inventariantes bloqueados podem ser desbloqueados.');
     }
     return this.changeStatus(FieldAgentStatus.ACTIVE);
   }
 
   softDelete(at: Date): Record<string, { before: unknown; after: unknown }> {
-    if (this.props.deletedAt) throw new Error('Field agent is already deleted');
+    if (this.props.deletedAt)
+      throw new Error('O inventariante já foi excluído.');
     const before = this.props.deletedAt;
     this.props.deletedAt = at;
     return { deleted_at: { before, after: at } };

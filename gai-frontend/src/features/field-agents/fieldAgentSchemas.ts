@@ -104,7 +104,6 @@ export function makeFieldAgentSchema(legacyDocument?: string | null) {
     });
 }
 export const fieldAgentFormSchema = makeFieldAgentSchema();
-export const fieldAgentEditSchema = fieldAgentFormSchema;
 const projectFields = z.object({
   role: text(100),
   start_date: text(10),

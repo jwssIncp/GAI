@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '../../domain/enums/user.enums';
 import { ROLES_KEY } from '../decorators/roles.decorator';
@@ -23,12 +28,14 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    if (!request.user) {
-      return false;
-    }
+    const user = request.user;
+    if (user && requiredRoles.some((role) => user.systemRoles.includes(role)))
+      return true;
 
-    return requiredRoles.some((role) =>
-      request.user!.systemRoles.includes(role),
-    );
+    // Mesmo corpo do PermissionsGuard, em vez do 403 padrão do Nest (em inglês).
+    throw new ForbiddenException({
+      code: 'FORBIDDEN',
+      message: 'Você não tem permissão para esta ação.',
+    });
   }
 }

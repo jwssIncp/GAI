@@ -133,7 +133,11 @@ describe('Pagamento de inventariantes × competência fechada da DRE (e2e)', () 
     await post(`${prefix}/${open}/mark-as-paid`, {
       payment_date: '2026-10-22',
     }).expect(409);
-    await refusedItem('/field-agent-payments/revert', { ids: [paid] });
+    await refusedItem('/field-agent-payments/revert', {
+      ids: [paid],
+      reason: 'Pagamento lançado por engano',
+    });
+    await post('/field-agent-payments/revert', { ids: [paid] }).expect(400);
     await post(`/field-agent-payments/${open}/date`, {
       kind: 'expected',
       date: '2026-10-25',
@@ -176,8 +180,12 @@ describe('Pagamento de inventariantes × competência fechada da DRE (e2e)', () 
       date: '2026-10-23',
     }).expect(200);
     expect(
-      (await post('/field-agent-payments/revert', { ids: [paid] }).expect(200))
-        .body.done,
+      (
+        await post('/field-agent-payments/revert', {
+          ids: [paid],
+          reason: 'Pagamento lançado por engano',
+        }).expect(200)
+      ).body.done,
     ).toBe(1);
     await post(`${prefix}/${paid}/reopen`, {
       reason: 'Corrigir a quantidade de dias',

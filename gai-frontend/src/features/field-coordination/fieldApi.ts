@@ -53,6 +53,8 @@ export interface Checklist {
   status: "open" | "completed" | "archived";
   completedAt: string | null;
   completedById: number | null;
+  /** Nome de quem concluiu (só no painel; nulo se o usuário foi removido). */
+  completedByName?: string | null;
 }
 export interface Task {
   responsible?: {
@@ -233,6 +235,7 @@ export const fieldApi = {
           id: number;
           operation: string;
           performedById: number;
+          performedByName: string | null;
           createdAt: string;
           changes: object;
         }[];

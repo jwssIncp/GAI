@@ -50,6 +50,16 @@ export class InventoryPendingIssueResponseDto {
   ignored_by_id!: number | null;
   @ApiPropertyOptional({ format: 'date-time', nullable: true })
   ignored_at!: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Só no detalhe: nome de quem resolveu (nulo se removido).',
+  })
+  resolved_by_name?: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Só no detalhe: nome de quem ignorou (nulo se removido).',
+  })
+  ignored_by_name?: string | null;
   @ApiPropertyOptional({ type: 'integer', format: 'int64', nullable: true })
   created_by_id!: number | null;
   @ApiPropertyOptional({ type: 'integer', format: 'int64', nullable: true })

@@ -55,13 +55,13 @@ export class CreateProjectUseCase {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
     if (!organization.isActive()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project cannot be created for inactive organization',
+        message: 'Não é possível criar projeto em organização inativa.',
       });
     }
     await this.companies.assertCompanyCanReceiveProject(
@@ -149,7 +149,7 @@ export class CreateProjectUseCase {
   private toValidationError(error: unknown): BadRequestException {
     return new BadRequestException({
       code: 'VALIDATION_ERROR',
-      message: error instanceof Error ? error.message : 'Invalid project',
+      message: error instanceof Error ? error.message : 'Projeto inválido.',
     });
   }
 }

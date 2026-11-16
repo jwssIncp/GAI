@@ -7,6 +7,28 @@ import { PREPARATION_PERMISSIONS } from '../../modules/project-preparation/domai
 import { PermissionScope } from '../../modules/users/domain/enums/permission-scope.enum';
 import { PermissionEntity } from '../../modules/users/infrastructure/persistence/permission.entity';
 
+// Rótulos das ações nas descrições geradas (o que a tela de perfis exibe).
+const ACTION_LABELS: Record<string, string> = {
+  read: 'consultar',
+  edit: 'editar',
+  coordinate: 'coordenar',
+  generate: 'gerar',
+  review: 'revisar',
+  amend: 'aditar',
+  archive: 'arquivar',
+  'configure-prices': 'configurar preços',
+  approve: 'aprovar',
+  receive: 'registrar recebimento',
+  reverse: 'estornar',
+  export: 'exportar',
+  configure: 'configurar',
+  classify: 'classificar',
+  adjust: 'ajustar',
+  periods: 'competências',
+  templates: 'modelos',
+};
+const actionLabel = (action: string): string => ACTION_LABELS[action] ?? action;
+
 export const PERMISSION_SEEDS: Array<{
   key: string;
   resource: string;
@@ -19,42 +41,42 @@ export const PERMISSION_SEEDS: Array<{
     resource: 'organizations',
     action: 'read',
     scope: PermissionScope.PLATFORM,
-    description: 'Listar e consultar organizations',
+    description: 'Listar e consultar organizações',
   },
   {
     key: 'organizations:write',
     resource: 'organizations',
     action: 'write',
     scope: PermissionScope.PLATFORM,
-    description: 'Criar e atualizar organizations',
+    description: 'Criar e atualizar organizações',
   },
   {
     key: 'users:read',
     resource: 'users',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar usuários da organization',
+    description: 'Listar e consultar usuários da organização',
   },
   {
     key: 'users:write',
     resource: 'users',
     action: 'write',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar e atualizar usuários da organization',
+    description: 'Criar e atualizar usuários da organização',
   },
   {
     key: 'org_roles:read',
     resource: 'org_roles',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar papéis customizados da organization',
+    description: 'Listar perfis personalizados da organização',
   },
   {
     key: 'org_roles:write',
     resource: 'org_roles',
     action: 'write',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Gerenciar papéis customizados da organization',
+    description: 'Gerenciar perfis personalizados da organização',
   },
   {
     key: 'assets:read',
@@ -75,203 +97,203 @@ export const PERMISSION_SEEDS: Array<{
     resource: 'projects',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar projects da organization',
+    description: 'Criar projetos da organização',
   },
   {
     key: 'projects:read',
     resource: 'projects',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar projects da organization',
+    description: 'Listar e consultar projetos da organização',
   },
   {
     key: 'projects:update',
     resource: 'projects',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar projects da organization',
+    description: 'Atualizar projetos da organização',
   },
   {
     key: 'projects:activate',
     resource: 'projects',
     action: 'activate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Ativar projects da organization',
+    description: 'Ativar projetos da organização',
   },
   {
     key: 'projects:pause',
     resource: 'projects',
     action: 'pause',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Pausar projects da organization',
+    description: 'Pausar projetos da organização',
   },
   {
     key: 'projects:resume',
     resource: 'projects',
     action: 'resume',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Retomar projects da organization',
+    description: 'Retomar projetos da organização',
   },
   {
     key: 'projects:deactivate',
     resource: 'projects',
     action: 'deactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desativar projects da organization',
+    description: 'Desativar projetos da organização',
   },
   {
     key: 'projects:reactivate',
     resource: 'projects',
     action: 'reactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Reativar projects da organization',
+    description: 'Reativar projetos da organização',
   },
   {
     key: 'projects:finish',
     resource: 'projects',
     action: 'finish',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Finalizar projects da organization',
+    description: 'Finalizar projetos da organização',
   },
   {
     key: 'projects:cancel',
     resource: 'projects',
     action: 'cancel',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Cancelar projects da organization',
+    description: 'Cancelar projetos da organização',
   },
   {
     key: 'projects:archive',
     resource: 'projects',
     action: 'archive',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Arquivar projects da organization',
+    description: 'Arquivar projetos da organização',
   },
   {
     key: 'field-agents:create',
     resource: 'field-agents',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar inventariantes da organization',
+    description: 'Criar inventariantes da organização',
   },
   {
     key: 'field-agents:read',
     resource: 'field-agents',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar inventariantes da organization',
+    description: 'Listar e consultar inventariantes da organização',
   },
   {
     key: 'field-agents:update',
     resource: 'field-agents',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar inventariantes da organization',
+    description: 'Atualizar inventariantes da organização',
   },
   {
     key: 'field-agents:deactivate',
     resource: 'field-agents',
     action: 'deactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desativar inventariantes da organization',
+    description: 'Desativar inventariantes da organização',
   },
   {
     key: 'field-agents:reactivate',
     resource: 'field-agents',
     action: 'reactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Reativar inventariantes da organization',
+    description: 'Reativar inventariantes da organização',
   },
   {
     key: 'field-agents:block',
     resource: 'field-agents',
     action: 'block',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Bloquear inventariantes da organization',
+    description: 'Bloquear inventariantes da organização',
   },
   {
     key: 'field-agents:unblock',
     resource: 'field-agents',
     action: 'unblock',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desbloquear inventariantes da organization',
+    description: 'Desbloquear inventariantes da organização',
   },
   {
     key: 'field-agents:delete',
     resource: 'field-agents',
     action: 'delete',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Excluir inventariantes logicamente',
+    description: 'Excluir inventariantes (exclusão lógica)',
   },
   {
     key: 'project-field-agents:assign',
     resource: 'project-field-agents',
     action: 'assign',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Vincular inventariantes a projects',
+    description: 'Vincular inventariantes a projetos',
   },
   {
     key: 'project-field-agents:read',
     resource: 'project-field-agents',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar inventariantes de projects',
+    description: 'Listar inventariantes dos projetos',
   },
   {
     key: 'project-field-agents:update',
     resource: 'project-field-agents',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar vinculos de inventariantes em projects',
+    description: 'Atualizar vínculos de inventariantes nos projetos',
   },
   {
     key: 'project-field-agents:remove',
     resource: 'project-field-agents',
     action: 'remove',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Remover logicamente inventariantes de projects',
+    description: 'Remover inventariantes dos projetos (exclusão lógica)',
   },
   {
     key: 'inventory-items:create',
     resource: 'inventory-items',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar itens inventariados da organization',
+    description: 'Criar itens inventariados da organização',
   },
   {
     key: 'inventory-items:read',
     resource: 'inventory-items',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar itens inventariados da organization',
+    description: 'Listar e consultar itens inventariados da organização',
   },
   {
     key: 'inventory-items:update',
     resource: 'inventory-items',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar itens inventariados da organization',
+    description: 'Atualizar itens inventariados da organização',
   },
   {
     key: 'inventory-items:deactivate',
     resource: 'inventory-items',
     action: 'deactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desativar itens inventariados da organization',
+    description: 'Desativar itens inventariados da organização',
   },
   {
     key: 'inventory-items:reactivate',
     resource: 'inventory-items',
     action: 'reactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Reativar itens inventariados da organization',
+    description: 'Reativar itens inventariados da organização',
   },
   {
     key: 'inventory-item-images:create',
     resource: 'inventory-item-images',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar URLs de upload de imagens dos itens inventariados',
+    description: 'Enviar imagens dos itens inventariados',
   },
   {
     key: 'inventory-item-images:read',
@@ -285,144 +307,144 @@ export const PERMISSION_SEEDS: Array<{
     resource: 'inventory-item-images',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Confirmar upload de imagens dos itens inventariados',
+    description: 'Confirmar o envio de imagens dos itens inventariados',
   },
   {
     key: 'inventory-item-images:remove',
     resource: 'inventory-item-images',
     action: 'remove',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Remover logicamente imagens dos itens inventariados',
+    description: 'Remover imagens dos itens inventariados (exclusão lógica)',
   },
   {
     key: 'inventory-item-images:download',
     resource: 'inventory-item-images',
     action: 'download',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Gerar URLs de download de imagens dos itens inventariados',
+    description: 'Baixar imagens dos itens inventariados',
   },
   {
     key: 'inventory-accounting-items:create',
     resource: 'inventory-accounting-items',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar itens da base contabil da organization',
+    description: 'Criar itens da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:read',
     resource: 'inventory-accounting-items',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar itens da base contabil da organization',
+    description: 'Listar e consultar itens da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:update',
     resource: 'inventory-accounting-items',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar itens da base contabil da organization',
+    description: 'Atualizar itens da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:deactivate',
     resource: 'inventory-accounting-items',
     action: 'deactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desativar itens da base contabil da organization',
+    description: 'Desativar itens da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:reactivate',
     resource: 'inventory-accounting-items',
     action: 'reactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Reativar itens da base contabil da organization',
+    description: 'Reativar itens da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:import',
     resource: 'inventory-accounting-items',
     action: 'import',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Importar planilhas da base contabil da organization',
+    description: 'Importar planilhas da base contábil da organização',
   },
   {
     key: 'inventory-accounting-items:export-errors',
     resource: 'inventory-accounting-items',
     action: 'export-errors',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Consultar relatorios de erro da importacao contabil',
+    description: 'Consultar relatórios de erro da importação contábil',
   },
   {
     key: 'inventory-pending-issues:create',
     resource: 'inventory-pending-issues',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar pendencias patrimoniais da organization',
+    description: 'Criar pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:read',
     resource: 'inventory-pending-issues',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar pendencias patrimoniais da organization',
+    description: 'Listar e consultar pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:update',
     resource: 'inventory-pending-issues',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar pendencias patrimoniais da organization',
+    description: 'Atualizar pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:resolve',
     resource: 'inventory-pending-issues',
     action: 'resolve',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Resolver pendencias patrimoniais da organization',
+    description: 'Resolver pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:ignore',
     resource: 'inventory-pending-issues',
     action: 'ignore',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Ignorar pendencias patrimoniais da organization',
+    description: 'Ignorar pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:cancel',
     resource: 'inventory-pending-issues',
     action: 'cancel',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Cancelar pendencias patrimoniais da organization',
+    description: 'Cancelar pendências patrimoniais da organização',
   },
   {
     key: 'inventory-pending-issues:generate',
     resource: 'inventory-pending-issues',
     action: 'generate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Gerar pendencias patrimoniais automaticamente',
+    description: 'Gerar pendências patrimoniais automaticamente',
   },
   ...[
     [
       'expense-accountabilities:create',
       'expense-accountabilities',
       'create',
-      'Abrir prestacoes de contas',
+      'Abrir prestações de contas',
     ],
     [
       'expense-accountabilities:read',
       'expense-accountabilities',
       'read',
-      'Consultar prestacoes de contas',
+      'Consultar prestações de contas',
     ],
     [
       'expense-accountabilities:update',
       'expense-accountabilities',
       'update',
-      'Vincular despesas a prestacoes',
+      'Vincular despesas a prestações',
     ],
     [
       'expense-accountabilities:close',
       'expense-accountabilities',
       'close',
-      'Fechar prestacoes de contas',
+      'Fechar prestações de contas',
     ],
     [
       'expense-installments:create',
@@ -448,67 +470,67 @@ export const PERMISSION_SEEDS: Array<{
       'inventory-sessions:create',
       'inventory-sessions',
       'create',
-      'Criar sessoes de inventario',
+      'Criar sessões de inventário',
     ],
     [
       'inventory-sessions:read',
       'inventory-sessions',
       'read',
-      'Consultar sessoes e historico de inventario',
+      'Consultar sessões e histórico de inventário',
     ],
     [
       'inventory-sessions:update',
       'inventory-sessions',
       'update',
-      'Iniciar e finalizar sessoes e rodadas',
+      'Iniciar e finalizar sessões e rodadas',
     ],
     [
       'inventory-rounds:reinventory',
       'inventory-rounds',
       'reinventory',
-      'Solicitar reinventario preservando historico',
+      'Solicitar reinventário preservando histórico',
     ],
     [
       'inventory-observations:create',
       'inventory-observations',
       'create',
-      'Registrar observacoes de campo',
+      'Registrar observações de campo',
     ],
     [
       'reconciliations:create',
       'reconciliations',
       'create',
-      'Executar conciliacao fisico-contabil',
+      'Executar conciliação físico-contábil',
     ],
     [
       'reconciliations:read',
       'reconciliations',
       'read',
-      'Consultar conciliacoes',
+      'Consultar conciliações',
     ],
     [
       'consolidations:create',
       'consolidations',
       'create',
-      'Consolidar evidencias de conciliacao',
+      'Consolidar evidências de conciliação',
     ],
     [
       'asset-valuations:create',
       'asset-valuations',
       'create',
-      'Registrar avaliacao manual',
+      'Registrar avaliação manual',
     ],
     [
       'asset-valuations:read',
       'asset-valuations',
       'read',
-      'Consultar historico de avaliacoes',
+      'Consultar histórico de avaliações',
     ],
     [
       'plate-history:read',
       'plate-history',
       'read',
-      'Consultar historico e fontes de placas',
+      'Consultar histórico e fontes de placas',
     ],
   ].map(([key, resource, action, description]) => ({
     key,
@@ -571,73 +593,73 @@ export const PERMISSION_SEEDS: Array<{
       'import-sessions:create',
       'import-sessions',
       'create',
-      'Criar sessoes de importacao',
+      'Criar sessões de importação',
     ],
     [
       'import-sessions:read',
       'import-sessions',
       'read',
-      'Listar e consultar sessoes de importacao',
+      'Listar e consultar sessões de importação',
     ],
     [
       'import-sessions:finish',
       'import-sessions',
       'finish',
-      'Finalizar sessoes de importacao',
+      'Finalizar sessões de importação',
     ],
     [
       'import-sessions:cancel',
       'import-sessions',
       'cancel',
-      'Cancelar sessoes de importacao',
+      'Cancelar sessões de importação',
     ],
     [
       'import-sessions:retry',
       'import-sessions',
       'retry',
-      'Reprocessar sessoes com falha',
+      'Reprocessar sessões com falha',
     ],
     [
       'import-payloads:create',
       'import-payloads',
       'create',
-      'Receber payloads de importacao',
+      'Receber pacotes de importação',
     ],
     [
       'import-payloads:read',
       'import-payloads',
       'read',
-      'Listar e consultar payloads de importacao',
+      'Listar e consultar pacotes de importação',
     ],
     [
       'import-payloads:reprocess',
       'import-payloads',
       'reprocess',
-      'Reprocessar payloads com falha',
+      'Reprocessar pacotes com falha',
     ],
     [
       'import-errors:read',
       'import-errors',
       'read',
-      'Consultar erros de importacao',
+      'Consultar erros de importação',
     ],
     [
       'import-files:create',
       'import-files',
       'create',
-      'Criar e confirmar arquivos de importacao',
+      'Criar e confirmar arquivos de importação',
     ],
     [
       'import-files:read',
       'import-files',
       'read',
-      'Listar arquivos de importacao',
+      'Listar arquivos de importação',
     ],
     [
       'import-files:download',
       'import-files',
       'download',
-      'Baixar arquivos de importacao',
+      'Baixar arquivos de importação',
     ],
   ].map(([key, resource, action, description]) => ({
     key,
@@ -651,42 +673,42 @@ export const PERMISSION_SEEDS: Array<{
     resource: 'catalog-assets',
     action: 'create',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Criar ativos do catalogo da organization',
+    description: 'Criar itens do catálogo da organização',
   },
   {
     key: 'catalog-assets:read',
     resource: 'catalog-assets',
     action: 'read',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Listar e consultar ativos do catalogo da organization',
+    description: 'Listar e consultar itens do catálogo da organização',
   },
   {
     key: 'catalog-assets:update',
     resource: 'catalog-assets',
     action: 'update',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Atualizar ativos do catalogo da organization',
+    description: 'Atualizar itens do catálogo da organização',
   },
   {
     key: 'catalog-assets:deactivate',
     resource: 'catalog-assets',
     action: 'deactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Desativar ativos do catalogo da organization',
+    description: 'Desativar itens do catálogo da organização',
   },
   {
     key: 'catalog-assets:reactivate',
     resource: 'catalog-assets',
     action: 'reactivate',
     scope: PermissionScope.ORGANIZATION,
-    description: 'Reativar ativos do catalogo da organization',
+    description: 'Reativar itens do catálogo da organização',
   },
   ...[
-    ['export-jobs:create', 'create', 'Solicitar exportacoes de projects'],
-    ['export-jobs:read', 'read', 'Listar e consultar exportacoes de projects'],
-    ['export-jobs:download', 'download', 'Baixar exportacoes de projects'],
-    ['export-jobs:cancel', 'cancel', 'Cancelar exportacoes de projects'],
-    ['export-jobs:retry', 'retry', 'Repetir exportacoes de projects'],
+    ['export-jobs:create', 'create', 'Solicitar exportações de projetos'],
+    ['export-jobs:read', 'read', 'Listar e consultar exportações de projetos'],
+    ['export-jobs:download', 'download', 'Baixar exportações de projetos'],
+    ['export-jobs:cancel', 'cancel', 'Cancelar exportações de projetos'],
+    ['export-jobs:retry', 'retry', 'Repetir exportações de projetos'],
   ].map(([key, action, description]) => ({
     key,
     resource: 'export-jobs',
@@ -699,59 +721,59 @@ export const PERMISSION_SEEDS: Array<{
       'companies:create',
       'companies',
       'create',
-      'Criar companies da organization',
+      'Cadastrar clientes da organização',
     ],
-    ['companies:read', 'companies', 'read', 'Listar e consultar companies'],
-    ['companies:update', 'companies', 'update', 'Atualizar companies'],
-    ['companies:deactivate', 'companies', 'deactivate', 'Desativar companies'],
-    ['companies:reactivate', 'companies', 'reactivate', 'Reativar companies'],
+    ['companies:read', 'companies', 'read', 'Listar e consultar clientes'],
+    ['companies:update', 'companies', 'update', 'Atualizar clientes'],
+    ['companies:deactivate', 'companies', 'deactivate', 'Desativar clientes'],
+    ['companies:reactivate', 'companies', 'reactivate', 'Reativar clientes'],
     [
       'company-units:create',
       'company-units',
       'create',
-      'Criar unidades de companies',
+      'Cadastrar unidades de clientes',
     ],
     [
       'company-units:read',
       'company-units',
       'read',
-      'Listar e consultar unidades de companies',
+      'Listar e consultar unidades de clientes',
     ],
     [
       'company-units:update',
       'company-units',
       'update',
-      'Atualizar unidades de companies',
+      'Atualizar unidades de clientes',
     ],
     [
       'company-units:deactivate',
       'company-units',
       'deactivate',
-      'Desativar unidades de companies',
+      'Desativar unidades de clientes',
     ],
     [
       'company-units:reactivate',
       'company-units',
       'reactivate',
-      'Reativar unidades de companies',
+      'Reativar unidades de clientes',
     ],
     [
       'project-units:assign',
       'project-units',
       'assign',
-      'Vincular unidades a projects',
+      'Vincular unidades a projetos',
     ],
     [
       'project-units:read',
       'project-units',
       'read',
-      'Listar unidades de projects',
+      'Listar unidades dos projetos',
     ],
     [
       'project-units:remove',
       'project-units',
       'remove',
-      'Remover unidades de projects',
+      'Remover unidades dos projetos',
     ],
   ].map(([key, resource, action, description]) => ({
     key,
@@ -773,7 +795,7 @@ for (const key of FIELD_PERMISSIONS)
     resource: 'field-coordination',
     action: key.split(':')[1],
     scope: PermissionScope.ORGANIZATION,
-    description: 'Coordenação de campo: ' + key.split(':')[1],
+    description: 'Coordenação de campo: ' + actionLabel(key.split(':')[1]),
   });
 
 for (const key of ASSISTED_PERMISSIONS)
@@ -782,7 +804,7 @@ for (const key of ASSISTED_PERMISSIONS)
     resource: 'assisted-reconciliation',
     action: key.split(':')[1],
     scope: PermissionScope.ORGANIZATION,
-    description: 'Conciliação assistida: ' + key.split(':')[1],
+    description: 'Conciliação assistida: ' + actionLabel(key.split(':')[1]),
   });
 PERMISSION_SEEDS.push({
   key: 'asset-valuations:batch-create',
@@ -804,7 +826,10 @@ for (const key of [
     resource,
     action,
     scope: PermissionScope.ORGANIZATION,
-    description: 'Gestão contratual: ' + action,
+    description:
+      resource === 'commercial-indicators'
+        ? 'Indicadores comerciais: consultar'
+        : 'Gestão contratual: ' + actionLabel(action),
   });
 }
 for (const action of ['read', 'edit', 'configure-prices', 'approve']) {
@@ -813,7 +838,7 @@ for (const action of ['read', 'edit', 'configure-prices', 'approve']) {
     resource: 'budgets',
     action,
     scope: PermissionScope.ORGANIZATION,
-    description: 'Orçamentos: ' + action,
+    description: 'Orçamentos: ' + actionLabel(action),
   });
 }
 for (const key of FINANCE_PERMISSIONS) {
@@ -823,7 +848,7 @@ for (const key of FINANCE_PERMISSIONS) {
     resource,
     action,
     scope: PermissionScope.ORGANIZATION,
-    description: 'Financeiro: ' + action,
+    description: 'Financeiro: ' + actionLabel(action),
   });
 }
 for (const key of DRE_PERMISSIONS) {
@@ -832,7 +857,7 @@ for (const key of DRE_PERMISSIONS) {
     resource: 'dre',
     action: key.split(':')[1],
     scope: PermissionScope.ORGANIZATION,
-    description: 'DRE gerencial: ' + key.split(':')[1],
+    description: 'DRE gerencial: ' + actionLabel(key.split(':')[1]),
   });
 }
 for (const key of ['budgets:export', 'documents:templates'])
@@ -841,17 +866,35 @@ for (const key of ['budgets:export', 'documents:templates'])
     resource: key.split(':')[0],
     action: key.split(':')[1],
     scope: PermissionScope.ORGANIZATION,
-    description: 'Documentos profissionais: ' + key,
+    description:
+      key === 'budgets:export'
+        ? 'Documentos profissionais: exportar orçamento'
+        : 'Documentos profissionais: gerenciar modelos',
   });
-export async function seedPermissions(dataSource: DataSource): Promise<void> {
+/**
+ * Sincroniza o catálogo de permissões (roda no release, depois das migrations).
+ * Só ACRESCENTA as chaves que faltam, com a descrição do seed no momento da
+ * criação. Nunca altera nem remove chaves existentes (nem descrição, nem
+ * escopo) e nunca toca em perfis, vínculos perfil×permissão ou atribuições de
+ * usuário: chave nova não é concedida a ninguém automaticamente. Rodar de novo
+ * não muda nenhuma linha. Devolve as chaves criadas.
+ */
+export async function seedPermissions(
+  dataSource: DataSource,
+): Promise<string[]> {
   const repo = dataSource.getRepository(PermissionEntity);
+  const existing = new Set(
+    (await repo.find({ select: { key: true } })).map(({ key }) => key),
+  );
+  const created: string[] = [];
 
   for (const seed of PERMISSION_SEEDS) {
-    const existing = await repo.findOne({ where: { key: seed.key } });
-    if (!existing) {
-      await repo.save(repo.create(seed));
-    }
+    if (existing.has(seed.key)) continue;
+    await repo.insert(repo.create(seed));
+    existing.add(seed.key);
+    created.push(seed.key);
   }
+  return created;
 }
 
 for (const key of [
@@ -866,7 +909,7 @@ for (const key of [
     resource: 'technical-reports',
     action: key.split(':')[1],
     scope: PermissionScope.ORGANIZATION,
-    description: 'Laudos tecnicos: ' + key.split(':')[1],
+    description: 'Laudos técnicos: ' + actionLabel(key.split(':')[1]),
   });
 
 // Paridade financeira, etapa 2: Remuneração (excluir e reabrir lançamento).

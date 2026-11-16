@@ -117,16 +117,20 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
     }
     await refresh();
   };
-  const batchMessage = (r: BatchResult, verb: string) => {
+  // Resultado parcial decidido pela contagem de falhas, não pelo texto montado.
+  const batchMessage = (r: BatchResult, verb: string): { message: string; partial: boolean } => {
     const failures = r.results.filter((x) => !x.ok).map((x) => {
       const item = data?.items.find((i) => i.id === x.id);
       return `${item?.sequence ?? `#${x.id}`}: ${x.message}`;
     });
-    return `${r.done} despesa(s) ${verb}.${failures.length ? ` Não concluídas: ${failures.join("; ")}.` : ""}`;
+    return {
+      message: `${r.done} despesa(s) ${verb}.${failures.length ? ` Não concluídas: ${failures.join("; ")}.` : ""}`,
+      partial: failures.length > 0,
+    };
   };
   const mutate = useMutation({
-    mutationFn: async (run: () => Promise<string>) => run(),
-    onSuccess: (message) => void finish(message, /Não concluídas/.test(message)),
+    mutationFn: async (run: () => Promise<string | { message: string; partial: boolean }>) => run(),
+    onSuccess: (result) => void (typeof result === "string" ? finish(result) : finish(result.message, result.partial)),
     onError: (e) => setFeedback({ message: (e as Error).message, error: true }),
   });
 

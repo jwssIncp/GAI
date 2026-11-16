@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DrawerForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { formatDateTime } from '@/utils/format';
+import { userLabel } from '@/utils/userName';
 import type { InventoryEvidence, InventoryObservation } from '@/types/api';
 import { getInventoryOperationErrorMessage } from './inventoryOperationErrors';
 import { useInventoryEvidence, useInventoryEvidenceDownloadUrl, useUploadInventoryEvidence } from './inventoryOperationsQueries';
@@ -124,7 +125,7 @@ export function ObservationEvidenceDrawer({
                   </div>
                   <StatusBadge value={item.status} />
                 </div>
-                <p className="text-xs text-muted-foreground">Criada em {formatDateTime(item.created_at)} por {item.created_by_id ? `#${item.created_by_id}` : 'responsável não informado'}</p>
+                <p className="text-xs text-muted-foreground">Criada em {formatDateTime(item.created_at)} por {item.created_by_id ? userLabel(item.created_by_name) : 'responsável não informado'}</p>
                 <PermissionGate permissions={['inventory-sessions:read']}>
                   <Button type="button" variant="secondary" onClick={() => openPreview(item)} disabled={download.isPending || item.status !== 'uploaded'}>
                     <Download size={16} /> Visualizar

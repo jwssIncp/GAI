@@ -35,7 +35,7 @@ export class InventoryItemImageScopeService {
     }
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -43,7 +43,7 @@ export class InventoryItemImageScopeService {
     if (item.projectId !== projectId) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Inventory item does not belong to project',
+        message: 'O item de inventário não pertence ao projeto.',
       });
     }
   }
@@ -52,7 +52,7 @@ export class InventoryItemImageScopeService {
     if (project.blocksOperationalMutation()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
   }
@@ -61,7 +61,7 @@ export class InventoryItemImageScopeService {
     if (!ALLOWED_MIME_TYPES.has(mimeType.toLowerCase())) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Unsupported image mime_type',
+        message: 'Tipo de imagem não suportado.',
       });
     }
   }
@@ -71,7 +71,7 @@ export class InventoryItemImageScopeService {
     if (sizeBytes > maxBytes) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: `Image exceeds max size of ${maxBytes} bytes`,
+        message: `A imagem excede o tamanho máximo de ${maxBytes} bytes.`,
       });
     }
   }
@@ -81,7 +81,7 @@ export class InventoryItemImageScopeService {
     if (activeCount >= maxImages) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: `Inventory item image limit of ${maxImages} reached`,
+        message: `O item já tem o limite de ${maxImages} imagens.`,
       });
     }
   }

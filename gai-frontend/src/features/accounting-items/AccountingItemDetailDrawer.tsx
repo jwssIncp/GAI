@@ -36,7 +36,7 @@ export function AccountingItemDetailDrawer({ projectId, id, open, onOpenChange }
           <Info label="Placa nova inventário" value={item.new_inventory_plate} />
           <Info label="Descrição inventário" value={item.inventory_description} />
           <Info label="Localização inventário" value={item.inventory_location} />
-          <Info label="Import batch" value={item.import_batch_id ? `#${item.import_batch_id}` : undefined} />
+          <Info label="Lote de importação" value={item.import_batch_id ? `#${item.import_batch_id}` : undefined} />
           <Info label="Criado em" value={formatDateTime(item.created_at)} />
           <Info label="Atualizado em" value={formatDateTime(item.updated_at)} />
           {item.metadata ? (

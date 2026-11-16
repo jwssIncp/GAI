@@ -172,6 +172,7 @@ beforeEach(() => {
         id: 1,
         operation: 'INSTANCE_CREATED',
         performed_by_id: 2,
+        performed_by_name: 'Ana Souza',
         created_at: seed.created_at,
         changes: { snapshot: seed.snapshot },
       },
@@ -287,7 +288,9 @@ describe('Project preparation UI', () => {
     ).not.toBeInTheDocument();
     await ui.click(screen.getByRole('button', { name: 'Histórico' }));
     expect(await screen.findByText('Preparação criada')).toBeInTheDocument();
-    expect(screen.getByText(/usuário #2/)).toBeInTheDocument();
+    // Quem fez a ação aparece pelo nome, nunca pelo ID técnico.
+    expect(screen.getByText(/Ana Souza/)).toBeInTheDocument();
+    expect(screen.queryByText(/usuário #/i)).not.toBeInTheDocument();
   });
   it('creates a real instance using the selected organization template and civil dates', async () => {
     const ui = userEvent.setup();

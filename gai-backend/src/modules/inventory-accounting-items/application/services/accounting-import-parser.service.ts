@@ -67,20 +67,20 @@ export class AccountingImportParserService {
         this.pick(normalized, ['serial_number', 'numero_serie']),
       ) ?? null;
     if (serial && serial.length > 100)
-      errors.push('serial_number must have at most 100 characters');
+      errors.push('O número de série deve ter no máximo 100 caracteres.');
 
     if (
       date === null &&
       this.pick(normalized, ['data_aquisicao', 'acquisition_date']) != null
     ) {
-      errors.push('acquisition_date must be a real date');
+      errors.push('A data de aquisição deve ser uma data válida.');
     }
     if (
       money !== null &&
       money !== undefined &&
       !/^\d{1,13}(\.\d{1,2})?$/.test(money)
     ) {
-      errors.push('acquisition_value must be a decimal string');
+      errors.push('O valor de aquisição deve ser um número decimal.');
     }
 
     const consumed = new Set([
@@ -217,7 +217,7 @@ export class AccountingImportParserService {
     ) {
       return value as InventoryAccountingItemStatus;
     }
-    errors.push(`Invalid status: ${value}`);
+    errors.push(`Situação inválida: ${value}`);
     return InventoryAccountingItemStatus.PENDING;
   }
 }

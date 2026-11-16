@@ -32,7 +32,7 @@ describe('Project domain', () => {
           startDate: new Date('2026-07-10T00:00:00.000Z'),
           endDate: new Date('2026-07-09T00:00:00.000Z'),
         }),
-    ).toThrow('end_date cannot be earlier than start_date');
+    ).toThrow('A data de término não pode ser anterior à data de início.');
   });
 
   it('blocks operational updates for terminal or inactive statuses', () => {
@@ -40,7 +40,7 @@ describe('Project domain', () => {
 
     expect(() =>
       project.updateFields({ name: 'Novo nome', updatedById: 2 }),
-    ).toThrow('Project status blocks this operation');
+    ).toThrow('A situação do projeto não permite esta operação.');
   });
 
   it('finishes project and records finished_at change', () => {

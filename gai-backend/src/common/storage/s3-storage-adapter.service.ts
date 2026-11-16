@@ -156,7 +156,7 @@ export class S3StorageAdapterService
     )
       throw new BadRequestException({
         code: 'STORAGE_INVALID_KEY',
-        message: 'Storage target is not authorized',
+        message: 'Destino de armazenamento não autorizado.',
       });
     if (
       !Number.isSafeInteger(input.sizeBytes) ||
@@ -165,12 +165,12 @@ export class S3StorageAdapterService
     )
       throw new BadRequestException({
         code: 'STORAGE_INVALID_SIZE',
-        message: 'File exceeds the configured size limit',
+        message: 'O arquivo excede o tamanho máximo permitido.',
       });
     if (!settings.mimeTypes.has(input.mimeType.toLowerCase()))
       throw new BadRequestException({
         code: 'STORAGE_UNSUPPORTED_MIME',
-        message: 'File MIME type is not permitted',
+        message: 'Tipo de arquivo não permitido.',
       });
     if (
       !Number.isInteger(input.expiresInSeconds) ||
@@ -179,7 +179,7 @@ export class S3StorageAdapterService
     )
       throw new BadRequestException({
         code: 'STORAGE_INVALID_EXPIRATION',
-        message: 'Invalid URL expiration',
+        message: 'Validade do link inválida.',
       });
     sha256Hex(input.checksum);
   }
@@ -226,7 +226,7 @@ export class S3StorageAdapterService
     if (!sha256Hex(input.checksum))
       throw new ConflictException({
         code: 'STORAGE_UNVERIFIED_OBJECT',
-        message: 'Object requires integrity verification before download',
+        message: 'O arquivo precisa ser verificado antes do download.',
       });
     const verified = await this.inspect(input);
     return this.operation(async () => ({
@@ -258,7 +258,7 @@ export class S3StorageAdapterService
     if (!object.Body)
       throw new ConflictException({
         code: 'STORAGE_EMPTY_RESPONSE',
-        message: 'Object body unavailable',
+        message: 'Conteúdo do arquivo indisponível.',
       });
     const body = object.Body as AsyncIterable<Uint8Array>;
     const max = Math.min(input.sizeBytes, this.configuration().maxBytes);
@@ -271,7 +271,7 @@ export class S3StorageAdapterService
         if (size > max)
           throw new ConflictException({
             code: 'STORAGE_SIZE_MISMATCH',
-            message: 'Stored object size differs from the authorized upload',
+            message: 'O tamanho do arquivo enviado difere do autorizado.',
           });
         hash.update(part);
         yield part;
@@ -279,7 +279,7 @@ export class S3StorageAdapterService
       if (expected && hash.digest('hex') !== expected)
         throw new ConflictException({
           code: 'STORAGE_CHECKSUM_MISMATCH',
-          message: 'Object integrity mismatch',
+          message: 'O arquivo não passou na verificação de integridade.',
         });
     })();
   }
@@ -300,17 +300,17 @@ export class S3StorageAdapterService
       if (head.ContentLength !== Number(input.sizeBytes))
         throw new ConflictException({
           code: 'STORAGE_SIZE_MISMATCH',
-          message: 'Stored object size differs from the authorized upload',
+          message: 'O tamanho do arquivo enviado difere do autorizado.',
         });
       if (normalize(head.ContentType) !== normalize(input.mimeType))
         throw new ConflictException({
           code: 'STORAGE_MIME_MISMATCH',
-          message: 'Stored object MIME differs from the authorized upload',
+          message: 'O tipo do arquivo enviado difere do autorizado.',
         });
       if (!head.VersionId || head.VersionId === 'null')
         throw new ConflictException({
           code: 'STORAGE_VERSIONING_REQUIRED',
-          message: 'Storage bucket versioning must be enabled',
+          message: 'O versionamento do armazenamento precisa estar ativo.',
         });
       const object = await this.s3().send(
         new GetObjectCommand({
@@ -323,7 +323,7 @@ export class S3StorageAdapterService
       if (!object.Body)
         throw new ConflictException({
           code: 'STORAGE_EMPTY_RESPONSE',
-          message: 'Object body unavailable',
+          message: 'Conteúdo do arquivo indisponível.',
         });
       const hash = createHash('sha256');
       let sizeBytes = 0;
@@ -338,7 +338,7 @@ export class S3StorageAdapterService
           )
             throw new ConflictException({
               code: 'STORAGE_SIZE_MISMATCH',
-              message: 'Object exceeds authorized size',
+              message: 'O arquivo excede o tamanho autorizado.',
             });
           hash.update(chunk);
           if (prefix.length < 4096)
@@ -354,17 +354,18 @@ export class S3StorageAdapterService
       if (sizeBytes !== Number(input.sizeBytes))
         throw new ConflictException({
           code: 'STORAGE_SIZE_MISMATCH',
-          message: 'Incomplete object body',
+          message: 'Conteúdo do arquivo incompleto.',
         });
       if (input.checksum && sha256Hex(input.checksum) !== checksum)
         throw new ConflictException({
           code: 'STORAGE_CHECKSUM_MISMATCH',
-          message: 'Stored object checksum differs from the authorized upload',
+          message:
+            'A soma de verificação do arquivo enviado difere da autorizada.',
         });
       if (!matchesMime(normalize(input.mimeType)!, prefix))
         throw new ConflictException({
           code: 'STORAGE_CONTENT_MISMATCH',
-          message: 'File content does not match its MIME type',
+          message: 'O conteúdo do arquivo não corresponde ao tipo informado.',
         });
       return {
         sizeBytes,
@@ -392,11 +393,11 @@ export class S3StorageAdapterService
       )
         throw new NotFoundException({
           code: 'STORAGE_OBJECT_NOT_FOUND',
-          message: 'Stored object not found',
+          message: 'Arquivo não encontrado no armazenamento.',
         });
       throw new ServiceUnavailableException({
         code: 'STORAGE_UNAVAILABLE',
-        message: 'Storage operation could not be completed',
+        message: 'Não foi possível concluir a operação no armazenamento.',
       });
     }
   }

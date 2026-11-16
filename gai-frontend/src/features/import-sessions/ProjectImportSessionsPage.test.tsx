@@ -216,7 +216,7 @@ describe('ProjectImportSessionsPage', () => {
     mocks.list.mockResolvedValue(page([{ ...session, status: 'failed' as const }]));
     renderPage();
     await screen.findByText('uuid-50');
-    await userEvent.click(screen.getByLabelText('Retry importação'));
+    await userEvent.click(screen.getByLabelText('Tentar importação novamente'));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(mocks.retry).toHaveBeenCalledWith(10, 50));
   });

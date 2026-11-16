@@ -1,3 +1,4 @@
+import { ProjectStatusBlocksOperationError } from '../../domain/errors/project-status-blocks-operation.error';
 import { ProjectRegistrationService } from '../services/project-registration.service';
 import {
   BadRequestException,
@@ -41,7 +42,7 @@ export class UpdateProjectUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
@@ -111,14 +112,14 @@ export class UpdateProjectUseCase {
     if (result.kind === 'not_found') {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     if (result.kind === 'concurrent_modification') {
       throw new ConflictException({
         code: 'PROJECT_CONCURRENT_MODIFICATION',
         message:
-          'Project was modified by another operation. Reload it and try again.',
+          'O projeto foi alterado por outra operação. Recarregue a página e tente de novo.',
         details: {
           current_status: result.currentStatus,
           current_updated_at: result.currentUpdatedAt.toISOString(),
@@ -183,8 +184,9 @@ export class UpdateProjectUseCase {
   private toDomainError(
     error: unknown,
   ): BadRequestException | ConflictException {
-    const message = error instanceof Error ? error.message : 'Invalid project';
-    if (message === 'Project status blocks this operation') {
+    const message =
+      error instanceof Error ? error.message : 'Projeto inválido.';
+    if (error instanceof ProjectStatusBlocksOperationError) {
       return new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
         message,

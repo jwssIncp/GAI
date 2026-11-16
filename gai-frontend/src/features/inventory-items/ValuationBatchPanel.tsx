@@ -12,6 +12,7 @@ import { PermissionGate } from "@/features/auth/PermissionGate";
 import { exportJobsApi } from "@/api/endpoints";
 import { ApiError } from "@/api/http";
 import { formatDateTime, formatMoney } from "@/utils/format";
+import { userLabel } from "@/utils/userName";
 import { createIdempotencyKey } from "@/features/inventory-operations/idempotency";
 import type { InventoryItem } from "@/types/api";
 import {
@@ -558,7 +559,7 @@ export function ValuationBatchPanel({
                 <>
                   <p className="text-sm">
                     Aplicação confirmada em {formatDateTime(batch.confirmedAt)}{" "}
-                    pelo usuário #{batch.confirmedById}. Histórico individual
+                    por {userLabel(batch.confirmedByName)}. Histórico individual
                     preservado.
                   </p>
                   <PermissionGate

@@ -42,7 +42,7 @@ export class UpdateFieldAgentStatusUseCase {
     if (!fieldAgent) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Field agent not found',
+        message: 'Inventariante não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, fieldAgent.organizationId);
@@ -62,7 +62,7 @@ export class UpdateFieldAgentStatusUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Field agent status blocks this operation',
+            : 'A situação do inventariante não permite esta operação.',
       });
     }
 

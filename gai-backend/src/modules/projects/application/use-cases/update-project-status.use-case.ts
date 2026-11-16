@@ -39,7 +39,7 @@ export class UpdateProjectStatusUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessProject(actor, project.organizationId);
@@ -54,7 +54,7 @@ export class UpdateProjectStatusUseCase {
     if (result.kind === 'not_found') {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     if (

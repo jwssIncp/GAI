@@ -41,7 +41,7 @@ export class RevokeUserRoleAssignmentUseCase {
     if (!user) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'User not found',
+        message: 'Usuário não encontrado.',
       });
     }
 
@@ -55,7 +55,7 @@ export class RevokeUserRoleAssignmentUseCase {
     if (!target) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Role assignment not found',
+        message: 'Atribuição de perfil não encontrada.',
       });
     }
 
@@ -76,7 +76,8 @@ export class RevokeUserRoleAssignmentUseCase {
       if (others === 0) {
         throw new ConflictException({
           code: 'CONFLICT',
-          message: 'Cannot revoke the last active PLATFORM_ADMIN assignment',
+          message:
+            'Não é possível remover o último administrador da plataforma ativo.',
         });
       }
     }

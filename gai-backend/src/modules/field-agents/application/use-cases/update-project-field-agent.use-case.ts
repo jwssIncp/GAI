@@ -56,7 +56,7 @@ export class UpdateProjectFieldAgentUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
@@ -66,7 +66,7 @@ export class UpdateProjectFieldAgentUseCase {
     if (!assignment || assignment.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project field agent not found',
+        message: 'Vínculo do inventariante com o projeto não encontrado.',
       });
     }
 
@@ -86,7 +86,7 @@ export class UpdateProjectFieldAgentUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Invalid project field agent',
+            : 'Vínculo de inventariante com o projeto inválido.',
       });
     }
 
@@ -102,7 +102,7 @@ export class UpdateProjectFieldAgentUseCase {
         throw new ConflictException({
           code: 'CONFLICT',
           message:
-            'Only active field agents can have active project assignments',
+            'Só inventariantes ativos podem ter vínculos ativos com projetos.',
         });
       }
       if (

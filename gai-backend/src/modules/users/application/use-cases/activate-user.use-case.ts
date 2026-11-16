@@ -37,7 +37,7 @@ export class ActivateUserUseCase {
     if (!user) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'User not found',
+        message: 'Usuário não encontrado.',
       });
     }
 

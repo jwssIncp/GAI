@@ -31,5 +31,9 @@ elif [ "$PENDING_COUNT" -gt 0 ]; then
   npm run migration:run
 fi
 
+# Catálogo de permissões: só acrescenta as chaves que faltam (idempotente;
+# não altera perfis nem atribuições). Mesmo passo do release:prod.
+npm run permissions:sync
+
 echo "Starting application (hot-reload)..."
 exec npm run start:dev

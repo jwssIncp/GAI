@@ -21,7 +21,7 @@ export class OrganizationScopeGuard implements CanActivate {
     if (!user) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -39,7 +39,7 @@ export class OrganizationScopeGuard implements CanActivate {
     if (user.organizationId !== organizationId) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 

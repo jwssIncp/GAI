@@ -23,7 +23,7 @@ describe('CatalogAsset domain', () => {
   it('requires description', () => {
     expect(
       () => new CatalogAsset({ ...baseProps, description: '   ' }),
-    ).toThrow('description is required');
+    ).toThrow('A descrição é obrigatória.');
   });
 
   it('deactivates and reactivates without physical delete', () => {
@@ -48,7 +48,7 @@ describe('CatalogAsset domain', () => {
     });
 
     expect(() => asset.deactivate(8)).toThrow(
-      'Catalog asset is already inactive',
+      'O item do catálogo já está inativo.',
     );
   });
 });

@@ -97,7 +97,9 @@ export class ProjectFieldAgent {
 
   remove(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === ProjectFieldAgentStatus.FINISHED) {
-      throw new Error('Project field agent is already finished');
+      throw new Error(
+        'O vínculo do inventariante com o projeto já foi encerrado.',
+      );
     }
     const before = this.props.status;
     this.props.status = ProjectFieldAgentStatus.FINISHED;
@@ -112,7 +114,9 @@ export class ProjectFieldAgent {
 
   private assertDateRange(startDate: Date | null, endDate: Date | null): void {
     if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
-      throw new Error('end_date cannot be earlier than start_date');
+      throw new Error(
+        'A data de término não pode ser anterior à data de início.',
+      );
     }
   }
 

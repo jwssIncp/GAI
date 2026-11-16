@@ -49,7 +49,7 @@ export class AssignUserRoleUseCase {
     if (!user) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'User not found',
+        message: 'Usuário não encontrado.',
       });
     }
 
@@ -59,8 +59,8 @@ export class AssignUserRoleUseCase {
     if (!role || !role.isActive) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Validation failed',
-        details: [{ field: 'role_id', message: 'Invalid or inactive role' }],
+        message: 'Dados inválidos.',
+        details: [{ field: 'role_id', message: 'Perfil inválido ou inativo.' }],
       });
     }
 
@@ -71,7 +71,7 @@ export class AssignUserRoleUseCase {
     ) {
       throw new ConflictException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 

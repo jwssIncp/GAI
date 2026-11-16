@@ -105,7 +105,7 @@ export class InventoryAccountingItem {
 
   deactivate(now: Date): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === InventoryAccountingItemStatus.INACTIVE) {
-      throw new Error('Inventory accounting item is already inactive');
+      throw new Error('O item contábil já está inativo.');
     }
     const beforeStatus = this.props.status;
     const beforeDeletedAt = this.props.deletedAt;
@@ -119,9 +119,7 @@ export class InventoryAccountingItem {
 
   reactivate(): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== InventoryAccountingItemStatus.INACTIVE) {
-      throw new Error(
-        'Only inactive inventory accounting items can be reactivated',
-      );
+      throw new Error('Só itens contábeis inativos podem ser reativados.');
     }
     const beforeDeletedAt = this.props.deletedAt;
     this.props.status = InventoryAccountingItemStatus.PENDING;
@@ -167,7 +165,7 @@ export class InventoryAccountingItem {
       return;
     }
     if (!/^\d{1,13}(\.\d{1,2})?$/.test(value)) {
-      throw new Error('acquisition_value must be a decimal string');
+      throw new Error('O valor de aquisição deve ser um número decimal.');
     }
   }
 
@@ -176,7 +174,7 @@ export class InventoryAccountingItem {
       return;
     }
     if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
-      throw new Error('acquisition_date must be a real date');
+      throw new Error('A data de aquisição deve ser uma data válida.');
     }
   }
 }

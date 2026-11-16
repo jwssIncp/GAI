@@ -28,7 +28,7 @@ export class GetOrgRoleUseCase {
     if (!role) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Org role not found',
+        message: 'Perfil não encontrado.',
       });
     }
 

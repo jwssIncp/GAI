@@ -454,7 +454,7 @@ export function ZipDialog({ projectId, projectName, onClose }: { projectId: numb
           </select>
         </FormField>
         <p className="text-xs text-muted-foreground">
-          Pastas "Comprovantes por técnico/&lt;técnico&gt;" e "Despesas Gerais", com o código da despesa no nome de cada arquivo,
+          Pastas "Comprovantes por inventariante/&lt;inventariante&gt;" e "Despesas Gerais", com o código da despesa no nome de cada arquivo,
           e a planilha "Lançamentos". Só entram comprovantes com envio confirmado.
         </p>
         {run.isError ? <p role="alert" className="text-sm text-destructive">{(run.error as Error).message}</p> : null}

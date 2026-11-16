@@ -39,7 +39,7 @@ async function main() {
     });
     const pending = names.filter(name => !applied.has(name));
     if (pending.length) {
-      throw new Error(`Migrations pendentes em ${env.DB_HOST}:${env.DB_PORT || 3306}/${env.DB_DATABASE}:\n${pending.join('\n')}\nRevise o destino local e execute em gai-backend: npm.cmd run migration:run. Depois inicie novamente. Nenhuma migration foi aplicada automaticamente.`);
+      throw new Error(`Migrations pendentes em ${env.DB_HOST}:${env.DB_PORT || 3306}/${env.DB_DATABASE}:\n${pending.join('\n')}\nRevise o destino local e execute em gai-backend: npm.cmd run migration:run e npm.cmd run permissions:sync. Depois inicie novamente. Nenhuma migration foi aplicada automaticamente.`);
     }
     console.log(`Banco local ${env.DB_HOST}:${env.DB_PORT || 3306}/${env.DB_DATABASE}: ${names.length} migrations aplicadas; nenhuma pendente.`);
   } finally { await connection.end(); }

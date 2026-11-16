@@ -31,19 +31,27 @@ function mount() {
 const settle = () => act(async () => { await vi.advanceTimersByTimeAsync(0); });
 
 describe("AuthProvider: expiração da sessão", () => {
+  let intervalSpy: { mockRestore: () => void } | undefined;
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-15T12:00:00Z"));
     window.sessionStorage.clear();
     me.mockReset();
   });
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    intervalSpy?.mockRestore();
+    intervalSpy = undefined;
+    vi.useRealTimers();
+  });
 
   it("validade acima de ~24,8 dias não desloga na hora; desloga só ao vencer", async () => {
     const expiresAt = new Date(Date.now() + 30 * DAY).toISOString();
     expect(30 * DAY).toBeGreaterThan(MAX_TIMER_DELAY);
     writeStoredSession({ accessToken: "tok", expiresAt, user });
     me.mockResolvedValue(user);
+    // A renovação a cada 60 s não importa aqui (é coberta no teste de validade
+    // estendida) e, em 30 dias de relógio falso, rodaria ~43 mil vezes (~4 s).
+    intervalSpy = vi.spyOn(window, "setInterval").mockImplementation(() => 0 as unknown as ReturnType<typeof setInterval>);
     mount();
     await settle();
     expect(screen.getByText(`logado até ${expiresAt}`)).toBeInTheDocument();

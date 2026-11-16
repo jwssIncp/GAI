@@ -82,7 +82,7 @@ export class InventoryItemImagesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async requestUploadUrl(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -111,7 +111,7 @@ export class InventoryItemImagesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async confirmUploadUrl(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -173,7 +173,7 @@ export class InventoryItemImagesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Imagem indisponivel',
-    'Only uploaded images can be downloaded',
+    'Só imagens já enviadas podem ser baixadas.',
   )
   async requestDownloadUrl(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -197,7 +197,7 @@ export class InventoryItemImagesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async remove(
     @Param('projectId', ParseIntPipe) projectId: number,

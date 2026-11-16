@@ -74,7 +74,7 @@ export class CompaniesController {
   @ApiValidationErrorResponse()
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
-  @ApiConflictResponse('Conflito', 'Company document already exists')
+  @ApiConflictResponse('Conflito', 'Já existe um cliente com este documento.')
   createCompany(
     @Body() dto: CreateCompanyDto,
     @Req() req: AuthenticatedRequest,

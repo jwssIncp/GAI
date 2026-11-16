@@ -96,7 +96,13 @@ describe('Company registration and tenant security', () => {
       .get(`/api/v1/companies/${company.id}`)
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
-    expect(queried.body).toEqual(updated.body);
+    // O detalhe acrescenta os nomes para exibição (a tela não mostra "#id").
+    expect(queried.body).toEqual({
+      ...updated.body,
+      organization_name: 'GAI Test',
+      created_by_name: 'org.admin',
+      updated_by_name: 'org.admin',
+    });
     const audits = await app
       .get<
         Repository<CompanyAuditLogEntity>

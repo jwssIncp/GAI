@@ -90,6 +90,20 @@ import {
   ImportSessionScopeService,
 } from './import-session-scope.service';
 
+/**
+ * Falha de um item do pacote: a mensagem vai em pt-BR para a tela, e o
+ * `code` preserva o código histórico (derivado do texto antigo em inglês),
+ * do qual o app e os relatórios de erro dependem.
+ */
+class ImportItemError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
 type Counts = {
   created: number;
   updated: number;
@@ -204,7 +218,7 @@ export class ImportSessionsService {
     if (!session || Number(session.projectId) !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Import session not found',
+        message: 'Sessão de importação não encontrada.',
       });
     }
     await this.assertSessionScope(projectId, session, actor, false);
@@ -317,7 +331,7 @@ export class ImportSessionsService {
     ) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Expected payloads were not fully received',
+        message: 'Nem todos os pacotes esperados foram recebidos.',
       });
     }
     const { items: pending } = await this.repo.listPayloads({
@@ -330,7 +344,7 @@ export class ImportSessionsService {
     if (pending.length)
       throw new ConflictException({
         code: 'IMPORT_PAYLOAD_PROCESSING',
-        message: 'There are payloads still processing',
+        message: 'Ainda há pacotes em processamento.',
       });
     const failed = Number(session.totalFailed);
     const applied =
@@ -364,7 +378,7 @@ export class ImportSessionsService {
     if (this.isTerminal(session.status))
       throw new ConflictException({
         code: 'IMPORT_SESSION_TERMINAL',
-        message: 'Import session is already closed',
+        message: 'A sessão de importação já foi encerrada.',
       });
     session.status = ImportSessionStatus.CANCELLED;
     session.finishedAt = new Date();
@@ -421,7 +435,7 @@ export class ImportSessionsService {
       throw new ConflictException({
         code: 'CONFLICT',
         message:
-          'Only failed payloads (or payloads stuck in processing) can be reprocessed',
+          'Só pacotes com falha (ou parados em processamento) podem ser reprocessados.',
       });
     }
     await this.processPayload(projectId, sessionId, payloadId, actor);
@@ -526,7 +540,7 @@ export class ImportSessionsService {
     if (file.status !== ImportFileStatus.PENDING_UPLOAD)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only pending files can be confirmed',
+        message: 'Só arquivos pendentes podem ser confirmados.',
       });
     const verified = await this.storageSigner.verifyUpload({
       bucket: file.bucket,
@@ -591,7 +605,7 @@ export class ImportSessionsService {
     if (file.status !== ImportFileStatus.UPLOADED)
       throw new ConflictException({
         code: 'IMPORT_FILE_NOT_UPLOADED',
-        message: 'Only uploaded files can be downloaded',
+        message: 'Só arquivos já enviados podem ser baixados.',
       });
     const signed = await this.storageSigner.createDownloadUrl({
       bucket: file.bucket,
@@ -773,12 +787,12 @@ export class ImportSessionsService {
     if (session.type !== ImportSessionType.PHYSICAL_OBSERVATIONS_IMPORT)
       throw new ConflictException({
         code: 'IMPORT_SESSION_TYPE_MISMATCH',
-        message: 'Session is not a physical observations import',
+        message: 'A sessão não é uma importação de observações físicas.',
       });
     if (!file?.buffer || !file.originalname.toLowerCase().endsWith('.xlsx'))
       throw new BadRequestException({
         code: 'INVALID_IMPORT_FILE',
-        message: 'XLSX file is required',
+        message: 'Envie um arquivo XLSX.',
       });
     const checksum = createHash('sha256').update(file.buffer).digest('hex');
     return this.receivePayload(
@@ -808,8 +822,9 @@ export class ImportSessionsService {
     rowNumber: number,
   ): Promise<'created'> {
     if (item.captured_at != null && !isExplicitInstant(item.captured_at))
-      throw new Error(
-        'captured_at must be a valid timestamp with an explicit offset',
+      throw new ImportItemError(
+        'CAPTURED_AT_MUST_BE_A_VALID_TIMESTAMP_WITH_AN_EXPLICIT_OFFSET',
+        'captured_at: deve ser data e hora com fuso explícito.',
       );
     const config = (importSession.metadata ?? {}) as Record<string, unknown>;
     const inventorySessionId =
@@ -819,9 +834,20 @@ export class ImportSessionsService {
     const fieldAgentId =
       item.field_agent_id ?? this.positiveInteger(config.field_agent_id);
     if (!inventorySessionId)
-      throw new Error('inventory_session_id is required');
-    if (!roundId) throw new Error('round_id is required');
-    if (!fieldAgentId) throw new Error('field_agent_id is required');
+      throw new ImportItemError(
+        'INVENTORY_SESSION_ID_IS_REQUIRED',
+        'inventory_session_id: campo obrigatório.',
+      );
+    if (!roundId)
+      throw new ImportItemError(
+        'ROUND_ID_IS_REQUIRED',
+        'round_id: campo obrigatório.',
+      );
+    if (!fieldAgentId)
+      throw new ImportItemError(
+        'FIELD_AGENT_ID_IS_REQUIRED',
+        'field_agent_id: campo obrigatório.',
+      );
 
     const itemRepo = manager.getRepository(InventoryItemEntity);
     const inventoryItem = item.inventory_item_id
@@ -841,7 +867,10 @@ export class ImportSessionsService {
       !inventoryItem ||
       inventoryItem.organizationId !== importSession.organizationId
     )
-      throw new Error('inventory item not found');
+      throw new ImportItemError(
+        'INVENTORY_ITEM_NOT_FOUND',
+        'Item de inventário não encontrado.',
+      );
 
     const [operationSession, round, assignment] = await Promise.all([
       manager.getRepository(InventorySessionEntity).findOne({
@@ -872,21 +901,36 @@ export class ImportSessionsService {
       !operationSession ||
       operationSession.status !== InventorySessionStatus.ACTIVE
     )
-      throw new Error('inventory session must be active');
+      throw new ImportItemError(
+        'INVENTORY_SESSION_MUST_BE_ACTIVE',
+        'A sessão de inventário precisa estar ativa.',
+      );
     if (!round || round.status !== InventoryRoundStatus.ACTIVE)
-      throw new Error('inventory round must be active');
+      throw new ImportItemError(
+        'INVENTORY_ROUND_MUST_BE_ACTIVE',
+        'A rodada de inventário precisa estar ativa.',
+      );
     if (
       round.inventoryItemId !== null &&
       round.inventoryItemId !== inventoryItem.id
     )
-      throw new Error('reinventory round targets another item');
+      throw new ImportItemError(
+        'REINVENTORY_ROUND_TARGETS_ANOTHER_ITEM',
+        'A rodada de reinventário é de outro item.',
+      );
     if (!assignment)
-      throw new Error('field agent must have an active project assignment');
+      throw new ImportItemError(
+        'FIELD_AGENT_MUST_HAVE_AN_ACTIVE_PROJECT_ASSIGNMENT',
+        'O inventariante precisa ter vínculo ativo com o projeto.',
+      );
     const fieldAgent = await manager.getRepository(FieldAgentEntity).findOne({
       where: { id: fieldAgentId, organizationId: importSession.organizationId },
     });
     if (!fieldAgent || fieldAgent.status !== FieldAgentStatus.ACTIVE)
-      throw new Error('field agent must be active');
+      throw new ImportItemError(
+        'FIELD_AGENT_MUST_BE_ACTIVE',
+        'O inventariante precisa estar ativo.',
+      );
 
     const idempotencyKey = this.physicalObservationKey(
       importSession.sessionUuid,
@@ -920,7 +964,10 @@ export class ImportSessionsService {
       ? new Date(item.captured_at)
       : new Date();
     if (Number.isNaN(capturedAt.getTime()))
-      throw new Error('captured_at must be a valid date-time');
+      throw new ImportItemError(
+        'CAPTURED_AT_MUST_BE_A_VALID_DATE_TIME',
+        'captured_at: deve ser uma data e hora válida.',
+      );
     const result =
       item.observation_result ??
       (observedPlate && masterPlate && observedPlate !== masterPlate
@@ -1009,7 +1056,10 @@ export class ImportSessionsService {
       externalId,
     );
     if (item.operation === ImportItemOperation.CREATE && existing) {
-      throw new Error('external_item_id already exists');
+      throw new ImportItemError(
+        'EXTERNAL_ITEM_ID_ALREADY_EXISTS',
+        'external_item_id: já existe.',
+      );
     }
     if (
       [
@@ -1019,7 +1069,10 @@ export class ImportSessionsService {
       ].includes(item.operation) &&
       !existing
     ) {
-      throw new Error('inventory item not found');
+      throw new ImportItemError(
+        'INVENTORY_ITEM_NOT_FOUND',
+        'Item de inventário não encontrado.',
+      );
     }
     const removal =
       item.operation === ImportItemOperation.DELETE ||
@@ -1033,7 +1086,10 @@ export class ImportSessionsService {
           existing.status,
         ))
     )
-      throw new Error('inventory item was deleted');
+      throw new ImportItemError(
+        'INVENTORY_ITEM_WAS_DELETED',
+        'O item de inventário foi excluído.',
+      );
     // Validate every referenced photo before writing anything.
     const files = removal
       ? []
@@ -1165,8 +1221,9 @@ export class ImportSessionsService {
           file.status,
         )
       )
-        throw new Error(
-          'image file not uploaded and confirmed in this session',
+        throw new ImportItemError(
+          'IMAGE_FILE_NOT_UPLOADED_AND_CONFIRMED_IN_THIS_SESSION',
+          'O arquivo de imagem não foi enviado e confirmado nesta sessão.',
         );
       files.push(file);
     }
@@ -1194,7 +1251,10 @@ export class ImportSessionsService {
         !current.some((i) => i.bucket === file.bucket && i.path === file.path),
     );
     if (current.length + fresh.length > this.scope.maxImagesPerItem())
-      throw new Error('inventory item image limit exceeded');
+      throw new ImportItemError(
+        'INVENTORY_ITEM_IMAGE_LIMIT_EXCEEDED',
+        'Limite de imagens do item excedido.',
+      );
     for (const file of fresh) {
       const saved = await images.save({
         organizationId: session.organizationId,
@@ -1306,7 +1366,7 @@ export class ImportSessionsService {
       throw new ConflictException({
         code: 'PAYLOAD_IDEMPOTENCY_CONFLICT',
         message:
-          'Payload idempotency conflict: same number/key with different content.',
+          'Conflito de idempotência: mesmo número/chave com conteúdo diferente.',
       });
     }
     return existing;
@@ -1316,13 +1376,13 @@ export class ImportSessionsService {
     if (dto.items.length > this.scope.maxItemsPerPayload()) {
       throw new BadRequestException({
         code: 'BAD_REQUEST',
-        message: 'Payload item limit exceeded',
+        message: 'Limite de itens do pacote excedido.',
       });
     }
     if (this.countImages(dto.items) > this.scope.maxImagesPerPayload()) {
       throw new BadRequestException({
         code: 'BAD_REQUEST',
-        message: 'Payload image limit exceeded',
+        message: 'Limite de imagens do pacote excedido.',
       });
     }
   }
@@ -1331,13 +1391,13 @@ export class ImportSessionsService {
     if (session.expiresAt && session.expiresAt.getTime() < Date.now()) {
       throw new ConflictException({
         code: 'IMPORT_SESSION_EXPIRED',
-        message: 'Import session expired',
+        message: 'A sessão de importação expirou.',
       });
     }
     if (this.isTerminal(session.status)) {
       throw new ConflictException({
         code: 'IMPORT_SESSION_TERMINAL',
-        message: 'Import session does not accept new payloads',
+        message: 'A sessão de importação não aceita novos pacotes.',
       });
     }
   }
@@ -1377,7 +1437,7 @@ export class ImportSessionsService {
     if (!project)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
     if (mutate) this.scope.assertProjectAllowsMutation(project);
@@ -1394,7 +1454,7 @@ export class ImportSessionsService {
     if (!session || Number(session.projectId) !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Import session not found',
+        message: 'Sessão de importação não encontrada.',
       });
     }
     await this.assertSessionScope(projectId, session, actor, mutate);
@@ -1416,7 +1476,7 @@ export class ImportSessionsService {
     ) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Import session not found',
+        message: 'Sessão de importação não encontrada.',
       });
     }
   }
@@ -1429,7 +1489,7 @@ export class ImportSessionsService {
     if (!payload || Number(payload.importSessionId) !== sessionId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Import payload not found',
+        message: 'Pacote de importação não encontrado.',
       });
     }
     return payload;
@@ -1448,7 +1508,7 @@ export class ImportSessionsService {
     ) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Import file not found',
+        message: 'Arquivo de importação não encontrado.',
       });
     }
     return file;
@@ -1476,6 +1536,7 @@ export class ImportSessionsService {
   }
 
   private errorCode(error: unknown): string {
+    if (error instanceof ImportItemError) return error.code;
     return error instanceof Error
       ? error.message
           .toUpperCase()
@@ -1485,7 +1546,7 @@ export class ImportSessionsService {
   }
 
   private errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : 'Import item failed';
+    return error instanceof Error ? error.message : 'Falha ao importar o item.';
   }
 
   private paginate<T>(

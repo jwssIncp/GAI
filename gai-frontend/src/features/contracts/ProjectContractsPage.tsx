@@ -25,6 +25,7 @@ import {
   type ContractData,
   type ContractDetail,
 } from "./contractsApi";
+import { userLabel } from "@/utils/userName";
 const inputClass = "w-full rounded-lg border bg-background p-2 text-sm";
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -619,7 +620,7 @@ function ContractHistory({
           },
           {
             header: "Justificativa / responsável",
-            cell: (a) => `${a.reason} · usuário #${a.actorId}`,
+            cell: (a) => `${a.reason} · ${userLabel(a.actor_name)}`,
           },
         ]}
       />
@@ -632,7 +633,7 @@ function ContractHistory({
           {
             header: "Operação / responsável",
             cell: (v) =>
-              `${{ create: "Cadastro", edit: "Edição", amend: "Aditivo", archive: "Arquivamento" }[v.operation] ?? v.operation} · usuário #${v.actorId}`,
+              `${{ create: "Cadastro", edit: "Edição", amend: "Aditivo", archive: "Arquivamento" }[v.operation] ?? v.operation} · ${userLabel(v.actor_name)}`,
           },
           {
             header: "Registrado em",

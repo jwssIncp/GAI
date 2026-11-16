@@ -70,6 +70,18 @@ export class CompanyResponseDto {
   @ApiPropertyOptional({ type: 'integer', format: 'int64', nullable: true })
   updated_by_id!: number | null;
 
+  /** Só no detalhe: nome da organização vinculada. */
+  @ApiPropertyOptional({ nullable: true })
+  organization_name?: string | null;
+
+  /** Só no detalhe: nome de quem criou (nulo se o usuário foi removido). */
+  @ApiPropertyOptional({ nullable: true })
+  created_by_name?: string | null;
+
+  /** Só no detalhe: nome de quem fez a última alteração. */
+  @ApiPropertyOptional({ nullable: true })
+  updated_by_name?: string | null;
+
   @ApiProperty({ format: 'date-time' })
   created_at!: string;
 

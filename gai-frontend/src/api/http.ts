@@ -49,10 +49,6 @@ api.interceptors.response.use(
   },
 );
 
-export async function getPresignedUrl(url: string) {
-  return api.get<{ url: string }>(url).then((response) => response.data.url);
-}
-
 export async function uploadToPresignedUrl(url: string, file: File, onProgress?: (progress: number) => void) {
   await new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();

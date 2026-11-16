@@ -32,7 +32,7 @@ export class LogoutUseCase {
     if (!session || session.revokedAt) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired session',
+        message: 'Sessão inválida ou expirada. Entre novamente.',
       });
     }
 

@@ -31,7 +31,7 @@ export class UpdateOrganizationUseCase {
     if ('cnpj' in (dto as Record<string, unknown>)) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'CNPJ cannot be changed after creation',
+        message: 'O CNPJ não pode ser alterado depois do cadastro.',
       });
     }
 
@@ -39,7 +39,7 @@ export class UpdateOrganizationUseCase {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
 

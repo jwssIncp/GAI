@@ -101,6 +101,45 @@ describe("Budget navigation uses real nested pages and version selection", () =>
       screen.getByRole("navigation", { name: "Navegação de orçamentos" }),
     ).toBeInTheDocument();
   });
+  it("histórico e parâmetros mostram o nome do autor, nunca o ID (removido: 'Usuário removido')", async () => {
+    mocks.detail.mockResolvedValue({
+      ...budgetFixture,
+      versions: budgetFixture.versions.map((v) => ({ ...v, actor_name: "Ana Souza" })),
+      audit: [
+        {
+          id: 1,
+          revision: 1,
+          operation: "create",
+          details: {},
+          reason: "Cadastro sintético",
+          actorId: 99,
+          actor_name: null,
+          recordedAt: "2026-10-27T12:00:00Z",
+        },
+      ],
+    });
+    mocks.pricing.mockResolvedValue([
+      {
+        id: 3,
+        organizationId: 1,
+        name: "Tabela 2026",
+        version: 1,
+        validFrom: "2026-01-01",
+        validTo: "2026-12-31",
+        values: snapshot.pricing.values,
+        reason: "Publicação anual",
+        actorId: 2,
+        actor_name: "Bruno Lima",
+        recordedAt: "2026-01-01T12:00:00Z",
+      },
+    ]);
+    mount(["budgets:read"], "/app/budgets/1?tab=history");
+    expect(await screen.findByRole("cell", { name: "Ana Souza" })).toBeInTheDocument();
+    expect(screen.getByText(/^Usuário removido · /)).toBeInTheDocument();
+    expect(screen.queryByText(/[Uu]suário #/)).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("link", { name: "Parâmetros de preços" }));
+    expect(await screen.findByText("Bruno Lima · Publicação anual")).toBeInTheDocument();
+  });
   it("restores a direct version/payment URL and hides mutations for read-only roles", async () => {
     mount(["budgets:read"], "/app/budgets/1?tab=payments&version=11");
     expect(await screen.findByText("31/01/2027")).toBeInTheDocument();

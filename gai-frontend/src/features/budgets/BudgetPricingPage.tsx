@@ -16,6 +16,7 @@ import {
   type Pricing,
   type PricingValues,
 } from "./budgetApi";
+import { userLabel } from "@/utils/userName";
 const cls = "rounded-lg border bg-background p-2 text-sm";
 export function BudgetPricingPage() {
   const { user } = useAuth();
@@ -97,7 +98,7 @@ export function BudgetPricingPage() {
             { header: "Moeda", cell: (p) => p.values.currency },
             {
               header: "Responsável / justificativa",
-              cell: (p) => `Usuário #${p.actorId} · ${p.reason}`,
+              cell: (p) => `${userLabel(p.actor_name)} · ${p.reason}`,
             },
             {
               header: "Ações",

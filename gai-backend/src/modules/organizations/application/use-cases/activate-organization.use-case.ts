@@ -37,14 +37,14 @@ export class ActivateOrganizationUseCase {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
 
     if (organization.status === OrganizationStatus.ACTIVE) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Organization is already active',
+        message: 'A organização já está ativa.',
       });
     }
 

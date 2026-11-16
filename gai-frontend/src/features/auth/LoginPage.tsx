@@ -12,7 +12,7 @@ import { useAuth } from './AuthContext';
 import { GaiLogo } from '@/components/base/GaiLogo';
 import { loginDestination } from './loginDestination';
 
-const schema = z.object({ identifier: z.string().min(1, 'Informe login ou email'), password: z.string().min(8, 'Senha minima de 8 caracteres') });
+const schema = z.object({ identifier: z.string().min(1, 'Informe login ou email'), password: z.string().min(8, 'Senha mínima de 8 caracteres') });
 
 export function LoginPage() {
   const { login } = useAuth();

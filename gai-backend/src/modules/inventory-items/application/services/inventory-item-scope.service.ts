@@ -26,7 +26,7 @@ export class InventoryItemScopeService {
     }
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -40,7 +40,7 @@ export class InventoryItemScopeService {
     if (actor.organizationId === null) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
     if (
@@ -49,7 +49,7 @@ export class InventoryItemScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
     return actor.organizationId;
@@ -59,7 +59,7 @@ export class InventoryItemScopeService {
     if (project.blocksOperationalMutation()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
   }

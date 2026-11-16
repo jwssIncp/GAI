@@ -1,5 +1,20 @@
 import '@testing-library/jest-dom/vitest';
-import { afterEach } from 'vitest';
+import { cloneElement, createElement, isValidElement, type ReactNode } from 'react';
+import { afterEach, vi } from 'vitest';
+
+// O jsdom não calcula layout: o ResponsiveContainer do Recharts mede 0×0 e
+// avisa no console ("width(0) and height(0)"). Nos testes, o contêiner tem um
+// tamanho fixo e repassa esse tamanho ao gráfico, que desenha normalmente.
+vi.mock('recharts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('recharts')>();
+  const width = 800;
+  const height = 400;
+  function ResponsiveContainer({ children }: { children?: ReactNode }) {
+    const child = isValidElement<{ width?: number; height?: number }>(children) ? cloneElement(children, { width, height }) : children;
+    return createElement('div', { className: 'recharts-responsive-container', style: { width, height } }, child);
+  }
+  return { ...actual, ResponsiveContainer };
+});
 
 class ResizeObserverMock {
   observe() {}

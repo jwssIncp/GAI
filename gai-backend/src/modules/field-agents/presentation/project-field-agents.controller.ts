@@ -76,7 +76,7 @@ export class ProjectFieldAgentsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async assign(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -122,7 +122,7 @@ export class ProjectFieldAgentsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async update(
     @Param('projectId', ParseIntPipe) projectId: number,
@@ -150,7 +150,7 @@ export class ProjectFieldAgentsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async remove(
     @Param('projectId', ParseIntPipe) projectId: number,

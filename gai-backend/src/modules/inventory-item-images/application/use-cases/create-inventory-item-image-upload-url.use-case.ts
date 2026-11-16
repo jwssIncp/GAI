@@ -62,7 +62,7 @@ export class CreateInventoryItemImageUploadUrlUseCase {
     if (!item) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item not found',
+        message: 'Item de inventário não encontrado.',
       });
     }
     this.scope.assertItemBelongsToProject(item, projectId);
@@ -72,7 +72,7 @@ export class CreateInventoryItemImageUploadUrlUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertProjectAllowsMutation(project);
@@ -89,7 +89,7 @@ export class CreateInventoryItemImageUploadUrlUseCase {
     if (!originalName) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'original_name is required',
+        message: 'O nome do arquivo é obrigatório.',
       });
     }
 

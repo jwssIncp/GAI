@@ -37,7 +37,7 @@ describe('InventoryPendingIssue domain', () => {
   it('requires title', () => {
     expect(
       () => new InventoryPendingIssue({ ...makeIssue().toProps(), title: ' ' }),
-    ).toThrow('title is required');
+    ).toThrow('Informe o título.');
   });
 
   it('updates editable fields and records changes', () => {
@@ -56,7 +56,7 @@ describe('InventoryPendingIssue domain', () => {
     const issue = makeIssue(InventoryPendingIssueType.DESCRIPTION_DIVERGENCE);
 
     expect(() => issue.resolve(2, null, new Date())).toThrow(
-      'resolution_notes is required for this issue type',
+      'Informe as notas de resolução para este tipo de pendência.',
     );
   });
 

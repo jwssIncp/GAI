@@ -150,6 +150,22 @@ describe('Inventory operations and accountabilities (e2e)', () => {
       .expect((response) => {
         expect(response.body.items).toHaveLength(3);
         expect(response.body.total_items).toBe(3);
+        // Nome do inventariante na própria resposta (sem leitura por item).
+        expect(response.body.items[0].field_agent_name).toBe(
+          'Inventariante historico',
+        );
+      });
+    await request(app.getHttpServer())
+      .get(
+        `/api/v1/projects/${project.body.id}/inventory-sessions/${session.body.id}/rounds`,
+      )
+      .set(auth())
+      .expect(200)
+      .expect((response) => {
+        const reinventoryRound = response.body.items.find(
+          (r: { requested_by_id: number | null }) => r.requested_by_id,
+        );
+        expect(reinventoryRound.requested_by_name).toEqual(expect.any(String));
       });
     await request(app.getHttpServer())
       .get(

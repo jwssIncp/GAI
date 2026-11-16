@@ -43,6 +43,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Company pages', () => {
+  it('detalhe mostra nomes da organização e dos usuários, nunca "#id"', async () => {
+    mocks.get.mockResolvedValue({ ...company, created_by_id: 3, created_by_name: 'Ana Souza', updated_by_id: 9, updated_by_name: null, organization_name: 'GAI Consultoria' });
+    setup('/app/companies/7');
+    expect(await screen.findByText('GAI Consultoria')).toBeInTheDocument();
+    expect(screen.getByText('Ana Souza')).toBeInTheDocument();
+    expect(screen.getByText('Usuário removido')).toBeInTheDocument();
+    expect(screen.queryByText(/#\d/)).not.toBeInTheDocument();
+  });
   it('navigates from the list to dedicated create and edit pages and preserves filters', async () => {
     const ctx = setup('/app/companies?search=Empresa&page=2');
     await ctx.user.click(await screen.findByRole('button', { name: 'Nova empresa' }));

@@ -4,7 +4,7 @@ import { ProjectStatusTransitionPolicy } from '../../../projects/domain/services
 
 export class ProjectStatusBlocksFieldAgentOperationError extends Error {
   constructor(readonly currentStatus: ProjectStatus | null) {
-    super('Project status blocks this operation');
+    super('A situação do projeto não permite esta operação.');
     this.name = ProjectStatusBlocksFieldAgentOperationError.name;
   }
 }
@@ -22,7 +22,7 @@ export function projectStatusBlocksFieldAgentOperation(
 ): ConflictException {
   return new ConflictException({
     code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-    message: 'Project status blocks this operation',
+    message: 'A situação do projeto não permite esta operação.',
     details: { current_status: status },
   });
 }

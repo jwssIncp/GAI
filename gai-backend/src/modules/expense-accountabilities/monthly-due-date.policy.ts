@@ -13,7 +13,7 @@ export function monthlyDueDate(origin: Date, offset: number): Date {
     targetYear > 9999
   )
     throw new BadRequestException(
-      'Installment date is outside the supported civil range',
+      'A data da parcela está fora do intervalo de datas aceito.',
     );
   const lastOrigin = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   const lastTarget = new Date(

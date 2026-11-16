@@ -53,7 +53,7 @@ export class CreateOrgRoleUseCase {
     if (existing) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Org role name already exists in this organization',
+        message: 'Já existe um perfil com este nome nesta organização.',
       });
     }
 
@@ -114,7 +114,7 @@ export class CreateOrgRoleUseCase {
     if (!exists) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
   }
@@ -126,7 +126,7 @@ export class CreateOrgRoleUseCase {
     if (found.length !== requestedIds.length) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'One or more permissions not found',
+        message: 'Uma ou mais permissões não foram encontradas.',
       });
     }
 
@@ -136,7 +136,8 @@ export class CreateOrgRoleUseCase {
     if (invalid) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Org roles can only include ORGANIZATION-scoped permissions',
+        message:
+          'Perfis da organização só podem ter permissões do escopo da organização.',
       });
     }
   }

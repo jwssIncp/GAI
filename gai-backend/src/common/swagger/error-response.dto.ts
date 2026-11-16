@@ -5,7 +5,7 @@ export class FieldErrorDto {
   @ApiProperty({ example: 'cnpj' })
   field!: string;
 
-  @ApiProperty({ example: 'Invalid CNPJ check digits' })
+  @ApiProperty({ example: 'CNPJ com dígitos verificadores inválidos.' })
   message!: string;
 }
 
@@ -14,7 +14,7 @@ export class ErrorResponseDto {
   code!: ErrorCode;
 
   @ApiProperty({
-    example: 'Validation failed',
+    example: 'Dados inválidos.',
     oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
   })
   message!: string | string[];

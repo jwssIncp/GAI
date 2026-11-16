@@ -189,6 +189,7 @@ describe("Assisted review integrated panel", () => {
           action: "rejected",
           reason: "Descrição incompativel revisada",
           actorId: 2,
+          actorName: "Rita Revisora",
           revision: 2,
           createdAt: "2026-10-27T12:00:00Z",
           sourceHash: run.sourceHash,
@@ -204,6 +205,9 @@ describe("Assisted review integrated panel", () => {
     expect(
       await screen.findByText("Descrição incompativel revisada"),
     ).toBeInTheDocument();
+    // Quem decidiu aparece pelo nome, não pelo ID.
+    expect(screen.getByText(/Rita Revisora/)).toBeInTheDocument();
+    expect(screen.queryByText(/usuário #/)).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Registrar decisão" }),
     ).not.toBeInTheDocument();

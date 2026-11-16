@@ -21,6 +21,10 @@ import {
 import { ProjectStatusTransitionPolicy } from '../projects/domain/services/project-status-transition.policy';
 import { OrganizationEntity } from '../organizations/infrastructure/persistence/organization.entity';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
 import { UserStatus } from '../auth/domain/enums/user.enums';
 import { FieldAgentEntity } from '../field-agents/infrastructure/persistence/field-agent.entity';
 import { FieldAgentStatus } from '../field-agents/domain/enums/field-agent-status.enum';
@@ -83,7 +87,7 @@ export class FieldService {
     if (!(await this.allowed(actor, permission)))
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
   }
   private async organization(id: number, actor: Actor) {
@@ -1116,8 +1120,13 @@ export class FieldService {
         | 'pending',
     ) => groups.reduce((s, g) => s + g[key], 0);
     const total = sum('total');
+    const names = await loadUserNames(this.db.manager, [row.completedById]);
     return {
-      checklist: row,
+      // Nome de quem concluiu, sem exigir leitura de usuários.
+      checklist: {
+        ...row,
+        completedByName: userNameOf(names, row.completedById),
+      },
       groups,
       responsibles: responsibles as unknown[],
       summary: {
@@ -1171,8 +1180,15 @@ export class FieldService {
             key === 'linkedIssueId' ? null : value,
           ),
         ) as object;
+    const names = await loadUserNames(
+      this.db.manager,
+      items.map((item) => item.performedById),
+    );
     return {
-      items,
+      items: items.map((item) => ({
+        ...item,
+        performedByName: userNameOf(names, item.performedById),
+      })),
       next_before_id:
         items.length === query.page_size ? items.at(-1)!.id : null,
     };

@@ -58,14 +58,14 @@ export class Organization {
 
   deactivate(): void {
     if (this.props.status === OrganizationStatus.INACTIVE) {
-      throw new Error('Organization is already inactive');
+      throw new Error('A organização já está inativa.');
     }
     this.props.status = OrganizationStatus.INACTIVE;
   }
 
   activate(): void {
     if (this.props.status === OrganizationStatus.ACTIVE) {
-      throw new Error('Organization is already active');
+      throw new Error('A organização já está ativa.');
     }
     this.props.status = OrganizationStatus.ACTIVE;
   }

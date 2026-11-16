@@ -349,8 +349,8 @@ describe('Branch coverage boosters', () => {
       createdAt: now,
       updatedAt: now,
     });
-    expect(() => org.deactivate()).toThrow('already inactive');
+    expect(() => org.deactivate()).toThrow('já está inativa');
     org.activate();
-    expect(() => org.activate()).toThrow('already active');
+    expect(() => org.activate()).toThrow('já está ativa');
   });
 });

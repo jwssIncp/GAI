@@ -41,7 +41,7 @@ export class GetInventoryItemImageUseCase {
     if (!image) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item image not found',
+        message: 'Imagem do item não encontrada.',
       });
     }
     if (
@@ -50,7 +50,7 @@ export class GetInventoryItemImageUseCase {
     ) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item image not found',
+        message: 'Imagem do item não encontrada.',
       });
     }
 
@@ -58,7 +58,7 @@ export class GetInventoryItemImageUseCase {
     if (!item) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item not found',
+        message: 'Item de inventário não encontrado.',
       });
     }
     if (expected?.projectId !== undefined) {

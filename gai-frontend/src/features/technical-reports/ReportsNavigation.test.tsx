@@ -240,6 +240,19 @@ describe("Project technical report navigation and editing", () => {
     expect(reportApi.validate).toHaveBeenCalledWith(25, 7);
     expect(screen.getByTestId("location")).toHaveTextContent("view=validation");
   });
+  it("histórico de revisões mostra o nome do autor ou 'Usuário removido', nunca o ID", async () => {
+    vi.mocked(reportApi.detail).mockResolvedValue({
+      ...row(),
+      versions: [
+        { id: 2, revision: 2, status: "draft", hash: "h2", actorId: 4, actor_name: "Dora Lima", recordedAt: "2026-10-28T12:00:00Z", reason: "Ajuste" },
+        { id: 1, revision: 1, status: "draft", hash: "h1", actorId: 99, actor_name: null, recordedAt: "2026-10-27T12:00:00Z", reason: "Cadastro" },
+      ],
+    } as Report);
+    mount("/app/projects/25/technical-reports/7?view=history");
+    expect(await screen.findByText(/^Dora Lima · /)).toBeInTheDocument();
+    expect(screen.getByText(/^Usuário removido · /)).toBeInTheDocument();
+    expect(screen.queryByText(/Usuário #/)).not.toBeInTheDocument();
+  });
   it("submits an explicit model with configurable rules and sections", async () => {
     const save = vi.fn().mockResolvedValue(undefined);
     render(<TemplateForm onSave={save} />);

@@ -40,7 +40,7 @@ export class RemoveInventoryItemImageUseCase {
     if (!project) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
     this.scope.assertProjectAllowsMutation(project);
@@ -58,7 +58,7 @@ export class RemoveInventoryItemImageUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Inventory item image cannot be removed',
+            : 'Não foi possível remover a imagem do item.',
       });
     }
 

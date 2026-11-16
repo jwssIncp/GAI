@@ -60,7 +60,7 @@ export function ProjectExportJobsPage() {
     try {
       await cancel.mutateAsync(canceling.id);
       setCanceling(null);
-      toast({ title: 'Exportação cancelada', description: 'O job foi cancelado e seu histórico foi preservado.', tone: 'success' });
+      toast({ title: 'Exportação cancelada', description: 'A exportação foi cancelada e seu histórico foi preservado.', tone: 'success' });
     } catch (error) {
       toast(exportError(error, 'Não foi possível cancelar'));
     }
@@ -71,7 +71,7 @@ export function ProjectExportJobsPage() {
     try {
       await retry.mutateAsync(retrying.id);
       setRetrying(null);
-      toast({ title: 'Nova tentativa criada', description: 'Um novo job de exportação foi solicitado.', tone: 'success' });
+      toast({ title: 'Nova tentativa criada', description: 'Uma nova exportação foi solicitada.', tone: 'success' });
     } catch (error) {
       toast(exportError(error, 'Não foi possível tentar novamente'));
     }
@@ -142,7 +142,7 @@ export function ProjectExportJobsPage() {
           toast({ title: 'Exportação solicitada', description: 'O processamento foi iniciado e a lista será atualizada automaticamente.', tone: 'success' });
         }} />
       </ModalForm>
-      <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && !cancel.isPending && setCanceling(null)} title="Cancelar exportação" description="Confirma o cancelamento deste job? O histórico será preservado." busy={cancel.isPending} onConfirm={() => void cancelJob()} />
+      <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && !cancel.isPending && setCanceling(null)} title="Cancelar exportação" description="Confirma o cancelamento desta exportação? O histórico será preservado." busy={cancel.isPending} onConfirm={() => void cancelJob()} />
       <ConfirmDialog open={Boolean(retrying)} onOpenChange={(open) => !open && !retry.isPending && setRetrying(null)} title="Tentar exportação novamente" description="Uma nova tentativa será criada e vinculada ao job anterior." busy={retry.isPending} onConfirm={() => void retryJob()} />
     </PageContainer>
   );

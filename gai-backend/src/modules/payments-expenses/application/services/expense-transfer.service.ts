@@ -568,7 +568,7 @@ export class ExpenseTransferService {
   /**
    * ZIP do projeto (completo ou só reembolsáveis para o cliente), escolhendo o lote:
    * "all" (todas), "batched" (todas já em lote), "unbatched" (sem lote) ou o id do lote.
-   * Só entram anexos com envio confirmado; pastas por técnico e "Despesas Gerais".
+   * Só entram anexos com envio confirmado; pastas por inventariante e "Despesas Gerais".
    */
   async prepareZip(
     projectId: number,
@@ -666,7 +666,7 @@ export class ExpenseTransferService {
       const folder =
         item.field_agent_id === null
           ? 'Despesas Gerais'
-          : `Comprovantes por técnico/${this.safe(item.field_agent_name)}`;
+          : `Comprovantes por inventariante/${this.safe(item.field_agent_name)}`;
       const parts = await this.storage.openObject({
         bucket: attachment.bucket,
         path: attachment.path,

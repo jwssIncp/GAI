@@ -183,6 +183,7 @@ beforeEach(() => {
       status: "applied",
       revision: 2,
       confirmedById: 2,
+      confirmedByName: "Bruna Avaliadora",
       confirmedAt: "2026-10-27",
       summary: { ...r.summary, total_processed: 2, total_approved: 2 },
       items: r.items.map((i, n) => ({
@@ -245,6 +246,9 @@ describe("Batch valuation integrated item workspace", () => {
       await screen.findByText("Aprovado · avaliação #100"),
     ).toBeInTheDocument();
     expect(screen.getByText("Aprovado · avaliação #101")).toBeInTheDocument();
+    // Quem confirmou aparece pelo nome, não pelo ID.
+    expect(screen.getByText(/por Bruna Avaliadora/)).toBeInTheDocument();
+    expect(screen.queryByText(/usuário #/)).not.toBeInTheDocument();
     expect(valuationBatchApi.preview).toHaveBeenCalledWith(
       7,
       expect.objectContaining({

@@ -8,6 +8,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../../../auth/application/services/user-names';
 import { CompanyEntity } from '../../../companies/infrastructure/persistence/company.entity';
 import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
 import { OrganizationStatus } from '../../../organizations/domain/enums/organization-status.enum';
@@ -55,7 +59,9 @@ export class ProjectRegistrationService {
       });
     }
     if (companiesOnly && query.resource === 'users')
-      throw new BadRequestException('Only company options are available here');
+      throw new BadRequestException(
+        'Aqui só estão disponíveis opções de cliente.',
+      );
     const resource = query.resource ?? 'companies';
     const page = query.page ?? 1,
       pageSize = query.page_size ?? 20;
@@ -136,7 +142,7 @@ export class ProjectRegistrationService {
     if (!project)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     this.scope.assertCanAccessProject(actor, project.organizationId);
     const page = query.page ?? 1,
@@ -160,12 +166,18 @@ export class ProjectRegistrationService {
             : value,
         ]),
       );
+    // Nome de quem fez cada alteração, numa consulta só (a tela não mostra "#id").
+    const names = await loadUserNames(
+      this.audits.manager,
+      rows.map((row) => row.performedBy),
+    );
     return {
       items: rows.map((row) => ({
         id: row.id,
         project_id: row.projectId,
         operation: row.operation,
         performed_by: row.performedBy,
+        performed_by_name: userNameOf(names, row.performedBy),
         created_at: row.createdAt.toISOString(),
         changes: safeChanges(row.changes),
       })),

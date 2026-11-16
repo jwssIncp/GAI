@@ -46,7 +46,7 @@ export class ExpenseAttachment {
     sizeBytes?: number | null;
   }): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== ExpenseAttachmentStatus.PENDING_UPLOAD)
-      throw new Error('Only pending attachments can be confirmed');
+      throw new Error('Só comprovantes pendentes podem ser confirmados.');
     const before = this.props.status;
     this.props.status = ExpenseAttachmentStatus.UPLOADED;
     if (input.checksum !== undefined) this.props.checksum = input.checksum;

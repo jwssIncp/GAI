@@ -12,7 +12,7 @@ export function sha256Hex(
   if (!/^[a-fA-F0-9]{64}$/.test(value))
     throw new BadRequestException({
       code: 'STORAGE_INVALID_CHECKSUM',
-      message: 'checksum must be a SHA-256 hexadecimal digest',
+      message: 'checksum: deve ser um hash SHA-256 em hexadecimal.',
     });
   return value.toLowerCase();
 }
@@ -23,7 +23,7 @@ export function assertUploadConfirmation(
   if (Date.now() >= input.createdAt.getTime() + input.expiresInSeconds * 1000) {
     throw new GoneException({
       code: 'STORAGE_UPLOAD_EXPIRED',
-      message: 'Upload authorization expired; request a new upload',
+      message: 'A autorização de envio expirou; peça um novo envio.',
     });
   }
   if (
@@ -32,7 +32,7 @@ export function assertUploadConfirmation(
   ) {
     throw new ConflictException({
       code: 'STORAGE_SIZE_MISMATCH',
-      message: 'Confirmed size differs from the authorized upload',
+      message: 'O tamanho confirmado difere do envio autorizado.',
     });
   }
   const declared = sha256Hex(input.checksum);
@@ -40,7 +40,7 @@ export function assertUploadConfirmation(
   if (declared && asserted && declared !== asserted) {
     throw new ConflictException({
       code: 'STORAGE_CHECKSUM_MISMATCH',
-      message: 'Confirmed checksum differs from the authorized upload',
+      message: 'A soma de verificação confirmada difere do envio autorizado.',
     });
   }
   return declared ?? asserted;

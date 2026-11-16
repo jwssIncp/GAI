@@ -97,7 +97,7 @@ export class RemunerationService {
     if (!project)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     return project;
   }

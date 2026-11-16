@@ -46,7 +46,7 @@ export class UpdateInventoryItemStatusUseCase {
     if (!item || item.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item not found',
+        message: 'Item de inventário não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, item.organizationId);
@@ -55,7 +55,7 @@ export class UpdateInventoryItemStatusUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertProjectAllowsMutation(project);
@@ -69,7 +69,7 @@ export class UpdateInventoryItemStatusUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Inventory item status blocks this operation',
+            : 'A situação do item de inventário não permite esta operação.',
       });
     }
 

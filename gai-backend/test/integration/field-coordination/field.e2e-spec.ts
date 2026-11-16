@@ -262,6 +262,11 @@ describe('Field coordination real HTTP persistence, scope and concurrency', () =
     const completed = await post(base() + `/${row.id}/transition`, dto);
     expect(completed.status).toBe(201);
     expect(completed.body.status).toBe('completed');
+    // O painel traz o nome de quem concluiu.
+    expect(
+      (await get(base() + `/${row.id}/dashboard`)).body.checklist
+        .completedByName,
+    ).toEqual(expect.any(String));
     expect(
       (await post(base() + `/${row.id}/transition`, dto)).body.revision,
     ).toBe(4);
@@ -303,9 +308,14 @@ describe('Field coordination real HTTP persistence, scope and concurrency', () =
       (await ds.getRepository(ProjectEntity).findOneByOrFail({ id: project }))
         .status,
     ).toBe(ProjectStatus.DRAFT);
-    expect(
-      (await get(base() + `/${row.id}/history`)).body.items.length,
-    ).toBeGreaterThanOrEqual(5);
+    const history = (await get(base() + `/${row.id}/history`)).body.items as {
+      performedByName: string | null;
+    }[];
+    expect(history.length).toBeGreaterThanOrEqual(5);
+    // Quem fez cada ação vem pelo nome na própria resposta.
+    expect(history.every((h) => typeof h.performedByName === 'string')).toBe(
+      true,
+    );
   });
   it('computes SQL KPIs, blocked/overdue/N/A denominators and conditional task applicability', async () => {
     const definition = def();

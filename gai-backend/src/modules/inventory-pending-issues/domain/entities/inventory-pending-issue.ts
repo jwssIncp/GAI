@@ -103,7 +103,9 @@ export class InventoryPendingIssue {
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.requiresResolutionNotes() && !notes) {
-      throw new Error('resolution_notes is required for this issue type');
+      throw new Error(
+        'Informe as notas de resolução para este tipo de pendência.',
+      );
     }
     return this.applyTerminalStatus(
       InventoryPendingIssueStatus.RESOLVED,
@@ -171,7 +173,7 @@ export class InventoryPendingIssue {
     status: InventoryPendingIssueStatus,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === status) {
-      throw new Error('Inventory pending issue already has this status');
+      throw new Error('A pendência já está nesta situação.');
     }
     const before = this.props.status;
     this.props.status = status;
@@ -204,10 +206,10 @@ export class InventoryPendingIssue {
 
   private assertTitle(value: string): void {
     if (!value.trim()) {
-      throw new Error('title is required');
+      throw new Error('Informe o título.');
     }
     if (value.length > 255) {
-      throw new Error('title must be at most 255 characters');
+      throw new Error('O título deve ter no máximo 255 caracteres.');
     }
   }
 }

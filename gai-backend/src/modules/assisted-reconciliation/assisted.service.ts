@@ -10,6 +10,10 @@ import {
   type ProjectActorContext,
 } from '../projects/application/services/project-scope.service';
 import { ProjectEntity } from '../projects/infrastructure/persistence/project.entity';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
 import { ProjectStatusTransitionPolicy } from '../projects/domain/services/project-status-transition.policy';
 import { InventoryAccountingItemEntity } from '../inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity';
 import { InventoryItemEntity } from '../inventory-items/infrastructure/persistence/inventory-item.entity';
@@ -505,7 +509,18 @@ export class AssistedService {
         skip: (q.page - 1) * q.page_size,
         take: q.page_size,
       });
-    return { items, total };
+    // Nome de quem decidiu, sem exigir leitura de usuários.
+    const names = await loadUserNames(
+      this.ds.manager,
+      items.map((d) => d.actorId),
+    );
+    return {
+      items: items.map((d) => ({
+        ...d,
+        actorName: userNameOf(names, d.actorId),
+      })),
+      total,
+    };
   }
   async decide(
     p: number,

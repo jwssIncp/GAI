@@ -42,7 +42,7 @@ export class UpdateFieldAgentUseCase {
     if (!fieldAgent) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Field agent not found',
+        message: 'Inventariante não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, fieldAgent.organizationId);
@@ -62,7 +62,8 @@ export class UpdateFieldAgentUseCase {
     } catch (error) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: error instanceof Error ? error.message : 'Invalid field agent',
+        message:
+          error instanceof Error ? error.message : 'Inventariante inválido.',
       });
     }
 
@@ -114,13 +115,13 @@ export class UpdateFieldAgentUseCase {
     if (userOrganizationId === undefined) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'User not found',
+        message: 'Usuário não encontrado.',
       });
     }
     if (userOrganizationId !== organizationId) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'User must belong to the same organization',
+        message: 'O usuário precisa ser da mesma organização.',
       });
     }
   }

@@ -32,7 +32,7 @@ export class ListOrgRolesUseCase {
     if (!exists) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
 

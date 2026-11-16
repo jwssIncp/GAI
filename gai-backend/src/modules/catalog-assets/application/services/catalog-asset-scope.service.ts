@@ -79,7 +79,7 @@ export class CatalogAssetScopeService {
   private forbidden(): ForbiddenException {
     return new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 }

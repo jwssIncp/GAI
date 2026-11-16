@@ -26,7 +26,7 @@ export class GetInventoryItemUseCase {
     if (!item || (projectId !== undefined && item.projectId !== projectId)) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item not found',
+        message: 'Item de inventário não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, item.organizationId);

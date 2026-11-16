@@ -109,7 +109,7 @@ export function ProjectImportSessionsPage() {
         <Button type="button" variant="ghost" aria-label="Visualizar importação" onClick={() => setViewing(session)}><Eye size={16} /></Button>
         <PermissionGate permissions={['import-sessions:finish']}><Button type="button" variant="ghost" aria-label="Finalizar importação" disabled={session.status !== 'open' && session.status !== 'receiving'} onClick={() => setFinishing(session)}><CheckCircle2 size={16} /></Button></PermissionGate>
         <PermissionGate permissions={['import-sessions:cancel']}><Button type="button" variant="ghost" aria-label="Cancelar importação" disabled={session.status === 'finished' || session.status === 'cancelled' || session.status === 'expired'} onClick={() => setCanceling(session)}><XCircle size={16} /></Button></PermissionGate>
-        <PermissionGate permissions={['import-sessions:retry']}><Button type="button" variant="ghost" aria-label="Retry importação" disabled={session.status !== 'failed'} onClick={() => setRetrying(session)}><RefreshCw size={16} /></Button></PermissionGate>
+        <PermissionGate permissions={['import-sessions:retry']}><Button type="button" variant="ghost" aria-label="Tentar importação novamente" disabled={session.status !== 'failed'} onClick={() => setRetrying(session)}><RefreshCw size={16} /></Button></PermissionGate>
       </div>
     ) },
   ];
@@ -149,7 +149,7 @@ export function ProjectImportSessionsPage() {
       <ImportSessionDetailDrawer projectId={projectId} session={viewing} onOpenChange={(open) => !open && setViewing(null)} />
       <ConfirmDialog open={Boolean(finishing)} onOpenChange={(open) => !open && setFinishing(null)} title="Finalizar importação" description={`Finalizar recebimento da sessão #${finishing?.id ?? ''}?`} onConfirm={() => finishing && finish.mutate(finishing.id, { onSuccess: () => setFinishing(null) })} />
       <ConfirmDialog open={Boolean(canceling)} onOpenChange={(open) => !open && setCanceling(null)} title="Cancelar importação" description={`Cancelar sessão #${canceling?.id ?? ''}?`} onConfirm={() => canceling && cancel.mutate(canceling.id, { onSuccess: () => setCanceling(null) })} />
-      <ConfirmDialog open={Boolean(retrying)} onOpenChange={(open) => !open && setRetrying(null)} title="Retry da importação" description={`Reprocessar payloads com erro da sessão #${retrying?.id ?? ''}?`} onConfirm={() => retrying && retry.mutate(retrying.id, { onSuccess: () => setRetrying(null) })} />
+      <ConfirmDialog open={Boolean(retrying)} onOpenChange={(open) => !open && setRetrying(null)} title="Tentar importação novamente" description={`Reprocessar payloads com erro da sessão #${retrying?.id ?? ''}?`} onConfirm={() => retrying && retry.mutate(retrying.id, { onSuccess: () => setRetrying(null) })} />
     </PageContainer>
   );
 }
@@ -180,7 +180,7 @@ function ImportSessionForm({ busy, onSubmit }: { busy?: boolean; onSubmit: (payl
       <FormField label="Payloads esperados" error={form.formState.errors.expected_payloads?.message}>
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="number" min={1} max={100000} {...form.register('expected_payloads')} />
       </FormField>
-      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">O processamento da importação acontece no backend. O frontend apenas registra a sessão e acompanha o andamento.</p>
+      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">A importação é processada automaticamente pelo sistema. Aqui você registra a sessão e acompanha o andamento.</p>
       <Button loading={busy}>Criar importação</Button>
     </form>
   );
@@ -241,7 +241,7 @@ function PhysicalObservationsPanel({ projectId, sessionId }: { projectId: number
     if (!next.name.toLowerCase().endsWith('.xlsx')) return;
     setFile(next);
   }
-  return <section className="grid gap-3 rounded-xl border p-4"><div><h3 className="font-semibold">Importar observações físicas</h3><p className="mt-1 text-sm text-muted-foreground">Somente XLSX. O arquivo e processado pelo backend; erros válidos permanecem disponíveis por linha na aba Erros.</p></div><label className="grid gap-1 text-sm font-medium">Número do payload<input className="h-10 rounded-md border bg-background px-3" type="number" min={1} value={payloadNumber} onChange={(event) => setPayloadNumber(event.target.value)} /></label><label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium"><FileUp size={16} /> {file?.name ?? 'Selecionar XLSX'}<FileUpload className="sr-only" aria-label="Selecionar XLSX de observações físicas" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={select} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}{mutation.isSuccess ? <p role="status" className="rounded-md bg-success/10 p-3 text-sm">Arquivo processado. Consulte o resumo de payloads e os erros por linha.</p> : null}<Button disabled={!file || !payloadNumber || mutation.isPending} onClick={submit}>{mutation.isPending ? 'Processando...' : 'Enviar e processar XLSX'}</Button></section>;
+  return <section className="grid gap-3 rounded-xl border p-4"><div><h3 className="font-semibold">Importar observações físicas</h3><p className="mt-1 text-sm text-muted-foreground">Somente XLSX. O arquivo é processado pelo sistema; erros válidos permanecem disponíveis por linha na aba Erros.</p></div><label className="grid gap-1 text-sm font-medium">Número do payload<input className="h-10 rounded-md border bg-background px-3" type="number" min={1} value={payloadNumber} onChange={(event) => setPayloadNumber(event.target.value)} /></label><label className="inline-flex cursor-pointer items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium"><FileUp size={16} /> {file?.name ?? 'Selecionar XLSX'}<FileUpload className="sr-only" aria-label="Selecionar XLSX de observações físicas" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onFile={select} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}{mutation.isSuccess ? <p role="status" className="rounded-md bg-success/10 p-3 text-sm">Arquivo processado. Consulte o resumo de payloads e os erros por linha.</p> : null}<Button disabled={!file || !payloadNumber || mutation.isPending} onClick={submit}>{mutation.isPending ? 'Processando...' : 'Enviar e processar XLSX'}</Button></section>;
 }
 
 function PayloadsPanel({ projectId, sessionId }: { projectId: number; sessionId: number }) {
@@ -372,7 +372,7 @@ function SafeTechnicalPanel({ session }: { session: ImportSession }) {
       <Info label="Organization" value={`#${session.organization_id}`} />
       <Info label="Projeto" value={`#${session.project_id}`} />
       <Info label="Metadados" value={session.metadata ? JSON.stringify(session.metadata) : '-'} />
-      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Campos internos de armazenamento retornados pelo backend foram omitidos da interface.</p>
+      <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Campos internos de armazenamento não são exibidos.</p>
     </section>
   );
 }
