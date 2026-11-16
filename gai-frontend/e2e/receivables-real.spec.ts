@@ -82,7 +82,7 @@ test("ORG_ADMIN operates installments, partial/full receipts, reversal, cash, ex
   await expect(page.getByLabel("Cliente (ID)", { exact: true })).toHaveValue(
     String(company),
   );
-  await page.getByLabel("Valor total (decimal)").fill("100.01");
+  await page.getByRole("textbox", { name: "Valor total (R$)" }).fill("100.01");
   await expect(page.getByLabel("Cliente (ID)", { exact: true })).toHaveValue(
     String(company),
   );
