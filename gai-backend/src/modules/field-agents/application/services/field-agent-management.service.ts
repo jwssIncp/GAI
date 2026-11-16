@@ -8,17 +8,31 @@ import {
 } from '@nestjs/common';
 import { validate } from 'class-validator';
 import { CreateUserDto } from '../../../users/application/dto/create-user.dto';
-import { DataSource } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import { randomBytes } from 'crypto';
+import { DataSource, EntityManager } from 'typeorm';
 import { fieldAgentAuditChanges } from './field-agent-audit';
-import { UserRole } from '../../../auth/domain/enums/user.enums';
+import { UserRole, UserStatus } from '../../../auth/domain/enums/user.enums';
+import {
+  lockUser,
+  CredentialTransactionsService,
+} from '../../../auth/application/services/credential-transactions.service';
+import {
+  PASSWORD_HASHER,
+  type PasswordHasher,
+} from '../../../auth/domain/ports/password-hasher.port';
+import { identityTransaction } from '../../../auth/infrastructure/persistence/identity-transaction';
+import {
+  assertActiveAccessOrganization,
+  assertCurrentAccessAdministrator,
+  lockAccessAdministration,
+} from '../../../users/infrastructure/persistence/access-administration-lock';
 import { UserEntity } from '../../../auth/infrastructure/persistence/user.entity';
 import { OrganizationEntity } from '../../../organizations/infrastructure/persistence/organization.entity';
 import { ProjectEntity } from '../../../projects/infrastructure/persistence/project.entity';
 import { UserLifecycleService } from '../../../users/application/services/user-lifecycle.service';
 import { RoleType } from '../../../users/domain/enums/role-type.enum';
-import { PermissionEntity } from '../../../users/infrastructure/persistence/permission.entity';
 import { RoleEntity } from '../../../users/infrastructure/persistence/role.entity';
-import { RolePermissionEntity } from '../../../users/infrastructure/persistence/role-permission.entity';
 import { UserAuditLogEntity } from '../../../users/infrastructure/persistence/user-audit-log.entity';
 import { replaceUserRoles } from '../../../users/infrastructure/persistence/typeorm-user-role-assignment.repository';
 import { FieldAgent } from '../../domain/entities/field-agent';
@@ -35,9 +49,13 @@ import {
   FieldAgentActorContext,
   FieldAgentScopeService,
 } from './field-agent-scope.service';
-import { PermissionScope } from '../../../users/domain/enums/permission-scope.enum';
-
-import { FIELD_ACCESS_PERMISSIONS } from '../../domain/field-access-permissions';
+import {
+  assertFieldOnlyAccount,
+  ensureFieldRole,
+  fieldAgentAccess,
+  generateTemporaryPassword,
+  revokeMobileRefreshTokens,
+} from './field-agent-access';
 
 @Injectable()
 export class FieldAgentManagementService {
@@ -47,6 +65,9 @@ export class FieldAgentManagementService {
     private readonly users: UserLifecycleService,
     @Inject(FIELD_AGENT_REPOSITORY)
     private readonly repository: FieldAgentRepository,
+    private readonly credentials: CredentialTransactionsService,
+    private readonly config: ConfigService,
+    @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
   ) {}
 
   private async agent(
@@ -104,15 +125,8 @@ export class FieldAgentManagementService {
       created_at: row.createdAt.toISOString(),
       updated_at: row.updatedAt.toISOString(),
       deleted_at: row.deletedAt?.toISOString() ?? null,
-      linked_user: user
-        ? {
-            id: user.id,
-            full_name: user.fullName,
-            login: user.login,
-            email: user.email,
-            status: user.status,
-          }
-        : null,
+      linked_user: user ? this.linkedUser(user) : null,
+      access: fieldAgentAccess(user),
     };
   }
   async userOptions(
@@ -282,18 +296,211 @@ export class FieldAgentManagementService {
     actor: FieldAgentActorContext,
   ) {
     const row = await this.agent(id, actor);
-    if (!actor.systemRoles.includes(UserRole.ORG_ADMIN))
-      throw new ForbiddenException({
-        code: 'FORBIDDEN',
-        message:
-          'Somente o administrador da organização pode criar acesso por convite.',
-      });
+    this.assertOrganizationAdmin(actor, 'criar acesso por convite');
     if (row.userId)
       throw new ConflictException({
         code: 'CONFLICT',
         message:
           'O inventariante já possui conta. Use o reenvio de convite, se necessário.',
       });
+    const input = await this.accountInput(row, dto, 'INVITATION');
+    return this.users.create(input.dto, actor, (manager, user) =>
+      this.linkFieldAccount(manager, {
+        agentId: id,
+        organizationId: row.organizationId,
+        user,
+        orgUserId: input.orgUserId,
+        actor,
+        operation: FieldAgentAuditOperation.INVITE_USER,
+      }),
+    );
+  }
+
+  /**
+   * Cria a conta do inventariante com senha temporária GERADA pelo sistema.
+   * A senha volta só nesta resposta; nunca é gravada em log ou auditoria.
+   */
+  async createTemporaryAccess(
+    id: number,
+    dto: { login: string; email?: string | null },
+    actor: FieldAgentActorContext,
+  ) {
+    const row = await this.agent(id, actor);
+    this.assertOrganizationAdmin(actor, 'criar acesso com senha temporária');
+    if (row.userId)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message:
+          'O inventariante já possui conta. Use Redefinir senha temporária.',
+      });
+    const password = this.generatePassword();
+    const input = await this.accountInput(
+      row,
+      { login: dto.login, email: dto.email || undefined },
+      'TEMPORARY_PASSWORD',
+      password,
+    );
+    const created = await this.users.create(
+      input.dto,
+      actor,
+      async (manager, user) => {
+        await this.linkFieldAccount(manager, {
+          agentId: id,
+          organizationId: row.organizationId,
+          user,
+          orgUserId: input.orgUserId,
+          actor,
+          operation: FieldAgentAuditOperation.TEMPORARY_ACCESS_CREATED,
+        });
+        await this.auditTemporaryPassword(manager, user.id, actor, null);
+      },
+      { temporaryPasswordTtlHours: this.temporaryTtlHours() },
+    );
+    const user = await this.db
+      .getRepository(UserEntity)
+      .findOneByOrFail({ id: created.id });
+    return this.issued(id, user, password);
+  }
+
+  /**
+   * Nova senha temporária (mostrada uma vez). Encerra sessões web e do app,
+   * refresh tokens e convite pendente; conta revogada ou com convite pendente
+   * volta a ACTIVE com troca obrigatória no 1º acesso.
+   */
+  async resetTemporaryAccess(id: number, actor: FieldAgentActorContext) {
+    this.assertOrganizationAdmin(actor, 'redefinir a senha temporária');
+    const password = this.generatePassword();
+    const hash = await this.hasher.hash(password);
+    const user = await this.withFieldAccount(
+      id,
+      actor,
+      async (manager, user, organizationId) => {
+        if (user.status === UserStatus.BLOCKED)
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message:
+              'A conta está bloqueada na gestão de usuários. Desbloqueie-a antes de redefinir a senha.',
+          });
+        await assertActiveAccessOrganization(manager, organizationId);
+        // A conta volta a ter acesso: o perfil de campo precisa continuar
+        // íntegro (permissões mínimas), como no convite.
+        await ensureFieldRole(manager, organizationId);
+        const before = user.status;
+        user.status = UserStatus.ACTIVE;
+        await this.credentials.replacePassword(
+          manager,
+          user,
+          hash,
+          true,
+          this.temporaryTtlHours(),
+        );
+        await revokeMobileRefreshTokens(
+          manager,
+          user.id,
+          new Date(),
+          'temporary_password_reset',
+        );
+        await this.auditTemporaryPassword(manager, user.id, actor, {
+          before,
+          after: user.status,
+        });
+        await manager.getRepository(FieldAgentAuditLogEntity).save({
+          fieldAgentId: id,
+          organizationId,
+          performedBy: actor.id,
+          operation: FieldAgentAuditOperation.TEMPORARY_PASSWORD_RESET,
+          changes: {},
+        });
+        return user;
+      },
+    );
+    return this.issued(id, user, password);
+  }
+
+  /**
+   * Revoga o acesso: a senha vira um hash aleatório (ninguém a conhece), a
+   * conta fica INACTIVE (o login e o refresh do app já recusam) e sessões,
+   * refresh tokens e convite pendente são encerrados. Só uma nova redefinição
+   * devolve o acesso.
+   */
+  async revokeAccess(id: number, actor: FieldAgentActorContext) {
+    this.assertOrganizationAdmin(actor, 'revogar o acesso');
+    const hash = await this.hasher.hash(randomBytes(48).toString('hex'));
+    const user = await this.withFieldAccount(
+      id,
+      actor,
+      async (manager, user, organizationId) => {
+        if (user.status === UserStatus.BLOCKED)
+          throw new ConflictException({
+            code: 'CONFLICT',
+            message:
+              'A conta já está bloqueada na gestão de usuários e não tem acesso.',
+          });
+        const before = user.status;
+        user.status = UserStatus.INACTIVE;
+        await this.credentials.replacePassword(manager, user, hash, false);
+        await revokeMobileRefreshTokens(
+          manager,
+          user.id,
+          new Date(),
+          'field_access_revoked',
+        );
+        await manager.getRepository(UserAuditLogEntity).save({
+          userId: user.id,
+          performedBy: actor.id,
+          operation: 'FIELD_ACCESS_REVOKED',
+          changes: {
+            password: { before: '[redacted]', after: '[redacted]' },
+            ...(before !== user.status
+              ? { status: { before, after: user.status } }
+              : {}),
+          },
+        });
+        await manager.getRepository(FieldAgentAuditLogEntity).save({
+          fieldAgentId: id,
+          organizationId,
+          performedBy: actor.id,
+          operation: FieldAgentAuditOperation.ACCESS_REVOKED,
+          changes: {},
+        });
+        return user;
+      },
+    );
+    return {
+      field_agent_id: id,
+      linked_user: this.linkedUser(user),
+      access: fieldAgentAccess(user),
+    };
+  }
+
+  async resend(id: number, actor: FieldAgentActorContext) {
+    const row = await this.agent(id, actor);
+    if (!row.userId)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: 'Este inventariante não possui conta.',
+      });
+    return this.users.resend(row.userId, actor);
+  }
+
+  private assertOrganizationAdmin(
+    actor: FieldAgentActorContext,
+    action: string,
+  ) {
+    if (!actor.systemRoles.includes(UserRole.ORG_ADMIN))
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: `Somente o administrador da organização pode ${action}.`,
+      });
+  }
+
+  /** Dados da conta, validados como no cadastro de usuários. */
+  private async accountInput(
+    row: FieldAgentEntity,
+    dto: { login: string; email?: string },
+    method: 'INVITATION' | 'TEMPORARY_PASSWORD',
+    password?: string,
+  ) {
     const orgUser = await this.db.getRepository(RoleEntity).findOneByOrFail({
       key: UserRole.ORG_USER,
       type: RoleType.SYSTEM,
@@ -303,119 +510,173 @@ export class FieldAgentManagementService {
       full_name: row.name,
       email: dto.email,
       login: dto.login,
-      activation_method: 'INVITATION',
+      activation_method: method,
       role_ids: [orgUser.id],
+      ...(password ? { password } : {}),
     });
-    if ((await validate(input)).length)
+    // E-mail opcional só na conta de inventariante com senha temporária.
+    const emailOptional = method === 'TEMPORARY_PASSWORD' && !dto.email;
+    const errors = (await validate(input)).filter(
+      (error) => !(emailOptional && error.property === 'email'),
+    );
+    if (errors.length)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message:
-          'Revise nome (mínimo 3 caracteres), login e e-mail antes de criar a conta.',
+        message: emailOptional
+          ? 'Revise nome (mínimo 3 caracteres) e login antes de criar a conta.'
+          : 'Revise nome (mínimo 3 caracteres), login e e-mail antes de criar a conta.',
       });
-    return this.users.create(input, actor, async (manager, user) => {
-      // create() already holds the access-administration lock. All identity and
-      // association changes roll back together if another request linked it.
-      const current = await manager.getRepository(FieldAgentEntity).findOne({
-        where: { id, organizationId: row.organizationId },
-        ...(manager.connection.options.type === 'mysql'
-          ? { lock: { mode: 'pessimistic_write' as const } }
-          : {}),
+    return { dto: input, orgUserId: orgUser.id };
+  }
+
+  /**
+   * Liga a conta recém-criada ao inventariante com o perfil de campo mínimo.
+   * Roda dentro da transação de UserLifecycleService.create (que já segura o
+   * lock de administração de acesso): tudo volta junto se outro pedido ligou
+   * uma conta antes.
+   */
+  private async linkFieldAccount(
+    manager: EntityManager,
+    input: {
+      agentId: number;
+      organizationId: number;
+      user: UserEntity;
+      orgUserId: number;
+      actor: FieldAgentActorContext;
+      operation: FieldAgentAuditOperation;
+    },
+  ) {
+    const { agentId, organizationId, user, orgUserId, actor } = input;
+    const current = await manager.getRepository(FieldAgentEntity).findOne({
+      where: { id: agentId, organizationId },
+      ...this.lock(manager),
+    });
+    if (!current || current.userId)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: 'O cadastro mudou ou já possui conta. Atualize a página.',
       });
-      if (!current || current.userId)
-        throw new ConflictException({
-          code: 'CONFLICT',
-          message: 'O cadastro mudou ou já possui conta. Atualize a página.',
-        });
-      const key = `FIELD_AGENT_ORG_${row.organizationId}`;
-      let role = await manager
-        .getRepository(RoleEntity)
-        .findOneBy({ key, organizationId: row.organizationId });
-      if (!role) {
-        role = await manager.getRepository(RoleEntity).save({
-          key,
-          organizationId: row.organizationId,
-          type: RoleType.ORGANIZATION,
-          name: 'Inventariante de campo',
-          description:
-            'Coleta somente nos projetos com vínculo ativo e vigente.',
-          isActive: true,
-        });
-        const permissions = (
-          await manager.getRepository(PermissionEntity).find()
-        ).filter(
-          (p) =>
-            FIELD_ACCESS_PERMISSIONS.includes(p.key) &&
-            p.scope === PermissionScope.ORGANIZATION,
-        );
-        if (permissions.length !== FIELD_ACCESS_PERMISSIONS.length)
-          throw new ConflictException({
-            code: 'CONFLICT',
-            message:
-              'O catálogo de permissões de campo está incompleto. Revise a configuração antes de convidar.',
-          });
-        for (const permission of permissions)
-          await manager
-            .getRepository(RolePermissionEntity)
-            .save({ roleId: role.id, permissionId: permission.id });
-      }
-      if (!role.isActive)
-        throw new ConflictException({
-          code: 'CONFLICT',
-          message:
-            'O perfil de campo está inativo. Revise os perfis antes de convidar.',
-        });
-      const grants = await manager
-        .getRepository(PermissionEntity)
-        .createQueryBuilder('permission')
-        .innerJoin(
-          RolePermissionEntity,
-          'grant',
-          'grant.permissionId=permission.id',
-        )
-        .where('grant.roleId = :id', { id: role.id })
-        .getMany();
-      // Roles created before Onda 0 hold a smaller subset; they stay valid (no
-      // automatic upgrade). Anything outside the least-privilege set is refused.
-      if (
-        grants.length === 0 ||
-        grants.some(
-          (p) =>
-            !FIELD_ACCESS_PERMISSIONS.includes(p.key) ||
-            p.scope !== PermissionScope.ORGANIZATION,
-        )
-      )
-        throw new ConflictException({
-          code: 'CONFLICT',
-          message:
-            'O perfil de campo foi alterado. Revise suas permissões mínimas antes de criar novos acessos.',
-        });
-      await replaceUserRoles(manager, user.id, [orgUser.id, role.id], actor);
-      current.userId = user.id;
-      await manager.getRepository(FieldAgentEntity).save(current);
-      await manager.getRepository(FieldAgentAuditLogEntity).save({
-        fieldAgentId: id,
-        organizationId: row.organizationId,
-        performedBy: actor.id,
-        operation: FieldAgentAuditOperation.INVITE_USER,
-        changes: { user_id: { before: null, after: user.id } },
-      });
-      await manager.getRepository(UserAuditLogEntity).save({
-        userId: user.id,
-        performedBy: actor.id,
-        operation: 'FIELD_ACCESS_PROFILE',
-        changes: {
-          role_ids: { before: [orgUser.id], after: [orgUser.id, role.id] },
-        },
-      });
+    const role = await ensureFieldRole(manager, organizationId);
+    await replaceUserRoles(manager, user.id, [orgUserId, role.id], actor);
+    current.userId = user.id;
+    await manager.getRepository(FieldAgentEntity).save(current);
+    await manager.getRepository(FieldAgentAuditLogEntity).save({
+      fieldAgentId: agentId,
+      organizationId,
+      performedBy: actor.id,
+      operation: input.operation,
+      changes: { user_id: { before: null, after: user.id } },
+    });
+    await manager.getRepository(UserAuditLogEntity).save({
+      userId: user.id,
+      performedBy: actor.id,
+      operation: 'FIELD_ACCESS_PROFILE',
+      changes: {
+        role_ids: { before: [orgUserId], after: [orgUserId, role.id] },
+      },
     });
   }
-  async resend(id: number, actor: FieldAgentActorContext) {
+
+  /** Conta do inventariante travada, com as checagens de escopo e de perfil. */
+  private async withFieldAccount<T>(
+    id: number,
+    actor: FieldAgentActorContext,
+    work: (
+      manager: EntityManager,
+      user: UserEntity,
+      organizationId: number,
+    ) => Promise<T>,
+  ): Promise<T> {
     const row = await this.agent(id, actor);
     if (!row.userId)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Este inventariante não possui conta.',
+        message:
+          'Este inventariante não possui conta. Crie o acesso antes de redefinir ou revogar.',
       });
-    return this.users.resend(row.userId, actor);
+    const userId = Number(row.userId);
+    const organizationId = Number(row.organizationId);
+    return identityTransaction(this.db, async (manager) => {
+      await lockAccessAdministration(manager);
+      await assertCurrentAccessAdministrator(manager, actor);
+      const current = await manager.getRepository(FieldAgentEntity).findOne({
+        where: { id, organizationId },
+        ...this.lock(manager),
+      });
+      const user = await lockUser(manager, userId);
+      if (
+        !current ||
+        Number(current.userId) !== userId ||
+        !user ||
+        Number(user.organizationId) !== organizationId
+      )
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message: 'O cadastro mudou. Atualize a página.',
+        });
+      await assertFieldOnlyAccount(manager, user.id, organizationId);
+      return work(manager, user, organizationId);
+    });
+  }
+
+  private auditTemporaryPassword(
+    manager: EntityManager,
+    userId: number,
+    actor: FieldAgentActorContext,
+    status: { before: unknown; after: unknown } | null,
+  ) {
+    // Só o fato; o valor da senha nunca entra na auditoria.
+    return manager.getRepository(UserAuditLogEntity).save({
+      userId,
+      performedBy: actor.id,
+      operation: 'TEMPORARY_PASSWORD_ISSUED',
+      changes: {
+        password: { before: '[redacted]', after: '[redacted]' },
+        ...(status && status.before !== status.after ? { status } : {}),
+      },
+    });
+  }
+
+  /** Resposta de emissão: a senha aparece aqui e em nenhum outro lugar. */
+  private issued(id: number, user: UserEntity, password: string) {
+    return {
+      field_agent_id: id,
+      linked_user: this.linkedUser(user),
+      access: fieldAgentAccess(user),
+      temporary_password_expires_at:
+        user.temporaryPasswordExpiresAt?.toISOString() ?? null,
+      temporary_password: password,
+    };
+  }
+
+  private linkedUser(user: UserEntity) {
+    return {
+      id: user.id,
+      full_name: user.fullName,
+      login: user.login,
+      email: user.email,
+      status: user.status,
+    };
+  }
+
+  private generatePassword() {
+    return generateTemporaryPassword(
+      this.config.get<number>('auth.fieldAgentTemporaryPasswordLength', 12),
+    );
+  }
+
+  /** null = sem expiração (padrão). */
+  private temporaryTtlHours(): number | null {
+    const hours = this.config.get<number>(
+      'auth.fieldAgentTemporaryPasswordTtlHours',
+      0,
+    );
+    return Number.isFinite(hours) && hours > 0 ? hours : null;
+  }
+
+  private lock(manager: EntityManager) {
+    return manager.connection.options.type === 'mysql'
+      ? { lock: { mode: 'pessimistic_write' as const } }
+      : {};
   }
 }

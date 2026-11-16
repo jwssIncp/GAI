@@ -1,3 +1,4 @@
+import { emailLabel } from '@/features/users/userFields';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/api/endpoints';
@@ -50,12 +51,12 @@ export function ProfileUserDialog({ profiles, organizationId, initialRoleId, ini
       {!initialUser && <>
         <FormField label="Pesquisar usuário" hint="Busque por nome de usuário ou e-mail na organização selecionada."><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); chooseUser(0); }} /></FormField>
         {users.isLoading ? <LoadingState label="Carregando usuários" /> : users.isError ? <ErrorState message={users.error.message} onRetry={() => void users.refetch()} /> : <>
-          <FormField label="Usuário"><select className={selectClass} value={userId} onChange={(event) => chooseUser(Number(event.target.value))}><option value={0}>Selecione um usuário</option>{users.data?.data.map((user) => <option value={user.id} key={user.id}>{user.login} — {user.email}</option>)}</select></FormField>
+          <FormField label="Usuário"><select className={selectClass} value={userId} onChange={(event) => chooseUser(Number(event.target.value))}><option value={0}>Selecione um usuário</option>{users.data?.data.map((user) => <option value={user.id} key={user.id}>{user.login} — {emailLabel(user.email)}</option>)}</select></FormField>
           {users.data?.data.length === 0 && <p className="text-sm text-muted-foreground">Nenhum usuário encontrado neste contexto.</p>}
           {(users.data?.meta.total_pages ?? 0) > 1 && <Pagination page={page} totalPages={users.data!.meta.total_pages} onPageChange={setPage} />}
         </>}
       </>}
-      {initialUser && <p className="break-words text-sm text-muted-foreground">{initialUser.email}</p>}
+      {initialUser && <p className="break-words text-sm text-muted-foreground">{emailLabel(initialUser.email)}</p>}
       {userId > 0 && (assignments.isLoading ? <LoadingState label="Consultando perfis do usuário" /> : assignments.isError ? <ErrorState message={assignments.error.message} onRetry={() => void assignments.refetch()} /> : <>
         <section aria-label="Perfis associados" className="grid gap-3">
           <h3 className="font-semibold">Perfis associados</h3>

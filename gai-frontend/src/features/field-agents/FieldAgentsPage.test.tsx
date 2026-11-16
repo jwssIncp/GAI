@@ -241,6 +241,25 @@ describe("FieldAgentsPage", () => {
     expect(screen.getByText("ana@gai.local")).toBeInTheDocument();
   });
 
+  it("mostra a situação do acesso ao app na listagem", async () => {
+    mocks.list.mockResolvedValue(
+      page([
+        {
+          ...agent,
+          user_id: 30,
+          access: {
+            status: "AWAITING_FIRST_ACCESS",
+            temporary_password_issued_at: "2026-11-16T13:45:00.000Z",
+          },
+        },
+      ]),
+    );
+    renderWithProviders(<FieldAgentsPage />);
+    const badge = await screen.findByText("Aguardando 1º acesso");
+    expect(badge.getAttribute("title")).toMatch(/^Senha temporária emitida em /);
+    expect(screen.getByText("Acesso ao app")).toBeInTheDocument();
+  });
+
   it("renderiza estado de loading", () => {
     mocks.list.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<FieldAgentsPage />);

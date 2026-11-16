@@ -4,6 +4,7 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  Header,
   HttpCode,
   Inject,
   Param,
@@ -23,6 +24,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import * as XLSX from 'xlsx';
 import { safeSpreadsheetText } from '../../project-dashboard/presentation/organization-overview.controller';
@@ -67,6 +69,7 @@ import { UpdateFieldAgentUseCase } from '../application/use-cases/update-field-a
 import { FieldAgentActorContext } from '../application/services/field-agent-scope.service';
 import { FieldAgentManagementService } from '../application/services/field-agent-management.service';
 import {
+  CreateFieldAgentTemporaryAccessDto,
   FieldAgentPageDto,
   FieldAgentUserOptionsDto,
   InviteFieldAgentUserDto,
@@ -280,6 +283,60 @@ export class FieldAgentsController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.management.invite(id, dto, this.toActor(req));
+  }
+
+  @Post(':id/access/temporary-password')
+  @HttpCode(201)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Header('Cache-Control', 'no-store')
+  @Header('Pragma', 'no-cache')
+  @RequirePermissions('field-agents:update', 'users:write')
+  @ApiOperation({
+    summary: 'Criar acesso do inventariante com senha temporária',
+    description:
+      'Só ORG_ADMIN. Gera a senha (devolvida UMA vez em temporary_password); troca obrigatória no 1º acesso. 201 | 400 | 403 | 404 | 409 | 429',
+  })
+  createTemporaryAccess(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateFieldAgentTemporaryAccessDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.createTemporaryAccess(id, dto, this.toActor(req));
+  }
+
+  @Post(':id/access/temporary-password/reset')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Header('Cache-Control', 'no-store')
+  @Header('Pragma', 'no-cache')
+  @RequirePermissions('field-agents:update', 'users:write')
+  @ApiOperation({
+    summary: 'Redefinir a senha temporária do inventariante',
+    description:
+      'Só ORG_ADMIN. Nova senha devolvida UMA vez; encerra sessões, refresh tokens do app e convite pendente. 200 | 403 | 404 | 409 NOT_FIELD_AGENT_ACCOUNT/CONFLICT | 429',
+  })
+  resetTemporaryAccess(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.resetTemporaryAccess(id, this.toActor(req));
+  }
+
+  @Post(':id/access/revoke')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Header('Cache-Control', 'no-store')
+  @RequirePermissions('field-agents:update', 'users:write')
+  @ApiOperation({
+    summary: 'Revogar o acesso do inventariante',
+    description:
+      'Só ORG_ADMIN. Senha invalidada, conta INACTIVE, sessões e refresh tokens encerrados. 200 | 403 | 404 | 409 | 429',
+  })
+  revokeAccess(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.management.revokeAccess(id, this.toActor(req));
   }
 
   @Post(':id/resend-invitation')

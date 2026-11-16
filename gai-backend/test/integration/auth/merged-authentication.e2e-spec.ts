@@ -88,7 +88,7 @@ describe('Authentication cases integrated from develop', () => {
     );
     await app
       .get(RequestPasswordResetUseCase)
-      .execute({ email: user.email }, '127.0.0.1');
+      .execute({ email: user.email! }, '127.0.0.1');
     expect(delivery).toHaveBeenCalledTimes(1);
     const payload = delivery.mock.calls[0][0];
     expect(payload.to).toBe(user.email);
@@ -133,7 +133,7 @@ describe('Authentication cases integrated from develop', () => {
     );
     await app
       .get(RequestPasswordResetUseCase)
-      .execute({ email: user.email }, '127.0.0.1');
+      .execute({ email: user.email! }, '127.0.0.1');
     const token = delivery.mock.calls[0][0].resetToken;
     const dto = { token, new_password: 'Merged reset passphrase 2026!' };
     const confirm = app.get(ConfirmPasswordResetUseCase);

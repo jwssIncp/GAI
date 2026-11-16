@@ -3,6 +3,26 @@ import { FieldAgent, JsonRecord } from '../../domain/entities/field-agent';
 import { ProjectFieldAgent } from '../../domain/entities/project-field-agent';
 import { FieldAgentStatus } from '../../domain/enums/field-agent-status.enum';
 import { ProjectFieldAgentStatus } from '../../domain/enums/project-field-agent-status.enum';
+import type {
+  FieldAgentAccess,
+  FieldAgentAccessStatus,
+} from '../services/field-agent-access';
+
+export class FieldAgentAccessDto {
+  @ApiProperty({
+    enum: [
+      'NONE',
+      'INVITATION_PENDING',
+      'AWAITING_FIRST_ACCESS',
+      'ACTIVE',
+      'REVOKED',
+    ],
+  })
+  status!: FieldAgentAccessStatus;
+
+  @ApiPropertyOptional({ format: 'date-time', nullable: true })
+  temporary_password_issued_at!: string | null;
+}
 
 export class FieldAgentResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
@@ -47,6 +67,12 @@ export class FieldAgentResponseDto {
 
   @ApiPropertyOptional({ format: 'date-time', nullable: true })
   deleted_at!: string | null;
+
+  @ApiPropertyOptional({
+    type: FieldAgentAccessDto,
+    description: 'Situação do acesso ao app, sem dado sensível.',
+  })
+  access?: FieldAgentAccess;
 
   static fromDomain(fieldAgent: FieldAgent): FieldAgentResponseDto {
     return {

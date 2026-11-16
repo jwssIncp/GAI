@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { Logger } from 'pino';
+import pino from 'pino';
 import pinoHttp from 'pino-http';
 import request from 'supertest';
 import {
@@ -272,5 +273,21 @@ describe('Pino sensitive log redaction', () => {
       }),
     );
     expect(authLog?.session_token).toBe(REDACTED_LOG_VALUE);
+  });
+  it('redacts the generated temporary password of a field agent', () => {
+    const output: string[] = [];
+    const logger = pino(
+      { redact: SENSITIVE_LOG_REDACTION },
+      { write: (line: string) => output.push(line) },
+    );
+    const secret = 'SINTETICOTemp9xQ';
+    logger.info({
+      temporary_password: secret,
+      body: { temporary_password: secret, temporaryPassword: secret },
+      res: { body: { temporary_password: secret } },
+    });
+    const serialized = output.join('');
+    expect(serialized).not.toContain(secret);
+    expect(serialized).toContain(REDACTED_LOG_VALUE);
   });
 });

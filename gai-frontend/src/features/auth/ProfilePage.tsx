@@ -1,3 +1,4 @@
+import { emailLabel } from "@/features/users/userFields";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
 import { GaiLogo } from "@/components/base/GaiLogo";
@@ -21,7 +22,7 @@ export function ProfilePage() {
           {[
             ["Nome completo", user?.full_name],
             ["Login", user?.login],
-            ["Email", user?.email],
+            ["E-mail", user ? emailLabel(user.email) : undefined],
             [
               "Organização",
               user?.organization_id ? `#${user.organization_id}` : "Plataforma",

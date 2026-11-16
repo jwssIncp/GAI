@@ -1,3 +1,5 @@
+import { DEVELOPMENT_INVITATION_MESSAGE } from "./invitationDelivery";
+import { emailLabel } from "./userFields";
 import { useEffect, useRef, useState } from "react";
 import { useController, useForm, useWatch } from "react-hook-form";
 import { Link, useBlocker, useNavigate, useParams } from "react-router-dom";
@@ -170,7 +172,7 @@ function UserEditor({ user, options }: { user?: User; options: Options }) {
           result.invitation_delivery === "FAILED"
             ? "A conta está pendente: o convite não foi entregue. Use Reenviar convite após revisar o envio."
             : result.invitation_delivery === "DEVELOPMENT"
-              ? "Convite disponível apenas na caixa de e-mail simulada do desenvolvimento."
+              ? DEVELOPMENT_INVITATION_MESSAGE
               : undefined,
         tone: result.invitation_delivery === "FAILED" ? "error" : "success",
       });
@@ -606,7 +608,7 @@ export function UserDetailPage() {
           <dl className="grid gap-6 text-sm sm:grid-cols-2">
             {Object.entries({
               Login: query.data.login,
-              "E-mail": query.data.email,
+              "E-mail": emailLabel(query.data.email),
               Telefone: query.data.phone,
               "Cargo ou função": query.data.job_title,
               Organização:

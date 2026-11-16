@@ -50,8 +50,10 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 100, unique: true })
   login!: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  email!: string;
+  // Opcional só para conta de inventariante (senha temporária); a unicidade
+  // continua valendo entre os e-mails preenchidos.
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  email!: string | null;
 
   @Column({ name: 'password_hash', type: 'varchar', length: 255 })
   passwordHash!: string;

@@ -1,3 +1,4 @@
+import { emailLabel } from '@/features/users/userFields';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -94,7 +95,7 @@ function ProfileDetails({ profile, organizationId, canEdit, canAssign, onClose, 
       {profile.editable && canEdit && <div className="flex flex-col gap-2 sm:flex-row"><Button variant="secondary" onClick={onEdit}>Editar perfil</Button><Button variant="danger" onClick={() => setDeleting(true)}>Excluir perfil</Button></div>}
       <h3 className="font-semibold">Usuários vinculados</h3>
       <FormField label="Pesquisar usuários vinculados"><Input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></FormField>
-      {members.isLoading ? <LoadingState /> : members.isError ? <ErrorState message={members.error.message} onRetry={() => void members.refetch()} /> : !members.data?.data.length ? <EmptyState title="Nenhum usuário encontrado" description="Nenhum vínculo corresponde à busca neste contexto." /> : members.data.data.map((member) => <div key={member.id} className="flex min-w-0 flex-col gap-3 rounded-xl border border-border p-4"><div className="min-w-0"><p className="break-words font-medium">{member.login}</p><p className="break-words text-sm text-muted-foreground">{member.email} · {member.status === 'ACTIVE' ? 'Ativo' : 'Inativo ou bloqueado'}</p></div>{canAssign && <Button variant="secondary" size="sm" onClick={() => onManage(member)}>Gerenciar perfis</Button>}</div>)}
+      {members.isLoading ? <LoadingState /> : members.isError ? <ErrorState message={members.error.message} onRetry={() => void members.refetch()} /> : !members.data?.data.length ? <EmptyState title="Nenhum usuário encontrado" description="Nenhum vínculo corresponde à busca neste contexto." /> : members.data.data.map((member) => <div key={member.id} className="flex min-w-0 flex-col gap-3 rounded-xl border border-border p-4"><div className="min-w-0"><p className="break-words font-medium">{member.login}</p><p className="break-words text-sm text-muted-foreground">{emailLabel(member.email)} · {member.status === 'ACTIVE' ? 'Ativo' : 'Inativo ou bloqueado'}</p></div>{canAssign && <Button variant="secondary" size="sm" onClick={() => onManage(member)}>Gerenciar perfis</Button>}</div>)}
       {(members.data?.meta.total_pages ?? 0) > 1 && <Pagination page={page} totalPages={members.data!.meta.total_pages} onPageChange={setPage} />}
       <p className="text-sm leading-6 text-muted-foreground">{cumulativeAccess}</p>
       {remove.isError && <ErrorState message={remove.error.message} />}

@@ -1,3 +1,4 @@
+import { emailLabel } from "./userFields";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -190,7 +191,7 @@ export function UsersPage() {
                       {item.login}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {item.email}
+                      {emailLabel(item.email)}
                     </div>
                   </div>
                 ),
