@@ -106,8 +106,8 @@ describe('ZIP de comprovantes em streaming', () => {
     expect(maxAhead).toBeLessThanOrEqual(2);
     const files = unzipSync(new Uint8Array(Buffer.concat(out)));
     expect(Object.keys(files).sort()).toEqual([
-      'Comprovantes por técnico/Ana/1-nota1.pdf',
-      'Comprovantes por técnico/Bruno/2-nota2.pdf',
+      'Comprovantes por inventariante/Ana/1-nota1.pdf',
+      'Comprovantes por inventariante/Bruno/2-nota2.pdf',
       'Despesas Gerais/3-nota3.pdf',
       'Lançamentos - Projeto.xlsx',
     ]);

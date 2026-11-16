@@ -718,7 +718,7 @@ describe('Despesas do projeto (e2e, etapa 4)', () => {
     ).toBeNull();
   });
 
-  it('ZIP: pastas por técnico, Despesas Gerais, planilha e só anexos enviados; cliente só reembolsáveis', async () => {
+  it('ZIP: pastas por inventariante, Despesas Gerais, planilha e só anexos enviados; cliente só reembolsáveis', async () => {
     const storage = app.get<FakeStorage>(STORAGE_SIGNER);
     const items = (await board()).items;
     const anaItem = items.find(
@@ -771,7 +771,7 @@ describe('Despesas do projeto (e2e, etapa 4)', () => {
     const full = await zipOf('kind=full&batch=all');
     const names = Object.keys(full).sort();
     expect(names).toContain(
-      `Comprovantes por técnico/Ana Campo/${anaItem.sequence}-nota.pdf`,
+      `Comprovantes por inventariante/Ana Campo/${anaItem.sequence}-nota.pdf`,
     );
     expect(names).toContain(`Despesas Gerais/${general.sequence}-recibo.pdf`);
     expect(names).toContain('Lançamentos - Despesas etapa 4.xlsx');
