@@ -388,8 +388,11 @@ export function CommercialOverview({
                 Distribuição por {String(title).toLowerCase()}
               </h3>
               <DataTable
-                items={groups as Group[]}
-                getKey={(g) => g.label}
+                caption={`Distribuição por ${String(title).toLowerCase()}`}
+                // Chave estável pela posição na lista da API (ordenada pelo valor
+                // agrupado; empresas pelo ID): nomes de empresa podem se repetir.
+                items={(groups as Group[]).map((g, i) => ({ ...g, key: `${String(title)}:${i}` }))}
+                getKey={(g) => g.key}
                 columns={[
                   { header: String(title), cell: (g) => g.label },
                   { header: "Contratos", cell: (g) => g.count },

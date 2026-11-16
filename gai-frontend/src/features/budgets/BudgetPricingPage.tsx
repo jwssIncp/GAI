@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DataTable } from "@/components/base/DataTable";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
@@ -188,15 +189,8 @@ export function BudgetPricingPage() {
           ))}
           {pricingMoney.map(([key, label]) => (
             <label key={key} className="grid gap-1 text-sm">
-              {label}
-              <input
-                className={cls}
-                name={key}
-                inputMode="decimal"
-                pattern="[0-9]{1,13}(\.[0-9]{1,2})?"
-                defaultValue={copy?.values[key]}
-                required
-              />
+              {label} (R$)
+              <MoneyInput name={key} defaultValue={copy?.values[key] ?? ""} required />
             </label>
           ))}
           {pricingRates.map(([key, label]) => (
@@ -230,7 +224,7 @@ export function BudgetPricingPage() {
             <input type="checkbox" required />
             Confirmo a autorização comercial destes parâmetros e sua vigência.
           </label>
-          {save.isError ? <p role="alert">{save.error.message}</p> : null}
+          {save.isError ? <p role="alert" className="text-sm text-destructive-text">{save.error.message}</p> : null}
           <Button
             type="submit"
             loading={save.isPending}

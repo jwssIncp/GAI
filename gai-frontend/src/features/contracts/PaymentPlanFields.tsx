@@ -97,7 +97,7 @@ export function PaymentPlanFields({
           </div>
           <p
             aria-live="polite"
-            className={`text-sm font-medium ${closes ? "text-muted-foreground" : "text-destructive"}`}
+            className={`text-sm font-medium ${closes ? "text-muted-foreground" : "text-destructive-text"}`}
           >
             Soma: {(sum / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}%
             {closes ? "" : " — precisa fechar 100% para salvar."}

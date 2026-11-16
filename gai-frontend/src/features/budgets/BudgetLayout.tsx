@@ -1,10 +1,9 @@
 import { ProjectContextLink } from "@/features/projects/ProjectContextLink";
-import { navigationHref } from "@/features/projects/navigationContext";
-import { NavLink, Outlet, useSearchParams } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
+import { Tabs } from "@/components/base/Tabs";
 export function BudgetLayout() {
-  const [params] = useSearchParams();
   return (
     <PageContainer>
       <PageHeader
@@ -12,28 +11,13 @@ export function BudgetLayout() {
         description="Dimensionamento, precificação e propostas com memória de cálculo."
       />
       <ProjectContextLink />
-      <nav
-        className="section-navigation"
-        aria-label="Navegação de orçamentos"
-      >
-        <NavLink
-          className={({ isActive }) =>
-            isActive ? "font-semibold text-primary" : "text-muted-foreground"
-          }
-          to={navigationHref("/app/budgets", params)}
-          end
-        >
-          Orçamentos
-        </NavLink>
-        <NavLink
-          className={({ isActive }) =>
-            isActive ? "font-semibold text-primary" : "text-muted-foreground"
-          }
-          to={navigationHref("/app/budgets/pricing", params)}
-        >
-          Parâmetros de preços
-        </NavLink>
-      </nav>
+      <Tabs
+        label="Navegação de orçamentos"
+        tabs={[
+          { label: "Orçamentos", to: "/app/budgets", end: true },
+          { label: "Parâmetros de preços", to: "/app/budgets/pricing" },
+        ]}
+      />
       <Outlet />
     </PageContainer>
   );

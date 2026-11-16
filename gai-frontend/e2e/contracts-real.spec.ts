@@ -72,7 +72,7 @@ test("ORG_ADMIN manages contracts/amendments, refreshes history and exports filt
   await dialog.getByLabel("Data de contratação").fill("2024-03-10");
   await dialog.getByLabel("Início da vigência").fill("2024-03-10");
   await dialog.getByLabel("Fim da vigência").fill("2029-12-31");
-  await dialog.getByLabel("Valor original", { exact: true }).fill("100.10");
+  await dialog.getByRole("textbox", { name: "Valor original (R$)", exact: true }).fill("100.10");
   await dialog.getByLabel("Tipo de contratação").fill("Serviço sintético");
   await dialog.getByLabel("Segmento", { exact: true }).fill(segment);
   await dialog
@@ -99,7 +99,7 @@ test("ORG_ADMIN manages contracts/amendments, refreshes history and exports filt
   await dialog.getByLabel("Data do aditivo").fill("2026-10-27");
   await dialog.getByLabel("Tipo do aditivo").selectOption("mixed");
   await dialog
-    .getByLabel("Variação de valor (use sinal negativo para redução)")
+    .getByRole("textbox", { name: "Variação de valor (R$; use sinal negativo para redução)" })
     .fill("0.20");
   await dialog.getByLabel("Novo fim da vigência").fill("2030-12-31");
   await dialog

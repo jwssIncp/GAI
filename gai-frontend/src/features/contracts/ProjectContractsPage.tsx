@@ -12,6 +12,7 @@ import { ModalForm } from "@/components/ui/dialog";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { financeSettingsApi } from "@/features/finance-settings/financeSettingsApi";
 import { PaymentPlanFields } from "./PaymentPlanFields";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import {
   contractsApi,
   contractDate,
@@ -293,14 +294,8 @@ function ContractsWorkspace({ p }: { p: number }) {
                   <option value="mixed">Misto</option>
                 </select>
               </Field>
-              <Field label="Variação de valor (use sinal negativo para redução)">
-                <input
-                  className={inputClass}
-                  name="value_delta"
-                  inputMode="decimal"
-                  pattern="-?[0-9]{1,13}(\.[0-9]{1,2})?"
-                  placeholder="100.25"
-                />
+              <Field label="Variação de valor (R$; use sinal negativo para redução)">
+                <MoneyInput className={inputClass} name="value_delta" negative />
               </Field>
               <Field label="Parcelas do valor do aditivo">
                 <input
@@ -381,8 +376,8 @@ function ContractFields({ row }: { row?: Contract }) {
     <>
       <p className="text-sm text-muted-foreground">
         Empresa contratante: {d?.company_name ?? "empresa vinculada ao projeto"}
-        . Dados ausentes podem ser mantidos em rascunho. Valores usam ponto
-        decimal.
+        . Dados ausentes podem ser mantidos em rascunho. Valores em R$ no
+        padrão 1.234,56.
       </p>
       <Field label="Número do contrato">
         <input
@@ -411,12 +406,10 @@ function ContractFields({ row }: { row?: Contract }) {
           />
         </Field>
       ))}
-      <Field label="Valor original">
-        <input
+      <Field label="Valor original (R$)">
+        <MoneyInput
           className={inputClass}
           name="original_value"
-          inputMode="decimal"
-          pattern="[0-9]{1,13}(\.[0-9]{1,2})?"
           defaultValue={d?.original_value ?? ""}
           readOnly={frozen("original_value")}
         />

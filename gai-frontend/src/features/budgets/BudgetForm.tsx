@@ -7,6 +7,7 @@ import {
   organizationSource,
   projectSource,
 } from "@/components/base/entitySources";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
@@ -192,8 +193,8 @@ export function BudgetForm({
       onChange={() => setPreview(undefined)}
     >
       <p className="text-sm text-muted-foreground">
-        Organização e vínculos são validados no servidor. Campos monetários usam
-        ponto decimal. O cálculo oficial é sempre feito pelo backend.
+        Organização e vínculos são validados no servidor. Valores em R$ no
+        padrão 1.234,56. O cálculo oficial é sempre feito pelo sistema.
       </p>
       {isPlatformAdmin && !initial ? (
         <OrganizationSelect
@@ -464,22 +465,25 @@ export function BudgetForm({
               />
             </label>
           ))}
+          <label className="grid gap-1 text-sm">
+            Margem ajustada (%)
+            <input
+              className={cls}
+              name="margin_pct"
+              inputMode="decimal"
+              pattern="[0-9]{1,13}(\.[0-9]{1,2})?"
+              defaultValue={d?.sizing.margin_pct}
+            />
+          </label>
           {(
             [
-              ["margin_pct", "Margem ajustada (%)"],
-              ["operational_extra", "Acréscimo operacional"],
-              ["final_price", "Preço final manual"],
+              ["operational_extra", "Acréscimo operacional (R$)"],
+              ["final_price", "Preço final manual (R$)"],
             ] as const
           ).map(([key, label]) => (
             <label key={key} className="grid gap-1 text-sm">
               {label}
-              <input
-                className={cls}
-                name={key}
-                inputMode="decimal"
-                pattern="[0-9]{1,13}(\.[0-9]{1,2})?"
-                defaultValue={d?.sizing[key]}
-              />
+              <MoneyInput name={key} defaultValue={d?.sizing[key] ?? ""} />
             </label>
           ))}
           <label className="grid gap-1 text-sm">
@@ -535,13 +539,8 @@ export function BudgetForm({
           </label>
         ) : (
           <label className="grid gap-1 text-sm">
-            Valor da entrada
-            <input
-              className={cls}
-              name="entry_amount"
-              inputMode="decimal"
-              defaultValue={d?.payment.entry_amount ?? ""}
-            />
+            Valor da entrada (R$)
+            <MoneyInput name="entry_amount" defaultValue={d?.payment.entry_amount ?? ""} />
           </label>
         )}
         <label className="grid gap-1 text-sm">

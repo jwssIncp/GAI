@@ -133,7 +133,7 @@ describe("Budget form with authoritative server calculation", () => {
     mount(false);
     await screen.findByRole("option", { name: /SINTETICO Preços/ });
     expect(
-      screen.queryByLabelText("Preço final manual"),
+      screen.queryByLabelText("Preço final manual (R$)"),
     ).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Equipe ajustada")).not.toBeInTheDocument();
   });

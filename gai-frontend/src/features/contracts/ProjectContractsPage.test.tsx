@@ -130,7 +130,7 @@ describe("Project contract workspace", () => {
       within(dialog).getByLabelText("Data do aditivo"),
       "2026-10-27",
     );
-    await user.type(within(dialog).getByLabelText(/Variação de valor/), "0.20");
+    await user.type(within(dialog).getByRole("textbox", { name: /Variação de valor/ }), "0.20");
     await user.type(
       within(dialog).getByLabelText("Justificativa"),
       "Ajuste sintético",
@@ -177,7 +177,7 @@ describe("Project contract workspace", () => {
       within(dialog).getByLabelText("Número do contrato"),
       "NOVO-1",
     );
-    await user.type(within(dialog).getByLabelText("Valor original"), "0.10");
+    await user.type(within(dialog).getByRole("textbox", { name: "Valor original (R$)" }), "0,10");
     await user.click(
       within(dialog).getByRole("button", { name: "Salvar contrato" }),
     );
