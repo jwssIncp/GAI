@@ -36,7 +36,7 @@ describe('Native professional document renderers', () => {
           rows: Array.from({ length: 180 }, (_, i) => [
             `PAT-${i}`,
             `Máquina de precisão ${i}`,
-            'BRL 1.234,56',
+            'R$ 1.234,56',
           ]),
         },
       },
@@ -56,7 +56,7 @@ describe('Native professional document renderers', () => {
     expect(doc).toContain('<w:tbl>');
     expect(doc).toContain('w:tblHeader');
     expect(doc).toContain('Heading1');
-    expect(doc).toContain('BRL 1.234,56');
+    expect(doc).toContain('R$ 1.234,56');
     expect(strFromU8(zip['word/footer1.xml'])).toMatch(/PAGE/);
     expect(strFromU8(zip['word/footer1.xml'])).toContain('NUMPAGES');
     expect(Object.keys(zip).some((k) => k.endsWith('.html'))).toBe(false);
@@ -81,7 +81,7 @@ describe('Native professional document renderers', () => {
   });
   it('preserves exact large monetary amounts and civil dates across timezones', () => {
     expect(documentMoney('9999999999999.99', 'BRL')).toBe(
-      'BRL 9.999.999.999.999,99',
+      'R$ 9.999.999.999.999,99',
     );
     expect(documentDate('2026-10-28')).toBe('28/10/2026');
   });

@@ -11,8 +11,65 @@ export function formatDateTime(value?: string | null) {
 }
 
 export function formatMoney(value?: string | number | null) {
-  const number = Number(value ?? 0);
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(number);
+  return formatCurrency(value ?? 0, "BRL");
+}
+
+const DECIMAL = /^(-?)(\d+)(?:\.(\d+))?$/;
+const groupThousands = (digits: string) =>
+  digits.replace(/^0+(?=\d)/, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+/**
+ * Número pt-BR exato a partir da string decimal da API (sem passar por float:
+ * valores de 13 dígitos não perdem centavos). Sem `digits`, mantém as casas que
+ * o dado tem ("1.0000" → "1,0000"); com `digits`, completa com zeros ou
+ * arredonda meio para cima. Nulo/vazio → "—"; texto não numérico volta como está.
+ */
+export function formatDecimal(value?: string | number | null, digits?: number): string {
+  if (value === null || value === undefined || value === "") return "—";
+  const m = DECIMAL.exec(typeof value === "number" ? String(value) : value.trim());
+  if (!m) {
+    const n = Number(value);
+    return Number.isFinite(n)
+      ? n.toLocaleString("pt-BR", digits === undefined ? undefined : { minimumFractionDigits: digits, maximumFractionDigits: digits })
+      : String(value);
+  }
+  let whole = m[2],
+    fraction = m[3] ?? "";
+  if (digits !== undefined && fraction.length > digits) {
+    const drop = 10n ** BigInt(fraction.length - digits),
+      scaled = BigInt(whole + fraction);
+    const kept = (scaled / drop + ((scaled % drop) * 2n >= drop ? 1n : 0n)).toString().padStart(digits + 1, "0");
+    whole = kept.slice(0, kept.length - digits);
+    fraction = kept.slice(kept.length - digits);
+  } else if (digits !== undefined) fraction = fraction.padEnd(digits, "0");
+  const negative = m[1] === "-" && !/^0*$/.test(whole + fraction);
+  return `${negative ? "-" : ""}${groupThousands(whole)}${fraction ? `,${fraction}` : ""}`;
+}
+
+/** Inteiro com milhar: 1000 → "1.000". */
+export const formatInteger = (value?: string | number | null) => formatDecimal(value, 0);
+
+/** Símbolo pt-BR da moeda (BRL → "R$", USD → "US$", EUR → "€"); código se o Intl não conhecer. */
+export function currencySymbol(currency: string): string {
+  try {
+    return (
+      new Intl.NumberFormat("pt-BR", { style: "currency", currency }).formatToParts(0).find((p) => p.type === "currency")
+        ?.value ?? currency
+    );
+  } catch {
+    return currency;
+  }
+}
+
+/**
+ * Moeda pt-BR exata, igual ao Intl ("R$ 1.913,72", "US$ 1.913,72", "-R$ 10,00",
+ * com espaço não separável), mas sem converter a string da API para float.
+ */
+export function formatCurrency(value: string | number, currency: string): string {
+  const n = formatDecimal(value, 2);
+  if (!/^-?[\d.]+,\d{2}$/.test(n)) return n;
+  const negative = n.startsWith("-");
+  return `${negative ? "-" : ""}${currencySymbol(currency)}\u00a0${negative ? n.slice(1) : n}`;
 }
 
 /**
@@ -46,12 +103,11 @@ export function formatMonth(value?: string | null): string {
   return m ? `${m[2]}/${m[1]}` : value;
 }
 
-/** Percentual pt-BR com 2 casas ("12.5" → "12,50%"); nulo/indefinido → "—". */
-export function formatPercent(value?: string | number | null): string {
+/** Percentual pt-BR com 2 casas (ou as pedidas): "12.5" → "12,50%"; nulo/indefinido → "—". */
+export function formatPercent(value?: string | number | null, digits = 2): string {
   if (value === null || value === undefined || value === "") return "—";
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "—";
-  return `${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  if (!Number.isFinite(Number(value))) return "—";
+  return `${formatDecimal(value, digits)}%`;
 }
 
 /** Aceita dd/mm/aaaa (ou AAAA-MM-DD) e devolve AAAA-MM-DD; inválida → o texto original. */

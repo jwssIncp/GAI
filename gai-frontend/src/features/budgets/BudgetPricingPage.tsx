@@ -10,9 +10,11 @@ import { useAuth } from "@/features/auth/AuthContext";
 import {
   budgetApi,
   budgetDate,
+  pricingLabel,
   pricingMoney,
   pricingNumbers,
   pricingRates,
+  pricingValue,
   type Pricing,
   type PricingValues,
 } from "./budgetApi";
@@ -94,7 +96,10 @@ export function BudgetPricingPage() {
               cell: (p) =>
                 `${budgetDate(p.validFrom)} a ${budgetDate(p.validTo)}`,
             },
-            { header: "Produtividade", cell: (p) => p.values.productivity },
+            {
+              header: "Produtividade",
+              cell: (p) => pricingValue(p.values, "productivity"),
+            },
             { header: "Moeda", cell: (p) => p.values.currency },
             {
               header: "Responsável / justificativa",
@@ -109,7 +114,7 @@ export function BudgetPricingPage() {
                     {[...pricingNumbers, ...pricingMoney, ...pricingRates].map(
                       ([key, label]) => (
                         <p className="text-xs" key={key}>
-                          {label}: {p.values[key]}
+                          {pricingLabel(label)}: {pricingValue(p.values, key)}
                         </p>
                       ),
                     )}

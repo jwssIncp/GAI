@@ -114,9 +114,12 @@ async function fillGeneral() {
     "  Projeto Novo  ",
   );
 }
+// Espera cada etapa aparecer (sob carga, a tela seguinte pode demorar a montar)
+// e termina só quando o botão "Criar projeto" da revisão já está na tela.
 async function review() {
   for (let i = 0; i < 3; i++)
-    await userEvent.click(screen.getByRole("button", { name: "Avançar" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Avançar" }));
+  await screen.findByRole("button", { name: "Criar projeto" });
 }
 describe("Project registration and management", () => {
   beforeEach(() => {

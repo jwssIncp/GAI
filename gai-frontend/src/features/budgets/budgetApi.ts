@@ -1,4 +1,5 @@
 import { api } from "@/api/http";
+import { formatCurrency, formatDecimal, formatInteger, formatPercent } from "@/utils/format";
 export const budgetStatuses: Record<string, string> = {
   draft: "Rascunho",
   review: "Em revisão",
@@ -287,8 +288,20 @@ export const budgetApi = {
       .then((r) => r.data),
 };
 export const budgetMoney = (v: string, currency: string) =>
-  new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(
-    Number(v),
-  );
+  formatCurrency(v, currency);
+type PricingKey =
+  | (typeof pricingNumbers)[number][0]
+  | (typeof pricingMoney)[number][0]
+  | (typeof pricingRates)[number][0];
+/** Rótulo de leitura de um parâmetro (sem o "(%)" do campo, que já vem no valor). */
+export const pricingLabel = (label: string) => label.replace(/ \(%\)$/, "");
+/** Valor de um parâmetro de preços no formato pt-BR (moeda, %, fator ou inteiro). */
+export function pricingValue(values: PricingValues, key: PricingKey): string {
+  if (pricingMoney.some(([k]) => k === key))
+    return budgetMoney(String(values[key]), values.currency);
+  if (key === "address_factor") return formatDecimal(values[key]);
+  if (pricingRates.some(([k]) => k === key)) return formatPercent(values[key]);
+  return formatInteger(values[key]);
+}
 export const budgetDate = (v: string) =>
   v.slice(0, 10).split("-").reverse().join("/");

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { formatPercent } from "@/utils/format";
 import { equalPercentages, percentSumCents, type ContractPaymentPlan } from "./contractsApi";
 
 const MAX_INSTALLMENTS = 60;
@@ -99,7 +100,7 @@ export function PaymentPlanFields({
             aria-live="polite"
             className={`text-sm font-medium ${closes ? "text-muted-foreground" : "text-destructive-text"}`}
           >
-            Soma: {(sum / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}%
+            Soma: {formatPercent(sum / 100)}
             {closes ? "" : " — precisa fechar 100% para salvar."}
           </p>
         </fieldset>
