@@ -90,9 +90,7 @@ describe("DRE mensal", () => {
     Object.values(mocks).forEach((m) => m.mockReset());
     Object.values(closing).forEach((m) => m.mockReset());
     closing.review.mockResolvedValue([]);
-    mocks.view.mockResolvedValue(view());
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-  });
+    mocks.view.mockResolvedValue(view());  });
 
   it("mostra a grade: lançado, fluxo, estimativa em itálico (não gravada), mês fechado e avisos", async () => {
     mount();
@@ -129,6 +127,10 @@ describe("DRE mensal", () => {
     await waitFor(() => expect(mocks.saveLayout).toHaveBeenCalledWith(2, { hidden: [5], summary: [1], post_operational: [9] }, "Ocultar linha"));
     const food = within(table).getByText(/3\.04 Alimentação/).closest("tr")!;
     await userEvent.click(within(food).getByRole("button", { name: "Excluir" }));
+    // confirmação do sistema (não o confirm nativo do navegador)
+    const dialog = within(await screen.findByRole("dialog", { name: "Excluir linha da DRE" }));
+    expect(mocks.setAccountActive).not.toHaveBeenCalled();
+    await userEvent.click(dialog.getByRole("button", { name: "Excluir linha" }));
     await waitFor(() => expect(mocks.setAccountActive).toHaveBeenCalledWith(7, 3, "Alimentação", false, "Excluir linha da DRE"));
     // conta com papel na projeção não tem "Excluir"
     expect(within(within(table).getByText(/4\.04 Serviços de terceiros/).closest("tr")!).queryByRole("button", { name: "Excluir" })).toBeNull();

@@ -8,7 +8,7 @@ import { MoneyInput } from "@/components/base/MoneyInput";
 import { useToast } from "@/components/ui/toast-context";
 import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { Button } from "@/components/ui/button";
-import { ModalForm } from "@/components/ui/dialog";
+import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { formatDateTime, formatMoney } from "@/utils/format";
@@ -79,6 +79,7 @@ export function DreMonthlyPage() {
   const [dialog, setDialog] = useState<"import" | "config" | "model" | null>(null);
   // Sucesso vai por toast; erro fica na tela (inline).
   const [failure, setFailure] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<{ id: number; revision: number; name: string } | null>(null);
   const done = (message: string) => {
     setFailure(null);
     toast({ title: message, tone: "success" });
@@ -166,6 +167,15 @@ export function DreMonthlyPage() {
           {g.warnings.map((w) => <li key={w}>⚠ {w}</li>)}
         </ul>
       ) : null}
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title="Excluir linha da DRE"
+        description={`Excluir a linha "${removing?.name ?? ""}"? Os valores ficam guardados e a linha pode ser restaurada em "Linhas excluídas".`}
+        confirmLabel="Excluir linha"
+        busy={accountMutation.isPending}
+        onConfirm={() => removing && accountMutation.mutate({ ...removing, active: false }, { onSettled: () => setRemoving(null) })}
+      />
       {failure ? <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">{failure}</p> : null}
 
       <FilterPanel>
@@ -264,10 +274,7 @@ export function DreMonthlyPage() {
                         <Button
                           type="button"
                           variant="ghost"
-                          onClick={() => {
-                            if (window.confirm(`Excluir a linha "${a.name}"? Os valores ficam guardados e a linha pode ser restaurada.`))
-                              accountMutation.mutate({ id: a.id, revision: info.revision, name: info.name, active: false });
-                          }}
+                          onClick={() => setRemoving({ id: a.id, revision: info.revision, name: info.name })}
                         >
                           Excluir
                         </Button>
