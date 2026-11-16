@@ -21,6 +21,7 @@ import { Pagination } from "@/components/base/Pagination";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
+import { FieldAgentAccessBadge } from "./FieldAgentAccessBadge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, DrawerForm } from "@/components/ui/dialog";
 import { PermissionGate } from "@/features/auth/PermissionGate";
@@ -180,7 +181,15 @@ export function FieldAgentsPage() {
         </div>
       ),
     },
-    { header: "Email", cell: (item) => item.email ?? "-" },
+    // Situação e acesso logo após o nome: com as ações fixas à direita, as
+    // últimas colunas ficavam escondidas em telas de 1280–1440 px.
+    { header: "Situação", className: "whitespace-nowrap", cell: (item) => <StatusBadge value={item.status} /> },
+    {
+      header: "Acesso ao app",
+      className: "whitespace-nowrap",
+      cell: (item) => <FieldAgentAccessBadge access={item.access} />,
+    },
+    { header: "E-mail", cell: (item) => item.email ?? "-" },
     { header: "Telefone", cell: (item) => item.phone ?? "-" },
     { header: "UF", cell: (item) => item.state ?? "-" },
     {
@@ -188,7 +197,6 @@ export function FieldAgentsPage() {
       className: "whitespace-nowrap",
       cell: (item) => item.document ?? "-",
     },
-    { header: "Status", cell: (item) => <StatusBadge value={item.status} /> },
     {
       header: "Ações",
       sticky: "right",

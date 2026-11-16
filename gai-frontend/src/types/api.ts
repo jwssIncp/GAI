@@ -599,9 +599,29 @@ export type ProjectDashboardAnalytics = {
   limitations: string[];
   timezone: string;
 };
+/** Situação do acesso ao app (sem dado sensível). */
+export type FieldAgentAccessStatus =
+  | "NONE"
+  | "INVITATION_PENDING"
+  | "AWAITING_FIRST_ACCESS"
+  | "ACTIVE"
+  | "REVOKED";
+export type FieldAgentAccess = {
+  status: FieldAgentAccessStatus;
+  temporary_password_issued_at: string | null;
+};
+/** Resposta de emissão: temporary_password aparece só aqui, uma vez. */
+export type FieldAgentTemporaryPasswordResult = {
+  field_agent_id: number;
+  linked_user: FieldAgentAccount;
+  access: FieldAgentAccess;
+  temporary_password_expires_at: string | null;
+  temporary_password: string;
+};
 export type FieldAgent = {
   organization_name?: string;
   linked_user?: FieldAgentAccount | null;
+  access?: FieldAgentAccess;
   id: number;
   organization_id: number;
   user_id?: number | null;
@@ -653,7 +673,7 @@ export type FieldAgentDocument = {
   uploaded_by_id: number | null;
   created_at: string;
 };
-export type FieldAgentAccount = { id: number; full_name: string | null; login: string; email: string; status: UserStatus };
+export type FieldAgentAccount = { id: number; full_name: string | null; login: string; email: string | null; status: UserStatus };
 export type FieldAgentProject = { id: number; project_id: number; project_name: string; role: string | null; status: ProjectFieldAgentStatus; start_date: string | null; end_date: string | null };
 export type FieldAgentHistory = { id: number; operation: string; created_at: string; performed_by_name: string; changes: Record<string, { before: unknown; after: unknown }> };
 

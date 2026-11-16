@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fieldAgentsApi } from "@/api/endpoints";
 import { DrawerForm } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Pagination } from "@/components/base/Pagination";
 import { StatusBadge } from "@/components/base/StatusBadge";
 import { useFieldAgent } from "./fieldAgentsQueries";
 import { formatDate, formatDateTime } from "@/utils/format";
-import { userStatusLabels } from "@/features/users/userFields";
+import { FieldAgentAccessPanel } from "./FieldAgentAccessPanel";
 import { usePermissions } from "@/features/auth/usePermissions";
 
 const operationNames: Record<string, string> = {
@@ -21,6 +20,9 @@ const operationNames: Record<string, string> = {
   DELETE: "Exclusão",
   RESTORE: "Restauração",
   INVITE_USER: "Conta convidada",
+  TEMPORARY_ACCESS_CREATED: "Acesso com senha temporária criado",
+  TEMPORARY_PASSWORD_RESET: "Senha temporária redefinida",
+  ACCESS_REVOKED: "Acesso revogado",
   ASSIGN_TO_PROJECT: "Vinculação ao projeto",
   UPDATE_PROJECT_ASSIGNMENT: "Vínculo atualizado",
   REMOVE_FROM_PROJECT: "Vínculo finalizado",
@@ -56,9 +58,7 @@ export function FieldAgentDetailDrawer({
     item = query.data;
   const [projectPage, setProjectPage] = useState(1),
     [historyPage, setHistoryPage] = useState(1);
-  const [notice, setNotice] = useState("");
   const { hasPermission } = usePermissions();
-  const queryClient = useQueryClient();
   const projects = useQuery({
     queryKey: ["field-agents", id, "projects", projectPage],
     queryFn: () =>
@@ -70,18 +70,6 @@ export function FieldAgentDetailDrawer({
     queryFn: () =>
       fieldAgentsApi.history(id!, { page: historyPage, page_size: 10 }),
     enabled: open && Boolean(id) && hasPermission("field-agents:read"),
-  });
-  const resend = useMutation({
-    mutationFn: () => fieldAgentsApi.resendInvitation(id!),
-    onSuccess: async (result) => {
-      setNotice(
-        result.invitation_delivery === "SENT"
-          ? "Convite enviado."
-          : "O convite não foi entregue. Verifique a configuração e a disponibilidade do serviço de e-mail.",
-      );
-      await queryClient.invalidateQueries({ queryKey: ["field-agents"] });
-    },
-    onError: (error) => setNotice(error.message),
   });
   return (
     <DrawerForm
@@ -115,41 +103,14 @@ export function FieldAgentDetailDrawer({
             label="Organização"
             value={item.organization_name || "Organização da sessão"}
           />
-          <Info label="Email" value={item.email} />
+          <Info label="E-mail" value={item.email} />
           <Info label="Telefone" value={item.phone} />
           <Info label="CPF/CNPJ" value={item.document} />
-          <section className="grid gap-3 rounded-lg border p-4">
-            <h3 className="font-semibold">Conta de acesso</h3>
-            {item.linked_user ? (
-              <>
-                <p>{item.linked_user.full_name || item.linked_user.login}</p>
-                <p className="break-all text-muted-foreground">
-                  {item.linked_user.email}
-                </p>
-                <p>{userStatusLabels[item.linked_user.status]}</p>
-                {item.linked_user.status === "PENDING_ACTIVATION" &&
-                hasPermission("users:write") &&
-                hasPermission("field-agents:update") ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={resend.isPending}
-                    onClick={() => resend.mutate()}
-                  >
-                    Reenviar convite
-                  </Button>
-                ) : null}
-              </>
-            ) : (
-              <p>Sem conta de acesso associada.</p>
-            )}
-            <p className="text-muted-foreground">
-              O bloqueio operacional não desativa a conta administrativa.
-              Vínculos inativos ou finalizados não são reativados
-              automaticamente.
-            </p>
-            {notice ? <p role="status">{notice}</p> : null}
-          </section>
+          <FieldAgentAccessPanel agent={item} />
+          <p className="text-muted-foreground">
+            O bloqueio operacional não desativa a conta de acesso. Vínculos
+            inativos ou finalizados não são reativados automaticamente.
+          </p>
           <section className="grid gap-3">
             <h3 className="font-semibold">Projetos vinculados</h3>
             {!hasPermission("project-field-agents:read") ? (
