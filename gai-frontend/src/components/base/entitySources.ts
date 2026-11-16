@@ -76,7 +76,13 @@ export const companySource: EntitySource<{ organization_id?: number | null }> = 
 };
 
 type Project = { id: number; name: string; code?: string | null; company_name?: string | null };
-const project = (p: Project): EntityOption => ({ id: p.id, label: named(p.name, p.code), description: p.company_name ?? null });
+const project = (p: Project): EntityOption => ({
+  id: p.id,
+  label: named(p.name, p.code),
+  name: p.name,
+  code: p.code ?? null,
+  description: p.company_name ?? null,
+});
 /** Projetos (filtra pelo cliente quando o contexto traz company_id). */
 export const projectSource: EntitySource<{ company_id?: number | null }> = {
   key: "projects",
@@ -174,7 +180,13 @@ export const organizationSource: EntitySource = {
 };
 
 type User = { id: number; full_name?: string | null; login: string; email?: string | null };
-const user = (u: User): EntityOption => ({ id: u.id, label: named(u.full_name || u.login, u.full_name ? u.login : null), description: u.email ?? null });
+const user = (u: User): EntityOption => ({
+  id: u.id,
+  label: named(u.full_name || u.login, u.full_name ? u.login : null),
+  name: u.full_name || u.login,
+  code: u.full_name ? u.login : null,
+  description: u.email ?? null,
+});
 /** Usuários da organização (busca por nome, login e e-mail). */
 export const userSource: EntitySource<{ organization_id?: number | null }> = {
   key: "users",

@@ -36,6 +36,28 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     expect(box).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("nomes longos e parecidos: nome inteiro em até 2 linhas, código à parte e destaque no texto", async () => {
+    const long: EntityOption[] = [
+      { id: 1, label: "SINTETICO Projeto laudos de avaliação patrimonial da filial norte 1793212674812 (PRJ-A1)", name: "SINTETICO Projeto laudos de avaliação patrimonial da filial norte 1793212674812", code: "PRJ-A1", description: "Cliente Norte" },
+      { id: 2, label: "SINTETICO Projeto laudos de avaliação patrimonial da filial norte 1793212674999 (PRJ-A2)", name: "SINTETICO Projeto laudos de avaliação patrimonial da filial norte 1793212674999", code: "PRJ-A2", description: "Cliente Norte" },
+    ];
+    const source: EntitySource = { key: "long", search: async () => ({ items: long, hasMore: false }) };
+    mount(<EntityCombobox aria-label="Projeto" source={source} value={2} />);
+    const box = screen.getByRole("combobox", { name: "Projeto" });
+    box.focus();
+    const [a, b] = await screen.findAllByRole("option");
+    // nome inteiro (sem reticências), em até 2 linhas, e o código visível
+    for (const [opt, o] of [[a, long[0]], [b, long[1]]] as const) {
+      const name = within(opt).getByText(o.name!);
+      expect(name).toHaveClass("line-clamp-2");
+      expect(name).not.toHaveClass("truncate");
+      expect(within(opt).getByText(o.code!)).toBeInTheDocument();
+    }
+    // destaque (▸) e escolhido (✓) também pelo texto
+    expect(a.textContent).toMatch(/^▸/);
+    expect(b.textContent).toMatch(/^✓/);
+  });
+
   it("teclado: setas, Home/End, Enter escolhe e Esc fecha", async () => {
     const { source } = fakeSource();
     const onChange = vi.fn();

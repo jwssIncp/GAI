@@ -5,7 +5,15 @@ import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/utils/cn";
 
 /** Uma opção do seletor: o rótulo nunca é o ID (nome e, quando houver, o código entre parênteses). */
-export type EntityOption = { id: number; label: string; description?: string | null };
+export type EntityOption = {
+  id: number;
+  /** Texto do campo depois da escolha: "nome (código)". */
+  label: string;
+  /** Na lista: nome (em até 2 linhas) e código à parte; sem eles, vale o label. */
+  name?: string;
+  code?: string | null;
+  description?: string | null;
+};
 
 /**
  * Fonte de uma entidade: busca paginada no servidor (ou no cliente, quando o
@@ -145,8 +153,9 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
       const up = below < 200 && r.top > below;
       setPlace({
         position: "fixed",
-        left: r.left,
-        width: Math.max(r.width, 220),
+        // Largura própria: maior que o campo (nomes longos), sem passar da tela.
+        width: Math.min(Math.max(r.width, 420), window.innerWidth - 32),
+        left: Math.max(16, Math.min(r.left, window.innerWidth - 16 - Math.min(Math.max(r.width, 420), window.innerWidth - 32))),
         ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }),
         maxHeight: Math.max(160, Math.min(288, (up ? r.top : below) - 12)),
       });
@@ -256,7 +265,7 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
               role="option"
               aria-selected={o.id === selectedId}
               className={cn(
-                "cursor-pointer rounded px-2 py-1.5",
+                "flex cursor-pointer gap-2 rounded px-2 py-1.5",
                 i === active ? "bg-accent text-accent-foreground" : "",
                 o.id === selectedId ? "font-semibold" : "",
               )}
@@ -266,10 +275,22 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
                 choose(o);
               }}
             >
-              <span className="block truncate" title={o.label}>
-                {o.label}
+              {/* Destaque e escolha também pelo texto (não só pela cor): ▸ e ✓. */}
+              <span aria-hidden="true" className="w-3 shrink-0 text-center">
+                {o.id === selectedId ? "✓" : i === active ? "▸" : ""}
               </span>
-              {o.description ? <span className="block truncate text-xs text-muted-foreground">{o.description}</span> : null}
+              <span className="min-w-0 flex-1">
+                <span className="line-clamp-2 break-words" title={o.label}>
+                  {o.name ?? o.label}
+                </span>
+                {o.code || o.description ? (
+                  <span className="block truncate text-xs text-muted-foreground" title={[o.code, o.description].filter(Boolean).join(" · ")}>
+                    {o.code ? <span className="font-mono">{o.code}</span> : null}
+                    {o.code && o.description ? " · " : null}
+                    {o.description}
+                  </span>
+                ) : null}
+              </span>
             </li>
           ))}
           <li role="presentation" aria-live="polite" className="px-2 py-1.5 text-xs text-muted-foreground">

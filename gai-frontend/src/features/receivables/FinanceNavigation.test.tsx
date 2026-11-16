@@ -28,6 +28,8 @@ vi.mock("@/api/http", () => ({
         const list = byId[1] === "companies" ? companies : projects;
         return { data: list.find((x) => x.id === Number(byId[2])) };
       }
+      if (url === "/projects/25/contracts") return { data: [{ id: 4, number: "CT-9", data: { status: "active" } }] };
+      if (url === "/projects/25/contracts/4") return { data: { id: 4, number: "CT-9", data: { status: "active" } } };
       if (url === "/companies") return { data: { items: companies, total_pages: 1 } };
       if (url === "/projects") return { data: { items: projects, total_pages: 1 } };
       throw new Error("GET não simulado: " + url);
@@ -57,6 +59,7 @@ vi.mock("./financeApi", async (original) => ({
     detail: vi.fn(),
     cash: vi.fn(),
     preview: vi.fn(),
+    source: vi.fn(),
     create: vi.fn(),
     command: vi.fn(),
     edit: vi.fn(),
@@ -225,10 +228,40 @@ describe("Financial navigation through real nested routes", () => {
     const project = screen.getByRole("combobox", { name: "Projeto" });
     fireEvent.focus(project);
     fireEvent.change(project, { target: { value: "Vinte" } });
-    fireEvent.mouseDown(await screen.findByRole("option", { name: /^Projeto Vinte e Cinco \(P-25\)/ }));
+    fireEvent.mouseDown(await screen.findByRole("option", { name: /^Projeto Vinte e Cinco P-25/ }));
     await waitFor(() => expect(screen.getByRole("combobox", { name: "Contrato" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("project_id=25"));
+  });
+
+  it("origem Contrato: cliente e projeto vêm da origem, travados; projeto não é pedido duas vezes; Manual fica livre", async () => {
+    grants.add("contracts:read");
+    vi.mocked(financeApi.source).mockResolvedValue({ company_id: 1, project_id: 25, description: "Contrato CT-9", amount: "1000.00", currency: "BRL", issued_on: "2026-11-01" });
+    mount("/app/finance/receivables/new");
+    fireEvent.change(await screen.findByLabelText("Origem"), { target: { value: "contract" } });
+    const project = screen.getByRole("combobox", { name: "Projeto da origem" });
+    fireEvent.focus(project);
+    fireEvent.change(project, { target: { value: "Vinte" } });
+    fireEvent.mouseDown(await screen.findByRole("option", { name: /^Projeto Vinte e Cinco/ }));
+    const contract = screen.getByRole("combobox", { name: "Contrato" });
+    await waitFor(() => expect(contract).toBeEnabled());
+    fireEvent.focus(contract);
+    fireEvent.mouseDown(await screen.findByRole("option", { name: /^Contrato CT-9/ }));
+    // carregada sozinha (sem "Carregar origem")
+    await waitFor(() => expect(financeApi.source).toHaveBeenCalledWith("contract", "4"));
+    expect(screen.queryByRole("button", { name: "Carregar origem" })).not.toBeInTheDocument();
+    const client = screen.getByRole("combobox", { name: "Cliente (da origem)" });
+    await waitFor(() => expect(client).toHaveValue("Cliente Um"));
+    expect(client).toBeDisabled();
+    const fromProject = screen.getByRole("combobox", { name: "Projeto (da origem)" });
+    await waitFor(() => expect(fromProject).toHaveValue("Projeto Vinte e Cinco (P-25)"));
+    expect(fromProject).toBeDisabled();
+    expect(screen.queryByRole("combobox", { name: "Projeto" })).not.toBeInTheDocument();
+    // Manual: campos livres de novo
+    fireEvent.change(screen.getByLabelText("Origem"), { target: { value: "manual" } });
+    expect(screen.getByRole("combobox", { name: "Cliente" })).toBeEnabled();
+    expect(screen.getByRole("combobox", { name: "Projeto" })).toBeEnabled();
+    grants.delete("contracts:read");
   });
 
   it("requires a server preview and explicit confirmation before creating", async () => {

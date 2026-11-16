@@ -2,7 +2,7 @@ import { EntityCombobox } from "@/components/base/EntityCombobox";
 import { amendmentSource, approvedBudgetSource, companySource, contractSource, organizationSource, projectSource } from "@/components/base/entitySources";
 import { formatCivilDate, parseCivilDate } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,25 @@ export function ReceivableForm() {
   // Contexto dos campos de cliente e projeto (o valor vai no FormData pelo campo oculto).
   const [orgId, setOrgId] = useState<number | null>(user?.organization_id ?? null);
   const [companyId, setCompanyId] = useState<number | null>(null);
+  // A origem escolhida é carregada sozinha: cliente, projeto, valor e datas vêm dela.
+  useEffect(() => {
+    if (origin === "manual" || !sourceId) return;
+    let alive = true;
+    setError("");
+    financeApi
+      .source(origin, sourceId)
+      .then((s) => {
+        if (!alive) return;
+        setSource(s);
+        setValues({});
+        setPreview(undefined);
+      })
+      .catch((e: Error) => alive && setError(e.message));
+    return () => {
+      alive = false;
+    };
+  }, [origin, sourceId]);
+  const fromOrigin = origin !== "manual";
   const pickSource = (id: number | null) => {
     setSourceId(id ? String(id) : "");
     setSource(undefined);
@@ -221,24 +240,6 @@ export function ReceivableForm() {
                 ) : null}
               </>
             )}
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy || !sourceId}
-              onClick={async () => {
-                setError("");
-                try {
-                  const s = await financeApi.source(origin, sourceId);
-                  setSource(s);
-                  setValues({});
-                  setPreview(undefined);
-                } catch (e) {
-                  setError((e as Error).message);
-                }
-              }}
-            >
-              Carregar origem
-            </Button>
           </>
         )}
       </div>
@@ -262,32 +263,62 @@ export function ReceivableForm() {
             />
           </label>
         ) : null}
-        <label className="grid gap-1 text-sm">
-          Cliente
-          <EntityCombobox
-            aria-label="Cliente"
-            name="company_id"
-            source={companySource}
-            context={{ organization_id: isPlatformAdmin ? orgId : null }}
-            defaultValue={source?.company_id ?? null}
-            onChange={(id) => {
-              setCompanyId(id);
-              setPreview(undefined);
-            }}
-            required
-          />
-        </label>
-        <label className="grid gap-1 text-sm">
-          Projeto (opcional)
-          <EntityCombobox
-            aria-label="Projeto"
-            name="project_id"
-            source={projectSource}
-            context={{ company_id: companyId ?? source?.company_id ?? null }}
-            defaultValue={source?.project_id ?? urlId("project_id")}
-            onChange={() => setPreview(undefined)}
-          />
-        </label>
+        {fromOrigin ? (
+          <>
+            {/* Da origem: preenchidos e travados (o projeto não é pedido duas vezes). */}
+            <label className="grid gap-1 text-sm">
+              Cliente (da origem)
+              <EntityCombobox
+                aria-label="Cliente (da origem)"
+                name="company_id"
+                source={companySource}
+                value={source?.company_id ?? null}
+                placeholder="Escolha a origem primeiro"
+                disabled
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Projeto (da origem)
+              <EntityCombobox
+                aria-label="Projeto (da origem)"
+                name="project_id"
+                source={projectSource}
+                value={source?.project_id ?? null}
+                placeholder={source ? "Sem projeto" : "Escolha a origem primeiro"}
+                disabled
+              />
+            </label>
+          </>
+        ) : (
+          <>
+            <label className="grid gap-1 text-sm">
+              Cliente
+              <EntityCombobox
+                aria-label="Cliente"
+                name="company_id"
+                source={companySource}
+                context={{ organization_id: isPlatformAdmin ? orgId : null }}
+                defaultValue={null}
+                onChange={(id) => {
+                  setCompanyId(id);
+                  setPreview(undefined);
+                }}
+                required
+              />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Projeto (opcional)
+              <EntityCombobox
+                aria-label="Projeto"
+                name="project_id"
+                source={projectSource}
+                context={{ company_id: companyId }}
+                defaultValue={urlId("project_id")}
+                onChange={() => setPreview(undefined)}
+              />
+            </label>
+          </>
+        )}
         {field("description", "Descrição", "text", source?.description)}
         {field("amount", "Valor total (decimal)", "text", source?.amount)}
         <label className="grid gap-1 text-sm">

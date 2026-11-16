@@ -105,7 +105,7 @@ describe("Filtros de orçamentos por nome (empresa e projeto)", () => {
     await waitFor(() =>
       expect(mocks.get).toHaveBeenCalledWith("/projects", expect.objectContaining({ params: expect.objectContaining({ company_id: 4 }) })),
     );
-    expect(await screen.findByRole("option", { name: /Inventário Beta \(BET-1\)/ })).toBeInTheDocument();
+    expect(await screen.findByRole("option", { name: /Inventário Beta BET-1/ })).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: /Inventário Alfa/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole("option", { name: /Inventário Beta/ }));
     await user.click(screen.getByRole("button", { name: "Aplicar filtros" }));
