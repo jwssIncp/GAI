@@ -197,11 +197,11 @@ export function DreMonthlyPage() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />Mostrar linhas ocultas</label>
       </FilterPanel>
 
-      <div className="relative min-w-0 max-w-full scroll-pl-40 overflow-x-auto rounded-lg border sm:scroll-pl-[17rem]">
+      <div className="relative min-w-0 max-w-full scroll-pl-48 overflow-x-auto rounded-lg border sm:scroll-pl-[19rem]">
         <table className="w-full min-w-max text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="sticky left-0 z-10 w-36 max-w-36 bg-muted px-3 py-2 text-left sm:w-64 sm:max-w-64">Conta</th>
+              <th className="sticky left-0 z-10 w-48 min-w-48 max-w-48 bg-muted px-3 py-2 text-left sm:w-72 sm:min-w-72 sm:max-w-72">Conta</th>
               {!onlyTotal && !data.compare
                 ? months.map((m) => {
                     const st = g.month_state.find((s) => s.month === m)!;
@@ -225,7 +225,7 @@ export function DreMonthlyPage() {
               if (r.kind === "group")
                 return (
                   <tr key={`g${i}`} className="bg-muted/30">
-                    <td className="sticky left-0 z-[1] w-36 max-w-36 bg-muted px-3 py-1 sm:w-64 sm:max-w-64 text-xs font-semibold uppercase tracking-wide text-muted-foreground" colSpan={1}>{r.label}</td>
+                    <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-muted px-3 py-1 sm:w-72 sm:min-w-72 sm:max-w-72 text-xs font-semibold uppercase tracking-wide text-muted-foreground" colSpan={1}>{r.label}</td>
                     <td colSpan={(onlyTotal || data.compare ? 0 : months.length) + 1 + (data.compare ? 2 : 0) + (canConfigure && !summary ? 1 : 0)} />
                   </tr>
                 );
@@ -236,7 +236,7 @@ export function DreMonthlyPage() {
                 const cmpTotal = cmp ? sum(cmp.values) : null;
                 return (
                   <tr key={r.key} className={`border-t ${r.strong ? "bg-primary/5 font-semibold" : "font-medium"}`}>
-                    <td className="sticky left-0 z-[1] w-36 max-w-36 bg-card px-3 py-2 sm:w-64 sm:max-w-64">{r.label}</td>
+                    <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-card px-3 py-2 sm:w-72 sm:min-w-72 sm:max-w-72">{r.label}</td>
                     {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className={`numeric px-3 py-2 text-right ${l.values[j].startsWith("-") ? "text-destructive-text" : ""}`}>{money(l.values[j])}</td>) : null}
                     <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
                     {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
@@ -252,11 +252,20 @@ export function DreMonthlyPage() {
               const info = accountInfo(a.id);
               return (
                 <tr key={a.id} className={`border-t ${hidden.has(a.id) ? "opacity-60" : ""}`}>
-                  <td className="sticky left-0 z-[1] w-36 max-w-36 truncate bg-card px-3 py-2 sm:w-64 sm:max-w-64" title={`${a.code} ${a.name}`}>
-                    {a.code} {a.name}
-                    {a.flow_kinds.length ? <span className="ml-2 rounded bg-primary/10 px-1.5 text-xs text-primary" title={a.flow_kinds.map((k) => data.config.rule_labels[k]).join("; ")}>fluxo</span> : null}
-                    {a.role ? <span className="ml-2 rounded bg-muted px-1.5 text-xs" title={data.config.rule_labels[a.role]}>projeção</span> : null}
-                    {hidden.has(a.id) ? <span className="ml-2 text-xs text-muted-foreground">(oculta)</span> : null}
+                  <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-card px-3 py-2 sm:w-72 sm:min-w-72 sm:max-w-72">
+                    {/* nome em até 2 linhas, com o nome completo na dica; a etiqueta nunca é cortada */}
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-2">
+                      <span className="line-clamp-2 min-w-0 break-words sm:flex-1" title={`${a.code} ${a.name}`} data-testid="dre-account-name">
+                        {a.code} {a.name}
+                      </span>
+                      {a.flow_kinds.length || a.role || hidden.has(a.id) ? (
+                        <span className="flex shrink-0 flex-wrap gap-1">
+                          {a.flow_kinds.length ? <span className="whitespace-nowrap rounded bg-primary/10 px-1.5 text-xs text-primary" title={a.flow_kinds.map((k) => data.config.rule_labels[k]).join("; ")}>fluxo</span> : null}
+                          {a.role ? <span className="whitespace-nowrap rounded bg-muted px-1.5 text-xs" title={data.config.rule_labels[a.role]}>projeção</span> : null}
+                          {hidden.has(a.id) ? <span className="whitespace-nowrap text-xs text-muted-foreground">(oculta)</span> : null}
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                   {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className="px-3 py-2">{cellView(a, a.cells[j])}</td>) : null}
                   <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
