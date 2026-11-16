@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { DataTable } from "@/components/base/DataTable";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { Pagination } from "@/components/base/Pagination";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -226,8 +227,8 @@ export function DreEntryForm({
           Alocações por competência
         </legend>
         <p className="text-xs text-muted-foreground">
-          Sem conta, o valor permanece não classificado. Use ponto decimal,
-          exemplo 100.01.
+          Sem conta, o valor permanece não classificado. Valores em R$, por
+          exemplo 1.234,56 (negativo com o sinal de menos).
         </p>
         {allocations.map((a, i) => (
           <div key={i} className="grid gap-2 rounded-lg border p-3">
@@ -247,17 +248,16 @@ export function DreEntryForm({
               />
             </label>
             <label className="grid gap-1 text-sm">
-              Valor {i + 1}
-              <input
-                className={cls}
+              Valor {i + 1} (R$)
+              <MoneyInput
+                negative
                 required
                 value={a.amount}
-                onChange={(e) => {
-                  const v = e.target.value;
+                onValueChange={(v) =>
                   setAllocations((rows) =>
                     rows.map((r, n) => (n === i ? { ...r, amount: v } : r)),
-                  );
-                }}
+                  )
+                }
               />
             </label>
             <label className="grid gap-1 text-sm">

@@ -43,7 +43,7 @@ export function ReportPreview({
           <p className="text-sm uppercase tracking-wider">
             {data.template.data.report_type}
           </p>
-          <h1 className="mt-3 text-3xl font-bold">{data.title}</h1>
+          <h2 className="mt-3 text-3xl font-bold">{data.title}</h2>
           <p className="mt-4 text-lg">
             {data.sources.fields["company.name"] ?? "Empresa não informada"}
           </p>
