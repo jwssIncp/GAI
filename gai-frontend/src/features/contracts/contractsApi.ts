@@ -1,4 +1,5 @@
 import { api } from "@/api/http";
+import { formatCurrency } from "@/utils/format";
 export const commercialFilterKeys = [
   "contract_from",
   "contract_to",
@@ -156,8 +157,6 @@ export const contractsApi = {
 export const contractMoney = (value: string | null, currency: string) =>
   value == null
     ? "Não informado"
-    : new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(
-        Number(value),
-      );
+    : formatCurrency(value, currency);
 export const contractDate = (value?: string | null) =>
   value ? value.slice(0, 10).split("-").reverse().join("/") : "Não informada";

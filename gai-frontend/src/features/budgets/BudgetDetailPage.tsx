@@ -20,6 +20,7 @@ import {
   type Version,
 } from "./budgetApi";
 import { userLabel } from "@/utils/userName";
+import { formatInteger, formatPercent } from "@/utils/format";
 export function BudgetDetailPage() {
   const { budgetId } = useParams();
   return <BudgetWorkspace key={budgetId} id={Number(budgetId)} />;
@@ -246,12 +247,12 @@ function BudgetWorkspace({ id }: { id: number }) {
               {
                 header: "Equipe / dias",
                 cell: (v) =>
-                  `${v.snapshot.calculation.sizing.team} / ${v.snapshot.calculation.sizing.field_days}`,
+                  `${formatInteger(v.snapshot.calculation.sizing.team)} / ${formatInteger(v.snapshot.calculation.sizing.field_days)}`,
               },
               {
                 header: "Produtividade / margem",
                 cell: (v) =>
-                  `${v.snapshot.calculation.inputs.productivity} / ${v.snapshot.calculation.rates.margin_pct}%`,
+                  `${formatInteger(v.snapshot.calculation.inputs.productivity)} / ${formatPercent(v.snapshot.calculation.rates.margin_pct)}`,
               },
               {
                 header: "Custos",
@@ -357,8 +358,8 @@ function BudgetWorkspace({ id }: { id: number }) {
             <p className="whitespace-pre-wrap text-sm">{proposal.data.scope}</p>
             <p className="text-sm">
               Serviços: {proposal.data.services.join(", ") || "Não informados"}{" "}
-              · bens estimados: {proposal.data.assets} · prazo de campo:{" "}
-              {proposal.data.field_days} dias.
+              · bens estimados: {formatInteger(proposal.data.assets)} · prazo de
+              campo: {formatInteger(proposal.data.field_days)} dias.
             </p>
             {proposal.data.units.map((u) => (
               <p key={u.id} className="text-sm">

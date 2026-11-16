@@ -3,12 +3,15 @@ import { MetricCard } from "@/components/base/Cards";
 import {
   budgetDate,
   budgetMoney,
+  pricingLabel,
   pricingMoney,
   pricingNumbers,
   pricingRates,
+  pricingValue,
   type Payment,
   type Snapshot,
 } from "./budgetApi";
+import { formatDecimal, formatInteger, formatPercent } from "@/utils/format";
 export function PaymentMemory({
   payment,
   currency,
@@ -33,7 +36,7 @@ export function PaymentMemory({
             cell: (r) => (r.kind === "entry" ? "Entrada" : r.position),
           },
           { header: "Data prevista", cell: (r) => budgetDate(r.due_on) },
-          { header: "Percentual efetivo", cell: (r) => `${r.percentage}%` },
+          { header: "Percentual efetivo", cell: (r) => formatPercent(r.percentage, 4) },
           { header: "Valor", cell: (r) => budgetMoney(r.amount, currency) },
         ]}
       />
@@ -60,7 +63,7 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
         <MetricCard label="Custo estimado" value={money(c.cost_total)} />
         <MetricCard
           label="Equipe e campo"
-          value={`${c.sizing.team} pessoas · ${c.sizing.field_days} dias`}
+          value={`${formatInteger(c.sizing.team)} pessoas · ${formatInteger(c.sizing.field_days)} dias`}
         />
         <MetricCard
           label="Resultado após custos, impostos e comissão"
@@ -70,20 +73,23 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
       <section className="premium-panel grid gap-2 p-5 text-sm">
         <h2 className="font-semibold">Entradas e dimensionamento</h2>
         <p>
-          {c.inputs.assets} bens · {c.inputs.address_count} endereços ·
-          produtividade {c.inputs.productivity} · fator{" "}
-          {c.inputs.address_factor} · {c.inputs.available_days} dias
-          disponíveis.
+          {formatInteger(c.inputs.assets)} bens ·{" "}
+          {formatInteger(c.inputs.address_count)} endereços · produtividade{" "}
+          {formatInteger(c.inputs.productivity)} · fator{" "}
+          {formatDecimal(c.inputs.address_factor)} ·{" "}
+          {formatInteger(c.inputs.available_days)} dias disponíveis.
         </p>
         <p>
-          Esforço: {c.sizing.effort_assets} pessoas-dia por bens e{" "}
-          {c.sizing.effort_addresses} por endereços; adotado{" "}
-          {c.sizing.person_days}. Equipe necessária: {c.sizing.required_team};
-          adotada: {c.sizing.team}.
+          Esforço: {formatInteger(c.sizing.effort_assets)} pessoas-dia por bens
+          e {formatInteger(c.sizing.effort_addresses)} por endereços; adotado{" "}
+          {formatInteger(c.sizing.person_days)}. Equipe necessária:{" "}
+          {formatInteger(c.sizing.required_team)}; adotada:{" "}
+          {formatInteger(c.sizing.team)}.
         </p>
         <p>
-          Permanência: {c.sizing.stay_days} dias ({c.sizing.extra_days} extras);
-          quartos: {c.sizing.rooms}.
+          Permanência: {formatInteger(c.sizing.stay_days)} dias (
+          {formatInteger(c.sizing.extra_days)} extras); quartos:{" "}
+          {formatInteger(c.sizing.rooms)}.
         </p>
         <p>
           Restrições operacionais:{" "}
@@ -93,12 +99,27 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
         {c.manual_adjustments ? (
           <p className="rounded border border-warning/30 p-3">
             Ajustes manuais autorizados: {c.manual_adjustments.reason}. Equipe{" "}
-            {c.manual_adjustments.team ?? "configurada"}, dias{" "}
-            {c.manual_adjustments.available_days ?? "configurados"},
-            produtividade {c.manual_adjustments.productivity ?? "configurada"},
-            margem {c.manual_adjustments.margin_pct ?? "configurada"}, acréscimo{" "}
-            {c.manual_adjustments.operational_extra ?? "0.00"}, preço manual{" "}
-            {c.manual_adjustments.final_price ?? "não utilizado"}.
+            {c.manual_adjustments.team == null
+              ? "configurada"
+              : formatInteger(c.manual_adjustments.team)}
+            , dias{" "}
+            {c.manual_adjustments.available_days == null
+              ? "configurados"
+              : formatInteger(c.manual_adjustments.available_days)}
+            , produtividade{" "}
+            {c.manual_adjustments.productivity == null
+              ? "configurada"
+              : formatInteger(c.manual_adjustments.productivity)}
+            , margem{" "}
+            {c.manual_adjustments.margin_pct == null
+              ? "configurada"
+              : formatPercent(c.manual_adjustments.margin_pct)}
+            , acréscimo {money(c.manual_adjustments.operational_extra ?? "0")},
+            preço manual{" "}
+            {c.manual_adjustments.final_price == null
+              ? "não utilizado"
+              : money(c.manual_adjustments.final_price)}
+            .
           </p>
         ) : null}
       </section>
@@ -108,7 +129,7 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
         getKey={(l) => l.key}
         columns={[
           { header: "Componente", cell: (l) => l.label },
-          { header: "Quantidade", cell: (l) => l.quantity },
+          { header: "Quantidade", cell: (l) => formatInteger(l.quantity) },
           { header: "Valor unitário", cell: (l) => money(l.unit_value) },
           { header: "Subtotal", cell: (l) => money(l.subtotal) },
           { header: "Fórmula", cell: (l) => l.formula },
@@ -117,9 +138,10 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
       <section className="premium-panel grid gap-2 p-5 text-sm">
         <h2 className="font-semibold">Composição do preço</h2>
         <p>
-          Impostos declarados {c.rates.tax_pct}%: {money(c.tax_amount)} ·
-          comissão {c.rates.commission_pct}%: {money(c.commission_amount)} ·
-          margem alvo {c.rates.margin_pct}%.
+          Impostos declarados {formatPercent(c.rates.tax_pct)}:{" "}
+          {money(c.tax_amount)} · comissão {formatPercent(c.rates.commission_pct)}
+          : {money(c.commission_amount)} · margem alvo{" "}
+          {formatPercent(c.rates.margin_pct)}.
         </p>
         <p>
           Preço por gross-up: {money(c.gross_up_price)} · piso:{" "}
@@ -145,21 +167,13 @@ export function BudgetMemory({ snapshot: s }: { snapshot: Snapshot }) {
           {Object.values(c.formulas).map((v) => (
             <p key={v}>{v}</p>
           ))}
-          {pricingNumbers.map(([key, label]) => (
-            <p key={key}>
-              {label}: {p.values[key]}
-            </p>
-          ))}
-          {pricingMoney.map(([key, label]) => (
-            <p key={key}>
-              {label}: {money(p.values[key])}
-            </p>
-          ))}
-          {pricingRates.map(([key, label]) => (
-            <p key={key}>
-              {label}: {p.values[key]}
-            </p>
-          ))}
+          {[...pricingNumbers, ...pricingMoney, ...pricingRates].map(
+            ([key, label]) => (
+              <p key={key}>
+                {pricingLabel(label)}: {pricingValue(p.values, key)}
+              </p>
+            ),
+          )}
         </div>
       </details>
     </div>

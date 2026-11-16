@@ -22,6 +22,7 @@ import {
   contractStatuses,
   type ContractSnapshot,
 } from "./contractsApi";
+import { formatInteger, formatMonth, formatPercent } from "@/utils/format";
 interface Amount {
   value: string | null;
   known: number;
@@ -270,20 +271,20 @@ export function CommercialOverview({
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Contratos no recorte"
-              value={String(data.count)}
+              value={formatInteger(data.count)}
             />
             <MetricCard
               label="Bens estimados em contratos"
               value={
                 data.estimated_assets == null
                   ? "Não informado"
-                  : data.estimated_assets.toLocaleString("pt-BR")
+                  : formatInteger(data.estimated_assets)
               }
               hint={`${data.missing_estimated_assets} contratos sem estimativa.`}
             />
             <MetricCard
               label="Contratos sem data de contratação"
-              value={String(data.undated_contracts)}
+              value={formatInteger(data.undated_contracts)}
               hint="Não entram nos indicadores anuais."
             />
           </div>
@@ -329,7 +330,7 @@ export function CommercialOverview({
                   value={
                     t.recurring_count == null
                       ? "Não informada"
-                      : String(t.recurring_count)
+                      : formatInteger(t.recurring_count)
                   }
                   hint={`${t.non_recurring_count} não recorrentes; ${t.unknown_recurring_count} sem informação.`}
                 />
@@ -366,7 +367,7 @@ export function CommercialOverview({
                 header: "Ano / moeda",
                 cell: (t) => `${t.year} · ${t.currency}`,
               },
-              { header: "Contratos", cell: (t) => t.count },
+              { header: "Contratos", cell: (t) => formatInteger(t.count) },
               {
                 header: "Original",
                 cell: (t) => contractMoney(t.original.value, t.currency),
@@ -379,7 +380,7 @@ export function CommercialOverview({
                 header: "Ticket anual vigente",
                 cell: (t) => contractMoney(t.average, t.currency),
               },
-              { header: "Sem valor", cell: (t) => t.current.missing },
+              { header: "Sem valor", cell: (t) => formatInteger(t.current.missing) },
             ]}
           />
           {[
@@ -398,7 +399,7 @@ export function CommercialOverview({
                 getKey={(g) => g.key}
                 columns={[
                   { header: String(title), cell: (g) => g.label },
-                  { header: "Contratos", cell: (g) => g.count },
+                  { header: "Contratos", cell: (g) => formatInteger(g.count) },
                   {
                     header: "Valor vigente",
                     cell: (g) => <Amounts totals={g.totals} />,
@@ -413,7 +414,7 @@ export function CommercialOverview({
             getKey={(s) => s.status}
             columns={[
               { header: "Status", cell: (s) => contractStatuses[s.status] },
-              { header: "Contratos", cell: (s) => s.count },
+              { header: "Contratos", cell: (s) => formatInteger(s.count) },
             ]}
           />
           <h3 className="font-semibold">Evolução dos status contratuais</h3>
@@ -426,12 +427,15 @@ export function CommercialOverview({
             items={data.status_evolution}
             getKey={(s) => s.month}
             columns={[
-              { header: "Mês", cell: (s) => s.month },
+              { header: "Mês", cell: (s) => formatMonth(s.month) },
               {
                 header: "Contratos por status",
                 cell: (s) =>
                   s.statuses
-                    .map((v) => `${contractStatuses[v.status]}: ${v.count}`)
+                    .map(
+                      (v) =>
+                        `${contractStatuses[v.status]}: ${formatInteger(v.count)}`,
+                    )
                     .join(" · "),
               },
             ]}
@@ -447,14 +451,21 @@ export function CommercialOverview({
             getKey={(s) => s.stage}
             columns={[
               { header: "Etapa / fonte operacional", cell: (s) => s.stage },
-              { header: "Registros", cell: (s) => s.total ?? "Sem dados" },
-              { header: "Concluídos", cell: (s) => s.completed ?? "Sem dados" },
+              {
+                header: "Registros",
+                cell: (s) => (s.total == null ? "Sem dados" : formatInteger(s.total)),
+              },
+              {
+                header: "Concluídos",
+                cell: (s) =>
+                  s.completed == null ? "Sem dados" : formatInteger(s.completed),
+              },
               {
                 header: "Progresso atual",
                 cell: (s) =>
                   s.percentage == null
                     ? "Não disponível"
-                    : `${s.percentage.toLocaleString("pt-BR")}%`,
+                    : formatPercent(s.percentage),
               },
             ]}
           />
