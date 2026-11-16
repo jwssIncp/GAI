@@ -84,6 +84,19 @@ describe('Inventory Pending Issues (e2e)', () => {
         expect(body.status).toBe('resolved');
         expect(body.resolved_by_id).toEqual(expect.any(Number));
       });
+    // O detalhe traz o nome de quem resolveu (sem exigir leitura de usuários).
+    await request(app.getHttpServer())
+      .get(`/api/v1/projects/${project.id}/pending-issues/${issue.id}`)
+      .set('Authorization', `Bearer ${orgAdminToken}`)
+      .expect(200)
+      .expect((response) => {
+        const body = response.body as PendingIssueResponseBody & {
+          resolved_by_name: string | null;
+          ignored_by_name: string | null;
+        };
+        expect(body.resolved_by_name).toEqual(expect.any(String));
+        expect(body.ignored_by_name).toBeNull();
+      });
 
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.json_to_sheet([

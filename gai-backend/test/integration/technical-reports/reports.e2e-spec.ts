@@ -120,6 +120,9 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
       .getRepository(ReportTemplateVersion)
       .findOneByOrFail({ id: t.publishedVersionId });
     expect(v.operation).toBe('publish');
+    // Histórico do modelo traz o nome de quem registrou cada revisão.
+    const history = (await get('/templates/' + t.id).expect(200)).body;
+    expect(history.versions[0].actor_name).toEqual(expect.any(String));
   });
   it('rejects malformed nested models and active markup', async () => {
     await post('/templates', { ...command() }).expect(400);
@@ -353,6 +356,7 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
     expect(f.pdf_docx_contract.available).toBe(true);
     expect(f.pdf_docx_contract.formats).toEqual(['pdf', 'docx']);
     const draft = r.versions.find((v: any) => v.status === 'draft');
+    expect(draft.actor_name).toEqual(expect.any(String));
     await get(`/${r.id}/versions/${draft.id}/export`).expect(409);
   });
   it('revalidates catalog/source permissions on historical reads and downloads', async () => {

@@ -6,6 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
+import { DataSource } from 'typeorm';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../../../auth/application/services/user-names';
 import {
   INVENTORY_ACCOUNTING_ITEM_REPOSITORY,
   type InventoryAccountingItemRepository,
@@ -56,6 +61,7 @@ export class InventoryPendingIssuesService {
     private readonly accountingItems: InventoryAccountingItemRepository,
     private readonly scope: InventoryPendingIssueScopeService,
     private readonly logger: PinoLogger,
+    private readonly ds: DataSource,
   ) {
     this.logger.setContext(InventoryPendingIssuesService.name);
   }
@@ -157,7 +163,17 @@ export class InventoryPendingIssuesService {
     actor: InventoryPendingIssueActorContext,
   ): Promise<InventoryPendingIssueResponseDto> {
     const issue = await this.findIssue(projectId, id, actor);
-    return InventoryPendingIssueResponseDto.fromDomain(issue);
+    // Nomes de quem resolveu/ignorou, sem exigir leitura de usuários.
+    const props = issue.toProps();
+    const names = await loadUserNames(this.ds.manager, [
+      props.resolvedById,
+      props.ignoredById,
+    ]);
+    return {
+      ...InventoryPendingIssueResponseDto.fromDomain(issue),
+      resolved_by_name: userNameOf(names, props.resolvedById),
+      ignored_by_name: userNameOf(names, props.ignoredById),
+    };
   }
 
   async update(
@@ -362,7 +378,7 @@ export class InventoryPendingIssuesService {
         message:
           error instanceof Error
             ? error.message
-            : 'Issue status blocks this operation',
+            : 'A situação da pendência não permite esta operação.',
       });
     }
     const saved = await this.repository.saveWithAudit(issue, {
@@ -451,7 +467,7 @@ export class InventoryPendingIssuesService {
     if (!project)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
     if (mutation) this.scope.assertProjectAllowsMutation(project);
@@ -467,7 +483,7 @@ export class InventoryPendingIssuesService {
     if (!issue || issue.projectId !== projectId)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory pending issue not found',
+        message: 'Pendência não encontrada.',
       });
     this.scope.assertCanAccessOrganization(actor, issue.organizationId);
     return issue;
@@ -489,7 +505,7 @@ export class InventoryPendingIssuesService {
       )
         throw new BadRequestException({
           code: 'VALIDATION_ERROR',
-          message: 'Invalid inventory_item_id',
+          message: 'Item inventariado inválido para este projeto.',
         });
       this.scope.assertCanAccessOrganization(actor, item.organizationId);
     }
@@ -502,7 +518,7 @@ export class InventoryPendingIssuesService {
       )
         throw new BadRequestException({
           code: 'VALIDATION_ERROR',
-          message: 'Invalid accounting_item_id',
+          message: 'Item contábil inválido para este projeto.',
         });
       this.scope.assertCanAccessOrganization(actor, item.organizationId);
     }
@@ -525,7 +541,7 @@ export class InventoryPendingIssuesService {
     if (duplicate)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Open pending issue already exists for this target',
+        message: 'Já existe uma pendência aberta para este item.',
       });
   }
 

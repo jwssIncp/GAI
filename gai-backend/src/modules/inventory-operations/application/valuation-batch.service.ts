@@ -14,6 +14,10 @@ import {
   type ProjectActorContext,
 } from '../../projects/application/services/project-scope.service';
 import { ProjectEntity } from '../../projects/infrastructure/persistence/project.entity';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../../auth/application/services/user-names';
 import { ProjectStatusTransitionPolicy } from '../../projects/domain/services/project-status-transition.policy';
 import { InventoryItemEntity } from '../../inventory-items/infrastructure/persistence/inventory-item.entity';
 import { AssetValuationEntity } from '../infrastructure/persistence/inventory-operation.entity';
@@ -81,7 +85,7 @@ export class ValuationBatchService {
         ? { lock: { mode: 'pessimistic_write' as const } }
         : {}),
     });
-    if (!project) throw new NotFoundException('Project not found');
+    if (!project) throw new NotFoundException('Projeto não encontrado.');
     this.scope.assertCanAccessProject(actor, project.organizationId);
     if (
       write &&
@@ -356,8 +360,14 @@ export class ValuationBatchService {
     const project = await m
       .getRepository(ProjectEntity)
       .findOneByOrFail({ id: batch.projectId });
+    const names = await loadUserNames(m, [
+      batch.createdById,
+      batch.confirmedById,
+    ]);
     return {
       ...batch,
+      createdByName: userNameOf(names, batch.createdById),
+      confirmedByName: userNameOf(names, batch.confirmedById),
       project: { id: project.id, name: project.name },
       items: rows.map((row) => ({
         ...row,

@@ -381,4 +381,48 @@ describe("Field coordination UI", () => {
       screen.queryByRole("button", { name: "Nova tarefa" }),
     ).not.toBeInTheDocument();
   });
+  it("mostra o nome de quem concluiu e de quem fez cada ação, nunca o ID", async () => {
+    vi.mocked(fieldApi.dashboard).mockResolvedValue({
+      ...structuredClone(dashboard),
+      checklist: {
+        ...row,
+        status: "completed",
+        completedAt: "2026-11-10T12:00:00.000Z",
+        completedById: 5,
+        completedByName: "Carla Coordenadora",
+      },
+    });
+    vi.spyOn(fieldApi, "history").mockResolvedValue({
+      items: [
+        {
+          id: 1,
+          operation: "transition",
+          performedById: 5,
+          performedByName: "Carla Coordenadora",
+          createdAt: "2026-11-10T12:00:00.000Z",
+          changes: {},
+        },
+        {
+          id: 2,
+          operation: "transition",
+          performedById: 8,
+          performedByName: null,
+          createdAt: "2026-11-09T12:00:00.000Z",
+          changes: {},
+        },
+      ],
+      next_before_id: null,
+    });
+    setup();
+    expect(
+      await screen.findByText(/Concluído · .* · Carla Coordenadora/),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Histórico de campo" }),
+    );
+    const panel = within(await screen.findByRole("dialog"));
+    expect(await panel.findByText(/Carla Coordenadora/)).toBeInTheDocument();
+    expect(panel.getByText(/Usuário removido/)).toBeInTheDocument();
+    expect(screen.queryByText(/#5|#8/)).not.toBeInTheDocument();
+  });
 });

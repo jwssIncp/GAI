@@ -9,6 +9,10 @@ import {
 } from '../projects/application/services/project-scope.service';
 import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import { UserStatus } from '../auth/domain/enums/user.enums';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
 import { UserRoleAssignmentEntity } from '../users/infrastructure/persistence/user-role-assignment.entity';
 import { documentHash as hash } from './report.hash';
 import {
@@ -135,12 +139,20 @@ export class TechnicalReportsService {
   ) {
     const p = await this.project(this.ds.manager, projectId, actor),
       t = await this.template(this.ds.manager, p, id);
+    const versions = await this.ds.manager.find(ReportTemplateVersion, {
+      where: { templateId: id, organizationId: t.organizationId },
+      order: { revision: 'DESC' },
+    });
+    const names = await loadUserNames(
+      this.ds.manager,
+      versions.map((v) => v.actorId),
+    );
     return {
       template: t,
-      versions: await this.ds.manager.find(ReportTemplateVersion, {
-        where: { templateId: id, organizationId: t.organizationId },
-        order: { revision: 'DESC' },
-      }),
+      versions: versions.map((v) => ({
+        ...v,
+        actor_name: userNameOf(names, v.actorId),
+      })),
     };
   }
   private templateVersion(
@@ -452,6 +464,10 @@ export class TechnicalReportsService {
         where: { reportId: id, projectId, organizationId: r.organizationId },
         order: { revision: 'DESC' },
       });
+      const names = await loadUserNames(
+        m,
+        versions.map((v) => v.actorId),
+      );
       return {
         ...r,
         versions: versions.map((v) => ({
@@ -460,6 +476,7 @@ export class TechnicalReportsService {
           status: v.status,
           hash: v.hash,
           actorId: v.actorId,
+          actor_name: userNameOf(names, v.actorId),
           recordedAt: v.recordedAt,
           reason: v.reason,
         })),

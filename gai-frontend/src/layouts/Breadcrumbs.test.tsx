@@ -13,6 +13,11 @@ vi.mock("@/api/endpoints", async (original) => ({
   ...(await original<typeof import("@/api/endpoints")>()),
   projectsApi: { get: (id: number) => get(id) },
 }));
+const receivable = vi.fn();
+vi.mock("@/features/receivables/financeApi", async (original) => ({
+  ...(await original<typeof import("@/features/receivables/financeApi")>()),
+  financeApi: { detail: (id: string) => receivable(id) },
+}));
 
 function user(permissions: string[]): CurrentUser {
   return {
@@ -43,7 +48,11 @@ function renderAt(path: string, current: CurrentUser) {
 }
 
 describe("Breadcrumbs do workspace do projeto", () => {
-  beforeEach(() => get.mockReset());
+  beforeEach(() => {
+    get.mockReset();
+    // A tela revalida o projeto ao montar; a API simulada devolve o mesmo projeto do cache.
+    get.mockResolvedValue({ id: 10, name: "Center Norte" });
+  });
   it.each([
     ["/app/projects/10/summary", "", ["Visão geral", "Resumo"]],
     ["/app/projects/10/summary", "#inventariantes", ["Campo", "Equipe de campo"]],
@@ -115,11 +124,20 @@ describe("Breadcrumbs fora do projeto", () => {
   });
 
   it("detalhe do recebível: Financeiro e Recebíveis são links, mantendo o projeto do contexto", () => {
+    receivable.mockRejectedValue(new Error("sem permissão"));
     const crumbs = renderAt("/app/finance/receivables/12?project_id=10", user(["receivables:read"]));
     expect(texts(crumbs)).toEqual(["Financeiro", "Recebíveis", "#12"]);
     expect(crumbs.getByRole("link", { name: "Financeiro" })).toHaveAttribute("href", "/app/finance?project_id=10");
     expect(crumbs.getByRole("link", { name: "Recebíveis" })).toHaveAttribute("href", "/app/finance/receivables?project_id=10");
     expect(crumbs.getByText("#12")).toHaveAttribute("aria-current", "page");
+  });
+
+  it("detalhe do recebível mostra a descrição no lugar de #id; sem acesso, mantém o código", async () => {
+    receivable.mockResolvedValue({ id: 12, data: { description: "Contrato CT-9 · parcela 1" } });
+    const crumbs = renderAt("/app/finance/receivables/12", user(["receivables:read"]));
+    expect(await crumbs.findByText("Contrato CT-9 · parcela 1")).toHaveAttribute("aria-current", "page");
+    expect(crumbs.queryByText("#12")).not.toBeInTheDocument();
+    expect(receivable).toHaveBeenCalledWith("12");
   });
 
   it("detalhe da classificação da DRE: mesmo rótulo da aba e links nos níveis", () => {

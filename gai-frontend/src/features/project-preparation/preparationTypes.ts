@@ -65,6 +65,9 @@ export interface AnswerPayload {
 export interface PreparationAnswer extends AnswerPayload {
   applicable: boolean;
   answered_by_id: number | null;
+  /** Nomes para exibição (nulo = usuário removido). */
+  responsible_user_name?: string | null;
+  answered_by_name?: string | null;
   answered_at: string | null;
   allocations: Array<{
     unit_id: number;
@@ -87,6 +90,9 @@ export interface Preparation {
   due_date: string | null;
   notes: string | null;
   approved_by_id: number | null;
+  /** Nomes para exibição (nulo = usuário removido). */
+  responsible_user_name?: string | null;
+  approved_by_name?: string | null;
   approved_at: string | null;
   created_at: string;
   updated_at: string;
@@ -132,6 +138,7 @@ export interface PreparationHistory {
     id: number;
     operation: string;
     performed_by_id: number;
+    performed_by_name?: string | null;
     created_at: string;
     changes: Record<string, unknown>;
   }>;

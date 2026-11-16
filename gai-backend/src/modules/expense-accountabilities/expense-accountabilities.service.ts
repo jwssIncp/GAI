@@ -7,9 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, In, QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from '../auth/domain/enums/user.enums';
 import { ProjectFieldAgentStatus } from '../field-agents/domain/enums/project-field-agent-status.enum';
+import { FieldAgentEntity } from '../field-agents/infrastructure/persistence/field-agent.entity';
 import { ProjectFieldAgentEntity } from '../field-agents/infrastructure/persistence/project-field-agent.entity';
 import { ExpenseEntity } from '../payments-expenses/infrastructure/persistence/expense.entity';
 import { ProjectEntity } from '../projects/infrastructure/persistence/project.entity';
@@ -64,7 +65,7 @@ export class ExpenseAccountabilitiesService {
     if (end < start)
       throw new ConflictException({
         code: 'INVALID_ACCOUNTABILITY_PERIOD',
-        message: 'period_end cannot precede period_start',
+        message: 'O fim do período não pode ser anterior ao início.',
       });
     const assignment = await this.assignments.findOne({
       where: {
@@ -77,29 +78,31 @@ export class ExpenseAccountabilitiesService {
     if (!assignment)
       throw new ConflictException({
         code: 'FIELD_AGENT_NOT_ASSIGNED',
-        message: 'Field agent must be actively assigned to project',
+        message: 'O inventariante precisa estar vinculado e ativo no projeto.',
       });
-    return this.dataSource.transaction(async (manager) => {
-      const row = await manager
-        .getRepository(ExpenseAccountabilityEntity)
-        .save({
-          organizationId: project.organizationId,
-          projectId,
-          fieldAgentId: dto.field_agent_id,
-          periodStart: start,
-          periodEnd: end,
-          status: ExpenseAccountabilityStatus.OPEN,
-          totalAmount: '0.00',
-          notes: dto.notes?.trim() || null,
-          responsibleById: actor.id,
-          closedById: null,
-          closedAt: null,
+    return this.dataSource
+      .transaction(async (manager) => {
+        const row = await manager
+          .getRepository(ExpenseAccountabilityEntity)
+          .save({
+            organizationId: project.organizationId,
+            projectId,
+            fieldAgentId: dto.field_agent_id,
+            periodStart: start,
+            periodEnd: end,
+            status: ExpenseAccountabilityStatus.OPEN,
+            totalAmount: '0.00',
+            notes: dto.notes?.trim() || null,
+            responsibleById: actor.id,
+            closedById: null,
+            closedAt: null,
+          });
+        await this.audit(manager, row, null, 'CREATE', actor.id, {
+          status: row.status,
         });
-      await this.audit(manager, row, null, 'CREATE', actor.id, {
-        status: row.status,
-      });
-      return this.response(row, []);
-    });
+        return this.response(row, []);
+      })
+      .then((r) => this.withNames([r]).then(([x]) => x));
   }
 
   async list(
@@ -133,11 +136,13 @@ export class ExpenseAccountabilitiesService {
       .skip((query.page - 1) * query.page_size)
       .take(query.page_size)
       .getManyAndCount();
-    const items = await Promise.all(
-      rows.map(async (row) =>
-        this.response(
-          row,
-          await this.items.find({ where: { accountabilityId: row.id } }),
+    const items = await this.withNames(
+      await Promise.all(
+        rows.map(async (row) =>
+          this.response(
+            row,
+            await this.items.find({ where: { accountabilityId: row.id } }),
+          ),
         ),
       ),
     );
@@ -155,7 +160,7 @@ export class ExpenseAccountabilitiesService {
     if (accountability.status !== ExpenseAccountabilityStatus.OPEN)
       throw new ConflictException({
         code: 'ACCOUNTABILITY_NOT_OPEN',
-        message: 'Only open accountabilities can be changed',
+        message: 'Só prestações de contas abertas podem ser alteradas.',
       });
     const expense = await this.expenses.findOne({
       where: {
@@ -164,11 +169,12 @@ export class ExpenseAccountabilitiesService {
         projectId,
       },
     });
-    if (!expense) this.notFound('Expense');
+    if (!expense) this.notFound('Despesa não encontrada.');
     if (expense.fieldAgentId !== accountability.fieldAgentId)
       throw new ConflictException({
         code: 'EXPENSE_FIELD_AGENT_MISMATCH',
-        message: 'Expense must belong to the accountability field agent',
+        message:
+          'A despesa precisa ser do inventariante da prestação de contas.',
       });
     const expenseDate = this.date(this.dateKey(expense.expenseDate));
     if (
@@ -177,10 +183,11 @@ export class ExpenseAccountabilitiesService {
     )
       throw new ConflictException({
         code: 'EXPENSE_OUTSIDE_ACCOUNTABILITY_PERIOD',
-        message: 'Expense date must be inside the accountability period',
+        message:
+          'A data da despesa precisa estar dentro do período da prestação de contas.',
       });
     try {
-      return await this.dataSource.transaction(async (manager) => {
+      const saved = await this.dataSource.transaction(async (manager) => {
         if (
           await manager
             .getRepository(ExpenseAccountabilityItemEntity)
@@ -188,7 +195,7 @@ export class ExpenseAccountabilitiesService {
         )
           throw new ConflictException({
             code: 'EXPENSE_ALREADY_ACCOUNTED',
-            message: 'Expense already belongs to an accountability',
+            message: 'A despesa já está em uma prestação de contas.',
           });
         const link = await manager
           .getRepository(ExpenseAccountabilityItemEntity)
@@ -211,11 +218,12 @@ export class ExpenseAccountabilitiesService {
           .find({ where: { accountabilityId: id } });
         return this.response(accountability, links.length ? links : [link]);
       });
+      return (await this.withNames([saved]))[0];
     } catch (error) {
       if (this.isDuplicateExpenseMembership(error)) {
         throw new ConflictException({
           code: 'EXPENSE_ALREADY_ACCOUNTED',
-          message: 'Expense already belongs to an accountability',
+          message: 'A despesa já está em uma prestação de contas.',
         });
       }
       throw error;
@@ -225,10 +233,13 @@ export class ExpenseAccountabilitiesService {
   async get(projectId: number, id: number, actor: ExpenseAccountabilityActor) {
     await this.project(projectId, actor, false);
     const row = await this.requireAccountability(projectId, id);
-    return this.response(
-      row,
-      await this.items.find({ where: { accountabilityId: id } }),
-    );
+    const [item] = await this.withNames([
+      this.response(
+        row,
+        await this.items.find({ where: { accountabilityId: id } }),
+      ),
+    ]);
+    return item;
   }
 
   async close(
@@ -237,50 +248,52 @@ export class ExpenseAccountabilitiesService {
     actor: ExpenseAccountabilityActor,
   ) {
     await this.project(projectId, actor, true);
-    return this.dataSource.transaction(async (manager) => {
-      const repo = manager.getRepository(ExpenseAccountabilityEntity);
-      const row = await repo.findOne({
-        where: { id, projectId },
-        ...(manager.connection.options.type === 'mysql'
-          ? { lock: { mode: 'pessimistic_write' as const } }
-          : {}),
-      });
-      if (!row) this.notFound('Expense accountability');
-      if (row.status !== ExpenseAccountabilityStatus.OPEN)
-        throw new ConflictException({
-          code: 'ACCOUNTABILITY_NOT_OPEN',
-          message: 'Only open accountabilities can be closed',
+    return this.dataSource
+      .transaction(async (manager) => {
+        const repo = manager.getRepository(ExpenseAccountabilityEntity);
+        const row = await repo.findOne({
+          where: { id, projectId },
+          ...(manager.connection.options.type === 'mysql'
+            ? { lock: { mode: 'pessimistic_write' as const } }
+            : {}),
         });
-      const links = await manager
-        .getRepository(ExpenseAccountabilityItemEntity)
-        .find({ where: { accountabilityId: id } });
-      if (!links.length)
-        throw new ConflictException({
-          code: 'ACCOUNTABILITY_EMPTY',
-          message: 'At least one expense is required',
+        if (!row) this.notFound('Prestação de contas não encontrada.');
+        if (row.status !== ExpenseAccountabilityStatus.OPEN)
+          throw new ConflictException({
+            code: 'ACCOUNTABILITY_NOT_OPEN',
+            message: 'Só prestações de contas abertas podem ser fechadas.',
+          });
+        const links = await manager
+          .getRepository(ExpenseAccountabilityItemEntity)
+          .find({ where: { accountabilityId: id } });
+        if (!links.length)
+          throw new ConflictException({
+            code: 'ACCOUNTABILITY_EMPTY',
+            message: 'Inclua ao menos uma despesa.',
+          });
+        const expenses = await manager
+          .getRepository(ExpenseEntity)
+          .createQueryBuilder('e')
+          .where('e.id IN (:...ids)', {
+            ids: links.map((link) => link.expenseId),
+          })
+          .getMany();
+        const totalCents = expenses.reduce(
+          (sum, expense) => sum + Math.round(Number(expense.amount) * 100),
+          0,
+        );
+        row.totalAmount = (totalCents / 100).toFixed(2);
+        row.status = ExpenseAccountabilityStatus.CLOSED;
+        row.closedById = actor.id;
+        row.closedAt = new Date();
+        await repo.save(row);
+        await this.audit(manager, row, null, 'CLOSE', actor.id, {
+          total_amount: row.totalAmount,
+          expense_count: links.length,
         });
-      const expenses = await manager
-        .getRepository(ExpenseEntity)
-        .createQueryBuilder('e')
-        .where('e.id IN (:...ids)', {
-          ids: links.map((link) => link.expenseId),
-        })
-        .getMany();
-      const totalCents = expenses.reduce(
-        (sum, expense) => sum + Math.round(Number(expense.amount) * 100),
-        0,
-      );
-      row.totalAmount = (totalCents / 100).toFixed(2);
-      row.status = ExpenseAccountabilityStatus.CLOSED;
-      row.closedById = actor.id;
-      row.closedAt = new Date();
-      await repo.save(row);
-      await this.audit(manager, row, null, 'CLOSE', actor.id, {
-        total_amount: row.totalAmount,
-        expense_count: links.length,
-      });
-      return this.response(row, links);
-    });
+        return this.response(row, links);
+      })
+      .then((r) => this.withNames([r]).then(([x]) => x));
   }
 
   async generateInstallments(
@@ -297,11 +310,11 @@ export class ExpenseAccountabilitiesService {
         projectId,
       },
     });
-    if (!expense) this.notFound('Expense');
+    if (!expense) this.notFound('Despesa não encontrada.');
     if (await this.installments.count({ where: { expenseId } }))
       throw new ConflictException({
         code: 'INSTALLMENTS_ALREADY_EXIST',
-        message: 'Installments already exist for expense',
+        message: 'A despesa já tem parcelas geradas.',
       });
     const amounts = InstallmentAllocationPolicy.allocate(
       expense.amount,
@@ -363,7 +376,7 @@ export class ExpenseAccountabilitiesService {
         },
       }))
     )
-      this.notFound('Expense');
+      this.notFound('Despesa não encontrada.');
     const [items, total] = await this.installments.findAndCount({
       where: { projectId, expenseId },
       order: { installmentNumber: 'ASC' },
@@ -384,14 +397,14 @@ export class ExpenseAccountabilitiesService {
     mutation: boolean,
   ) {
     const row = await this.projects.findOne({ where: { id } });
-    if (!row) this.notFound('Project');
+    if (!row) this.notFound('Projeto não encontrado.');
     if (
       !actor.systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
       actor.organizationId !== row.organizationId
     )
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     if (
       mutation &&
@@ -399,7 +412,7 @@ export class ExpenseAccountabilitiesService {
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     return row;
   }
@@ -407,7 +420,7 @@ export class ExpenseAccountabilitiesService {
     const row = await this.accountabilities.findOne({
       where: { id, projectId },
     });
-    if (!row) this.notFound('Expense accountability');
+    if (!row) this.notFound('Prestação de contas não encontrada.');
     return row;
   }
   private date(value: string) {
@@ -432,11 +445,8 @@ export class ExpenseAccountabilitiesService {
       message.includes('uq_expense_accountability_items_expense')
     );
   }
-  private notFound(name: string): never {
-    throw new NotFoundException({
-      code: 'NOT_FOUND',
-      message: `${name} not found`,
-    });
+  private notFound(message: string): never {
+    throw new NotFoundException({ code: 'NOT_FOUND', message });
   }
   private async audit(
     manager: import('typeorm').EntityManager,
@@ -477,6 +487,51 @@ export class ExpenseAccountabilitiesService {
       created_at: row.createdAt,
       updated_at: row.updatedAt,
     };
+  }
+  /**
+   * Nome do inventariante e código/descrição das despesas, em lote: a tela não
+   * mostra "#id" e não depende de outras permissões de leitura.
+   */
+  private async withNames(items: Array<ReturnType<typeof this.response>>) {
+    if (!items.length) return [];
+    const agentIds = [...new Set(items.map((i) => Number(i.field_agent_id)))];
+    const expenseIds = [
+      ...new Set(items.flatMap((i) => i.expense_ids.map(Number))),
+    ];
+    const [agents, expenses] = await Promise.all([
+      this.dataSource.manager.find(FieldAgentEntity, {
+        where: { id: In(agentIds) },
+        withDeleted: true,
+        select: { id: true, name: true },
+      }),
+      expenseIds.length
+        ? this.expenses.find({
+            where: { id: In(expenseIds) },
+            withDeleted: true,
+            select: {
+              id: true,
+              projectSequence: true,
+              description: true,
+              amount: true,
+            },
+          })
+        : [],
+    ]);
+    const agent = new Map(agents.map((a) => [Number(a.id), a.name]));
+    const expense = new Map(expenses.map((e) => [Number(e.id), e]));
+    return items.map((i) => ({
+      ...i,
+      field_agent_name: agent.get(Number(i.field_agent_id)) ?? null,
+      expenses: i.expense_ids.map((id) => {
+        const e = expense.get(Number(id));
+        return {
+          id,
+          project_sequence: e?.projectSequence ?? null,
+          description: e?.description ?? null,
+          amount: e?.amount ?? null,
+        };
+      }),
+    }));
   }
   private installmentResponse(row: ExpenseInstallmentEntity) {
     return {

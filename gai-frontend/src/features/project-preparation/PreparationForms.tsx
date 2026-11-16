@@ -4,6 +4,7 @@ import { ErrorState } from '@/components/base/States';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ModalForm } from '@/components/ui/dialog';
+import { userLabel } from '@/utils/userName';
 import { preparationApi, usePreparationMutation } from './preparationQueries';
 import type {
   AnswerPayload,
@@ -21,11 +22,14 @@ const control =
 export function ResponsibleSelect({
   users,
   value,
+  currentName,
   onChange,
   ...attributes
 }: {
   users: PreparationContext['responsible_users'];
   value: number | null;
+  /** Nome do responsável atual (vindo da API), se ele não estiver mais na lista. */
+  currentName?: string | null;
   onChange: (value: number | null) => void;
 } & Pick<
   SelectHTMLAttributes<HTMLSelectElement>,
@@ -40,7 +44,7 @@ export function ResponsibleSelect({
     >
       <option value="">Não definido</option>
       {value && !users.some((u) => u.id === value) ? (
-        <option value={value}>Usuário #{value} (indisponível)</option>
+        <option value={value}>{userLabel(currentName)} (indisponível)</option>
       ) : null}
       {users.map((user) => (
         <option key={user.id} value={user.id}>
@@ -54,10 +58,12 @@ function MetadataFields({
   value,
   onChange,
   context,
+  responsibleName,
 }: {
   value: PreparationMetadata;
   onChange: (value: PreparationMetadata) => void;
   context: PreparationContext;
+  responsibleName?: string | null;
 }) {
   return (
     <>
@@ -73,6 +79,7 @@ function MetadataFields({
         <ResponsibleSelect
           users={context.responsible_users}
           value={value.responsible_user_id}
+          currentName={responsibleName}
           onChange={(v) => onChange({ ...value, responsible_user_id: v })}
         />
       </FormField>
@@ -241,6 +248,7 @@ export function EditPreparationForm({
           value={metadata}
           onChange={setMetadata}
           context={context}
+          responsibleName={instance.responsible_user_name}
         />
         <FormField label="Observações gerais" optional>
           <textarea
@@ -557,6 +565,7 @@ export function AnswerForm({
           <ResponsibleSelect
             users={context.responsible_users}
             value={payload.responsible_user_id}
+            currentName={answer.responsible_user_name}
             onChange={(value) =>
               setPayload({ ...payload, responsible_user_id: value })
             }

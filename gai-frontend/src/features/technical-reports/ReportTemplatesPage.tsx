@@ -13,6 +13,7 @@ import { reportApi, reportInput as cls, type Responsible } from "./reportApi";
 import { responsibleUserSource } from "./reportSources";
 import { TemplateForm, ReportField } from "./ReportForms";
 import { VisualTemplateEditor } from '@/features/documents/VisualTemplateEditor';
+import { userLabel } from "@/utils/userName";
 export function ReportTemplatesPage() {
   const p = Number(useParams().projectId),
     { user } = useAuth(),
@@ -145,7 +146,7 @@ export function ReportTemplateEditorPage() {
           {q.data.versions.map((v) => (
             <details key={v.id} className="rounded-xl border p-3">
               <summary>
-                Revisão {v.revision} · {v.operation} · Usuário #{v.actorId} ·{" "}
+                Revisão {v.revision} · {v.operation} · {userLabel(v.actor_name)} ·{" "}
                 {new Date(v.recordedAt).toLocaleString("pt-BR")}
               </summary>
               <p className="break-all text-xs">SHA-256 {v.hash}</p>

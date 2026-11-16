@@ -5,6 +5,10 @@ import { ProjectEntity } from '../projects/infrastructure/persistence/project.en
 import { CompanyEntity } from '../companies/infrastructure/persistence/company.entity';
 import { isCivilDate } from '../../common/validation/civil-date';
 import {
+  loadUserNames,
+  userNameOf,
+} from '../auth/application/services/user-names';
+import {
   ProjectActorContext,
   ProjectScopeService,
 } from '../projects/application/services/project-scope.service';
@@ -159,16 +163,29 @@ export class ContractService {
         projectId,
         organizationId: p.organizationId,
       };
+      const versions = await m.find(ContractVersionEntity, {
+        where,
+        order: { revision: 'DESC' },
+      });
+      const amendments = await m.find(ContractAmendmentEntity, {
+        where,
+        order: { revision: 'ASC' },
+      });
+      // Nomes dos responsáveis por versões e aditivos, numa consulta só.
+      const names = await loadUserNames(m, [
+        ...versions.map((v) => v.actorId),
+        ...amendments.map((a) => a.actorId),
+      ]);
       return {
         ...row,
-        versions: await m.find(ContractVersionEntity, {
-          where,
-          order: { revision: 'DESC' },
-        }),
-        amendments: await m.find(ContractAmendmentEntity, {
-          where,
-          order: { revision: 'ASC' },
-        }),
+        versions: versions.map((v) => ({
+          ...v,
+          actor_name: userNameOf(names, v.actorId),
+        })),
+        amendments: amendments.map((a) => ({
+          ...a,
+          actor_name: userNameOf(names, a.actorId),
+        })),
       };
     });
   }

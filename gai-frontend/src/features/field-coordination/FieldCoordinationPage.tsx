@@ -18,6 +18,7 @@ import { usePermissions } from "@/features/auth/usePermissions";
 import { canMutateProjectOperations } from "@/features/projects/projectLifecycle";
 import { PendingIssueDetailDrawer } from "@/features/pending-issues/PendingIssueDetailDrawer";
 import { formatDate, formatDateTime } from "@/utils/format";
+import { userLabel } from "@/utils/userName";
 import {
   control,
   FieldTemplates,
@@ -377,9 +378,9 @@ function FieldWorkspace({
         t.responsible
           ? `${t.responsible.kind === "user" ? "Usuário" : "Inventariante"}: ${t.responsible.name}`
           : t.responsibleUserId
-            ? `Usuário #${t.responsibleUserId}`
+            ? "Usuário removido"
             : t.fieldAgentId
-              ? `Inventariante #${t.fieldAgentId}`
+              ? "Inventariante removido"
               : "Não definido",
     },
     {
@@ -445,7 +446,7 @@ function FieldWorkspace({
             ? "Concluído"
             : "Arquivado"}
         {row.completedAt
-          ? ` · ${formatDateTime(row.completedAt)} · usuário #${row.completedById}`
+          ? ` · ${formatDateTime(row.completedAt)} · ${userLabel(row.completedByName)}`
           : ""}
         .
       </p>
@@ -1283,8 +1284,8 @@ function HistoryPanel({
                 {labels[event.operation] ?? event.operation}
               </p>
               <p className="text-muted-foreground">
-                {formatDateTime(event.createdAt)} · usuário #
-                {event.performedById}
+                {formatDateTime(event.createdAt)} ·{" "}
+                {userLabel(event.performedByName)}
               </p>
               {"reason" in event.changes &&
               typeof event.changes.reason === "string" ? (

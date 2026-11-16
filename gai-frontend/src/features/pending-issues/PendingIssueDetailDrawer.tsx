@@ -4,6 +4,7 @@ import { ErrorState, LoadingState } from '@/components/base/States';
 import { StatusBadge } from '@/components/base/StatusBadge';
 import { DrawerForm } from '@/components/ui/dialog';
 import { formatDateTime } from '@/utils/format';
+import { userLabel } from '@/utils/userName';
 import { pendingIssueSeverityLabels, pendingIssueStatusLabels, pendingIssueTypeLabels } from './pendingIssueSchemas';
 import { useProjectPendingIssue } from './pendingIssuesQueries';
 
@@ -34,8 +35,8 @@ export function PendingIssueDetailDrawer({ projectId, id, open, onOpenChange }: 
           <Info label="Valor antigo" value={issue.old_value ? JSON.stringify(issue.old_value) : undefined} />
           <Info label="Valor novo" value={issue.new_value ? JSON.stringify(issue.new_value) : undefined} />
           <Info label="Resolução" value={issue.resolution_notes} />
-          <Info label="Resolvido por" value={issue.resolved_by_id ? `Usuário #${issue.resolved_by_id}` : undefined} />
-          <Info label="Ignorado por" value={issue.ignored_by_id ? `Usuário #${issue.ignored_by_id}` : undefined} />
+          <Info label="Resolvido por" value={issue.resolved_by_id ? userLabel(issue.resolved_by_name) : undefined} />
+          <Info label="Ignorado por" value={issue.ignored_by_id ? userLabel(issue.ignored_by_name) : undefined} />
           <Info label="Ignorado em" value={formatDateTime(issue.ignored_at)} />
           <Info label="Atualizado em" value={formatDateTime(issue.updated_at)} />
           <section className="rounded-lg border bg-muted/30 p-4">

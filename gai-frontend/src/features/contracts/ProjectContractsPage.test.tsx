@@ -115,6 +115,23 @@ describe("Project contract workspace", () => {
       ).getByRole("link", { name: "Contratos" }),
     ).toHaveAttribute("aria-current", "page");
   });
+  it("histórico de versões e aditivos mostra o nome do responsável, nunca o ID", async () => {
+    mocks.get.mockResolvedValue({
+      ...row,
+      versions: [
+        { id: 1, revision: 1, operation: "create", reason: "Cadastro", actorId: 5, actor_name: "Carla Dias", recordedAt: "2024-01-10T12:00:00Z", data: row.data },
+        { id: 2, revision: 2, operation: "edit", reason: "Ajuste", actorId: 77, actor_name: null, recordedAt: "2024-02-10T12:00:00Z", data: row.data },
+      ],
+      amendments: [
+        { id: 9, identifier: "AD-1", datedOn: "2024-02-01", type: "value", valueDelta: "0.20", endsOn: null, scope: null, reason: "Reajuste", actorId: 5, actor_name: "Carla Dias", revision: 2 },
+      ],
+    });
+    mount(["projects:read", "contracts:read"]);
+    expect(await screen.findByText("Cadastro · Carla Dias")).toBeInTheDocument();
+    expect(screen.getByText("Edição · Usuário removido")).toBeInTheDocument();
+    expect(screen.getByText("Reajuste · Carla Dias")).toBeInTheDocument();
+    expect(screen.queryByText(/usuário #/i)).not.toBeInTheDocument();
+  });
   it("sends explicit amendment revision, decimal delta, date and justification", async () => {
     const user = userEvent.setup();
     mount();

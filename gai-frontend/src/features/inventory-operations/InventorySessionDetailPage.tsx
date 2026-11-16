@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog, DrawerForm, ModalForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { formatDateTime } from '@/utils/format';
+import { userLabel } from '@/utils/userName';
 import type {
   ConsolidationDecision,
   InventoryObservation,
@@ -45,11 +46,11 @@ import {
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { EntityName } from './EntityName';
-import { inventoryItemSource, projectFieldAgentSource, roundSource, useProjectFieldAgentNames } from './inventorySources';
+import { inventoryItemSource, projectFieldAgentSource, roundSource } from './inventorySources';
 
 const initialRoundParams = { page: 1, page_size: 20, status: undefined, type: undefined } as const;
 const reconciliationLabels: Record<ReconciliationStatus, string> = { matched: 'Compatível', physical_surplus: 'Sobra física', accounting_surplus: 'Sobra contábil', duplicate: 'Duplicidade', plate_divergence: 'Placa divergente' };
-const roundKindLabels: Record<InventoryRoundKind, string> = { initial: 'Inicial', reinventory: 'Reinventario' };
+const roundKindLabels: Record<InventoryRoundKind, string> = { initial: 'Inicial', reinventory: 'Reinventário' };
 
 export function InventorySessionDetailPage() {
   const projectId = Number(useParams().projectId);
@@ -141,13 +142,13 @@ function RoundsSection({ projectId, sessionId, currentRoundId }: { projectId: nu
     { header: 'Início', cell: (item) => formatDateTime(item.started_at) },
     { header: 'Término', cell: (item) => formatDateTime(item.finished_at) },
     { header: 'Motivo', cell: (item) => item.reason || '-' },
-    { header: 'Responsável', cell: (item) => item.requested_by_id ? `#${item.requested_by_id}` : '-' },
+    { header: 'Responsável', cell: (item) => item.requested_by_id ? userLabel(item.requested_by_name) : '-' },
   ];
   return <section className="grid gap-4">
     <div><p className="eyebrow">Histórico</p><h2 className="mt-2 text-lg font-bold">Rodadas da sessão</h2></div>
     <FilterPanel>
       <select aria-label="Filtrar rodada por status" className="h-10 rounded-md border bg-background px-3" value={status} onChange={(event) => { setStatus(event.target.value as InventoryRoundStatus | ''); setPage(1); }}><option value="">Todos os status</option><option value="active">Ativa</option><option value="finished">Finalizada</option><option value="cancelled">Cancelada</option></select>
-      <select aria-label="Filtrar rodada por tipo" className="h-10 rounded-md border bg-background px-3" value={type} onChange={(event) => { setType(event.target.value as InventoryRoundKind | ''); setPage(1); }}><option value="">Todos os tipos</option><option value="initial">Inicial</option><option value="reinventory">Reinventario</option></select>
+      <select aria-label="Filtrar rodada por tipo" className="h-10 rounded-md border bg-background px-3" value={type} onChange={(event) => { setType(event.target.value as InventoryRoundKind | ''); setPage(1); }}><option value="">Todos os tipos</option><option value="initial">Inicial</option><option value="reinventory">Reinventário</option></select>
     </FilterPanel>
     {query.isLoading ? <LoadingState label="Carregando rodadas" /> : query.isError ? <ErrorState message={getInventoryOperationErrorMessage(query.error)} onRetry={() => query.refetch()} /> : data ? <><DataTable columns={columns} items={data.items} getKey={(item) => item.id} /><Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} /></> : null}
   </section>;
@@ -159,7 +160,6 @@ function ObservationsSection({ projectId, sessionId, sessionActive, currentRound
   const [inventoryItem, setInventoryItem] = useState<number | null>(null);
   const [agent, setAgent] = useState<number | null>(null);
   const { hasPermission } = usePermissions();
-  const agentName = useProjectFieldAgentNames(projectId);
   const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const sessionContext = useMemo(() => ({ project_id: projectId, session_id: sessionId }), [projectId, sessionId]);
   const [observeOpen, setObserveOpen] = useState(false);
@@ -179,7 +179,7 @@ function ObservationsSection({ projectId, sessionId, sessionActive, currentRound
     { header: 'Série observada', cell: (item) => item.observed_serial_number || '-' },
     { header: 'Setor', cell: (item) => item.sector_text || '-' },
     { header: 'Localização', cell: (item) => item.location_text || '-' },
-    { header: 'Inventariante', cell: (item) => agentName(item.field_agent_id) ?? `Inventariante #${item.field_agent_id}` },
+    { header: 'Inventariante', cell: (item) => item.field_agent_name ?? 'Inventariante removido' },
     { header: 'Capturada em', cell: (item) => formatDateTime(item.captured_at) },
     { header: 'Histórico', cell: (item) => item.prior_observation_id ? `Anterior #${item.prior_observation_id}` : 'Inventário inicial' },
     { header: 'Evidências', cell: (item) => <Button type="button" size="sm" variant="secondary" onClick={() => setEvidenceTarget(item)}><Eye size={15} /> Abrir</Button> },
@@ -187,7 +187,7 @@ function ObservationsSection({ projectId, sessionId, sessionActive, currentRound
   return <section className="grid gap-4">
     <div><p className="eyebrow">Operação</p><h2 className="mt-2 text-lg font-bold">Observações</h2><p className="text-sm text-muted-foreground">A placa observada e evidência de campo e nunca altera automaticamente a placa mestre.</p></div>
     <FilterPanel><EntityCombobox className="min-w-48" aria-label="Filtrar por rodada" placeholder="Rodada" source={roundSource} context={sessionContext} value={round} onChange={(id) => { setRound(id); setPage(1); }} /><EntityCombobox className="min-w-64" aria-label="Filtrar por item" placeholder="Item (descrição, placa, série)" source={inventoryItemSource} context={projectContext} value={inventoryItem} onChange={(id) => { setInventoryItem(id); setPage(1); }} /><EntityCombobox className="min-w-56" aria-label="Filtrar por inventariante" placeholder="Inventariante (nome)" source={projectFieldAgentSource} context={projectContext} value={agent} onChange={(id) => { setAgent(id); setPage(1); }} /></FilterPanel>
-    {sessionActive ? <div className="flex flex-wrap gap-2">{currentRoundId ? <PermissionGate permissions={['inventory-observations:create']}><Button onClick={() => setObserveOpen(true)}><Plus size={17} /> Adicionar observação</Button></PermissionGate> : null}<PermissionGate permissions={['inventory-rounds:reinventory']}><Button variant="secondary" onClick={() => setReinventoryOpen(true)}><RefreshCw size={17} /> Solicitar reinventario</Button></PermissionGate>{currentRoundId ? <PermissionGate permissions={['inventory-sessions:update']}><Button variant="secondary" onClick={() => setFinishing(true)}><CheckCircle2 size={17} /> Finalizar rodada atual</Button></PermissionGate> : null}</div> : null}
+    {sessionActive ? <div className="flex flex-wrap gap-2">{currentRoundId ? <PermissionGate permissions={['inventory-observations:create']}><Button onClick={() => setObserveOpen(true)}><Plus size={17} /> Adicionar observação</Button></PermissionGate> : null}<PermissionGate permissions={['inventory-rounds:reinventory']}><Button variant="secondary" onClick={() => setReinventoryOpen(true)}><RefreshCw size={17} /> Solicitar reinventário</Button></PermissionGate>{currentRoundId ? <PermissionGate permissions={['inventory-sessions:update']}><Button variant="secondary" onClick={() => setFinishing(true)}><CheckCircle2 size={17} /> Finalizar rodada atual</Button></PermissionGate> : null}</div> : null}
     {finish.isError ? <ErrorState message={getInventoryOperationErrorMessage(finish.error)} /> : null}
     {query.isLoading ? <LoadingState label="Carregando observações" /> : query.isError ? <ErrorState message={getInventoryOperationErrorMessage(query.error)} onRetry={() => query.refetch()} /> : data ? <><DataTable columns={columns} items={data.items} getKey={(item) => item.id} /><Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} /></> : null}
     <ObservationDrawer projectId={projectId} sessionId={sessionId} roundId={currentRoundId} open={observeOpen} onOpenChange={setObserveOpen} />
@@ -223,7 +223,7 @@ function ReinventoryDrawer({ projectId, sessionId, open, onOpenChange }: { proje
   const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const mutation = useRequestReinventory(projectId, sessionId);
   function submit(event: FormEvent) { event.preventDefault(); if (!itemId) return; mutation.mutate({ inventory_item_id: itemId, reason: reason.trim() }, { onSuccess: () => onOpenChange(false) }); }
-  return <DrawerForm open={open} onOpenChange={onOpenChange} title="Solicitar reinventario"><form className="grid gap-3" onSubmit={submit}><FormField label="Item divergente" hint="Busque pela descrição, placa, marca, modelo ou série."><EntityCombobox required source={inventoryItemSource} context={projectContext} value={itemId} onChange={(id) => setItemId(id)} /></FormField><label className="grid gap-1 text-sm font-medium">Motivo<textarea required maxLength={2000} className="min-h-28 rounded-md border bg-background p-3" value={reason} onChange={(event) => setReason(event.target.value)} /></label>{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !reason.trim()}>{mutation.isPending ? 'Solicitando...' : 'Criar nova rodada'}</Button></form></DrawerForm>;
+  return <DrawerForm open={open} onOpenChange={onOpenChange} title="Solicitar reinventário"><form className="grid gap-3" onSubmit={submit}><FormField label="Item divergente" hint="Busque pela descrição, placa, marca, modelo ou série."><EntityCombobox required source={inventoryItemSource} context={projectContext} value={itemId} onChange={(id) => setItemId(id)} /></FormField><label className="grid gap-1 text-sm font-medium">Motivo<textarea required maxLength={2000} className="min-h-28 rounded-md border bg-background p-3" value={reason} onChange={(event) => setReason(event.target.value)} /></label>{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !reason.trim()}>{mutation.isPending ? 'Solicitando...' : 'Criar nova rodada'}</Button></form></DrawerForm>;
 }
 
 function ReconciliationsSection({ projectId, sessionId }: { projectId: number; sessionId: number }) {

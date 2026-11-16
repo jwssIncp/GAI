@@ -78,6 +78,8 @@ export type TemplateVersion = {
   hash: string;
   data: TemplateData;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   recordedAt: string;
   reason: string;
 };
@@ -157,6 +159,8 @@ export type Version = {
   status: string;
   hash: string;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   recordedAt: string;
   reason: string;
   validation: Validation;

@@ -185,6 +185,10 @@ export type Company = {
   metadata?: Record<string, unknown> | null;
   created_by_id?: number | null;
   updated_by_id?: number | null;
+  /** Só no detalhe: nomes para exibição (nulo = removido). */
+  organization_name?: string | null;
+  created_by_name?: string | null;
+  updated_by_name?: string | null;
   deleted_at?: string | null;
   created_at: string;
   updated_at: string;
@@ -258,6 +262,8 @@ export type ProjectHistoryEntry = {
   project_id: number;
   operation: string;
   performed_by: number | null;
+  /** Nome de quem fez a alteração (nulo = usuário removido). */
+  performed_by_name?: string | null;
   created_at: string;
   changes: Record<string, { before: unknown; after: unknown }>;
 };
@@ -871,8 +877,12 @@ export type InventoryPendingIssue = CreateInventoryPendingIssueRequest & {
   severity: InventoryPendingIssueSeverity;
   resolution_notes?: string | null;
   resolved_by_id?: number | null;
+  /** Só no detalhe: nome de quem resolveu (nulo: usuário removido). */
+  resolved_by_name?: string | null;
   resolved_at?: string | null;
   ignored_by_id?: number | null;
+  /** Só no detalhe: nome de quem ignorou (nulo: usuário removido). */
+  ignored_by_name?: string | null;
   ignored_at?: string | null;
   created_by_id?: number | null;
   updated_by_id?: number | null;
@@ -940,6 +950,8 @@ export type ExpenseInput = {
 
 export type Expense = ExpenseInput & {
   id: number;
+  /** Código da despesa no projeto. */
+  project_sequence?: number | null;
   organization_id: number;
   project_id: number;
   status: ExpenseStatus;
@@ -1152,6 +1164,8 @@ export type InventoryRound = {
   reason: string | null;
   status: InventoryRoundStatus;
   requested_by_id: number | null;
+  /** Nome do solicitante (só na listagem de rodadas; nulo: usuário removido). */
+  requested_by_name?: string | null;
   created_by_id: number | null;
   started_at: string;
   finished_at: string | null;
@@ -1169,6 +1183,8 @@ export type InventoryObservation = {
   round_id: number;
   inventory_item_id: number;
   field_agent_id: number;
+  /** Nome do inventariante (só na listagem; nulo: inventariante removido). */
+  field_agent_name?: string | null;
   prior_observation_id?: number | null;
   idempotency_key?: string | null;
   result: InventoryObservationResult;
@@ -1212,6 +1228,8 @@ export type InventoryEvidence = {
   checksum: string | null;
   status: InventoryEvidenceStatus;
   created_by_id: number | null;
+  /** Nome de quem enviou (só na listagem; nulo: usuário removido). */
+  created_by_name?: string | null;
   confirmed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -1271,6 +1289,8 @@ export type AssetValuation = {
   valuation_date: string;
   notes?: string | null;
   responsible_by_id: number;
+  /** Nome do responsável (só na listagem; nulo: usuário removido). */
+  responsible_by_name?: string | null;
   created_at: string;
 };
 
@@ -1284,9 +1304,13 @@ export type PlateHistoryEntry = {
   round_number?: number | null;
   captured_at?: string | null;
   field_agent_id?: number | null;
+  /** Nome do inventariante (nulo: inventariante removido). */
+  field_agent_name?: string | null;
   previous_plate?: string | null;
   observed_plate?: string | null;
   recorded_by_id?: number | null;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  recorded_by_name?: string | null;
   created_at: string;
 };
 
@@ -1305,6 +1329,10 @@ export type ExpenseAccountability = {
   closed_by_id?: number | null;
   closed_at?: string | null;
   expense_ids: number[];
+  /** Nome do inventariante (nulo = removido). */
+  field_agent_name?: string | null;
+  /** Código e descrição das despesas vinculadas (mesma ordem de expense_ids). */
+  expenses?: Array<{ id: number; project_sequence: number | null; description: string | null; amount: string | null }>;
   created_at: string;
   updated_at: string;
 };

@@ -55,6 +55,8 @@ export interface AssistedDecision {
   action: string;
   reason: string;
   actorId: number;
+  /** Nome de quem decidiu (nulo: usuário removido). */
+  actorName: string | null;
   revision: number;
   createdAt: string;
   reconciliationId: number | null;

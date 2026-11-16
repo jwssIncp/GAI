@@ -61,6 +61,9 @@ export interface BatchHeader {
   confirmedById: number | null;
 }
 export interface ValuationBatchResult extends BatchHeader {
+  /** Nomes de quem gerou e de quem confirmou (nulo: usuário removido). */
+  createdByName?: string | null;
+  confirmedByName?: string | null;
   project: { id: number; name: string };
   request: BatchInput;
   summary: BatchSummary;

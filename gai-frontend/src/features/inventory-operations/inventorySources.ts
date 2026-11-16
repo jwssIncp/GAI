@@ -1,8 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api/http';
 import type { EntityOption, EntitySource } from '@/components/base/EntityCombobox';
 import { clientFilter, named, pageOf, PAGE_SIZE } from '@/components/base/entitySources';
-import { usePermissions } from '@/features/auth/usePermissions';
 import type { InventoryItem, InventoryRound, PaginatedItems } from '@/types/api';
 
 /**
@@ -72,19 +70,6 @@ export const projectFieldAgentSource: EntitySource<ProjectContext> = {
     return link ? fieldAgentOption(link) : null;
   },
 };
-
-/** Mapa ID → nome dos inventariantes do projeto, para exibir nas tabelas. Sem permissão, não consulta. */
-export function useProjectFieldAgentNames(projectId: number) {
-  const { hasPermission } = usePermissions();
-  const enabled = hasPermission('project-field-agents:read') && Number.isSafeInteger(projectId) && projectId > 0;
-  const query = useQuery({
-    queryKey: ['project-field-agents', 'names', projectId],
-    queryFn: async () => new Map((await loadProjectFieldAgents(projectId)).map((l) => [l.field_agent_id, fieldAgentOption(l).label])),
-    enabled,
-    staleTime: 60_000,
-  });
-  return (id: number | null | undefined) => (id ? (query.data?.get(id) ?? null) : null);
-}
 
 const plateOf = (item: Pick<InventoryItem, 'new_plate' | 'old_plate'>) => item.new_plate || item.old_plate || null;
 

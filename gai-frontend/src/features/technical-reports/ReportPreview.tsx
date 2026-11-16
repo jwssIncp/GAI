@@ -217,7 +217,7 @@ export function ReportPreview({
             <div key={r.id} className="mt-3 rounded border p-4">
               <p className="font-semibold">{r.display_name}</p>
               <p>
-                {r.function} · Usuário #{r.user_id}
+                {r.function}
               </p>
               <p className="text-sm">
                 Registro declarado:{" "}

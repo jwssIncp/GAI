@@ -7,6 +7,7 @@ import { Pagination } from "@/components/base/Pagination";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { PermissionGate } from "@/features/auth/PermissionGate";
 import { formatDateTime } from "@/utils/format";
+import { userLabel } from "@/utils/userName";
 import {
   assistedApi,
   type AssistedCandidate,
@@ -484,7 +485,7 @@ export function AssistedReconciliationPanel({
               history.data.items.map((d) => (
                 <article key={d.id} className="rounded-md border p-3 text-sm">
                   <p>
-                    {states[d.action]} · usuário #{d.actorId} ·{" "}
+                    {states[d.action]} · {userLabel(d.actorName)} ·{" "}
                     {formatDateTime(d.createdAt)} · revisão {d.revision}
                   </p>
                   <p>{d.reason}</p>

@@ -11,6 +11,34 @@ import { useProject } from '@/features/projects/projectQueries';
 import { projectBreadcrumbSteps } from '@/features/projects/projectNavigation';
 import { navigationSectionFor, sectionLabel } from '@/constants/navigation';
 import type { CurrentUser } from '@/types/api';
+import { useQuery } from '@tanstack/react-query';
+import { companySource, organizationSource, userSource } from '@/components/base/entitySources';
+import { budgetApi } from '@/features/budgets/budgetApi';
+import { financeApi } from '@/features/receivables/financeApi';
+
+// Nome do registro aberto na trilha (no lugar de "#id"). Sem permissão ou com
+// erro, a consulta falha e a trilha mantém o código.
+const crumbNames: Record<string, (id: number) => Promise<string | null>> = {
+  companies: async (id) => (await companySource.one!(id, {}))?.label ?? null,
+  users: async (id) => (await userSource.one!(id, {}))?.label ?? null,
+  organizations: async (id) => (await organizationSource.one!(id, {}))?.label ?? null,
+  budgets: async (id) => (await budgetApi.detail(id)).number ?? null,
+  receivables: async (id) => (await financeApi.detail(String(id))).data?.description ?? null,
+};
+
+function useCrumbName(parts: string[]) {
+  const index = parts.findIndex((part, i) => i > 0 && /^\d+$/.test(part) && parts[i - 1] in crumbNames);
+  const resource = index > 0 ? parts[index - 1] : null;
+  const id = index > 0 ? Number(parts[index]) : null;
+  const query = useQuery({
+    queryKey: ['crumb-name', resource, id],
+    queryFn: () => crumbNames[resource!](id!),
+    enabled: resource !== null,
+    retry: false,
+    staleTime: 60_000,
+  });
+  return { index, name: query.data ?? null };
+}
 
 const breadcrumbLabels: Record<string, string> = {
   'technical-reports': 'Laudos',
@@ -119,8 +147,9 @@ function ProjectBreadcrumbs({ projectId }: { projectId: string }) {
 export function Breadcrumbs() {
   const location = useLocation();
   const projectId = location.pathname.match(/^\/app\/projects\/([1-9]\d*)\/./)?.[1];
-  if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
   const parts = location.pathname.split('/').filter(Boolean).slice(1);
+  const crumbName = useCrumbName(projectId ? [] : parts);
+  if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
   if (!parts.length) return <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">Visão geral</ol></nav>;
   // Tela do menu fora do módulo da própria URL (ex.: Parâmetros financeiros fica em
   // /app/finance/parameters, mas no grupo Administração): o 1º nível é a seção do menu.
@@ -129,7 +158,7 @@ export function Breadcrumbs() {
   const crumbs: Crumb[] = parts.map((part, index) => {
     if (index === 0 && outsideUrlModule) return { label: sectionLabel(section) };
     return {
-      label: /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
+      label: index === crumbName.index && crumbName.name ? crumbName.name : /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
       to: index < parts.length - 1 && (linkable.includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part)))
         ? navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)
         : undefined,

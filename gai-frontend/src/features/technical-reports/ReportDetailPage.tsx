@@ -20,6 +20,7 @@ import {
 import { ReportField, SourceSelection } from "./ReportForms";
 import { ReportPreview } from "./ReportPreview";
 import { DocumentExport } from '@/features/documents/DocumentExport';
+import { userLabel } from "@/utils/userName";
 function ValidationPanel({ validation }: { validation: Validation }) {
   return (
     <section className="grid gap-3">
@@ -353,7 +354,7 @@ export function ReportDetailPage() {
               {
                 header: "Autor / data",
                 cell: (v) =>
-                  `Usuário #${v.actorId} · ${new Date(v.recordedAt).toLocaleString("pt-BR")}`,
+                  `${userLabel(v.actor_name)} · ${new Date(v.recordedAt).toLocaleString("pt-BR")}`,
               },
               { header: "Motivo", cell: (v) => v.reason },
               {

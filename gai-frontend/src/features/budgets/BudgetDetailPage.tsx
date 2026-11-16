@@ -19,6 +19,7 @@ import {
   budgetStatuses,
   type Version,
 } from "./budgetApi";
+import { userLabel } from "@/utils/userName";
 export function BudgetDetailPage() {
   const { budgetId } = useParams();
   return <BudgetWorkspace key={budgetId} id={Number(budgetId)} />;
@@ -195,8 +196,8 @@ function BudgetWorkspace({ id }: { id: number }) {
         </label>
         <p className="text-xs text-muted-foreground">
           v{version.version} · {version.name} ·{" "}
-          {new Date(version.recordedAt).toLocaleString("pt-BR")} · usuário #
-          {version.actorId} · {version.reason}
+          {new Date(version.recordedAt).toLocaleString("pt-BR")} ·{" "}
+          {userLabel(version.actor_name)} · {version.reason}
         </p>
       </div>
       <nav className="flex flex-wrap gap-2" aria-label="Abas do orçamento">
@@ -298,7 +299,7 @@ function BudgetWorkspace({ id }: { id: number }) {
                 header: "Tipo",
                 cell: (v) => (v.kind === "scenario" ? "Cenário" : "Elaboração"),
               },
-              { header: "Autor", cell: (v) => `Usuário #${v.actorId}` },
+              { header: "Autor", cell: (v) => userLabel(v.actor_name) },
               {
                 header: "Data",
                 cell: (v) => new Date(v.recordedAt).toLocaleString("pt-BR"),
@@ -332,7 +333,7 @@ function BudgetWorkspace({ id }: { id: number }) {
               {
                 header: "Autor / data",
                 cell: (a) =>
-                  `Usuário #${a.actorId} · ${new Date(a.recordedAt).toLocaleString("pt-BR")}`,
+                  `${userLabel(a.actor_name)} · ${new Date(a.recordedAt).toLocaleString("pt-BR")}`,
               },
               { header: "Justificativa", cell: (a) => a.reason },
             ]}

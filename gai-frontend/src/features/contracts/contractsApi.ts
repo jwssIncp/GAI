@@ -105,6 +105,8 @@ export interface ContractVersion {
   operation: string;
   reason: string;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   recordedAt: string;
   data: ContractSnapshot;
 }
@@ -118,6 +120,8 @@ export interface Amendment {
   scope: string | null;
   reason: string;
   actorId: number;
+  /** Nome de quem registrou (nulo: usuário removido). */
+  actor_name?: string | null;
   revision: number;
 }
 export interface ContractDetail extends Contract {

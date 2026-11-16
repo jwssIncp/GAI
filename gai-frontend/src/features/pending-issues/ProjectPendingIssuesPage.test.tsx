@@ -181,6 +181,15 @@ describe('ProjectPendingIssuesPage', () => {
     expect(screen.getByText('Item inventariado #11')).toBeInTheDocument();
   });
 
+  it('detalhe mostra quem resolveu e quem ignorou pelo nome, nunca pelo ID', async () => {
+    mocks.get.mockResolvedValue({ ...issue, resolved_by_id: 5, resolved_by_name: 'Paula Revisora', ignored_by_id: 9, ignored_by_name: null });
+    renderPage();
+    await userEvent.click(await screen.findByLabelText('Visualizar pendência'));
+    expect(await screen.findByText('Paula Revisora')).toBeInTheDocument();
+    expect(screen.getByText('Usuário removido')).toBeInTheDocument();
+    expect(screen.queryByText(/Usuário #/)).not.toBeInTheDocument();
+  });
+
   it('formulario de criacao valida campos obrigatorios', async () => {
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: /nova pendência/i }));

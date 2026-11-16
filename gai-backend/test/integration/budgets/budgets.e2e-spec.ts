@@ -66,8 +66,8 @@ describe('Budgets with immutable calculation memory and tenant isolation in MySQ
   });
   const detail = async (id: number) =>
     (await get('/budgets/' + id).expect(200)).body as BudgetEntity & {
-      versions: BudgetVersionEntity[];
-      audit: unknown[];
+      versions: Array<BudgetVersionEntity & { actor_name: string | null }>;
+      audit: Array<{ actor_name: string | null }>;
     };
   it('requires session, does not grant custom roles implicitly and fails closed on missing catalog entries', async () => {
     await request(app.getHttpServer()).get('/api/v1/budgets').expect(401);
@@ -120,6 +120,16 @@ describe('Budgets with immutable calculation memory and tenant isolation in MySQ
       d = await detail(b.id);
     expect(d.projectId).toBeNull();
     expect(d.versions).toHaveLength(1);
+    const prices = (await get('/budgets/pricing').expect(200)).body as Array<{
+      id: number;
+      actor_name: string | null;
+    }>;
+    expect(prices.find((p) => p.id === pricing.id)?.actor_name).toEqual(
+      expect.any(String),
+    );
+    // Nome de quem registrou junto do ID (a tela não mostra "Usuário #id").
+    expect(d.versions[0].actor_name).toEqual(expect.any(String));
+    expect(d.audit[0].actor_name).toEqual(expect.any(String));
     expect(d.versions[0].snapshot.pricing.id).toBe(pricing.id);
     expect(d.versions[0].snapshot.calculation.final_price).toBe('1913.72');
     expect(d.versions[0].snapshot.calculation.payment.remaining_balance).toBe(

@@ -175,6 +175,8 @@ describe('Batch valuations real HTTP, SQL atomicity and source preservation', ()
       total_approved: 2,
       total_rejected: 0,
     });
+    // Nome de quem confirmou na própria resposta.
+    expect(first.body.confirmedByName).toEqual(expect.any(String));
     expect((await confirm(f, b).expect(201)).body).toEqual(first.body);
     await post(f.base + `/${b.id}/confirm`, {
       revision: 1,

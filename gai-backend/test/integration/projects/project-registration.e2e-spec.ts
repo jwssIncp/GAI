@@ -369,6 +369,17 @@ describe('Project registration (isolated API and database)', () => {
       .set('Authorization', `Bearer ${token}`)
       .expect(200);
     expect((history.body as { total_items: number }).total_items).toBe(1);
+    // Quem fez a alteração vem pelo nome (sem exigir leitura de usuários).
+    const [entry] = (
+      history.body as {
+        items: Array<{
+          performed_by: number | null;
+          performed_by_name: string | null;
+        }>;
+      }
+    ).items;
+    expect(entry.performed_by).not.toBeNull();
+    expect(entry.performed_by_name).toEqual(expect.any(String));
   });
   it('provides only scoped option labels to a custom projects:create profile without companies:read', async () => {
     const users = db.getRepository(UserEntity),

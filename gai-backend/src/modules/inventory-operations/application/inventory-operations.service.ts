@@ -16,7 +16,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, Repository } from 'typeorm';
+import {
+  loadUserNames,
+  userNameOf,
+} from '../../auth/application/services/user-names';
+import { FieldAgentEntity } from '../../field-agents/infrastructure/persistence/field-agent.entity';
 import { AssistedClaim } from '../../assisted-reconciliation/assisted.entity';
 import {
   STORAGE_SIGNER,
@@ -205,8 +210,16 @@ export class InventoryOperationsService {
       skip: (query.page - 1) * query.page_size,
       take: query.page_size,
     });
+    // Nome do solicitante, sem exigir leitura de usuários.
+    const names = await loadUserNames(
+      this.dataSource.manager,
+      items.map((item) => item.requestedById),
+    );
     return this.paginate(
-      items.map((item) => this.roundResponse(item)),
+      items.map((item) => ({
+        ...this.roundResponse(item),
+        requested_by_name: userNameOf(names, item.requestedById),
+      })),
       query,
       total,
     );
@@ -226,7 +239,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!session) this.notFound('Inventory session');
+      if (!session) this.notFound('Sessão de inventário');
       InventoryOperationPolicy.assertCanStart(session.status);
       const now = new Date();
       session.status = InventorySessionStatus.ACTIVE;
@@ -276,7 +289,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!session) this.notFound('Inventory session');
+      if (!session) this.notFound('Sessão de inventário');
       const activeRoundCount = await manager
         .getRepository(InventoryRoundEntity)
         .count({
@@ -326,7 +339,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!session) this.notFound('Inventory session');
+      if (!session) this.notFound('Sessão de inventário');
       InventoryOperationPolicy.assertCanCancelSession(session.status);
       const roundRepo = manager.getRepository(InventoryRoundEntity);
       const activeRounds = await roundRepo.find({
@@ -381,7 +394,7 @@ export class InventoryOperationsService {
     if (!prior)
       throw new ConflictException({
         code: 'REINVENTORY_REQUIRES_PRIOR_OBSERVATION',
-        message: 'Reinventory requires an earlier observation',
+        message: 'O reinventário exige uma observação anterior para este item.',
       });
     try {
       return await this.dataSource.transaction(async (manager) => {
@@ -393,11 +406,11 @@ export class InventoryOperationsService {
               ? { lock: { mode: 'pessimistic_write' as const } }
               : {}),
           });
-        if (!session) this.notFound('Inventory session');
+        if (!session) this.notFound('Sessão de inventário');
         if (session.status !== InventorySessionStatus.ACTIVE)
           throw new ConflictException({
             code: 'INVENTORY_SESSION_NOT_ACTIVE',
-            message: 'Session must be active',
+            message: 'A sessão precisa estar ativa.',
           });
         const latest = await manager
           .getRepository(InventoryRoundEntity)
@@ -431,7 +444,8 @@ export class InventoryOperationsService {
       if (!this.isUniqueViolation(error)) throw error;
       throw new ConflictException({
         code: 'INVENTORY_ROUND_CONCURRENT_MODIFICATION',
-        message: 'Round number was allocated by a concurrent operation',
+        message:
+          'Outra operação criou uma rodada ao mesmo tempo. Tente novamente.',
       });
     }
   }
@@ -461,7 +475,7 @@ export class InventoryOperationsService {
         )
           throw new ConflictException({
             code: 'IDEMPOTENCY_KEY_REUSED',
-            message: 'Idempotency key belongs to another operation',
+            message: 'A chave desta tentativa já pertence a outra operação.',
           });
         return this.observationResponse(existing);
       }
@@ -478,11 +492,11 @@ export class InventoryOperationsService {
         },
       }),
     ]);
-    if (!round) this.notFound('Inventory round');
+    if (!round) this.notFound('Rodada de inventário');
     if (!assignment)
       throw new ConflictException({
         code: 'FIELD_AGENT_NOT_ASSIGNED',
-        message: 'Field agent must have an active project assignment',
+        message: 'O inventariante precisa ter um vínculo ativo com o projeto.',
       });
     InventoryOperationPolicy.assertCanReceiveObservation(
       session.status,
@@ -497,7 +511,7 @@ export class InventoryOperationsService {
     if (roundObservation) {
       throw new ConflictException({
         code: 'OBSERVATION_ALREADY_RECORDED',
-        message: 'Item already has an observation in this round',
+        message: 'Este item já possui uma observação nesta rodada.',
       });
     }
     const prior = await this.observations.findOne({
@@ -591,7 +605,7 @@ export class InventoryOperationsService {
         if (existing)
           throw new ConflictException({
             code: 'IDEMPOTENCY_KEY_REUSED',
-            message: 'Idempotency key belongs to another operation',
+            message: 'A chave desta tentativa já pertence a outra operação.',
           });
       }
       if (
@@ -601,11 +615,12 @@ export class InventoryOperationsService {
       )
         throw new ConflictException({
           code: 'OBSERVATION_ALREADY_RECORDED',
-          message: 'Item already has an observation in this round',
+          message: 'Este item já possui uma observação nesta rodada.',
         });
       throw new ConflictException({
         code: 'INVENTORY_OBSERVATION_CONFLICT',
-        message: 'Observation conflicts with a concurrent operation',
+        message:
+          'A observação entrou em conflito com outra operação. Tente novamente.',
       });
     }
   }
@@ -616,7 +631,7 @@ export class InventoryOperationsService {
     query: InventoryObservationListQueryDto,
     actor: InventoryOperationActor,
   ) {
-    await this.getProject(projectId, actor, false);
+    const project = await this.getProject(projectId, actor, false);
     await this.requireSession(projectId, sessionId);
     const [items, total] = await this.observations.findAndCount({
       where: {
@@ -632,8 +647,16 @@ export class InventoryOperationsService {
       skip: (query.page - 1) * query.page_size,
       take: query.page_size,
     });
+    // Nome do inventariante numa consulta só, sem exigir leitura de inventariantes.
+    const agentName = await this.fieldAgentNames(
+      project.organizationId,
+      items.map((item) => item.fieldAgentId),
+    );
     return this.paginate(
-      items.map((item) => this.observationResponse(item)),
+      items.map((item) => ({
+        ...this.observationResponse(item),
+        field_agent_name: agentName.get(Number(item.fieldAgentId)) ?? null,
+      })),
       query,
       total,
     );
@@ -657,7 +680,7 @@ export class InventoryOperationsService {
     if (!originalName)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'original_name is required',
+        message: 'Informe o nome do arquivo.',
       });
     const storageKey = this.observationEvidenceStorageKey(
       project.organizationId,
@@ -749,7 +772,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!evidence) this.notFound('Observation evidence');
+      if (!evidence) this.notFound('Evidência da observação');
       if (evidence.status === InventoryObservationEvidenceStatus.UPLOADED)
         return this.evidenceResponse(evidence);
       const verified = await this.storageSigner.verifyUpload({
@@ -815,8 +838,15 @@ export class InventoryOperationsService {
       skip: (query.page - 1) * query.page_size,
       take: query.page_size,
     });
+    const names = await loadUserNames(
+      this.dataSource.manager,
+      items.map((item) => item.createdById),
+    );
     return this.paginate(
-      items.map((item) => this.evidenceResponse(item)),
+      items.map((item) => ({
+        ...this.evidenceResponse(item),
+        created_by_name: userNameOf(names, item.createdById),
+      })),
       query,
       total,
     );
@@ -842,11 +872,11 @@ export class InventoryOperationsService {
         observationId,
       },
     });
-    if (!evidence) this.notFound('Observation evidence');
+    if (!evidence) this.notFound('Evidência da observação');
     if (evidence.status !== InventoryObservationEvidenceStatus.UPLOADED)
       throw new ConflictException({
         code: 'OBSERVATION_EVIDENCE_NOT_UPLOADED',
-        message: 'Only uploaded evidence can be downloaded',
+        message: 'Só evidências com upload confirmado podem ser baixadas.',
       });
     const signed = await this.storageSigner.createDownloadUrl({
       bucket: evidence.bucket,
@@ -878,11 +908,11 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!round) this.notFound('Inventory round');
+      if (!round) this.notFound('Rodada de inventário');
       if (round.status !== InventoryRoundStatus.ACTIVE)
         throw new ConflictException({
           code: 'INVENTORY_ROUND_NOT_ACTIVE',
-          message: 'Only active rounds can be finished',
+          message: 'Só rodadas ativas podem ser finalizadas.',
         });
       round.status = InventoryRoundStatus.FINISHED;
       round.finishedAt = new Date();
@@ -919,7 +949,8 @@ export class InventoryOperationsService {
     if (latest.size === 0)
       throw new ConflictException({
         code: 'RECONCILIATION_REQUIRES_OBSERVATIONS',
-        message: 'No observations available',
+        message:
+          'Registre ao menos uma observação antes de executar a conciliação.',
       });
     const accounting = await this.accountingItems.find({
       where: {
@@ -1076,11 +1107,11 @@ export class InventoryOperationsService {
     const reconciliation = await this.reconciliations.findOne({
       where: { id: reconciliationId, projectId, sessionId },
     });
-    if (!reconciliation) this.notFound('Reconciliation');
+    if (!reconciliation) this.notFound('Conciliação');
     if (reconciliation.status === ReconciliationStatus.DUPLICATE)
       throw new ConflictException({
         code: 'DUPLICATE_BLOCKS_CONSOLIDATION',
-        message: 'Duplicate evidence must be resolved before consolidation',
+        message: 'Resolva a duplicidade antes de consolidar.',
       });
     try {
       return await this.dataSource.transaction(async (manager) => {
@@ -1102,7 +1133,7 @@ export class InventoryOperationsService {
       if (!this.isUniqueViolation(error)) throw error;
       throw new ConflictException({
         code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
-        message: 'Reconciliation already consolidated',
+        message: 'Esta conciliação já foi consolidada.',
       });
     }
   }
@@ -1119,7 +1150,7 @@ export class InventoryOperationsService {
     if (reconciliation.status === ReconciliationStatus.DUPLICATE)
       throw new ConflictException({
         code: 'DUPLICATE_BLOCKS_CONSOLIDATION',
-        message: 'Duplicate evidence must be resolved before consolidation',
+        message: 'Resolva a duplicidade antes de consolidar.',
       });
     const claim = await manager.getRepository(AssistedClaim).findOne({
       where: [
@@ -1137,7 +1168,8 @@ export class InventoryOperationsService {
     )
       throw new ConflictException({
         code: 'ASSISTED_CLAIM_CONFLICT',
-        message: 'Source already reserved by an approved assisted decision',
+        message:
+          'Esta origem já está reservada por uma decisão assistida aprovada.',
       });
     if (
       await manager
@@ -1146,7 +1178,7 @@ export class InventoryOperationsService {
     )
       throw new ConflictException({
         code: 'RECONCILIATION_ALREADY_CONSOLIDATED',
-        message: 'Reconciliation already consolidated',
+        message: 'Esta conciliação já foi consolidada.',
       });
     const entity = await manager
       .getRepository(InventoryConsolidationEntity)
@@ -1191,7 +1223,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!project) this.notFound('Project');
+      if (!project) this.notFound('Projeto');
       const item = await manager.getRepository(InventoryItemEntity).findOne({
         where: {
           id: itemId,
@@ -1202,7 +1234,7 @@ export class InventoryOperationsService {
           ? { lock: { mode: 'pessimistic_write' as const } }
           : {}),
       });
-      if (!item) this.notFound('Inventory item');
+      if (!item) this.notFound('Item inventariado');
       return this.valuationResponse(
         await this.recordValuation(manager, project, item, dto, actor),
       );
@@ -1221,7 +1253,7 @@ export class InventoryOperationsService {
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-        message: 'Project status blocks this operation',
+        message: 'O status do projeto bloqueia esta operação.',
       });
     if (
       item.projectId !== project.id ||
@@ -1231,7 +1263,7 @@ export class InventoryOperationsService {
     )
       throw new ConflictException({
         code: 'VALUATION_ITEM_INVALID',
-        message: 'Item inactive, removed or outside project',
+        message: 'Item inativo, removido ou fora do projeto.',
       });
     const entity = await manager.getRepository(AssetValuationEntity).save({
       organizationId: project.organizationId,
@@ -1275,8 +1307,15 @@ export class InventoryOperationsService {
       skip: (query.page - 1) * query.page_size,
       take: query.page_size,
     });
+    const names = await loadUserNames(
+      this.dataSource.manager,
+      items.map((row) => row.responsibleById),
+    );
     return this.paginate(
-      items.map((row) => this.valuationResponse(row)),
+      items.map((row) => ({
+        ...this.valuationResponse(row),
+        responsible_by_name: userNameOf(names, row.responsibleById),
+      })),
       query,
       total,
     );
@@ -1334,7 +1373,48 @@ export class InventoryOperationsService {
       .offset((query.page - 1) * query.page_size)
       .limit(query.page_size)
       .getRawMany<Record<string, unknown>>();
-    return this.paginate(items, query, total);
+    // Nomes de quem registrou e do inventariante, em lote e sem exigir leitura
+    // de usuários ou inventariantes.
+    const names = await loadUserNames(
+      this.dataSource.manager,
+      items.map((row) => row.recorded_by_id as number | null),
+    );
+    const agentNames = await this.fieldAgentNames(
+      project.organizationId,
+      items.map((row) => row.field_agent_id as number | null),
+    );
+    return this.paginate(
+      items.map((row) => ({
+        ...row,
+        recorded_by_name: userNameOf(
+          names,
+          row.recorded_by_id as number | null,
+        ),
+        field_agent_name:
+          row.field_agent_id == null
+            ? null
+            : (agentNames.get(Number(row.field_agent_id)) ?? null),
+      })),
+      query,
+      total,
+    );
+  }
+
+  /** Nomes de inventariantes (inclusive excluídos, para o histórico), em lote. */
+  private async fieldAgentNames(
+    organizationId: number,
+    ids: Array<number | null | undefined>,
+  ) {
+    const unique = [
+      ...new Set(ids.filter((id) => id != null).map((id) => Number(id))),
+    ];
+    if (!unique.length) return new Map<number, string>();
+    const agents = await this.dataSource.manager.find(FieldAgentEntity, {
+      where: { id: In(unique), organizationId },
+      select: { id: true, name: true },
+      withDeleted: true,
+    });
+    return new Map(agents.map((a) => [Number(a.id), a.name]));
   }
 
   private async getProject(
@@ -1343,14 +1423,14 @@ export class InventoryOperationsService {
     mutation: boolean,
   ) {
     const project = await this.projects.findOne({ where: { id: projectId } });
-    if (!project) this.notFound('Project');
+    if (!project) this.notFound('Projeto');
     if (
       !actor.systemRoles.includes(UserRole.PLATFORM_ADMIN) &&
       actor.organizationId !== project.organizationId
     )
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Permissão insuficiente.',
       });
     if (
       mutation &&
@@ -1358,14 +1438,14 @@ export class InventoryOperationsService {
     )
       throw new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
-        message: 'Project status blocks this operation',
+        message: 'O status do projeto bloqueia esta operação.',
       });
     return project;
   }
 
   private async requireSession(projectId: number, id: number) {
     const entity = await this.sessions.findOne({ where: { id, projectId } });
-    if (!entity) this.notFound('Inventory session');
+    if (!entity) this.notFound('Sessão de inventário');
     return entity;
   }
   private async requireObservation(
@@ -1382,14 +1462,14 @@ export class InventoryOperationsService {
         roundId,
       },
     });
-    if (!entity) this.notFound('Inventory observation');
+    if (!entity) this.notFound('Observação de inventário');
     return entity;
   }
   private assertSessionAcceptsEvidence(session: InventorySessionEntity) {
     if (session.status !== InventorySessionStatus.ACTIVE)
       throw new ConflictException({
         code: 'INVENTORY_SESSION_NOT_ACTIVE',
-        message: 'Evidence can only be added while the session is active',
+        message: 'Só é possível adicionar evidências com a sessão ativa.',
       });
   }
   private observationEvidenceStorageKey(
@@ -1417,13 +1497,13 @@ export class InventoryOperationsService {
   }
   private async requireItem(projectId: number, id: number) {
     const entity = await this.items.findOne({ where: { id, projectId } });
-    if (!entity) this.notFound('Inventory item');
+    if (!entity) this.notFound('Item inventariado');
     return entity;
   }
   private notFound(resource: string): never {
     throw new NotFoundException({
       code: 'NOT_FOUND',
-      message: `${resource} not found`,
+      message: `${resource} não encontrado(a).`,
     });
   }
   private clean(value: string | null | undefined) {
