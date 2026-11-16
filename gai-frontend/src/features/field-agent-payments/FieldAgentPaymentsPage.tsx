@@ -1,13 +1,16 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Download, RefreshCw, RotateCcw, Wallet } from "lucide-react";
+import { Kpi } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { formatMoney } from "@/utils/format";
 import {
   civilBr,
@@ -51,46 +54,33 @@ type Dialog =
   | { kind: "date"; row: ConsolidatedRow }
   | null;
 
-type KpiProps = { label: string; value: string; hint?: string; alert?: boolean; active?: boolean; onClick?: () => void };
-
-function Kpi({ label, value, hint, alert, active, onClick }: KpiProps) {
-  const body = (
-    <>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-semibold tabular-nums ${alert ? "text-destructive" : ""}`}>{value}</p>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-    </>
-  );
-  const cls = `rounded-lg border bg-card p-3 text-left ${alert ? "border-destructive/50" : ""} ${active ? "ring-2 ring-primary" : ""}`;
-  if (!onClick) return <div className={cls}>{body}</div>;
-  return (
-    <button type="button" className={`${cls} hover:bg-primary/[0.05]`} aria-pressed={Boolean(active)} onClick={onClick}>
-      {body}
-    </button>
-  );
-}
+/** Colunas de valor: à direita e sem quebra ("R$ 1.000,00" numa linha só). */
+const MONEY_COLUMNS = new Set<string>(["Diária", "Adicional", "Total", "Descontos", "Final"]);
+const moneyCell = "numeric border-b px-2 py-2 text-right";
 
 const STATUS_HINT = "Em aberto = pendentes e aprovados ainda não pagos. Pendente: aguarda aprovação. Aprovado: liberado para pagar.";
 
-const FILTERS: Array<{ key: FacetKey; label: string; format?: (v: string) => string }> = [
+const FILTERS: Array<{ key: FacetKey; label: string; all?: string; format?: (v: string) => string }> = [
   { key: "project_id", label: "Projeto" },
   { key: "field_agent_id", label: "Inventariante" },
-  { key: "status", label: "Status" },
-  { key: "expected_month", label: "Mês (previsão)", format: monthBr },
+  { key: "status", label: "Situação", all: "todas" },
+  { key: "expected_month", label: "Mês previsto", format: monthBr },
   { key: "paid_month", label: "Mês do pagamento", format: monthBr },
-  { key: "expected_date", label: "Data prevista", format: civilBr },
-  { key: "payment_date", label: "Data de pagamento", format: civilBr },
+  { key: "expected_date", label: "Data prevista", all: "todas", format: civilBr },
+  { key: "payment_date", label: "Data de pagamento", all: "todas", format: civilBr },
 ];
 
 export function FieldAgentPaymentsPage() {
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const cache = useQueryClient();
   const [filters, setFilters] = useState<ConsolidatedFilters>({ status: "open" });
   const [selected, setSelected] = useState<number[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [hidden, setHidden] = useState<OptionalColumn[]>(loadHidden);
   const [expanded, setExpanded] = useState(false);
-  const [feedback, setFeedback] = useState<{ error?: boolean; message: string } | null>(null);
+  /** Falhas e resultados parciais ficam na tela; sucesso completo vai para o toast. */
+  const [feedback, setFeedback] = useState<string | null>(null);
   const query = useQuery({
     queryKey: fieldAgentPaymentsKeys.list(filters),
     queryFn: () => fieldAgentPaymentsApi.list(filters),
@@ -111,10 +101,12 @@ export function FieldAgentPaymentsPage() {
     setSelected([]);
     setDialog(null);
     const failures = result.results.filter((r) => !r.ok).map((r) => `#${r.id}: ${r.message}`);
-    setFeedback({
-      error: result.failed > 0,
-      message: `${result.done} lançamento(s) ${verb}.` + (failures.length ? ` Não concluídos: ${failures.join("; ")}.` : ""),
-    });
+    const message = `${result.done} lançamento(s) ${verb}.` + (failures.length ? ` Não concluídos: ${failures.join("; ")}.` : "");
+    if (result.failed > 0) setFeedback(message);
+    else {
+      setFeedback(null);
+      toast({ title: message, tone: "success" });
+    }
   };
 
   const byId = useMemo(() => new Map((data?.items ?? []).map((r) => [r.id, r])), [data]);
@@ -134,24 +126,31 @@ export function FieldAgentPaymentsPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      setFeedback({ error: true, message: (error as Error).message });
+      setFeedback((error as Error).message);
     }
   }
 
   return (
     <div className="grid gap-4">
+      {hasPermission("payments:export") ? (
+        <FinanceHeaderActions>
+          <Button type="button" variant="secondary" onClick={() => void exportList()}>
+            <Download size={16} /> Exportar Excel
+          </Button>
+        </FinanceHeaderActions>
+      ) : null}
       {data ? (
         <section aria-label="Indicadores do pagamento de inventariantes" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
           <Kpi label="Total" value={formatMoney(data.kpis.total)} hint="Sem cancelados" />
           <Kpi label="Pago" value={formatMoney(data.kpis.paid)} />
           <Kpi label="Em aberto" value={formatMoney(data.kpis.open)} hint="Pendente e aprovado" />
           <Kpi label="Inventariantes" value={String(data.kpis.field_agents)} />
-          <Kpi label="Em atraso" value={formatMoney(data.kpis.overdue)} hint={`${data.kpis.overdue_count} lançamento(s) com previsão vencida`} alert={data.kpis.overdue_count > 0} />
+          <Kpi label="Em atraso" value={formatMoney(data.kpis.overdue)} hint={`${data.kpis.overdue_count} lançamento(s) em atraso`} tone={data.kpis.overdue_count > 0 ? "danger" : "default"} />
           <Kpi
             label="Sem previsão"
             value={formatMoney(data.kpis.no_expected)}
             hint={`${data.kpis.no_expected_count} em aberto sem data prevista${filters.no_expected ? " · filtrando" : " · clique para filtrar"}`}
-            alert={data.kpis.no_expected_count > 0}
+            tone={data.kpis.no_expected_count > 0 ? "danger" : "default"}
             active={Boolean(filters.no_expected)}
             onClick={() => {
               setSelected([]);
@@ -166,7 +165,7 @@ export function FieldAgentPaymentsPage() {
       ) : null}
 
       <FilterPanel>
-        {FILTERS.map(({ key, label, format }) => {
+        {FILTERS.map(({ key, label, all = "todos", format }) => {
           const facet = data?.facets[key];
           return (
             <select
@@ -177,7 +176,7 @@ export function FieldAgentPaymentsPage() {
               value={filters[key] === undefined ? "" : String(filters[key])}
               onChange={(e) => setFilter(key, e.target.value)}
             >
-              <option value="">{`${label}: todos (${facet?.total ?? 0})`}</option>
+              <option value="">{`${label}: ${all} (${facet?.total ?? 0})`}</option>
               {facet?.options.map((o) => (
                 <option key={o.value} value={o.value}>
                   {`${format ? format(o.label) : o.label} (${o.count})`}
@@ -189,19 +188,14 @@ export function FieldAgentPaymentsPage() {
         <Button type="button" variant="ghost" onClick={() => { setSelected([]); setFilters({}); }}>
           Limpar
         </Button>
-        {hasPermission("payments:export") ? (
-          <Button type="button" variant="secondary" onClick={() => void exportList()}>
-            <Download size={16} /> Exportar Excel
-          </Button>
-        ) : null}
         <Button type="button" variant="secondary" onClick={() => void query.refetch()} aria-label="Recarregar" title="Recarregar">
           <RefreshCw size={16} />
         </Button>
       </FilterPanel>
 
       {feedback ? (
-        <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>
-          {feedback.message}
+        <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">
+          {feedback}
         </p>
       ) : null}
 
@@ -222,7 +216,7 @@ export function FieldAgentPaymentsPage() {
               ) : null}
               {hasPermission("payments:revert-payment") ? (
                 <Button type="button" variant="secondary" disabled={!toRevert.length} onClick={() => setDialog({ kind: "revert", rows: toRevert })}>
-                  <RotateCcw size={16} /> Voltar para em aberto ({toRevert.length})
+                  <RotateCcw size={16} /> Desfazer pagamento ({toRevert.length})
                 </Button>
               ) : null}
             </div>
@@ -260,8 +254,8 @@ export function FieldAgentPaymentsPage() {
                         onChange={(e) => setSelected(e.target.checked ? visible.map((r) => r.id) : [])}
                       />
                     </th>
-                    {["Status", "Projeto", "Inventariante", ...OPTIONAL_COLUMNS.slice(0, 2).filter(show), "Previsto", "Pago em", ...OPTIONAL_COLUMNS.slice(2).filter(show), "Final", ""].map((h, i) => (
-                      <th key={`${h}-${i}`} scope="col" className="whitespace-nowrap border-b px-2 py-3 font-semibold">{h || <span className="sr-only">Ações</span>}</th>
+                    {["Situação", "Projeto", "Inventariante", ...OPTIONAL_COLUMNS.slice(0, 2).filter(show), "Previsto", "Pago em", ...OPTIONAL_COLUMNS.slice(2).filter(show), "Final", ""].map((h, i) => (
+                      <th key={`${h}-${i}`} scope="col" className={`whitespace-nowrap border-b px-2 py-3 font-semibold ${MONEY_COLUMNS.has(h) ? "text-right" : ""}`}>{h || <span className="sr-only">Ações</span>}</th>
                     ))}
                   </tr>
                 </thead>
@@ -277,8 +271,8 @@ export function FieldAgentPaymentsPage() {
                         />
                       </td>
                       <td className="whitespace-nowrap border-b px-2 py-2">
-                        <StatusBadge value={r.status} />
-                        {r.overdue ? <span className="ml-1 text-xs font-semibold text-destructive">atrasado</span> : null}
+                        <StatusBadge finance={r.status} />
+                        {r.overdue ? <span className="ml-1 text-xs font-semibold text-destructive-text">Em atraso</span> : null}
                       </td>
                       <td className="max-w-[12rem] truncate border-b px-2 py-2" title={r.project_name}>{r.project_name}</td>
                       <td className="max-w-[12rem] truncate border-b px-2 py-2 font-medium" title={r.field_agent_name}>{r.field_agent_name}</td>
@@ -296,7 +290,7 @@ export function FieldAgentPaymentsPage() {
                           hasPermission("payments:reschedule") ? (
                             <button
                               type="button"
-                              className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive hover:bg-destructive/25"
+                              className="rounded bg-destructive/10 px-2 py-0.5 font-semibold text-destructive-text hover:bg-destructive/20"
                               title={`Informar a data prevista de ${r.field_agent_name}`}
                               aria-label={`Informar a data prevista de ${r.field_agent_name}`}
                               onClick={() => setDialog({ kind: "date", row: r })}
@@ -304,7 +298,7 @@ export function FieldAgentPaymentsPage() {
                               Informar
                             </button>
                           ) : (
-                            <span className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive" title="Sem data prevista">Informar</span>
+                            <span className="rounded bg-destructive/10 px-2 py-0.5 font-semibold text-destructive-text" title="Sem data prevista">Informar</span>
                           )
                         ) : (
                           civilBr(r.expected_payment_date) || "—"
@@ -312,11 +306,11 @@ export function FieldAgentPaymentsPage() {
                       </td>
                       <td className="whitespace-nowrap border-b px-2 py-2">{civilBr(r.payment_date)}</td>
                       {show("Dias") ? <td className="border-b px-2 py-2 tabular-nums">{r.days}</td> : null}
-                      {show("Diária") ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(r.daily_rate)}</td> : null}
-                      {show("Adicional") ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(r.additional_amount)}</td> : null}
-                      {show("Total") ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(r.total_amount)}{r.total_manual ? <span className="ml-1 text-xs text-warning">manual</span> : null}</td> : null}
-                      {show("Descontos") ? <td className="whitespace-nowrap border-b px-2 py-2 tabular-nums">{formatMoney(r.discount_amount)}</td> : null}
-                      <td className="whitespace-nowrap border-b px-2 py-2 font-semibold tabular-nums">{formatMoney(r.final_amount)}</td>
+                      {show("Diária") ? <td className={moneyCell}>{formatMoney(r.daily_rate)}</td> : null}
+                      {show("Adicional") ? <td className={moneyCell}>{formatMoney(r.additional_amount)}</td> : null}
+                      {show("Total") ? <td className={moneyCell}>{formatMoney(r.total_amount)}{r.total_manual ? <span className="ml-1 text-xs text-warning-text">manual</span> : null}</td> : null}
+                      {show("Descontos") ? <td className={moneyCell}>{formatMoney(r.discount_amount)}</td> : null}
+                      <td className={`${moneyCell} font-semibold`}>{formatMoney(r.final_amount)}</td>
                       <td className="border-b px-2 py-2">
                         {hasPermission("payments:reschedule") && r.status !== "cancelled" ? (
                           <Button
@@ -333,6 +327,11 @@ export function FieldAgentPaymentsPage() {
                       </td>
                     </tr>
                   ))}
+                  {!visible.length ? (
+                    <tr>
+                      <td colSpan={20} className="px-3 py-6 text-center text-muted-foreground">Nenhum lançamento com estes filtros.</td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
             </div>
@@ -349,7 +348,7 @@ export function FieldAgentPaymentsPage() {
         <PayDialog rows={dialog.rows} today={data?.today ?? ""} onClose={() => setDialog(null)} onDone={(r) => done(r, "pago(s)")} />
       ) : null}
       {dialog?.kind === "revert" ? (
-        <RevertDialog rows={dialog.rows} onClose={() => setDialog(null)} onDone={(r) => done(r, "voltaram para em aberto")} />
+        <RevertDialog rows={dialog.rows} onClose={() => setDialog(null)} onDone={(r) => done(r, "com o pagamento desfeito (voltaram para em aberto)")} />
       ) : null}
       {dialog?.kind === "date" ? (
         <DateDialog
@@ -376,7 +375,7 @@ function Summary({ data, onPick }: { data: Consolidated; onPick: (id: number) =>
           <thead className="text-left text-xs text-muted-foreground">
             <tr>
               {["Inventariante", "Lançamentos", "Dias", "Final", "Pago", "Em aberto"].map((h) => (
-                <th key={h} scope="col" className="px-2 py-2 font-semibold">{h}</th>
+                <th key={h} scope="col" className={`px-2 py-2 font-semibold ${["Final", "Pago", "Em aberto"].includes(h) ? "text-right" : ""}`}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -390,18 +389,18 @@ function Summary({ data, onPick }: { data: Consolidated; onPick: (id: number) =>
                 </td>
                 <td className="px-2 py-1.5 tabular-nums">{a.entries}</td>
                 <td className="px-2 py-1.5 tabular-nums">{a.days}</td>
-                <td className="px-2 py-1.5 tabular-nums">{formatMoney(a.final)}</td>
-                <td className="px-2 py-1.5 tabular-nums">{formatMoney(a.paid)}</td>
-                <td className="px-2 py-1.5 font-semibold tabular-nums">{formatMoney(a.open)}</td>
+                <td className="numeric px-2 py-1.5 text-right">{formatMoney(a.final)}</td>
+                <td className="numeric px-2 py-1.5 text-right">{formatMoney(a.paid)}</td>
+                <td className="numeric px-2 py-1.5 text-right font-semibold">{formatMoney(a.open)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="border-t font-semibold">
               <td className="px-2 py-2" colSpan={3}>Subtotal</td>
-              <td className="px-2 py-2 tabular-nums">{formatMoney(data.summary.subtotal.final)}</td>
-              <td className="px-2 py-2 tabular-nums">{formatMoney(data.summary.subtotal.paid)}</td>
-              <td className="px-2 py-2 tabular-nums">{formatMoney(data.summary.subtotal.open)}</td>
+              <td className="numeric px-2 py-2 text-right">{formatMoney(data.summary.subtotal.final)}</td>
+              <td className="numeric px-2 py-2 text-right">{formatMoney(data.summary.subtotal.paid)}</td>
+              <td className="numeric px-2 py-2 text-right">{formatMoney(data.summary.subtotal.open)}</td>
             </tr>
           </tfoot>
         </table>
@@ -471,7 +470,7 @@ function PayDialog({ rows, today, onClose, onDone }: { rows: ConsolidatedRow[]; 
         ) : null}
         {pay.isError ? <p role="alert" className="text-sm text-destructive">{(pay.error as Error).message}</p> : null}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={pay.isPending}>Cancelar</Button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={pay.isPending}>Voltar</Button>
           <Button type="submit" loading={pay.isPending}>Registrar pagamento</Button>
         </div>
       </form>
@@ -482,15 +481,15 @@ function PayDialog({ rows, today, onClose, onDone }: { rows: ConsolidatedRow[]; 
 function RevertDialog({ rows, onClose, onDone }: { rows: ConsolidatedRow[]; onClose: () => void; onDone: (r: BatchResult) => void }) {
   const revert = useMutation({ mutationFn: () => fieldAgentPaymentsApi.revert(rows.map((r) => r.id)), onSuccess: onDone });
   return (
-    <ModalForm open onOpenChange={(open) => !open && onClose()} title="Voltar para em aberto">
+    <ModalForm open onOpenChange={(open) => !open && onClose()} title="Desfazer pagamento">
       <p className="text-sm text-muted-foreground">
-        Desfazer a baixa de {rows.length} lançamento(s)? A data de pagamento é limpa e a data prevista é mantida. Lançamentos
-        aprovados voltam a "aprovado"; os pagos sem aprovação voltam a "pendente".
+        Desfazer o pagamento de {rows.length} lançamento(s)? Eles voltam para em aberto: a data de pagamento é limpa e a data
+        prevista é mantida. Lançamentos aprovados voltam a "aprovado"; os pagos sem aprovação voltam a "pendente".
       </p>
-      {revert.isError ? <p role="alert" className="mt-2 text-sm text-destructive">{(revert.error as Error).message}</p> : null}
+      {revert.isError ? <p role="alert" className="mt-2 text-sm text-destructive-text">{(revert.error as Error).message}</p> : null}
       <div className="mt-6 flex justify-end gap-2">
-        <Button type="button" variant="secondary" onClick={onClose} disabled={revert.isPending}>Cancelar</Button>
-        <Button type="button" variant="danger" loading={revert.isPending} onClick={() => revert.mutate()}>Voltar para em aberto</Button>
+        <Button type="button" variant="secondary" onClick={onClose} disabled={revert.isPending}>Voltar</Button>
+        <Button type="button" loading={revert.isPending} onClick={() => revert.mutate()}>Desfazer pagamento</Button>
       </div>
     </ModalForm>
   );
@@ -519,7 +518,7 @@ function DateDialog({ row, onClose, onDone }: { row: ConsolidatedRow; onClose: (
         </label>
         {save.isError ? <p role="alert" className="text-sm text-destructive">{(save.error as Error).message}</p> : null}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={save.isPending}>Cancelar</Button>
+          <Button type="button" variant="secondary" onClick={onClose} disabled={save.isPending}>Voltar</Button>
           <Button type="submit" loading={save.isPending}>Salvar data</Button>
         </div>
       </form>

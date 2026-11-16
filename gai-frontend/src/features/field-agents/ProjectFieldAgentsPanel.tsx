@@ -191,7 +191,7 @@ export function ProjectFieldAgentsPanel({
                   <div>
                     {formatDate(item.start_date)} — {formatDate(item.end_date)}
                     {outsidePeriod(item) ? (
-                      <p className="text-xs text-warning">Fora de vigência</p>
+                      <p className="text-xs text-warning-text">Fora de vigência</p>
                     ) : null}
                   </div>
                 ),

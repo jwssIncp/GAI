@@ -185,7 +185,7 @@ export function FieldAgentForm(props: Props) {
           />
         </FormField>
         {initial?.document && !isValidDocument(initial.document) ? (
-          <p className="text-sm text-warning">
+          <p className="text-sm text-warning-text">
             Documento legado pendente de revisão. Ele será preservado se você
             não alterar este campo.
           </p>

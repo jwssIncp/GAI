@@ -36,12 +36,12 @@ export function RemunerationProjectsPage() {
   const data = query.data;
   const limit = data?.parameters.technician_expense_alert_pct ?? null;
 
-  const cell = "whitespace-nowrap border-b px-2.5 py-3 tabular-nums";
+  const cell = "numeric border-b px-2.5 py-3";
   return (
     <div className="grid gap-4">
       <div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          Despesas de inventariantes = soma do valor final dos lançamentos, sem cancelados. % Desp. técnicos = despesas de
+          Despesas de inventariantes = soma do valor final dos lançamentos, sem cancelados. % Inventariantes = despesas de
           inventariantes ÷ valor do contrato; % Contrato líquido = despesas de inventariantes ÷ (contrato − despesas não
           reembolsáveis).{" "}
           {limit
@@ -76,7 +76,7 @@ export function RemunerationProjectsPage() {
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
                   <th scope="col" className="sticky left-0 z-10 whitespace-nowrap border-b bg-muted px-3 py-3 font-semibold">Projeto</th>
-                  {[["Téc.","Inventariantes vinculados (sem Despesas gerais)"],["Contrato","Valor do contrato"],["Não reemb.","Despesas não reembolsáveis"],["Líquido","Valor líquido do contrato"],["Inventariantes","Despesas de inventariantes"],["% Técnicos","% de despesas de técnicos sobre o contrato"],["% Líquido","% sobre o contrato líquido"],["Status","Status do projeto"],["Escopo","Escopo do contrato"]].map(([label, full]) => (
+                  {[["Vinculados","Inventariantes vinculados (sem Despesas gerais)"],["Contrato","Valor do contrato"],["Não reemb.","Despesas não reembolsáveis"],["Líquido","Valor líquido do contrato"],["Inventariantes","Despesas de inventariantes"],["% Inventariantes","% de despesas de inventariantes sobre o contrato"],["% Líquido","% sobre o contrato líquido"],["Situação","Situação do projeto"],["Escopo","Escopo do contrato"]].map(([label, full]) => (
                     <th key={label} scope="col" title={full} className="whitespace-nowrap border-b px-2.5 py-3 font-semibold">
                       {label}
                       <span className="sr-only"> ({full})</span>
@@ -121,11 +121,14 @@ export function RemunerationProjectsPage() {
                     </td>
                   </tr>
                 ))}
+                {!data.items.length ? (
+                  <tr><td colSpan={11} className="px-3 py-6 text-center text-muted-foreground">Nenhum projeto com estes filtros.</td></tr>
+                ) : null}
               </tbody>
               <tfoot>
                 <tr className="font-semibold">
                   <td colSpan={5} className="px-3 py-3">Subtotal dos projetos exibidos ({data.items.length})</td>
-                  <td className="whitespace-nowrap px-3 py-3 tabular-nums">{formatMoney(data.subtotal_agents_cost)}</td>
+                  <td className="numeric px-3 py-3">{formatMoney(data.subtotal_agents_cost)}</td>
                   <td colSpan={4} />
                 </tr>
               </tfoot>
