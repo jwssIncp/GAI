@@ -12,15 +12,16 @@ const mocks = vi.hoisted(() => ({
   project: vi.fn(),
   company: vi.fn(),
   users: vi.fn(),
+  get: vi.fn(),
 }));
+vi.mock("@/api/http", () => ({ api: { get: mocks.get } }));
 vi.mock("./budgetApi", async (original) => ({
   ...(await original<object>()),
   budgetApi: { pricing: mocks.pricing, simulate: mocks.simulate },
 }));
 vi.mock("@/api/endpoints", () => ({
   companiesApi: { get: mocks.company },
-  projectsApi: { list: mocks.project },
-  usersApi: { list: mocks.users },
+  companyUnitsApi: { get: vi.fn() },
 }));
 vi.mock("@/features/projects/ProjectSelectors", () => ({
   CompanySelect: ({
@@ -42,7 +43,7 @@ vi.mock("@/features/projects/ProjectSelectors", () => ({
   CompanyUnitSelect: () => null,
   OrganizationSelect: () => null,
 }));
-function mount(config = true) {
+function mount(config = true, extra: string[] = []) {
   const auth = {
     user: {
       id: 2,
@@ -53,6 +54,7 @@ function mount(config = true) {
         "budgets:edit",
         "companies:read",
         ...(config ? ["budgets:configure-prices"] : []),
+        ...extra,
       ].map((key) => ({ key, scope: "ORGANIZATION" })),
     },
     bootstrapping: false,
@@ -144,5 +146,55 @@ describe("Budget form with authoritative server calculation", () => {
       "Saldo não fecha em centavos",
     );
     expect(screen.queryByText("Preço final")).not.toBeInTheDocument();
+  });
+  it("chooses the responsible by name with server search among active users", async () => {
+    const people = [
+      { id: 2, full_name: "Ana Admin", login: "org.admin", email: "a@x" },
+      { id: 7, full_name: "Bruno Lima", login: "bruno", email: "b@x" },
+    ];
+    mocks.get.mockImplementation((url: string, config?: { params?: Record<string, unknown> }) => {
+      const one = url.match(/^\/users\/(\d+)$/);
+      if (one) return Promise.resolve({ data: people.find((p) => p.id === Number(one[1])) });
+      if (url === "/users") {
+        const q = String(config?.params?.search ?? "").toLowerCase();
+        return Promise.resolve({
+          data: {
+            data: people.filter((p) => !q || p.full_name.toLowerCase().includes(q)),
+            meta: { total_pages: 1 },
+          },
+        });
+      }
+      return Promise.reject(new Error("rota inesperada " + url));
+    });
+    mount(true, ["users:read"]);
+    const box = screen.getByRole("combobox", { name: "Responsável" });
+    await waitFor(() => expect(box).toHaveValue("Ana Admin (org.admin)"));
+    const user = await fill();
+    await user.click(box);
+    await user.type(box, "bru");
+    await waitFor(() =>
+      expect(mocks.get).toHaveBeenCalledWith(
+        "/users",
+        expect.objectContaining({
+          params: expect.objectContaining({ search: "bru", status: "ACTIVE", organization_id: 1 }),
+        }),
+      ),
+    );
+    await user.click(await screen.findByRole("option", { name: /^Bruno Lima \(bruno\)/ }));
+    expect(box).toHaveValue("Bruno Lima (bruno)");
+    await user.click(screen.getByRole("button", { name: "Salvar orçamento" }));
+    await waitFor(() =>
+      expect(mocks.save).toHaveBeenCalledWith(
+        expect.objectContaining({ responsible_id: 7 }),
+        "",
+        "",
+      ),
+    );
+  });
+  it("keeps the current user as responsible without users:read and never shows the organization ID", () => {
+    mount();
+    expect(screen.queryByRole("combobox", { name: "Responsável" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Responsável:/)).toHaveTextContent("org.admin");
+    expect(screen.queryByText(/Organização #/)).not.toBeInTheDocument();
   });
 });

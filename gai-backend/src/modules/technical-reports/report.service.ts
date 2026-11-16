@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { DocumentTemplatesService } from '../documents/document-templates.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, In } from 'typeorm';
 import { ProjectEntity } from '../projects/infrastructure/persistence/project.entity';
 import {
   ProjectScopeService,
@@ -20,6 +20,7 @@ import {
   ReportCommandDto,
   ReportRevisionDto,
   ResponsibleDto,
+  ResponsibleUserOptionsQueryDto,
   TransitionReportDto,
 } from './report.dto';
 import {
@@ -275,11 +276,79 @@ export class TechnicalReportsService {
   }
   async responsibles(projectId: number, actor: ProjectActorContext) {
     const p = await this.project(this.ds.manager, projectId, actor);
-    return this.ds.manager.find(ReportResponsible, {
+    const rows = await this.ds.manager.find(ReportResponsible, {
       where: { organizationId: Number(p.organizationId) },
       order: { id: 'ASC' },
       take: 1000,
     });
+    // Nome e login do usuário vinculado, para a tela não mostrar só o ID.
+    const ids = [...new Set(rows.map((r) => Number(r.userId)))];
+    const users = ids.length
+      ? await this.ds.manager.find(UserEntity, {
+          select: ['id', 'fullName', 'login'],
+          where: { id: In(ids), organizationId: Number(p.organizationId) },
+        })
+      : [];
+    const byId = new Map(users.map((u) => [Number(u.id), u]));
+    return rows.map((r) => {
+      const u = byId.get(Number(r.userId));
+      return Object.assign(r, {
+        user_name: u?.fullName ?? null,
+        user_login: u?.login ?? null,
+      });
+    });
+  }
+  /**
+   * Usuários que podem ser cadastrados como responsáveis (mesma regra de
+   * activeUser): ativos, da organização do projeto e com atribuição ativa.
+   * Devolve só id, nome e login, para quem cadastra responsáveis sem users:read.
+   */
+  async responsibleUserOptions(
+    projectId: number,
+    q: ResponsibleUserOptionsQueryDto,
+    actor: ProjectActorContext,
+  ) {
+    const p = await this.project(this.ds.manager, projectId, actor);
+    const qb = this.ds.manager
+      .createQueryBuilder(UserEntity, 'u')
+      .select(['u.id', 'u.fullName', 'u.login'])
+      .where('u.organization_id = :org', { org: Number(p.organizationId) })
+      .andWhere('u.status = :status', { status: UserStatus.ACTIVE })
+      .andWhere(
+        (sub) =>
+          'EXISTS ' +
+          sub
+            .subQuery()
+            .select('1')
+            .from(UserRoleAssignmentEntity, 'a')
+            .where('a.user_id = u.id')
+            .andWhere('a.is_active = :active')
+            .getQuery(),
+      )
+      .setParameter('active', true);
+    const search = q.search?.trim().toLowerCase();
+    if (search)
+      qb.andWhere(
+        '(LOWER(u.full_name) LIKE :term OR LOWER(u.login) LIKE :term)',
+        { term: `%${search}%` },
+      );
+    const [rows, total] = await qb
+      .orderBy('u.fullName', 'ASC')
+      .addOrderBy('u.login', 'ASC')
+      .skip((q.page - 1) * q.page_size)
+      .take(q.page_size)
+      .getManyAndCount();
+    return {
+      items: rows.map((u) => ({
+        id: Number(u.id),
+        full_name: u.fullName,
+        login: u.login,
+      })),
+      page: q.page,
+      page_size: q.page_size,
+      total,
+      total_pages: Math.ceil(total / q.page_size),
+    };
   }
   createResponsible(
     projectId: number,

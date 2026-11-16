@@ -1,8 +1,12 @@
 import { localToday } from "@/utils/format";
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { companiesApi, projectsApi, usersApi } from "@/api/endpoints";
-import { normalizePage } from "@/api/pagination";
+import { companiesApi, companyUnitsApi } from "@/api/endpoints";
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import {
+  organizationSource,
+  projectSource,
+} from "@/components/base/entitySources";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
@@ -12,6 +16,7 @@ import {
   OrganizationSelect,
 } from "@/features/projects/ProjectSelectors";
 import { BudgetMemory } from "./BudgetMemory";
+import { activeUserSource } from "./budgetSources";
 import {
   budgetApi,
   type BudgetInput,
@@ -19,6 +24,48 @@ import {
   type Version,
 } from "./budgetApi";
 const cls = "w-full rounded-lg border bg-background p-2 text-sm";
+/** Unidade escolhida pelo nome (o do snapshot ou lido pelo ID), nunca só o ID. */
+function UnitRow({
+  companyId,
+  id,
+  known,
+  onRemove,
+}: {
+  companyId: number;
+  id: number;
+  known?: string;
+  onRemove: () => void;
+}) {
+  const q = useQuery({
+    queryKey: ["company-units", "one", companyId, id],
+    queryFn: () => companyUnitsApi.get(companyId, id),
+    enabled: !known && companyId > 0,
+    staleTime: 60_000,
+  });
+  const name =
+    known ??
+    (q.data
+      ? q.data.code
+        ? `${q.data.name} (${q.data.code})`
+        : q.data.name
+      : q.isError
+        ? "Unidade sem acesso"
+        : "Carregando…");
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span>{name}</span>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        aria-label={`Remover unidade ${name}`}
+        onClick={onRemove}
+      >
+        Remover
+      </Button>
+    </div>
+  );
+}
 export function BudgetForm({
   initial,
   mode = "create",
@@ -35,8 +82,7 @@ export function BudgetForm({
     String(d?.organization_id ?? user?.organization_id ?? ""),
   );
   const [company, setCompany] = useState(String(d?.company_id ?? "")),
-    [projectSearch, setProjectSearch] = useState(""),
-    [projectPage, setProjectPage] = useState(1);
+    ids = useId();
   const [project, setProject] = useState(String(d?.project_id ?? "")),
     [units, setUnits] = useState(d?.unit_ids ?? []),
     [unitPick, setUnitPick] = useState("");
@@ -50,22 +96,11 @@ export function BudgetForm({
     queryKey: ["budget-pricing", user?.id, user?.organization_id],
     queryFn: budgetApi.pricing,
   });
-  const projects = useQuery({
-    queryKey: ["budget-project-options", org, projectSearch, projectPage],
-    queryFn: () =>
-      projectsApi.list({
-        organization_id: Number(org),
-        search: projectSearch || undefined,
-        page: projectPage,
-        page_size: 20,
-      }),
-    enabled: !!org && hasPermission("projects:read"),
-  });
-  const people = useQuery({
-    queryKey: ["budget-responsibles", org],
-    queryFn: () =>
-      usersApi.list({ organization_id: Number(org), page: 1, page_size: 100 }),
-    enabled: !!org && hasPermission("users:read"),
+  const organization = useQuery({
+    queryKey: [organizationSource.key, "one", Number(org), "{}"],
+    queryFn: () => organizationSource.one!(Number(org), {}),
+    enabled: !!org && isPlatformAdmin,
+    staleTime: 60_000,
   });
   const chosenCompany = useQuery({
     queryKey: ["budget-company", company],
@@ -146,14 +181,10 @@ export function BudgetForm({
     setError("");
     save.mutate({ form: e.currentTarget, simulate: false });
   }
-  const projectItems = projects.data
-    ? normalizePage(projects.data).items.filter(
-        (p) => p.company_id === Number(company),
-      )
-    : [];
-  const userItems = people.data
-    ? normalizePage(people.data).items.filter((p) => p.status === "ACTIVE")
-    : [];
+  // Novo orçamento: o próprio usuário, se for da organização escolhida.
+  const responsibleId =
+    d?.responsible_id ??
+    (user && String(user.organization_id ?? "") === org ? user.id : null);
   return (
     <form
       className="grid gap-4"
@@ -176,7 +207,14 @@ export function BudgetForm({
           required
         />
       ) : (
-        <p className="text-sm">Organização #{org || "não definida"}</p>
+        <p className="text-sm">
+          Organização:{" "}
+          {!org
+            ? "não definida"
+            : isPlatformAdmin
+              ? (organization.data?.label ?? "Carregando…")
+              : "a do seu usuário"}
+        </p>
       )}
       {!initial && hasPermission("companies:read") ? (
         <CompanySelect
@@ -209,55 +247,22 @@ export function BudgetForm({
         />
       </label>
       {!initial && hasPermission("projects:read") ? (
-        <fieldset className="grid gap-2 rounded border p-3">
-          <legend className="px-1 text-sm">Projeto opcional</legend>
-          <input
-            aria-label="Buscar projeto vinculado"
-            className={cls}
-            value={projectSearch}
-            onChange={(e) => {
-              setProjectSearch(e.target.value);
-              setProjectPage(1);
-            }}
-            placeholder="Buscar nome de projeto"
-          />
-          <select
+        <div className="grid gap-1 text-sm">
+          <label htmlFor={ids + "-project"}>Projeto vinculado (opcional)</label>
+          <EntityCombobox
+            id={ids + "-project"}
             aria-label="Projeto vinculado"
-            className={cls}
-            value={project}
-            onChange={(e) => setProject(e.target.value)}
-          >
-            <option value="">Orçamento anterior ao projeto</option>
-            {projectItems.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={projectPage <= 1}
-              onClick={() => setProjectPage((v) => v - 1)}
-            >
-              Projetos anteriores
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={
-                !projects.data ||
-                projectPage >= normalizePage(projects.data).totalPages
-              }
-              onClick={() => setProjectPage((v) => v + 1)}
-            >
-              Mais projetos
-            </Button>
-          </div>
-        </fieldset>
+            source={projectSource}
+            context={{ company_id: company ? Number(company) : null }}
+            requiresContext="Escolha a empresa primeiro"
+            value={project ? Number(project) : null}
+            onChange={(id) => {
+              setPreview(undefined);
+              setProject(id ? String(id) : "");
+            }}
+            placeholder="Sem projeto: orçamento anterior ao projeto"
+          />
+        </div>
       ) : (
         <p className="text-sm">
           Projeto: {initial?.snapshot.context.project?.name ?? "Sem vínculo"}
@@ -326,23 +331,18 @@ export function BudgetForm({
             }}
           />
           {units.map((id) => (
-            <div key={id} className="flex items-center justify-between text-sm">
-              <span>
-                {initial?.snapshot.context.units.find((u) => u.id === id)
-                  ?.name ?? `Unidade #${id}`}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setPreview(undefined);
-                  setUnits((v) => v.filter((x) => x !== id));
-                }}
-              >
-                Remover unidade #{id}
-              </Button>
-            </div>
+            <UnitRow
+              key={id}
+              companyId={Number(company)}
+              id={id}
+              known={
+                initial?.snapshot.context.units.find((u) => u.id === id)?.name
+              }
+              onRemove={() => {
+                setPreview(undefined);
+                setUnits((v) => v.filter((x) => x !== id));
+              }}
+            />
           ))}
         </fieldset>
       ) : null}
@@ -388,29 +388,34 @@ export function BudgetForm({
           defaultValue={d?.notes ?? ""}
         />
       </label>
-      <label className="grid gap-1 text-sm">
-        Responsável
-        <select
-          aria-label="Responsável"
-          className={cls}
-          name="responsible_id"
-          defaultValue={d?.responsible_id ?? user?.id}
-          required
-        >
-          <option value={d?.responsible_id ?? user?.id}>
-            {initial?.snapshot.context.responsible.login ??
-              user?.login ??
-              "Usuário autenticado"}
-          </option>
-          {userItems
-            .filter((u) => u.id !== (d?.responsible_id ?? user?.id))
-            .map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.login}
-              </option>
-            ))}
-        </select>
-      </label>
+      {hasPermission("users:read") ? (
+        <div className="grid gap-1 text-sm">
+          <label htmlFor={ids + "-responsible"}>Responsável</label>
+          <EntityCombobox
+            key={org}
+            id={ids + "-responsible"}
+            aria-label="Responsável"
+            source={activeUserSource}
+            context={{ organization_id: org ? Number(org) : null }}
+            requiresContext="Escolha a organização primeiro"
+            name="responsible_id"
+            required
+            defaultValue={responsibleId}
+            onChange={() => setPreview(undefined)}
+            placeholder="Digite o nome ou o login"
+          />
+        </div>
+      ) : (
+        // Sem users:read não há lista: mantém o responsável atual (ou o próprio usuário).
+        <p className="text-sm">
+          Responsável:{" "}
+          {initial?.snapshot.context.responsible.login ??
+            user?.full_name ??
+            user?.login ??
+            "usuário autenticado"}
+          <input type="hidden" name="responsible_id" value={responsibleId ?? ""} />
+        </p>
+      )}
       <label className="grid gap-1 text-sm">
         Parâmetros de preços
         <select

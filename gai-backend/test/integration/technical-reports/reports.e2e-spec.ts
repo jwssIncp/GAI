@@ -24,6 +24,7 @@ import {
 import { PermissionEntity } from '../../../src/modules/users/infrastructure/persistence/permission.entity';
 import { RoleEntity } from '../../../src/modules/users/infrastructure/persistence/role.entity';
 import { RolePermissionEntity } from '../../../src/modules/users/infrastructure/persistence/role-permission.entity';
+import { ValuationBatch } from '../../../src/modules/inventory-operations/infrastructure/persistence/valuation-batch.entity';
 describe('Technical reports real HTTP and disposable MySQL', () => {
   let app: INestApplication,
     ds: DataSource,
@@ -146,6 +147,58 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
       professional_registration: '',
       registration_evidence: '',
     }).expect(400);
+    const listed = (await get('/responsibles').expect(200)).body;
+    expect(listed.find((x: any) => x.id === profile.id)).toMatchObject({
+      user_login: 'org.admin',
+    });
+  });
+  it('lists eligible responsible users by name without requiring users:read', async () => {
+    const all = (await get('/responsible-user-options').expect(200)).body;
+    expect(all.items.map((u: any) => u.login).sort()).toEqual([
+      'org.admin',
+      'test.user',
+    ]);
+    expect(Object.keys(all.items[0]).sort()).toEqual([
+      'full_name',
+      'id',
+      'login',
+    ]);
+    expect(all).toMatchObject({ page: 1, total: 2, total_pages: 1 });
+    const found = (
+      await get('/responsible-user-options?search=TEST&page_size=5').expect(200)
+    ).body;
+    expect(found.items).toEqual([
+      expect.objectContaining({ login: 'test.user' }),
+    ]);
+    await get('/responsible-user-options?page_size=500').expect(400);
+    const role = await ds
+        .getRepository(RoleEntity)
+        .findOneByOrFail({ name: 'Operador' }),
+      keys = await ds.getRepository(PermissionEntity).find(),
+      byKey = (k: string) => keys.find((x) => x.key === k)!.id,
+      links = ds.getRepository(RolePermissionEntity);
+    await links.delete({ roleId: role.id, permissionId: byKey('users:read') });
+    await links.save({
+      roleId: role.id,
+      permissionId: byKey('technical-reports:read'),
+    });
+    try {
+      const reader = await loginAsOrgUser(app);
+      await get('/responsible-user-options', reader).expect(403);
+      await links.save({
+        roleId: role.id,
+        permissionId: byKey('technical-reports:templates'),
+      });
+      const editor = await loginAsOrgUser(app);
+      await api('get', '/users', {}, editor).expect(403);
+      expect(
+        (await get('/responsible-user-options', editor).expect(200)).body.total,
+      ).toBe(2);
+    } finally {
+      for (const k of ['technical-reports:read', 'technical-reports:templates'])
+        await links.delete({ roleId: role.id, permissionId: byKey(k) });
+      await links.save({ roleId: role.id, permissionId: byKey('users:read') });
+    }
   });
   it('creates a project snapshot with dynamic identity and physical rows', async () => {
     r = (
@@ -408,6 +461,48 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
     expect(c.data.sources.metrics['valuation.used_total']).toBeNull();
     expect(c.data.sources.missing).toContain('valuation.currency');
     expect(await ds.getRepository(AssetValuationEntity).count()).toBe(1);
+  });
+  it('lote de avaliação: aplicado (confirmado) é aceito na seleção; em prévia, recusado', async () => {
+    const repo = ds.getRepository(ValuationBatch);
+    const actorId = Number(
+      (
+        await ds.query<Array<{ id: number }>>('SELECT MIN(id) AS id FROM users')
+      )[0].id,
+    );
+    const batch = (status: 'preview' | 'applied') =>
+      repo.save(
+        repo.create({
+          organizationId: 1,
+          projectId: p,
+          commandKey: `sintetico-lote-${status}`,
+          fingerprint: 'f'.repeat(64),
+          previewHash: 'h'.repeat(64),
+          request: {} as never,
+          status,
+          revision: 1,
+          total: 0,
+          createdById: actorId,
+          confirmedById: status === 'applied' ? actorId : null,
+          confirmedAt: status === 'applied' ? new Date() : null,
+          expiresAt: new Date(Date.now() + 3600_000),
+        }),
+      );
+    const select = (id: number) =>
+      post('', {
+        ...command(),
+        template_version_id: t.publishedVersionId,
+        title: 'SINTETICO Laudo com lote',
+        selection: {
+          families: ['identity', 'valuation'],
+          valuation_batch_id: id,
+        },
+      });
+    const preview = await batch('preview');
+    expect(
+      (await select(Number(preview.id)).expect(400)).body.message,
+    ).toContain('Lote de avaliação deve estar confirmado');
+    const applied = await batch('applied');
+    await select(Number(applied.id)).expect(201);
   });
   it('captures actual accounting import, observations, reconciliation and consolidation without changing their history', async () => {
     const prefix = `/projects/${p}`,

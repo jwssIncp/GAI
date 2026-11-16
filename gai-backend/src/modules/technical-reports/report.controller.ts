@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -25,6 +26,7 @@ import {
   RefreshReportDto,
   ReportRevisionDto,
   ResponsibleDto,
+  ResponsibleUserOptionsQueryDto,
   TransitionReportDto,
 } from './report.dto';
 import { TechnicalReportsService } from './report.service';
@@ -95,6 +97,15 @@ export class TechnicalReportsController {
     @Req() r: Request,
   ) {
     return this.reports.createResponsible(p, d, this.actor(r));
+  }
+  @Get('responsible-user-options')
+  @Access('technical-reports:templates')
+  responsibleUserOptions(
+    @Param('projectId', ParseIntPipe) p: number,
+    @Query() q: ResponsibleUserOptionsQueryDto,
+    @Req() r: Request,
+  ) {
+    return this.reports.responsibleUserOptions(p, q, this.actor(r));
   }
   @Get() @Access() list(
     @Param('projectId', ParseIntPipe) p: number,

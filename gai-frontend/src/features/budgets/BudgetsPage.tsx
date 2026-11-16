@@ -1,7 +1,9 @@
 import { navigationContext } from "@/features/projects/navigationContext";
 import { navigationHref } from "@/features/projects/navigationContext";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import { companySource, projectSource } from "@/components/base/entitySources";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
@@ -17,6 +19,67 @@ import {
   budgetMoney,
   budgetStatuses,
 } from "./budgetApi";
+const idOf = (v?: string) => (Number(v) > 0 ? Number(v) : null);
+/**
+ * Filtros de empresa e projeto por nome. Os IDs seguem para a URL pelos campos
+ * ocultos company_id e project_id; ao abrir por link, o rótulo vem do ID. O
+ * projeto é filtrado pela empresa escolhida.
+ */
+function CompanyProjectFilters({
+  companyId,
+  projectId,
+  organizationId,
+}: {
+  companyId: number | null;
+  projectId: number | null;
+  organizationId: number | null;
+}) {
+  const [company, setCompany] = useState(companyId),
+    [project, setProject] = useState(projectId),
+    ids = useId();
+  return (
+    <>
+      <div className="grid gap-1 text-sm">
+        <label htmlFor={ids + "-company"}>Empresa</label>
+        <EntityCombobox
+          id={ids + "-company"}
+          aria-label="Empresa"
+          source={companySource}
+          context={{ organization_id: organizationId }}
+          name="company_id"
+          value={company}
+          onChange={(id) => {
+            setCompany(id);
+            setProject(null);
+          }}
+          placeholder="Todas as empresas"
+        />
+      </div>
+      <div className="grid gap-1 text-sm">
+        <label htmlFor={ids + "-project"}>Projeto</label>
+        <EntityCombobox
+          id={ids + "-project"}
+          aria-label="Projeto"
+          source={projectSource}
+          context={{ company_id: company }}
+          name="project_id"
+          value={project}
+          onChange={setProject}
+          placeholder={company ? "Projetos da empresa" : "Todos os projetos"}
+        />
+      </div>
+    </>
+  );
+}
+/** Nome da empresa quando o orçamento ainda não tem versão calculada. */
+function CompanyName({ id }: { id: number }) {
+  const q = useQuery({
+    queryKey: [companySource.key, "one", id, "{}"],
+    queryFn: () => companySource.one!(id, {}),
+    staleTime: 60_000,
+  });
+  return q.isPending ? "Carregando…" : (q.data?.label ?? "Empresa sem acesso");
+}
 export function BudgetsPage() {
   const [params, setParams] = useSearchParams(),
     [open, setOpen] = useState(false),
@@ -88,26 +151,11 @@ export function BudgetsPage() {
             ))}
           </select>
         </label>
-        <label className="grid gap-1 text-sm">
-          Empresa (ID)
-          <input
-            className="rounded border bg-background p-2"
-            name="company_id"
-            type="number"
-            min="1"
-            defaultValue={filters.company_id}
-          />
-        </label>
-        <label className="grid gap-1 text-sm">
-          Projeto (ID)
-          <input
-            className="rounded border bg-background p-2"
-            name="project_id"
-            type="number"
-            min="1"
-            defaultValue={filters.project_id}
-          />
-        </label>
+        <CompanyProjectFilters
+          companyId={idOf(filters.company_id)}
+          projectId={idOf(filters.project_id)}
+          organizationId={idOf(filters.organization_id)}
+        />
         <div className="flex gap-3">
           <Button type="submit">Aplicar filtros</Button>
           <Button type="button" variant="outline" onClick={() => setParams(navigationContext(params))}>
@@ -139,8 +187,9 @@ export function BudgetsPage() {
               {
                 header: "Empresa",
                 cell: (b) =>
-                  b.current?.snapshot.context.company.name ??
-                  `Empresa #${b.companyId}`,
+                  b.current?.snapshot.context.company.name ?? (
+                    <CompanyName id={b.companyId} />
+                  ),
               },
               {
                 header: "Projeto",

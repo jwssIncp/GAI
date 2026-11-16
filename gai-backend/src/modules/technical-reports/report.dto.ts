@@ -11,6 +11,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -171,4 +172,10 @@ export class RefreshReportDto extends ReportRevisionDto {
 }
 export class TransitionReportDto extends ReportRevisionDto {
   @IsIn(['review', 'approve', 'reopen', 'archive']) action!: string;
+}
+/** Busca de usuários elegíveis a responsável (sem exigir users:read). */
+export class ResponsibleUserOptionsQueryDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(50) page_size = 20;
+  @IsOptional() @IsString() @MaxLength(100) search?: string;
 }
