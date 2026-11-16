@@ -15,7 +15,7 @@ const PAGES: Record<string, [title: string, description: string]> = {
   receivables: ["Recebíveis", "Parcelas a receber, recebimentos e estornos com histórico."],
   "cash-flow": ["Fluxo de caixa", "Movimentos conhecidos e obrigações abertas. Resultado do período não é saldo bancário."],
   dre: ["DRE gerencial", "Resultado por competência explícita, com cobertura das fontes e histórico. Não é DRE contábil oficial."],
-  remuneration: ["Remuneração", "Remuneração dos técnicos por projeto."],
+  remuneration: ["Remuneração", "Remuneração dos inventariantes por projeto."],
   "field-agent-payments": [
     "Pagamento de inventariantes",
     "Diárias de todos os projetos: em aberto, atrasadas e pagas. A baixa é gravada nos próprios lançamentos.",

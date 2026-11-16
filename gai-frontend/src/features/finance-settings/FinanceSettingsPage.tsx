@@ -74,7 +74,7 @@ function summaryRows(v: FinanceSettingsValues): Array<[string, Array<[string, st
         ["Diária padrão do inventariante", brl(v.default_daily_rate)],
         ["Produtividade para orçar inventariantes", `${v.budget_productivity_items_per_day} itens/dia`],
         ["Despesas não reembolsáveis orçadas", pct(v.budgeted_non_reimbursable_expense_pct)],
-        ["Alerta de despesas de técnicos", pct(v.technician_expense_alert_pct)],
+        ["Alerta de despesas de inventariantes", pct(v.technician_expense_alert_pct)],
         ["Exigir aprovação de diárias e despesas", v.require_approval ? "Sim" : "Não"],
       ],
     ],
@@ -405,7 +405,7 @@ function VersionForm({
         {money("default_daily_rate", "Diária padrão do inventariante (R$)", "Diária paga ao inventariante; pode diferir da diária usada no preço do orçamento.")}
         {integer("budget_productivity_items_per_day", "Produtividade para orçar (itens/dia)")}
         {text("budgeted_non_reimbursable_expense_pct", "Despesas não reembolsáveis orçadas (%)")}
-        {text("technician_expense_alert_pct", "Alerta de despesas de técnicos (%)")}
+        {text("technician_expense_alert_pct", "Alerta de despesas de inventariantes (%)")}
         <FormField label="Exigir aprovação de diárias e despesas">
           <select
             className="h-11 rounded-md border bg-background px-3 text-sm"
