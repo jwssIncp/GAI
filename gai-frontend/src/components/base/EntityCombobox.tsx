@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { createPortal } from "react-dom";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { cn } from "@/utils/cn";
 
@@ -78,6 +79,12 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
   const missingContext = Boolean(requiresContext) && Object.values(context).some((v) => v === null || v === undefined || v === "");
   const off = disabled || missingContext;
   const box = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+  // Obrigatório: o navegador barra o envio sem uma escolha da lista (o ID vai
+  // no campo oculto, que o navegador não valida).
+  useEffect(() => {
+    input.current?.setCustomValidity(required && !selectedId ? "Escolha um item da lista." : "");
+  }, [required, selectedId]);
 
   useEffect(() => setPages(1), [search, contextKey]);
 
@@ -119,10 +126,44 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
     setOpen(false);
   };
 
+  // A lista vai para o <body> (posição fixa sob o campo): painéis com overflow
+  // escondido (filtros, diálogos) não a cortam.
+  const listRef = useRef<HTMLUListElement>(null);
+  const [place, setPlace] = useState<CSSProperties>({});
+  // Dentro de um diálogo modal (que prende foco e cliques), a lista fica junto
+  // ao campo, como antes; fora dele, vai para o <body>.
+  const [inDialog, setInDialog] = useState(false);
+  useLayoutEffect(() => {
+    setInDialog(Boolean(box.current?.closest('[role="dialog"]')));
+  }, []);
+  useLayoutEffect(() => {
+    if (!open || inDialog) return;
+    const update = () => {
+      const r = input.current?.getBoundingClientRect();
+      if (!r) return;
+      const below = window.innerHeight - r.bottom;
+      const up = below < 200 && r.top > below;
+      setPlace({
+        position: "fixed",
+        left: r.left,
+        width: Math.max(r.width, 220),
+        ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }),
+        maxHeight: Math.max(160, Math.min(288, (up ? r.top : below) - 12)),
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [open, inDialog]);
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => {
-      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (box.current && !box.current.contains(t) && !listRef.current?.contains(t)) setOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -151,13 +192,17 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
     }
   };
 
-  const shown = open ? text : current ? current.label : selectedId ? `Carregando…` : "";
+  // Valor sem rótulo resolvido (ex.: falta o contexto para ler o nome): nunca mostra o ID.
+  const portal = (node: React.ReactNode) => (inDialog ? node : createPortal(node, document.body));
+  const shown = open ? text : current ? current.label : selectedId ? (one.isFetching ? "Carregando…" : "Selecionado") : "";
   return (
     <div ref={box} className={cn("relative", className)}>
       {name ? <input type="hidden" name={name} value={selectedId ?? ""} /> : null}
       <div className="flex items-center gap-1">
         <input
+          ref={input}
           id={inputId}
+          required={required}
           role="combobox"
           aria-label={aria["aria-label"]}
           aria-describedby={aria["aria-describedby"]}
@@ -192,12 +237,17 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
           </button>
         ) : null}
       </div>
-      {open && !off ? (
+      {open && !off ? portal(
         <ul
+          ref={listRef}
           id={listId}
           role="listbox"
           aria-label={aria["aria-label"]}
-          className="absolute z-50 mt-1 max-h-72 w-full overflow-y-auto rounded-md border bg-popover p-1 text-sm text-popover-foreground shadow-lg"
+          style={inDialog ? undefined : place}
+          className={cn(
+            "overflow-y-auto rounded-md border bg-popover p-1 text-sm text-popover-foreground shadow-lg",
+            inDialog ? "absolute z-50 mt-1 max-h-72 w-full" : "z-[1000]",
+          )}
         >
           {items.map((o, i) => (
             <li
@@ -245,7 +295,7 @@ export function EntityCombobox<C extends Record<string, unknown> = Record<string
               </button>
             </li>
           ) : null}
-        </ul>
+        </ul>,
       ) : null}
     </div>
   );

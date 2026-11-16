@@ -82,6 +82,24 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     expect(screen.getByRole("status")).toHaveTextContent("");
   });
 
+  it("obrigatório sem escolha: o formulário não é enviado (validação nativa)", async () => {
+    const { source } = fakeSource();
+    const sent = vi.fn();
+    mount(
+      <form onSubmit={(e) => { e.preventDefault(); sent(); }}>
+        <EntityCombobox aria-label="Projeto" name="project_id" source={source} required />
+        <button type="submit">Enviar</button>
+      </form>,
+    );
+    const box = screen.getByRole("combobox", { name: "Projeto" });
+    expect((box as HTMLInputElement).validationMessage).toBe("Escolha um item da lista.");
+    await userEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(sent).not.toHaveBeenCalled();
+    box.focus();
+    await userEvent.click(await screen.findByRole("option", { name: "Projeto 02 (P-2)" }));
+    expect((box as HTMLInputElement).validationMessage).toBe("");
+  });
+
   it("filtro de contexto: sem ele fica desabilitado e explica; com ele, busca com o contexto", async () => {
     const { source, search } = fakeSource();
     const { rerender } = mount(
