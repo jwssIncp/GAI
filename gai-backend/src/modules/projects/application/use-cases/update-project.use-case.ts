@@ -1,3 +1,4 @@
+import { ProjectStatusBlocksOperationError } from '../../domain/errors/project-status-blocks-operation.error';
 import { ProjectRegistrationService } from '../services/project-registration.service';
 import {
   BadRequestException,
@@ -185,7 +186,7 @@ export class UpdateProjectUseCase {
   ): BadRequestException | ConflictException {
     const message =
       error instanceof Error ? error.message : 'Projeto inválido.';
-    if (message === 'A situação do projeto não permite esta operação.') {
+    if (error instanceof ProjectStatusBlocksOperationError) {
       return new ConflictException({
         code: 'PROJECT_STATUS_BLOCKS_OPERATION',
         message,

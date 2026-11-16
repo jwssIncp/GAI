@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '@/api/http';
 import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import { ProjectSummaryPage } from './ProjectSummaryPage';
 import { ProjectLayout } from './ProjectLayout';
@@ -135,8 +136,8 @@ describe('ProjectSummaryPage workspace', () => {
     expect(await screen.findByText('Falha no projeto')).toBeInTheDocument();
   });
 
-  it('renderiza projeto nao encontrado', async () => {
-    mocks.get.mockRejectedValue(new Error('404 NOT_FOUND'));
+  it('renderiza projeto não encontrado pelo status da API, mesmo com a mensagem em pt-BR', async () => {
+    mocks.get.mockRejectedValue(new ApiError(404, { code: 'PROJECT_NOT_FOUND', message: 'Projeto não encontrado.' }));
     renderPage();
     expect(await screen.findByText('Projeto não encontrado')).toBeInTheDocument();
   });

@@ -12,6 +12,7 @@ import {
 import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { companiesApi, organizationsApi } from '@/api/endpoints';
+import { ApiError } from '@/api/http';
 import { MetricCard, ProgressCard } from '@/components/base/Cards';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
 import { PageContainer } from '@/components/base/PageContainer';
@@ -370,7 +371,8 @@ function buildAlerts(project: Project, summary: ProjectSummary): Alert[] {
 
 function ProjectError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const message = error instanceof Error ? error.message : 'Não foi possível carregar o workspace do projeto.';
-  if (message.includes('404') || message.toLowerCase().includes('not_found')) {
+  // Decide pelo status/código da API, não pelo texto (que é traduzido).
+  if (error instanceof ApiError && (error.status === 404 || error.code === 'NOT_FOUND')) {
     return <EmptyState title="Projeto não encontrado" description="Este projeto não existe ou foi removido." />;
   }
   return <ErrorState message={message} onRetry={onRetry} />;

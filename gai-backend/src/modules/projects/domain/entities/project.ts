@@ -1,3 +1,4 @@
+import { ProjectStatusBlocksOperationError } from '../errors/project-status-blocks-operation.error';
 import { ProjectType } from '../enums/project-type.enum';
 import { ProjectStatus } from '../enums/project-status.enum';
 import {
@@ -147,7 +148,7 @@ export class Project {
     updatedById: number | null;
   }): Record<string, { before: unknown; after: unknown }> {
     if (this.blocksOperationalMutation()) {
-      throw new Error('A situação do projeto não permite esta operação.');
+      throw new ProjectStatusBlocksOperationError();
     }
 
     const nextStartDate =
@@ -284,7 +285,7 @@ export class Project {
   ): Record<string, { before: unknown; after: unknown }> {
     const before = this.props.status;
     if (before === status) {
-      throw new Error('A situação do projeto não permite esta operação.');
+      throw new ProjectStatusBlocksOperationError();
     }
     this.props.status = status;
     this.props.updatedById = actorId;
