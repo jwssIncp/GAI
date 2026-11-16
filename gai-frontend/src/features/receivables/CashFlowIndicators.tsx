@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { MoneyInput } from "@/components/base/Inputs";
+import { MoneyInput } from "@/components/base/MoneyInput";
+import { Kpi } from "@/components/base/Cards";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,6 @@ import { formatMoney } from "@/utils/format";
 import { percent } from "./financeApi";
 import {
   monthBr,
-  parseBrMoney,
   type BoardQuery,
   type CashFlowIndicators as IndicatorsData,
   type CashFlowIndicatorValues,
@@ -33,17 +33,14 @@ function IndicatorCard({ label, value, simulated, delta, hint }: Card) {
   const shown = simulated ?? value;
   const changed = simulated !== undefined && simulated !== value;
   return (
-    <div className={`rounded-lg border bg-card p-3 ${changed ? "border-primary/60" : ""}`}>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-semibold tabular-nums ${shown.startsWith("-") ? "text-destructive" : ""}`}>{shown}</p>
+    <Kpi label={label} value={shown} hint={hint} tone={changed ? "highlight" : "default"} negative={shown.startsWith("-")}>
       {changed ? (
         <p className="text-xs text-muted-foreground">
           sem a venda: <s>{value}</s>
           {delta ? <> · variação {delta}</> : null}
         </p>
       ) : null}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-    </div>
+    </Kpi>
   );
 }
 
@@ -80,7 +77,7 @@ export function SimulationBar({
         <div className="mt-2 grid gap-2">
           <SimulationForm key={referenceMonth} referenceMonth={referenceMonth} active={sim} onSimulate={onSimulate} />
           {indicators.isError && sim ? (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-destructive-text">
               Simulação não calculada: {(indicators.error as Error).message}
             </p>
           ) : null}
@@ -187,12 +184,12 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
                 {mc ? (
                   <table className="mt-1 w-full text-sm">
                     <tbody>
-                      <tr><td>Imposto de renda</td><td className="text-right tabular-nums">{pct(mc.income_tax_pct)}</td></tr>
-                      <tr><td>Inventariantes</td><td className="text-right tabular-nums">{pct(mc.field_agents_pct)}</td></tr>
-                      <tr><td>Despesas não reembolsáveis</td><td className="text-right tabular-nums">{pct(mc.non_reimbursable_pct)}</td></tr>
-                      <tr><td>Comissões</td><td className="text-right tabular-nums">{pct(mc.commission_pct)}</td></tr>
-                      <tr><td>Sócio (efetivo, após IR)</td><td className="text-right tabular-nums">{pct(mc.partner_effective_pct)}</td></tr>
-                      <tr className="font-semibold"><td>Margem de contribuição</td><td className="text-right tabular-nums">{pct(mc.mc)}</td></tr>
+                      <tr><td>Imposto de renda</td><td className="numeric text-right">{pct(mc.income_tax_pct)}</td></tr>
+                      <tr><td>Inventariantes</td><td className="numeric text-right">{pct(mc.field_agents_pct)}</td></tr>
+                      <tr><td>Despesas não reembolsáveis</td><td className="numeric text-right">{pct(mc.non_reimbursable_pct)}</td></tr>
+                      <tr><td>Comissões</td><td className="numeric text-right">{pct(mc.commission_pct)}</td></tr>
+                      <tr><td>Sócio (efetivo, após IR)</td><td className="numeric text-right">{pct(mc.partner_effective_pct)}</td></tr>
+                      <tr className="font-semibold"><td>Margem de contribuição</td><td className="numeric text-right">{pct(mc.mc)}</td></tr>
                     </tbody>
                   </table>
                 ) : (
@@ -206,7 +203,7 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
                     {o.fixed_cost.items.map((i) => (
                       <tr key={i.key}>
                         <td>{i.label}</td>
-                        <td className="text-right tabular-nums">{i.available ? formatMoney(i.amount) : <span className="text-warning">sem conta na DRE</span>}</td>
+                        <td className="numeric text-right">{i.available ? formatMoney(i.amount) : <span className="text-warning-text">sem conta na DRE</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -220,7 +217,7 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
                   </thead>
                   <tbody>
                     {o.partner_commission.operating_by_quarter.map((v, i) => (
-                      <tr key={i}><td>{i + 1}º</td><td className="text-right tabular-nums">{formatMoney(v)}</td><td className="text-right tabular-nums">{formatMoney(o.partner_commission.quarters[i])}</td></tr>
+                      <tr key={i}><td>{i + 1}º</td><td className="numeric text-right">{formatMoney(v)}</td><td className="numeric text-right">{formatMoney(o.partner_commission.quarters[i])}</td></tr>
                     ))}
                   </tbody>
                 </table>
@@ -229,6 +226,7 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
                 <p className="font-semibold">Base: DRE mensal {o.dre.year}</p>
                 <ul className="mt-1 list-disc pl-5 text-muted-foreground">
                   {o.notes.map((t) => <li key={t}>{t}</li>)}
+                  <li>Antes do corte, a DRE usa o lançado/importado.</li>
                 </ul>
               </div>
             </div>
@@ -262,7 +260,7 @@ function SimulationForm({ referenceMonth, active, onSimulate }: { referenceMonth
   const [companyExpenses, setCompanyExpenses] = useState(false);
   const [error, setError] = useState("");
   const submit = () => {
-    const v = parseBrMoney(value);
+    const v = value && Number(value) > 0 ? value : null;
     if (!v) return setError("Informe o valor da venda (ex.: 10.000,00).");
     if (!(signal <= second && second <= third)) return setError("Os meses das parcelas devem estar em ordem.");
     setError("");
@@ -270,8 +268,8 @@ function SimulationForm({ referenceMonth, active, onSimulate }: { referenceMonth
   };
   return (
     <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); submit(); }} aria-label="Simular venda">
-      <FormField label="Valor da venda">
-        <MoneyInput className="w-36" value={value} onChange={(e) => setValue(e.target.value)} aria-label="Valor da venda" />
+      <FormField label="Valor da venda (R$)">
+        <MoneyInput className="w-36" value={value} onValueChange={setValue} aria-label="Valor da venda (R$)" />
       </FormField>
       <FormField label="Sinal (50%)">
         <input type="month" aria-label="Mês do sinal" className="h-10 rounded-md border bg-background px-2 text-sm" value={signal} onChange={(e) => { setSignal(e.target.value); setSecond(addMonth(e.target.value, 1)); setThird(addMonth(e.target.value, 2)); }} />
@@ -288,7 +286,7 @@ function SimulationForm({ referenceMonth, active, onSimulate }: { referenceMonth
       </label>
       <Button type="submit">Simular</Button>
       {active ? <Button type="button" variant="ghost" onClick={() => onSimulate(null)}>Limpar simulação</Button> : null}
-      {error ? <p role="alert" className="w-full text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="w-full text-sm text-destructive-text">{error}</p> : null}
     </form>
   );
 }

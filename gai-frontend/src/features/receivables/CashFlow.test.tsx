@@ -162,7 +162,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
 
     const billing = within(screen.getByRole("region", { name: "Tabela: Entradas de faturamento" }));
     expect(billing.getByText("167 dia(s)")).toBeInTheDocument();
-    expect(billing.getByText("Não confirmado").closest("td")).toHaveAttribute("title", "Previsto, não confirmado");
+    expect(billing.getByText("Não confirmado")).toHaveAttribute("title", "Previsto, ainda não confirmado");
     // visão inicial "Em aberto": a recebida fica fora; vencida e proposta ficam
     expect(billing.queryByText("Recebido")).not.toBeInTheDocument();
     const outs = within(screen.getByRole("region", { name: "Tabela: Saídas não reembolsáveis" }));
@@ -205,10 +205,10 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     await u.click(bar.getByRole("button", { name: "Confirmar propostas (1)" }));
     await waitFor(() => expect(mocks.confirm).toHaveBeenCalledWith(["amendment:3"]));
     await u.click(billing.getByLabelText("Selecionar Contrato CT-A 31/05/2026"));
-    await u.click(within(screen.getByRole("toolbar")).getByRole("button", { name: "Recebido (1)" }));
+    await u.click(within(screen.getByRole("toolbar")).getByRole("button", { name: "Marcar como recebido (1)" }));
     const dialog = within(screen.getByRole("dialog"));
-    await u.clear(dialog.getByLabelText("Recebido em"));
-    await u.type(dialog.getByLabelText("Recebido em"), "2026-11-12");
+    await u.clear(dialog.getByLabelText("Data de recebimento"));
+    await u.type(dialog.getByLabelText("Data de recebimento"), "2026-11-12");
     await u.click(dialog.getByRole("button", { name: "Confirmar" }));
     await waitFor(() => expect(mocks.receive).toHaveBeenCalledWith([{ receivable_id: 9, installment_id: 21 }], "2026-11-12"));
   });
@@ -264,6 +264,11 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await u.click(outs.getByLabelText("Selecionar Gasolina (cód. 9) 11/11/2026"));
     await u.click(bar().getByRole("button", { name: "Desfazer pagamento (1)" }));
+    // desfazer a baixa pede confirmação
+    expect(mocks.settle).not.toHaveBeenLastCalledWith(["expense:9"], null);
+    dialog = within(screen.getByRole("dialog"));
+    expect(dialog.getByText("Desfazer 1 pagamento(s)?")).toBeInTheDocument();
+    await u.click(dialog.getByRole("button", { name: "Desfazer pagamento" }));
     await waitFor(() => expect(mocks.settle).toHaveBeenLastCalledWith(["expense:9"], null));
   });
 
@@ -327,7 +332,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     mount();
     const region = await screen.findByRole("region", { name: "Tabela: Entradas de reembolso e revenda de placas" });
     const t = within(region);
-    for (const h of ["Lote", "Data prevista", "Recebido em", "Projeto", "Descrição", "Origem", "Status", "Valor"]) expect(t.getByRole("columnheader", { name: h })).toBeInTheDocument();
+    for (const h of ["Lote", "Data prevista", "Data de recebimento", "Projeto", "Descrição", "Origem", "Situação", "Valor"]) expect(t.getByRole("columnheader", { name: h })).toBeInTheDocument();
     const lot = t.getByText("Reembolso — lote L-1").closest("tr")!;
     expect(lot).toHaveTextContent("05/11/2026");
     await u.click(t.getByRole("button", { name: /Reembolso — lote L-1/ }));
