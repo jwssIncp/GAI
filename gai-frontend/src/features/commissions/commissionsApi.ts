@@ -4,7 +4,7 @@ import { api } from "@/api/http";
 export type CommissionStatus = "paid" | "overdue" | "pending";
 export const COMMISSION_STATUS_LABEL: Record<CommissionStatus, string> = {
   paid: "Pago",
-  overdue: "Atrasado",
+  overdue: "Em atraso",
   pending: "Pendente",
 };
 
