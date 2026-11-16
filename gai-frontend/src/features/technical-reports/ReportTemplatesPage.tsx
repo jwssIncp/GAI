@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { DataTable } from "@/components/base/DataTable";
@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { reportApi, reportInput as cls } from "./reportApi";
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import { named } from "@/components/base/entitySources";
+import { reportApi, reportInput as cls, type Responsible } from "./reportApi";
+import { responsibleUserSource } from "./reportSources";
 import { TemplateForm, ReportField } from "./ReportForms";
 import { VisualTemplateEditor } from '@/features/documents/VisualTemplateEditor';
 export function ReportTemplatesPage() {
@@ -213,6 +216,7 @@ export function ReportResponsiblesPage() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [key, setKey] = useState(crypto.randomUUID()),
+    userField = useId(),
     q = useQuery({
       queryKey: ["technical-reports", "responsibles", user?.id, p],
       queryFn: () => reportApi.responsibles(p),
@@ -235,7 +239,18 @@ export function ReportResponsiblesPage() {
           getKey={(r) => r.id}
           columns={[
             { header: "Nome", cell: (r) => r.data.display_name },
-            { header: "Usuário ID", cell: (r) => r.data.user_id },
+            {
+              header: "Usuário",
+              cell: (r) => {
+                const u = r as Responsible & {
+                  user_name?: string | null;
+                  user_login?: string | null;
+                };
+                return u.user_login
+                  ? named(u.user_name || u.user_login, u.user_name ? u.user_login : null)
+                  : "Usuário não encontrado na organização";
+              },
+            },
             { header: "Função", cell: (r) => r.data.function },
             {
               header: "Registro declarado",
@@ -278,8 +293,20 @@ export function ReportResponsiblesPage() {
           }
         }}
       >
+        <div className="grid gap-1 text-sm">
+          <label htmlFor={userField}>Usuário da organização</label>
+          <EntityCombobox
+            key={key}
+            id={userField}
+            aria-label="Usuário da organização"
+            source={responsibleUserSource}
+            context={{ project_id: p }}
+            name="user_id"
+            required
+            placeholder="Digite o nome ou o login"
+          />
+        </div>
         {[
-          ["user_id", "Usuário da organização (ID)"],
           ["display_name", "Nome para identificação no documento"],
           ["function", "Função declarada"],
           ["professional_registration", "Registro profissional (opcional)"],
@@ -292,8 +319,6 @@ export function ReportResponsiblesPage() {
           <ReportField key={k} label={l}>
             <input
               className={cls}
-              type={k === "user_id" ? "number" : "text"}
-              min={k === "user_id" ? 1 : undefined}
               name={k}
               required={
                 ![
@@ -301,7 +326,6 @@ export function ReportResponsiblesPage() {
                   "registration_evidence",
                 ].includes(k)
               }
-              defaultValue={k === "user_id" ? user?.id : undefined}
             />
           </ReportField>
         ))}

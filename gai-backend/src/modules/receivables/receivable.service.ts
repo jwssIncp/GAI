@@ -4,7 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, In } from 'typeorm';
+import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import { assertNotFuture } from '../../common/finance/settlement-date';
 import { assertDreMonthsOpen } from '../managerial-dre/dre-closed-period';
 import {
@@ -477,9 +478,106 @@ export class ReceivableService {
     };
   }
   async detail(id: number, actor: ProjectActorContext) {
-    return this.ds.transaction('REPEATABLE READ', async (m) =>
-      this.detailFrom(m, await this.row(m, id, actor)),
+    return this.ds.transaction('REPEATABLE READ', async (m) => {
+      const d = await this.detailFrom(m, await this.row(m, id, actor));
+      return (await this.withNames(m, [d]))[0];
+    });
+  }
+  /**
+   * Nomes para a tela e a exportação: cliente, projeto (com código), contrato
+   * e autor de cada evento — buscados em lote, uma consulta por tipo (a
+   * exportação lista milhares de recebíveis).
+   */
+  async withNames<
+    T extends {
+      organizationId: number;
+      companyId: number;
+      projectId: number | null;
+      contractId: number | null;
+      events: Array<{ actorId: number | null }>;
+    },
+  >(m: EntityManager, rows: T[]) {
+    if (!rows.length) return [];
+    const ids = (pick: (r: T) => Array<number | null>) => [
+      ...new Set(
+        rows
+          .flatMap(pick)
+          .filter((v): v is number => v !== null && v !== undefined)
+          .map(Number),
+      ),
+    ];
+    const { company, project, contract, user } = await this.referenceNames(
+      m,
+      rows[0].organizationId,
+      {
+        companies: ids((r) => [r.companyId]),
+        projects: ids((r) => [r.projectId]),
+        contracts: ids((r) => [r.contractId]),
+        users: ids((r) => r.events.map((e) => e.actorId)),
+      },
     );
+    return rows.map((r) => ({
+      ...r,
+      company_name: company.get(Number(r.companyId)) ?? null,
+      project_name:
+        r.projectId === null
+          ? null
+          : (project.get(Number(r.projectId)) ?? null),
+      contract_number:
+        r.contractId === null
+          ? null
+          : (contract.get(Number(r.contractId)) ?? null),
+      events: r.events.map((e) => ({
+        ...e,
+        actor_name:
+          e.actorId === null ? null : (user.get(Number(e.actorId)) ?? null),
+      })),
+    }));
+  }
+  /** Nomes de clientes, projetos (com código), contratos e usuários, em lote. */
+  async referenceNames(
+    m: EntityManager,
+    org: number,
+    ids: {
+      companies?: number[];
+      projects?: number[];
+      contracts?: number[];
+      users?: number[];
+    },
+  ) {
+    const companyIds = ids.companies ?? [];
+    const projectIds = ids.projects ?? [];
+    const contractIds = ids.contracts ?? [];
+    const userIds = ids.users ?? [];
+    const [companies, projects, contracts, users] = await Promise.all([
+      companyIds.length
+        ? m.find(CompanyEntity, {
+            where: { id: In(companyIds), organizationId: org },
+          })
+        : [],
+      projectIds.length
+        ? m.find(ProjectEntity, {
+            where: { id: In(projectIds), organizationId: org },
+          })
+        : [],
+      contractIds.length
+        ? m.find(ContractEntity, {
+            where: { id: In(contractIds), organizationId: org },
+          })
+        : [],
+      userIds.length ? m.find(UserEntity, { where: { id: In(userIds) } }) : [],
+    ]);
+    return {
+      company: new Map(companies.map((c) => [Number(c.id), c.name])),
+      project: new Map(
+        projects.map((p) => [
+          Number(p.id),
+          p.code ? `${p.name} (${p.code})` : p.name,
+        ]),
+      ),
+      contract: new Map(contracts.map((c) => [Number(c.id), c.number])),
+      user: new Map(users.map((u) => [Number(u.id), u.fullName || u.login])),
+    };
   }
   async filterReferences(
     m: EntityManager,
@@ -562,7 +660,10 @@ export class ReceivableService {
         items.push(d);
       }
       return {
-        items: items.slice((f.page - 1) * f.page_size, f.page * f.page_size),
+        items: await this.withNames(
+          m,
+          items.slice((f.page - 1) * f.page_size, f.page * f.page_size),
+        ),
         total: items.length,
         page: f.page,
         page_size: f.page_size,

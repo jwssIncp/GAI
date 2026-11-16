@@ -1,3 +1,5 @@
+import { In } from 'typeorm';
+import { UserEntity } from '../auth/infrastructure/persistence/user.entity';
 import {
   ForbiddenException,
   Inject,
@@ -552,12 +554,24 @@ export class DreService {
       const e = await m.findOneBy(DreEntry, { id });
       if (!e) throw new NotFoundException('Reconhecimento não encontrado.');
       this.scope.assertCanAccessProject(actor, e.organizationId);
+      const versions = await m.find(DreEntryVersion, {
+        where: { entryId: id, organizationId: e.organizationId },
+        order: { revision: 'DESC' },
+      });
+      // Autor de cada versão pelo nome (a tela não mostra só o ID).
+      const ids = [...new Set(versions.map((v) => Number(v.actorId)))];
+      const users = ids.length
+        ? await m.find(UserEntity, { where: { id: In(ids) } })
+        : [];
+      const name = new Map(
+        users.map((u) => [Number(u.id), u.fullName || u.login]),
+      );
       return {
         ...e,
-        versions: await m.find(DreEntryVersion, {
-          where: { entryId: id, organizationId: e.organizationId },
-          order: { revision: 'DESC' },
-        }),
+        versions: versions.map((v) => ({
+          ...v,
+          actor_name: name.get(Number(v.actorId)) ?? null,
+        })),
       };
     });
   }

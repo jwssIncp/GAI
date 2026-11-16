@@ -465,7 +465,8 @@ export class ReportSourcesService {
             organizationId: org,
             projectId: project,
           });
-          if (!batch || batch.status !== 'confirmed')
+          // A confirmação do lote grava 'applied' (não existe 'confirmed').
+          if (!batch || batch.status !== 'applied')
             reportInvalid(
               'Lote de avaliação deve estar confirmado neste projeto.',
             );

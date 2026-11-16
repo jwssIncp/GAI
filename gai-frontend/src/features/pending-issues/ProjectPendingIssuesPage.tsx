@@ -5,6 +5,7 @@ import { CheckCircle2, Eye, Pencil, Plus, RefreshCw, ShieldAlert, XCircle } from
 import { useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
+import { EntityCombobox } from '@/components/base/EntityCombobox';
 import { FilterPanel } from '@/components/base/FilterPanel';
 import { FormField } from '@/components/base/FormField';
 import { PageContainer } from '@/components/base/PageContainer';
@@ -20,6 +21,8 @@ import { usePermissions } from '@/features/auth/usePermissions';
 import { formatDateTime } from '@/utils/format';
 import { PendingIssueDetailDrawer } from './PendingIssueDetailDrawer';
 import { PendingIssueForm } from './PendingIssueForm';
+import { EntityName } from '@/features/inventory-operations/EntityName';
+import { accountingItemSource, inventoryItemSource } from './pendingIssueSources';
 import {
   ignoreSchema,
   pendingIssueSeverityLabels,
@@ -52,8 +55,9 @@ export function ProjectPendingIssuesPage() {
   const [status, setStatus] = useState<InventoryPendingIssueStatus | ''>('');
   const [type, setType] = useState<InventoryPendingIssueType | ''>('');
   const [severity, setSeverity] = useState<InventoryPendingIssueSeverity | ''>('');
-  const [inventoryItemId, setInventoryItemId] = useState('');
-  const [accountingItemId, setAccountingItemId] = useState('');
+  const [inventoryItemId, setInventoryItemId] = useState<number | null>(null);
+  const [accountingItemId, setAccountingItemId] = useState<number | null>(null);
+  const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const [plate, setPlate] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<InventoryPendingIssue | null>(null);
@@ -70,8 +74,8 @@ export function ProjectPendingIssuesPage() {
     status: status || undefined,
     type: type || undefined,
     severity: severity || undefined,
-    inventory_item_id: inventoryItemId ? Number(inventoryItemId) : undefined,
-    accounting_item_id: accountingItemId ? Number(accountingItemId) : undefined,
+    inventory_item_id: inventoryItemId ?? undefined,
+    accounting_item_id: accountingItemId ?? undefined,
     plate: plate || undefined,
   }), [accountingItemId, inventoryItemId, page, plate, search, severity, status, type]);
   const query = useProjectPendingIssues(projectId, params);
@@ -89,8 +93,8 @@ export function ProjectPendingIssuesPage() {
     { header: 'Título', cell: (issue) => issue.title },
     { header: 'Severidade', cell: (issue) => <StatusBadge value={issue.severity} /> },
     { header: 'Status', cell: (issue) => <StatusBadge value={issue.status} /> },
-    { header: 'Item inventariado', cell: (issue) => issue.inventory_item_id ? `#${issue.inventory_item_id}` : '-' },
-    { header: 'Item contábil', cell: (issue) => issue.accounting_item_id ? `#${issue.accounting_item_id}` : '-' },
+    { header: 'Item inventariado', cell: (issue) => <EntityName source={inventoryItemSource} context={projectContext} id={issue.inventory_item_id} enabled={hasPermission('inventory-items:read')} fallback={`Item #${issue.inventory_item_id}`} /> },
+    { header: 'Item contábil', cell: (issue) => <EntityName source={accountingItemSource} context={projectContext} id={issue.accounting_item_id} enabled={hasPermission('inventory-accounting-items:read')} fallback={`Item contábil #${issue.accounting_item_id}`} /> },
     { header: 'Criado em', cell: (issue) => formatDateTime(issue.created_at) },
     { header: 'Resolvido em', cell: (issue) => formatDateTime(issue.resolved_at) },
     {
@@ -141,8 +145,8 @@ export function ProjectPendingIssuesPage() {
           <option value="">Todas severidades</option>
           {pendingIssueSeverities.map((item) => <option key={item} value={item}>{pendingIssueSeverityLabels[item]}</option>)}
         </select>
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={inventoryItemId} onChange={(event) => { setInventoryItemId(event.target.value); setPage(1); }} placeholder="Item inventariado ID" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={accountingItemId} onChange={(event) => { setAccountingItemId(event.target.value); setPage(1); }} placeholder="Item contábil ID" />
+        <EntityCombobox className="min-w-64" aria-label="Filtrar por item inventariado" placeholder="Item inventariado (descrição, placa)" source={inventoryItemSource} context={projectContext} value={inventoryItemId} onChange={(id) => { setInventoryItemId(id); setPage(1); }} />
+        <EntityCombobox className="min-w-64" aria-label="Filtrar por item contábil" placeholder="Item contábil (descrição, placa)" source={accountingItemSource} context={projectContext} value={accountingItemId} onChange={(id) => { setAccountingItemId(id); setPage(1); }} />
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={plate} onChange={(event) => { setPlate(event.target.value); setPage(1); }} placeholder="Placa" />
       </FilterPanel>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
@@ -153,10 +157,10 @@ export function ProjectPendingIssuesPage() {
       ) : null}
 
       <DrawerForm open={createOpen} onOpenChange={setCreateOpen} title="Nova pendência">
-        <PendingIssueForm busy={create.isPending} onSubmit={(payload) => create.mutate(payload as Parameters<typeof create.mutate>[0], { onSuccess: () => setCreateOpen(false) })} />
+        <PendingIssueForm projectId={projectId} busy={create.isPending} onSubmit={(payload) => create.mutate(payload as Parameters<typeof create.mutate>[0], { onSuccess: () => setCreateOpen(false) })} />
       </DrawerForm>
       <DrawerForm open={Boolean(editing)} onOpenChange={(open) => !open && setEditing(null)} title="Editar pendência">
-        {editing ? <PendingIssueForm initial={editing} busy={update.isPending} onSubmit={(payload) => update.mutate({ id: editing.id, payload }, { onSuccess: () => setEditing(null) })} /> : null}
+        {editing ? <PendingIssueForm projectId={projectId} initial={editing} busy={update.isPending} onSubmit={(payload) => update.mutate({ id: editing.id, payload }, { onSuccess: () => setEditing(null) })} /> : null}
       </DrawerForm>
       <PendingIssueDetailDrawer projectId={projectId} id={viewingId} open={Boolean(viewingId)} onOpenChange={(open) => !open && setViewingId(undefined)} />
       <ResolutionModal issue={resolving} busy={resolve.isPending} onOpenChange={(open) => !open && setResolving(null)} onSubmit={(notes) => resolving && resolve.mutate({ id: resolving.id, payload: { resolution_notes: notes } }, { onSuccess: () => setResolving(null) })} />

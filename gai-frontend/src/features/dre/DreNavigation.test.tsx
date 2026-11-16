@@ -123,7 +123,11 @@ describe("DRE nested navigation and explicit classification", () => {
   });
   it("sends documented economic month and exact amount rather than inferring payment date", async () => {
     const save = vi.fn().mockResolvedValue(undefined);
-    render(<DreEntryForm accounts={[]} onSave={save} />);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <DreEntryForm accounts={[]} onSave={save} />
+      </QueryClientProvider>,
+    );
     fireEvent.change(screen.getByLabelText("Chave do fato econômico"), {
       target: { value: "synthetic-economic-event" },
     });

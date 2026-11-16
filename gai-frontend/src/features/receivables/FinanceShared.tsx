@@ -1,3 +1,5 @@
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import { companySource, contractSource, projectSource } from "@/components/base/entitySources";
 import { EXPORT_STATUS } from "@/utils/format";
 import { navigationContext } from "@/features/projects/navigationContext";
 import { useState } from "react";
@@ -6,8 +8,12 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { cls, financeApi, statusLabels, type Filters } from "./financeApi";
+const idOf = (v: string | null) => (v && Number(v) > 0 ? Number(v) : null);
 export function FinanceFilters({ cash = false }: { cash?: boolean }) {
   const [p, set] = useSearchParams();
+  // Cliente → projetos do cliente → contratos do projeto (o filtro vai pela URL, com o ID).
+  const [companyId, setCompanyId] = useState(idOf(p.get("company_id")));
+  const [projectId, setProjectId] = useState(idOf(p.get("project_id")));
   return (
     <form
       key={p.toString()}
@@ -23,23 +29,40 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
         set(next);
       }}
     >
+      <label className="grid gap-1 text-sm">
+        Cliente
+        <EntityCombobox aria-label="Cliente" name="company_id" source={companySource} defaultValue={companyId} onChange={(id) => setCompanyId(id)} />
+      </label>
+      <label className="grid gap-1 text-sm">
+        Projeto
+        <EntityCombobox
+          aria-label="Projeto"
+          name="project_id"
+          source={projectSource}
+          context={{ company_id: companyId }}
+          defaultValue={projectId}
+          onChange={(id) => setProjectId(id)}
+        />
+      </label>
+      <label className="grid gap-1 text-sm">
+        Contrato
+        <EntityCombobox
+          key={projectId ?? "sem-projeto"}
+          aria-label="Contrato"
+          name="contract_id"
+          source={contractSource}
+          context={{ project_id: projectId }}
+          requiresContext="Escolha o projeto primeiro"
+          defaultValue={projectId === idOf(p.get("project_id")) ? idOf(p.get("contract_id")) : null}
+        />
+      </label>
       {[
-        ["company_id", "Cliente (ID)"],
-        ["project_id", "Projeto (ID)"],
-        ["contract_id", "Contrato (ID)"],
         ["date_from", "De"],
         ["date_to", "Até"],
       ].map(([name, label]) => (
         <label key={name} className="grid gap-1 text-sm">
           {label}
-          <input
-            name={name}
-            aria-label={label}
-            type={name.startsWith("date") ? "date" : "number"}
-            min={name.startsWith("date") ? undefined : 1}
-            defaultValue={p.get(name) ?? ""}
-            className={cls}
-          />
+          <input name={name} aria-label={label} type="date" defaultValue={p.get(name) ?? ""} className={cls} />
         </label>
       ))}
       <label className="grid gap-1 text-sm">

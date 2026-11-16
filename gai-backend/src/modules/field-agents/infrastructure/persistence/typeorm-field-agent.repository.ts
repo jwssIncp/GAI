@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Not, Repository } from 'typeorm';
+import { EntityManager, In, Not, Repository } from 'typeorm';
 import { fieldAgentAuditChanges } from '../../application/services/field-agent-audit';
 import { lockAccessAdministration } from '../../../users/infrastructure/persistence/access-administration-lock';
 import { lockUser } from '../../../auth/application/services/credential-transactions.service';
@@ -45,6 +45,16 @@ export class TypeOrmFieldAgentRepository implements FieldAgentRepository {
   async findById(id: number): Promise<FieldAgent | null> {
     const entity = await this.fieldAgentRepo.findOne({ where: { id } });
     return entity ? this.toFieldAgentDomain(entity) : null;
+  }
+
+  async findNamesByIds(ids: number[]): Promise<Map<number, string>> {
+    if (!ids.length) return new Map();
+    const rows = await this.fieldAgentRepo.find({
+      where: { id: In([...new Set(ids)]) },
+      withDeleted: true,
+      select: { id: true, name: true },
+    });
+    return new Map(rows.map((row) => [Number(row.id), row.name]));
   }
 
   async findLinkedToUser(

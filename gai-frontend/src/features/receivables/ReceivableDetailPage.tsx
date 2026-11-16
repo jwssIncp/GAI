@@ -14,6 +14,7 @@ import {
   cls,
   financeApi,
   money,
+  originLabel,
   statusLabels,
   today,
   type Event,
@@ -106,7 +107,7 @@ export function ReceivableDetailPage() {
             className="text-primary"
             to={navigationHref(`/app/projects/${r.projectId}/summary`, p)}
           >
-            Consultar projeto #{r.projectId}
+            Consultar projeto {r.project_name ?? ""}
           </Link>
         )}
         {r.contractId && r.projectId && hasPermission("contracts:read") && (
@@ -187,7 +188,7 @@ export function ReceivableDetailPage() {
             {
               header: "Auditoria",
               cell: (e) =>
-                `Usuário #${e.actorId} · ${formatDateTime(String(e.recordedAt))}`,
+                `${e.actor_name ?? "Usuário removido"} · ${formatDateTime(String(e.recordedAt))}`,
             },
             {
               header: "Ação",
@@ -209,10 +210,10 @@ export function ReceivableDetailPage() {
       ) : tab === "details" ? (
         <div className="premium-panel grid gap-2 p-5 text-sm">
           <p>
-            Cliente #{r.companyId} · Projeto {r.projectId ?? "não vinculado"}
+            Cliente: {r.company_name ?? "não encontrado"} · Projeto: {r.project_name ?? "não vinculado"}
           </p>
           <p>
-            Origem: {r.sourceKey ?? "manual"} · Emissão: {formatCivilDate(r.data.issued_on)}
+            Origem: {originLabel(r)} · Emissão: {formatCivilDate(r.data.issued_on)}
           </p>
           <p>Documento: {r.data.document || "não informado"}</p>
           <p>Observações: {r.data.notes || "não informadas"}</p>

@@ -1,5 +1,11 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import {
+  confirmedValuationBatchSource,
+  inventorySessionSource,
+} from "./reportSources";
 import {
   familyLabels,
   reportInput as cls,
@@ -374,11 +380,17 @@ export function TemplateForm({
 export function SourceSelection({
   initial,
   name = "selection",
+  projectId,
 }: {
   initial?: Selection;
   name?: string;
+  /** Projeto do laudo; sem ele, usa o da rota. */
+  projectId?: number;
 }) {
   const [families, setFamilies] = useState(initial?.families ?? ["identity"]);
+  const routeProject = Number(useParams().projectId) || null,
+    project = projectId ?? routeProject,
+    ids = useId();
   return (
     <fieldset className="grid gap-2 rounded-xl border p-3">
       <legend>Fontes controladas do projeto</legend>
@@ -409,31 +421,41 @@ export function SourceSelection({
       <input type="hidden" name={name + ".families"} value="identity" />
       {(families.includes("observations") ||
         families.includes("reconciliation")) && (
-        <ReportField label="Sessão de inventário (ID)">
-          <input
-            className={cls}
-            type="number"
-            min={1}
+        <div className="grid gap-1 text-sm">
+          <label htmlFor={ids + "-session"}>Sessão de inventário</label>
+          <EntityCombobox
+            id={ids + "-session"}
+            aria-label="Sessão de inventário"
+            source={inventorySessionSource}
+            context={{ project_id: project }}
+            requiresContext="Abra o laudo dentro de um projeto"
             name={name + ".session_id"}
             required
-            defaultValue={initial?.session_id}
+            defaultValue={initial?.session_id ?? null}
+            placeholder="Digite o nome da sessão"
           />
-        </ReportField>
+        </div>
       )}
       {families.includes("valuation") && (
-        <ReportField label="Lote confirmado de avaliação (ID, opcional)">
-          <input
-            className={cls}
-            type="number"
-            min={1}
+        <div className="grid gap-1 text-sm">
+          <label htmlFor={ids + "-batch"}>
+            Lote confirmado de avaliação (opcional)
+          </label>
+          <EntityCombobox
+            id={ids + "-batch"}
+            aria-label="Lote confirmado de avaliação"
+            source={confirmedValuationBatchSource}
+            context={{ project_id: project }}
+            requiresContext="Abra o laudo dentro de um projeto"
             name={name + ".valuation_batch_id"}
-            defaultValue={initial?.valuation_batch_id}
+            defaultValue={initial?.valuation_batch_id ?? null}
+            placeholder="Escolha um lote confirmado"
           />
-        </ReportField>
+        </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Sem lote específico, usa a última avaliação por item, pela data e ID.
-        Consulte IDs nas abas Inventário e Avaliações do projeto.
+        Sem lote específico, usa a última avaliação de cada item. A lista
+        mostra só os lotes já confirmados deste projeto.
       </p>
     </fieldset>
   );

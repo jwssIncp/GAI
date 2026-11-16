@@ -8,6 +8,7 @@ import { ProjectPendingIssuesPage } from './ProjectPendingIssuesPage';
 import type { CurrentUser, InventoryPendingIssue, PaginatedItems } from '@/types/api';
 
 const mocks = vi.hoisted(() => ({
+  apiGet: vi.fn(),
   list: vi.fn(),
   create: vi.fn(),
   get: vi.fn(),
@@ -17,6 +18,28 @@ const mocks = vi.hoisted(() => ({
   cancel: vi.fn(),
   generate: vi.fn(),
 }));
+
+vi.mock('@/api/http', async (importOriginal) => ({ ...await importOriginal<typeof import('@/api/http')>(), api: { get: mocks.apiGet } }));
+
+const inventoryItems = [
+  { id: 11, project_id: 10, description: 'Notebook Dell', new_plate: 'PAT-0011', old_plate: null, brand: 'Dell', model: 'Latitude', serial_number: 'SN-1' },
+  { id: 12, project_id: 10, description: 'Monitor LG', new_plate: null, old_plate: 'OLD-12', brand: 'LG', model: null, serial_number: null },
+];
+const accountingItems = [
+  { id: 21, project_id: 10, description: 'Notebook contábil', plate: 'PAT-0011', base_code: 'B-1', investor_code: null, location: 'Sede' },
+  { id: 22, project_id: 10, description: 'Mesa de reunião', plate: 'PAT-0022', base_code: 'B-2', investor_code: 'INV-9', location: null },
+];
+/** Simula a API do projeto 10: lista com busca no servidor e leitura por ID. */
+function fakeApi(url: string, config?: { params?: { search?: string } }) {
+  const q = (config?.params?.search ?? '').toLowerCase();
+  const paged = <T,>(rows: T[]) => ({ data: { items: rows, page: 1, page_size: 20, total_items: rows.length, total_pages: 1 } });
+  const routes: Array<[string, Array<{ id: number; description: string }>]> = [['/projects/10/inventory-items', inventoryItems], ['/projects/10/inventory-accounting-items', accountingItems]];
+  for (const [base, rows] of routes) {
+    if (url === base) return Promise.resolve(paged(rows.filter((r) => JSON.stringify(r).toLowerCase().includes(q))));
+    if (url.startsWith(base + '/')) { const row = rows.find((r) => r.id === Number(url.slice(base.length + 1))); return row ? Promise.resolve({ data: row }) : Promise.reject(new Error('404')); }
+  }
+  return Promise.reject(new Error('URL inesperada: ' + url));
+}
 
 vi.mock('@/api/endpoints', () => ({
   pendingIssuesApi: {
@@ -94,6 +117,7 @@ function renderPage(user: CurrentUser = admin) {
 describe('ProjectPendingIssuesPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.apiGet.mockImplementation(fakeApi);
     mocks.list.mockResolvedValue(page([issue]));
     mocks.get.mockResolvedValue(issue);
     mocks.create.mockResolvedValue(issue);
@@ -192,5 +216,49 @@ describe('ProjectPendingIssuesPage', () => {
     await userEvent.click(await screen.findByRole('button', { name: /gerar pendências/i }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirmar' }));
     expect(await screen.findByText('Geração concluída: 3 criada(s), 1 ignorada(s).')).toBeInTheDocument();
+  });
+
+  it('mostra itens inventariado e contábil pelo nome e placa, nunca pelo ID', async () => {
+    renderPage();
+    expect(await screen.findByText('Notebook Dell (PAT-0011)')).toBeInTheDocument();
+    expect(await screen.findByText('Notebook contábil (PAT-0011)')).toBeInTheDocument();
+    expect(screen.queryByText('#11')).not.toBeInTheDocument();
+    expect(screen.queryByText('#21')).not.toBeInTheDocument();
+    expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-items/11');
+    expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-accounting-items/21');
+  });
+
+  it('filtros de item são combobox com nome, buscam no projeto e enviam o ID', async () => {
+    renderPage();
+    await screen.findByText('Placa divergente');
+    expect(screen.queryByPlaceholderText('Item inventariado ID')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Item contábil ID')).not.toBeInTheDocument();
+    await userEvent.type(screen.getByRole('combobox', { name: 'Filtrar por item inventariado' }), 'monitor');
+    await waitFor(() => expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-items', { params: { page: 1, page_size: 20, search: 'monitor' } }));
+    await userEvent.click(await screen.findByRole('option', { name: /Monitor LG \(OLD-12\)/ }));
+    await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ inventory_item_id: 12, page: 1 })));
+    await userEvent.type(screen.getByRole('combobox', { name: 'Filtrar por item contábil' }), 'inv-9');
+    await waitFor(() => expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-accounting-items', { params: { page: 1, page_size: 20, search: 'inv-9' } }));
+    await userEvent.click(await screen.findByRole('option', { name: /Mesa de reunião \(PAT-0022\)/ }));
+    await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(10, expect.objectContaining({ inventory_item_id: 12, accounting_item_id: 22 })));
+  });
+
+  it('formulário escolhe os itens pelo nome e envia os IDs', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: /nova pendência/i }));
+    await userEvent.type(screen.getByLabelText('Título'), 'Conferir placa');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Item inventariado' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Monitor LG/ }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Item contábil' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Mesa de reunião/ }));
+    await userEvent.click(screen.getByRole('button', { name: /salvar pendência/i }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(10, expect.objectContaining({ title: 'Conferir placa', inventory_item_id: 12, accounting_item_id: 22 })));
+  });
+
+  it('edição carrega o rótulo dos itens já vinculados', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByLabelText('Editar pendência'));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Item inventariado' })).toHaveValue('Notebook Dell (PAT-0011)'));
+    expect(screen.getByRole('combobox', { name: 'Item contábil' })).toHaveValue('Notebook contábil (PAT-0011)');
   });
 });

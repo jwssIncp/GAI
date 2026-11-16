@@ -38,6 +38,8 @@ export type Installment = {
   overdue: boolean;
 };
 export type Event = {
+  /** Nome do autor (a API resolve; nunca mostrar só o ID). */
+  actor_name?: string | null;
   id: number;
   operation: string;
   amount: string | null;
@@ -49,6 +51,10 @@ export type Event = {
   details: Record<string, unknown>;
 };
 export type Receivable = {
+  /** Nomes resolvidos pela API (cliente, projeto com código, número do contrato). */
+  company_name?: string | null;
+  project_name?: string | null;
+  contract_number?: string | null;
   id: number;
   organizationId: number;
   companyId: number;
@@ -115,6 +121,16 @@ export const statusLabels: Record<string, string> = {
   cancelled: "Cancelado",
   overdue: "Vencido",
 };
+/** Origem legível: "Contrato CT-1", "Aditivo", "Orçamento" ou "Manual" (nunca a chave interna). */
+export function originLabel(r: Pick<Receivable, "sourceKey" | "contract_number">) {
+  const kind = r.sourceKey?.split(":")[0];
+  if (!kind) return "Manual";
+  if (kind === "contract") return r.contract_number ? `Contrato ${r.contract_number}` : "Contrato";
+  if (kind === "amendment") return r.contract_number ? `Aditivo do contrato ${r.contract_number}` : "Aditivo";
+  if (kind === "budget") return "Orçamento aprovado";
+  if (kind === "reimbursement_batch") return "Lote de reembolso";
+  return "Outra origem";
+}
 export const financeApi = {
   list: async (f: Filters) =>
     (

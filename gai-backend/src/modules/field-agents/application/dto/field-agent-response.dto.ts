@@ -118,6 +118,12 @@ export class ProjectFieldAgentResponseDto {
   @ApiProperty({ format: 'date-time' })
   updated_at!: string;
 
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Nome do inventariante (presente na listagem do projeto)',
+  })
+  field_agent_name?: string | null;
+
   static fromDomain(
     assignment: ProjectFieldAgent,
   ): ProjectFieldAgentResponseDto {
