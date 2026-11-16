@@ -132,6 +132,29 @@ describe('Field Agents API (e2e)', () => {
       status: 'active',
     });
 
+    // A listagem do projeto traz o nome do inventariante (campo aditivo) e busca por ele.
+    const listed = await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectBody.id}/field-agents`)
+      .query({ search: 'joao', page: 1, page_size: 20 })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const listedBody = listed.body as {
+      items: Array<ProjectFieldAgentBody & { field_agent_name: string | null }>;
+      total_items: number;
+    };
+    expect(listedBody.total_items).toBe(1);
+    expect(listedBody.items[0]).toMatchObject({
+      id: assignmentBody.id,
+      field_agent_id: fieldAgentBody.id,
+      field_agent_name: 'Joao Inventariante',
+    });
+    const none = await request(app.getHttpServer())
+      .get(`/api/v1/projects/${projectBody.id}/field-agents`)
+      .query({ search: 'ninguem' })
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    expect((none.body as { items: unknown[] }).items).toHaveLength(0);
+
     const removed = await request(app.getHttpServer())
       .post(
         `/api/v1/projects/${projectBody.id}/field-agents/${assignmentBody.id}/remove`,

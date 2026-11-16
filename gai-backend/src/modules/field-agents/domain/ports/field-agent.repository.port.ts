@@ -62,6 +62,8 @@ export interface FieldAgentRepository {
   listAssignments(
     params: ListProjectFieldAgentsParams,
   ): Promise<{ items: ProjectFieldAgent[]; total: number }>;
+  /** Nomes dos inventariantes (inclusive excluídos logicamente), por ID. */
+  findNamesByIds(ids: number[]): Promise<Map<number, string>>;
   /**
    * Grava o inventariante com auditoria. Em um cadastro novo, `initialProjectIds`
    * cria os vínculos ativos na mesma transação (tudo ou nada).

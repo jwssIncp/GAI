@@ -52,8 +52,15 @@ export class ListProjectFieldAgentsUseCase {
       search: query.search,
     });
 
+    // Nome do inventariante junto do vínculo, para as telas escolherem pelo nome.
+    const names = await this.repository.findNamesByIds(
+      items.map((item) => item.fieldAgentId),
+    );
     return {
-      items: items.map((item) => ProjectFieldAgentResponseDto.fromDomain(item)),
+      items: items.map((item) => ({
+        ...ProjectFieldAgentResponseDto.fromDomain(item),
+        field_agent_name: names.get(item.fieldAgentId) ?? null,
+      })),
       page,
       page_size: pageSize,
       total_items: total,

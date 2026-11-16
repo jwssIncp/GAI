@@ -1,12 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useMemo } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { EntityCombobox } from '@/components/base/EntityCombobox';
 import { FormField } from '@/components/base/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { pendingIssueFormSchema, pendingIssueSeverityLabels, pendingIssueSeverities, pendingIssueStatusLabels, pendingIssueStatuses, pendingIssueTypeLabels, pendingIssueTypes, type PendingIssueFormValues } from './pendingIssueSchemas';
+import { accountingItemSource, inventoryItemSource } from './pendingIssueSources';
 import type { CreateInventoryPendingIssueRequest, InventoryPendingIssue, InventoryPendingIssueInput } from '@/types/api';
 
-export function PendingIssueForm({ initial, busy, onSubmit }: { initial?: InventoryPendingIssue; busy: boolean; onSubmit: (payload: CreateInventoryPendingIssueRequest | InventoryPendingIssueInput) => void }) {
+export function PendingIssueForm({ projectId, initial, busy, onSubmit }: { projectId: number; initial?: InventoryPendingIssue; busy: boolean; onSubmit: (payload: CreateInventoryPendingIssueRequest | InventoryPendingIssueInput) => void }) {
+  const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const form = useForm<PendingIssueFormValues>({
     resolver: zodResolver(pendingIssueFormSchema),
     defaultValues: {
@@ -47,8 +51,16 @@ export function PendingIssueForm({ initial, busy, onSubmit }: { initial?: Invent
       <FormField label="Título" error={form.formState.errors.title?.message}><Input {...form.register('title')} /></FormField>
       <FormField label="Descrição"><Input {...form.register('description')} /></FormField>
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Item inventariado ID" error={form.formState.errors.inventory_item_id?.message}><Input inputMode="numeric" {...form.register('inventory_item_id')} /></FormField>
-        <FormField label="Item contábil ID" error={form.formState.errors.accounting_item_id?.message}><Input inputMode="numeric" {...form.register('accounting_item_id')} /></FormField>
+        <Controller control={form.control} name="inventory_item_id" render={({ field }) => (
+          <FormField label="Item inventariado" optional hint="Busque pela descrição, placa, marca, modelo ou série." error={form.formState.errors.inventory_item_id?.message}>
+            <EntityCombobox source={inventoryItemSource} context={projectContext} value={field.value ? Number(field.value) : null} onChange={(id) => field.onChange(id ? String(id) : '')} />
+          </FormField>
+        )} />
+        <Controller control={form.control} name="accounting_item_id" render={({ field }) => (
+          <FormField label="Item contábil" optional hint="Busque pela descrição, placa, cód. base, investor ou localização." error={form.formState.errors.accounting_item_id?.message}>
+            <EntityCombobox source={accountingItemSource} context={projectContext} value={field.value ? Number(field.value) : null} onChange={(id) => field.onChange(id ? String(id) : '')} />
+          </FormField>
+        )} />
       </div>
       <FormField label="Valor antigo JSON" error={form.formState.errors.old_value?.message}>
         <textarea className="min-h-20 rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('old_value')} />

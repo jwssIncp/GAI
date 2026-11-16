@@ -3,7 +3,9 @@ import { FormEvent, type ReactNode, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
+import { EntityCombobox } from '@/components/base/EntityCombobox';
 import { FilterPanel } from '@/components/base/FilterPanel';
+import { FormField } from '@/components/base/FormField';
 import { PageContainer } from '@/components/base/PageContainer';
 import { PageHeader } from '@/components/base/PageHeader';
 import { Pagination } from '@/components/base/Pagination';
@@ -41,6 +43,9 @@ import {
   useStartInventorySession,
 } from './inventoryOperationsQueries';
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
+import { usePermissions } from '@/features/auth/usePermissions';
+import { EntityName } from './EntityName';
+import { inventoryItemSource, projectFieldAgentSource, roundSource, useProjectFieldAgentNames } from './inventorySources';
 
 const initialRoundParams = { page: 1, page_size: 20, status: undefined, type: undefined } as const;
 const reconciliationLabels: Record<ReconciliationStatus, string> = { matched: 'Compatível', physical_surplus: 'Sobra física', accounting_surplus: 'Sobra contábil', duplicate: 'Duplicidade', plate_divergence: 'Placa divergente' };
@@ -150,34 +155,38 @@ function RoundsSection({ projectId, sessionId, currentRoundId }: { projectId: nu
 
 function ObservationsSection({ projectId, sessionId, sessionActive, currentRoundId, rounds }: { projectId: number; sessionId: number; sessionActive: boolean; currentRoundId: number | null; rounds: InventoryRound[] }) {
   const [page, setPage] = useState(1);
-  const [round, setRound] = useState('');
-  const [inventoryItem, setInventoryItem] = useState('');
-  const [agent, setAgent] = useState('');
+  const [round, setRound] = useState<number | null>(null);
+  const [inventoryItem, setInventoryItem] = useState<number | null>(null);
+  const [agent, setAgent] = useState<number | null>(null);
+  const { hasPermission } = usePermissions();
+  const agentName = useProjectFieldAgentNames(projectId);
+  const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
+  const sessionContext = useMemo(() => ({ project_id: projectId, session_id: sessionId }), [projectId, sessionId]);
   const [observeOpen, setObserveOpen] = useState(false);
   const [reinventoryOpen, setReinventoryOpen] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [evidenceTarget, setEvidenceTarget] = useState<InventoryObservation | null>(null);
-  const params = useMemo(() => ({ page, page_size: 20, round_id: round ? Number(round) : undefined, inventory_item_id: inventoryItem ? Number(inventoryItem) : undefined, field_agent_id: agent ? Number(agent) : undefined }), [agent, inventoryItem, page, round]);
+  const params = useMemo(() => ({ page, page_size: 20, round_id: round ?? undefined, inventory_item_id: inventoryItem ?? undefined, field_agent_id: agent ?? undefined }), [agent, inventoryItem, page, round]);
   const query = useInventoryObservations(projectId, sessionId, params);
   const data = query.data ? normalizePage(query.data) : null;
   const finish = useFinishRound(projectId, sessionId);
   const roundNumbers = useMemo(() => new Map(rounds.map((item) => [item.id, item.round_number])), [rounds]);
   const columns: Column<InventoryObservation>[] = [
-    { header: 'Item', cell: (item) => `#${item.inventory_item_id}` },
+    { header: 'Item', cell: (item) => <EntityName source={inventoryItemSource} context={projectContext} id={item.inventory_item_id} enabled={hasPermission('inventory-items:read')} fallback={`Item #${item.inventory_item_id}`} /> },
     { header: 'Rodada', cell: (item) => roundNumbers.has(item.round_id) ? `Rodada ${roundNumbers.get(item.round_id)}` : `#${item.round_id}` },
     { header: 'Resultado', cell: (item) => <StatusBadge value={item.result} /> },
     { header: 'Placa observada', cell: (item) => item.observed_plate || '-' },
     { header: 'Série observada', cell: (item) => item.observed_serial_number || '-' },
     { header: 'Setor', cell: (item) => item.sector_text || '-' },
     { header: 'Localização', cell: (item) => item.location_text || '-' },
-    { header: 'Agente', cell: (item) => `#${item.field_agent_id}` },
+    { header: 'Inventariante', cell: (item) => agentName(item.field_agent_id) ?? `Inventariante #${item.field_agent_id}` },
     { header: 'Capturada em', cell: (item) => formatDateTime(item.captured_at) },
     { header: 'Histórico', cell: (item) => item.prior_observation_id ? `Anterior #${item.prior_observation_id}` : 'Inventário inicial' },
     { header: 'Evidências', cell: (item) => <Button type="button" size="sm" variant="secondary" onClick={() => setEvidenceTarget(item)}><Eye size={15} /> Abrir</Button> },
   ];
   return <section className="grid gap-4">
     <div><p className="eyebrow">Operação</p><h2 className="mt-2 text-lg font-bold">Observações</h2><p className="text-sm text-muted-foreground">A placa observada e evidência de campo e nunca altera automaticamente a placa mestre.</p></div>
-    <FilterPanel><input className="h-10 rounded-md border bg-background px-3" aria-label="Filtrar por rodada" inputMode="numeric" placeholder="ID da rodada" value={round} onChange={(event) => { setRound(event.target.value); setPage(1); }} /><input className="h-10 rounded-md border bg-background px-3" aria-label="Filtrar por item" inputMode="numeric" placeholder="ID do item" value={inventoryItem} onChange={(event) => { setInventoryItem(event.target.value); setPage(1); }} /><input className="h-10 rounded-md border bg-background px-3" aria-label="Filtrar por inventariante" inputMode="numeric" placeholder="ID do inventariante" value={agent} onChange={(event) => { setAgent(event.target.value); setPage(1); }} /></FilterPanel>
+    <FilterPanel><EntityCombobox className="min-w-48" aria-label="Filtrar por rodada" placeholder="Rodada" source={roundSource} context={sessionContext} value={round} onChange={(id) => { setRound(id); setPage(1); }} /><EntityCombobox className="min-w-64" aria-label="Filtrar por item" placeholder="Item (descrição, placa, série)" source={inventoryItemSource} context={projectContext} value={inventoryItem} onChange={(id) => { setInventoryItem(id); setPage(1); }} /><EntityCombobox className="min-w-56" aria-label="Filtrar por inventariante" placeholder="Inventariante (nome)" source={projectFieldAgentSource} context={projectContext} value={agent} onChange={(id) => { setAgent(id); setPage(1); }} /></FilterPanel>
     {sessionActive ? <div className="flex flex-wrap gap-2">{currentRoundId ? <PermissionGate permissions={['inventory-observations:create']}><Button onClick={() => setObserveOpen(true)}><Plus size={17} /> Adicionar observação</Button></PermissionGate> : null}<PermissionGate permissions={['inventory-rounds:reinventory']}><Button variant="secondary" onClick={() => setReinventoryOpen(true)}><RefreshCw size={17} /> Solicitar reinventario</Button></PermissionGate>{currentRoundId ? <PermissionGate permissions={['inventory-sessions:update']}><Button variant="secondary" onClick={() => setFinishing(true)}><CheckCircle2 size={17} /> Finalizar rodada atual</Button></PermissionGate> : null}</div> : null}
     {finish.isError ? <ErrorState message={getInventoryOperationErrorMessage(finish.error)} /> : null}
     {query.isLoading ? <LoadingState label="Carregando observações" /> : query.isError ? <ErrorState message={getInventoryOperationErrorMessage(query.error)} onRetry={() => query.refetch()} /> : data ? <><DataTable columns={columns} items={data.items} getKey={(item) => item.id} /><Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} /></> : null}
@@ -189,8 +198,9 @@ function ObservationsSection({ projectId, sessionId, sessionActive, currentRound
 }
 
 function ObservationDrawer({ projectId, sessionId, roundId, open, onOpenChange }: { projectId: number; sessionId: number; roundId: number | null; open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [itemId, setItemId] = useState('');
-  const [agentId, setAgentId] = useState('');
+  const [itemId, setItemId] = useState<number | null>(null);
+  const [agentId, setAgentId] = useState<number | null>(null);
+  const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const [result, setResult] = useState('found');
   const [plate, setPlate] = useState('');
   const [serial, setSerial] = useState('');
@@ -201,18 +211,19 @@ function ObservationDrawer({ projectId, sessionId, roundId, open, onOpenChange }
   const mutation = useCreateObservation(projectId, sessionId);
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (!roundId) return;
-    mutation.mutate({ roundId, payload: { inventory_item_id: Number(itemId), field_agent_id: Number(agentId), idempotency_key: key, result: result as 'found', observed_plate: plate || null, observed_serial_number: serial || null, sector_text: sector || null, location_text: location || null, notes: notes || null, captured_at: new Date().toISOString() } }, { onSuccess: () => { setKey(createIdempotencyKey()); onOpenChange(false); } });
+    if (!roundId || !itemId || !agentId) return;
+    mutation.mutate({ roundId, payload: { inventory_item_id: itemId, field_agent_id: agentId, idempotency_key: key, result: result as 'found', observed_plate: plate || null, observed_serial_number: serial || null, sector_text: sector || null, location_text: location || null, notes: notes || null, captured_at: new Date().toISOString() } }, { onSuccess: () => { setKey(createIdempotencyKey()); onOpenChange(false); } });
   }
-  return <DrawerForm open={open} onOpenChange={onOpenChange} title={`Nova observação - rodada #${roundId ?? '?'}`}><form className="grid gap-3" onSubmit={submit}><NumberField label="Item patrimonial" value={itemId} onChange={setItemId} /><NumberField label="Inventariante" value={agentId} onChange={setAgentId} /><label className="grid gap-1 text-sm font-medium">Resultado<select className="h-10 rounded-md border bg-background px-3" value={result} onChange={(event) => setResult(event.target.value)}><option value="found">Encontrado</option><option value="not_found">Não encontrado</option><option value="divergent">Divergente</option><option value="duplicated">Duplicado</option></select></label><TextField label="Placa observada (evidência)" value={plate} onChange={setPlate} maxLength={100} /><TextField label="Série observada" value={serial} onChange={setSerial} maxLength={100} /><TextField label="Setor informado" value={sector} onChange={setSector} maxLength={255} /><TextField label="Localização" value={location} onChange={setLocation} maxLength={2000} /><TextField label="Notas" value={notes} onChange={setNotes} maxLength={4000} />{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !agentId || !roundId}>{mutation.isPending ? 'Enviando...' : 'Registrar observação'}</Button></form></DrawerForm>;
+  return <DrawerForm open={open} onOpenChange={onOpenChange} title={`Nova observação - rodada #${roundId ?? '?'}`}><form className="grid gap-3" onSubmit={submit}><FormField label="Item patrimonial" hint="Busque pela descrição, placa, marca, modelo ou série."><EntityCombobox required source={inventoryItemSource} context={projectContext} value={itemId} onChange={(id) => setItemId(id)} /></FormField><FormField label="Inventariante" hint="Inventariantes vinculados ao projeto."><EntityCombobox required source={projectFieldAgentSource} context={projectContext} value={agentId} onChange={(id) => setAgentId(id)} /></FormField><label className="grid gap-1 text-sm font-medium">Resultado<select className="h-10 rounded-md border bg-background px-3" value={result} onChange={(event) => setResult(event.target.value)}><option value="found">Encontrado</option><option value="not_found">Não encontrado</option><option value="divergent">Divergente</option><option value="duplicated">Duplicado</option></select></label><TextField label="Placa observada (evidência)" value={plate} onChange={setPlate} maxLength={100} /><TextField label="Série observada" value={serial} onChange={setSerial} maxLength={100} /><TextField label="Setor informado" value={sector} onChange={setSector} maxLength={255} /><TextField label="Localização" value={location} onChange={setLocation} maxLength={2000} /><TextField label="Notas" value={notes} onChange={setNotes} maxLength={4000} />{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !agentId || !roundId}>{mutation.isPending ? 'Enviando...' : 'Registrar observação'}</Button></form></DrawerForm>;
 }
 
 function ReinventoryDrawer({ projectId, sessionId, open, onOpenChange }: { projectId: number; sessionId: number; open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [itemId, setItemId] = useState('');
+  const [itemId, setItemId] = useState<number | null>(null);
   const [reason, setReason] = useState('');
+  const projectContext = useMemo(() => ({ project_id: projectId }), [projectId]);
   const mutation = useRequestReinventory(projectId, sessionId);
-  function submit(event: FormEvent) { event.preventDefault(); mutation.mutate({ inventory_item_id: Number(itemId), reason: reason.trim() }, { onSuccess: () => onOpenChange(false) }); }
-  return <DrawerForm open={open} onOpenChange={onOpenChange} title="Solicitar reinventario"><form className="grid gap-3" onSubmit={submit}><NumberField label="Item divergente" value={itemId} onChange={setItemId} /><label className="grid gap-1 text-sm font-medium">Motivo<textarea required maxLength={2000} className="min-h-28 rounded-md border bg-background p-3" value={reason} onChange={(event) => setReason(event.target.value)} /></label>{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !reason.trim()}>{mutation.isPending ? 'Solicitando...' : 'Criar nova rodada'}</Button></form></DrawerForm>;
+  function submit(event: FormEvent) { event.preventDefault(); if (!itemId) return; mutation.mutate({ inventory_item_id: itemId, reason: reason.trim() }, { onSuccess: () => onOpenChange(false) }); }
+  return <DrawerForm open={open} onOpenChange={onOpenChange} title="Solicitar reinventario"><form className="grid gap-3" onSubmit={submit}><FormField label="Item divergente" hint="Busque pela descrição, placa, marca, modelo ou série."><EntityCombobox required source={inventoryItemSource} context={projectContext} value={itemId} onChange={(id) => setItemId(id)} /></FormField><label className="grid gap-1 text-sm font-medium">Motivo<textarea required maxLength={2000} className="min-h-28 rounded-md border bg-background p-3" value={reason} onChange={(event) => setReason(event.target.value)} /></label>{mutation.isError ? <ErrorState message={getInventoryOperationErrorMessage(mutation.error)} /> : null}<Button disabled={mutation.isPending || !itemId || !reason.trim()}>{mutation.isPending ? 'Solicitando...' : 'Criar nova rodada'}</Button></form></DrawerForm>;
 }
 
 function ReconciliationsSection({ projectId, sessionId }: { projectId: number; sessionId: number }) {
@@ -232,5 +243,4 @@ function ReconciliationsSection({ projectId, sessionId }: { projectId: number; s
 }
 
 function Info({ label, value }: { label: string; value: ReactNode }) { return <div><div className="text-xs font-bold uppercase text-muted-foreground">{label}</div><div className="mt-1 font-medium">{value}</div></div>; }
-function NumberField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <label className="grid gap-1 text-sm font-medium">{label}<input required min={1} type="number" className="h-10 rounded-md border bg-background px-3" value={value} onChange={(event) => onChange(event.target.value)} /></label>; }
 function TextField({ label, value, onChange, maxLength }: { label: string; value: string; onChange: (value: string) => void; maxLength: number }) { return <label className="grid gap-1 text-sm font-medium">{label}<input maxLength={maxLength} className="h-10 rounded-md border bg-background px-3" value={value} onChange={(event) => onChange(event.target.value)} /></label>; }

@@ -9,6 +9,7 @@ import type { CurrentUser, InventoryEvidence, InventoryObservation, InventoryRou
 import { InventorySessionDetailPage } from './InventorySessionDetailPage';
 
 const mocks = vi.hoisted(() => ({
+  apiGet: vi.fn(),
   getSession: vi.fn(),
   listRounds: vi.fn(),
   startSession: vi.fn(),
@@ -50,6 +51,7 @@ vi.mock('@/api/endpoints', () => ({ inventoryOperationsApi: {
 vi.mock('@/api/http', async (importOriginal) => ({
   ...await importOriginal<typeof import('@/api/http')>(),
   uploadToPresignedUrl: mocks.uploadToPresignedUrl,
+  api: { get: mocks.apiGet },
 }));
 
 const permissions = [
@@ -60,6 +62,8 @@ const permissions = [
   'reconciliations:create',
   'reconciliations:read',
   'consolidations:create',
+  'inventory-items:read',
+  'project-field-agents:read',
 ];
 
 const user: CurrentUser = {
@@ -161,6 +165,24 @@ function page<T>(items: T[], pageSize = 20): PaginatedItems<T> {
   return { items, page: 1, page_size: pageSize, total_items: items.length, total_pages: items.length ? 1 : 0 };
 }
 
+const items = [
+  { id: 11, project_id: 10, description: 'Notebook Dell', new_plate: 'PAT-0011', old_plate: null, brand: 'Dell', model: 'Latitude', serial_number: 'SN-1' },
+  { id: 12, project_id: 10, description: 'Cadeira giratória', new_plate: null, old_plate: 'OLD-12', brand: null, model: null, serial_number: null },
+];
+const links = [{ id: 70, field_agent_id: 7, field_agent_name: 'Maria Souza', role: null, status: 'active' }, { id: 80, field_agent_id: 8, field_agent_name: 'Carlos Dias', role: 'Coletor', status: 'active' }];
+const fold = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+/** Simula a API: só responde às rotas do projeto 10 / sessão 5, com busca no servidor. */
+function fakeApi(url: string, config?: { params?: { search?: string } }) {
+  const q = fold(config?.params?.search ?? '');
+  const paged = <T,>(rows: T[]) => ({ data: { items: rows, page: 1, page_size: 20, total_items: rows.length, total_pages: 1 } });
+  if (url === '/projects/10/inventory-items') return Promise.resolve(paged(items.filter((i) => fold(`${i.description} ${i.new_plate ?? ''} ${i.old_plate ?? ''}`).includes(q))));
+  const one = /^\/projects\/10\/inventory-items\/(\d+)$/.exec(url);
+  if (one) { const item = items.find((i) => i.id === Number(one[1])); return item ? Promise.resolve({ data: item }) : Promise.reject(new Error('404')); }
+  if (url === '/projects/10/field-agents') return Promise.resolve(paged(links.filter((l) => fold(l.field_agent_name).includes(q))));
+  if (url === '/projects/10/inventory-sessions/5/rounds') return Promise.resolve(paged([currentRound, initialRound]));
+  return Promise.reject(new Error('URL inesperada: ' + url));
+}
+
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const auth: AuthState = { user, accessToken: 'token', expiresAt: null, bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
@@ -178,6 +200,7 @@ function renderPage() {
 describe('InventorySessionDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.apiGet.mockImplementation(fakeApi);
     mocks.getSession.mockResolvedValue(activeSession);
     mocks.listRounds.mockResolvedValue(page([currentRound, initialRound]));
     mocks.listObservations.mockResolvedValue(page([observation]));
@@ -215,7 +238,8 @@ describe('InventorySessionDetailPage', () => {
     mocks.requestReinventory.mockResolvedValue(round3);
     const view = renderPage();
     await userEvent.click(await screen.findByRole('button', { name: 'Solicitar reinventario' }));
-    await userEvent.type(screen.getByLabelText('Item divergente'), '11');
+    await userEvent.type(screen.getByRole('combobox', { name: 'Item divergente' }), 'notebook');
+    await userEvent.click(await screen.findByRole('option', { name: /Notebook Dell \(PAT-0011\)/ }));
     await userEvent.type(screen.getByLabelText('Motivo'), 'Nova conferência');
     await userEvent.click(screen.getByRole('button', { name: 'Criar nova rodada' }));
     await waitFor(() => expect(mocks.requestReinventory).toHaveBeenCalledWith(10, 5, { inventory_item_id: 11, reason: 'Nova conferência' }));
@@ -268,8 +292,10 @@ describe('InventorySessionDetailPage', () => {
     mocks.createObservation.mockRejectedValueOnce(new ApiError(409, { code: 'OBSERVATION_ALREADY_RECORDED', message: 'Item already has an observation in this round' })).mockResolvedValue(observation);
     renderPage();
     await userEvent.click(await screen.findByRole('button', { name: 'Adicionar observação' }));
-    await userEvent.type(screen.getByLabelText('Item patrimonial'), '11');
-    await userEvent.type(screen.getByLabelText('Inventariante'), '7');
+    await userEvent.type(screen.getByRole('combobox', { name: 'Item patrimonial' }), 'PAT-0011');
+    await userEvent.click(await screen.findByRole('option', { name: /Notebook Dell/ }));
+    await userEvent.type(screen.getByRole('combobox', { name: 'Inventariante' }), 'maria');
+    await userEvent.click(await screen.findByRole('option', { name: /Maria Souza/ }));
     await userEvent.click(screen.getByRole('button', { name: 'Registrar observação' }));
     expect(await screen.findByText('Este item já possui uma observação nesta rodada.')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Registrar observação' }));
@@ -292,5 +318,46 @@ describe('InventorySessionDetailPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Visualizar' }));
     expect(await screen.findByRole('img', { name: 'evidence.webp' })).toHaveAttribute('src', 'https://storage.example/download');
     expect(mocks.evidenceDownloadUrl).toHaveBeenCalledWith(10, 5, 22, 31, 41);
+  });
+
+  it('mostra item (descrição e placa) e inventariante pelo nome nas observações', async () => {
+    renderPage();
+    expect(await screen.findByText('Notebook Dell (PAT-0011)')).toBeInTheDocument();
+    expect(await screen.findByText('Maria Souza')).toBeInTheDocument();
+    expect(screen.queryByText('#11')).not.toBeInTheDocument();
+    expect(screen.queryByText('#7')).not.toBeInTheDocument();
+    expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-items/11');
+  });
+
+  it('filtros de observação são combobox com nome e enviam os IDs à API', async () => {
+    renderPage();
+    await screen.findByText('Inventário final');
+    expect(screen.queryByPlaceholderText('ID da rodada')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('ID do item')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('ID do inventariante')).not.toBeInTheDocument();
+    const roundBox = screen.getByRole('combobox', { name: 'Filtrar por rodada' });
+    await userEvent.click(roundBox);
+    await userEvent.click(await screen.findByRole('option', { name: /Rodada 1/ }));
+    expect(roundBox).toHaveValue('Rodada 1');
+    await waitFor(() => expect(mocks.listObservations).toHaveBeenLastCalledWith(10, 5, expect.objectContaining({ round_id: 21, page: 1 })));
+    await userEvent.type(screen.getByRole('combobox', { name: 'Filtrar por item' }), 'cadeira');
+    await waitFor(() => expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/inventory-items', { params: { page: 1, page_size: 20, search: 'cadeira' } }));
+    await userEvent.click(await screen.findByRole('option', { name: /Cadeira giratória \(OLD-12\)/ }));
+    await waitFor(() => expect(mocks.listObservations).toHaveBeenLastCalledWith(10, 5, expect.objectContaining({ round_id: 21, inventory_item_id: 12 })));
+    await userEvent.type(screen.getByRole('combobox', { name: 'Filtrar por inventariante' }), 'carlos');
+    await waitFor(() => expect(mocks.apiGet).toHaveBeenCalledWith('/projects/10/field-agents', { params: { page: 1, page_size: 20, search: 'carlos' } }));
+    await userEvent.click(await screen.findByRole('option', { name: /Carlos Dias/ }));
+    await waitFor(() => expect(mocks.listObservations).toHaveBeenLastCalledWith(10, 5, expect.objectContaining({ round_id: 21, inventory_item_id: 12, field_agent_id: 8 })));
+  });
+
+  it('nova observação envia os IDs escolhidos pelo nome', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar observação' }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Item patrimonial' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Cadeira giratória/ }));
+    await userEvent.click(screen.getByRole('combobox', { name: 'Inventariante' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Carlos Dias/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Registrar observação' }));
+    await waitFor(() => expect(mocks.createObservation).toHaveBeenCalledWith(10, 5, 22, expect.objectContaining({ inventory_item_id: 12, field_agent_id: 8 })));
   });
 });
