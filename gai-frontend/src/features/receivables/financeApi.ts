@@ -115,11 +115,11 @@ export type CashReport = {
   definitions: Record<string, string>;
 };
 export const statusLabels: Record<string, string> = {
-  open: "Em aberto",
+  open: "Previsto",
   partial: "Parcial",
-  paid: "Quitado",
+  paid: "Recebido",
   cancelled: "Cancelado",
-  overdue: "Vencido",
+  overdue: "Em atraso",
 };
 /** Origem legível: "Contrato CT-1", "Aditivo", "Orçamento" ou "Manual" (nunca a chave interna). */
 export function originLabel(r: Pick<Receivable, "sourceKey" | "contract_number">) {

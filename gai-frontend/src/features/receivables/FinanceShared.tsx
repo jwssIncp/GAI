@@ -1,5 +1,6 @@
 import { EntityCombobox } from "@/components/base/EntityCombobox";
 import { companySource, contractSource, projectSource } from "@/components/base/entitySources";
+import { StatusBadge } from "@/components/base/StatusBadge";
 import { EXPORT_STATUS } from "@/utils/format";
 import { navigationContext } from "@/features/projects/navigationContext";
 import { useState } from "react";
@@ -9,51 +10,71 @@ import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { cls, financeApi, statusLabels, type Filters } from "./financeApi";
 const idOf = (v: string | null) => (v && Number(v) > 0 ? Number(v) : null);
+
+/**
+ * Situação do recebível ou da parcela no badge do mapa financeiro único:
+ * em aberto → Previsto; parcial → Parcial (tom neutro); quitado → Recebido;
+ * cancelado → Cancelado; com data prevista vencida → Em atraso.
+ */
+export function ReceivableStatus({ status, overdue }: { status: string; overdue?: boolean }) {
+  if (status === "cancelled") return <StatusBadge finance="cancelled" />;
+  if (status === "paid") return <StatusBadge finance="received" />;
+  if (overdue || status === "overdue") return <StatusBadge finance="overdue" label={status === "partial" ? "Em atraso (parcial)" : undefined} />;
+  if (status === "partial") return <StatusBadge finance="forecast" label="Parcial" title="Recebido em parte; saldo em aberto" />;
+  return <StatusBadge finance="forecast" label={statusLabels[status]} />;
+}
+
+/** Filtros de recebíveis: cada mudança vale na hora (vai para a URL, com o ID). */
 export function FinanceFilters({ cash = false }: { cash?: boolean }) {
   const [p, set] = useSearchParams();
-  // Cliente → projetos do cliente → contratos do projeto (o filtro vai pela URL, com o ID).
-  const [companyId, setCompanyId] = useState(idOf(p.get("company_id")));
-  const [projectId, setProjectId] = useState(idOf(p.get("project_id")));
+  const update = (changes: Record<string, string | number | null>) => {
+    const next = new URLSearchParams(p);
+    for (const [k, value] of Object.entries(changes)) {
+      next.delete(k);
+      if (value !== null && String(value)) next.set(k, String(value));
+    }
+    next.delete("page");
+    set(next, { replace: true });
+  };
+  const companyId = idOf(p.get("company_id"));
+  const projectId = idOf(p.get("project_id"));
+  const select = (name: string, label: string, options: [string, string][], fallback = "") => (
+    <label className="grid gap-1 text-sm">
+      {label}
+      <select className={cls} name={name} value={p.get(name) ?? fallback} onChange={(e) => update({ [name]: e.target.value === fallback && fallback !== "" ? null : e.target.value })}>
+        {options.map(([v, l]) => (
+          <option key={v} value={v}>
+            {l}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
   return (
-    <form
-      key={p.toString()}
-      className="premium-panel grid gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const v = new FormData(e.currentTarget),
-          next = navigationContext(p);
-        for (const [k, value] of v) {
-          next.delete(k);
-          if (String(value)) next.set(k, String(value));
-        }
-        set(next);
-      }}
-    >
+    <div role="search" aria-label="Filtros" className="premium-panel grid items-end gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
       <label className="grid gap-1 text-sm">
         Cliente
-        <EntityCombobox aria-label="Cliente" name="company_id" source={companySource} defaultValue={companyId} onChange={(id) => setCompanyId(id)} />
+        <EntityCombobox aria-label="Cliente" source={companySource} value={companyId} onChange={(id) => update({ company_id: id })} />
       </label>
       <label className="grid gap-1 text-sm">
         Projeto
         <EntityCombobox
           aria-label="Projeto"
-          name="project_id"
           source={projectSource}
           context={{ company_id: companyId }}
-          defaultValue={projectId}
-          onChange={(id) => setProjectId(id)}
+          value={projectId}
+          onChange={(id) => update({ project_id: id, contract_id: null })}
         />
       </label>
       <label className="grid gap-1 text-sm">
         Contrato
         <EntityCombobox
-          key={projectId ?? "sem-projeto"}
           aria-label="Contrato"
-          name="contract_id"
           source={contractSource}
           context={{ project_id: projectId }}
           requiresContext="Escolha o projeto primeiro"
-          defaultValue={projectId === idOf(p.get("project_id")) ? idOf(p.get("contract_id")) : null}
+          value={projectId ? idOf(p.get("contract_id")) : null}
+          onChange={(id) => update({ contract_id: id })}
         />
       </label>
       {[
@@ -62,57 +83,20 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
       ].map(([name, label]) => (
         <label key={name} className="grid gap-1 text-sm">
           {label}
-          <input name={name} aria-label={label} type="date" defaultValue={p.get(name) ?? ""} className={cls} />
+          <input name={name} aria-label={label} type="date" value={p.get(name) ?? ""} onChange={(e) => update({ [name]: e.target.value })} className={cls} />
         </label>
       ))}
-      <label className="grid gap-1 text-sm">
-        Status
-        <select
-          className={cls}
-          name="status"
-          defaultValue={p.get("status") ?? ""}
-        >
-          <option value="">Todos</option>
-          {Object.entries(statusLabels).map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
-      </label>
+      {select("status", "Situação", [["", "Todas"], ...Object.entries(statusLabels)])}
       {cash && (
         <>
-          <label className="grid gap-1 text-sm">
-            Visão
-            <select
-              className={cls}
-              name="view"
-              defaultValue={p.get("view") ?? "all"}
-            >
-              <option value="all">Previsto e realizado</option>
-              <option value="expected">Previsto</option>
-              <option value="actual">Realizado</option>
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm">
-            Movimento
-            <select
-              className={cls}
-              name="direction"
-              defaultValue={p.get("direction") ?? "all"}
-            >
-              <option value="all">Entradas e saídas</option>
-              <option value="in">Entradas</option>
-              <option value="out">Saídas</option>
-            </select>
-          </label>
+          {select("view", "Visão", [["all", "Previsto e realizado"], ["expected", "Previsto"], ["actual", "Realizado"]], "all")}
+          {select("direction", "Movimento", [["all", "Entradas e saídas"], ["in", "Entradas"], ["out", "Saídas"]], "all")}
         </>
       )}
-      <Button type="submit">Aplicar filtros</Button>
-      <Button type="button" variant="secondary" onClick={() => set(navigationContext(p))}>
-        Limpar
+      <Button type="button" variant="secondary" onClick={() => set(navigationContext(p), { replace: true })}>
+        Limpar filtros
       </Button>
-    </form>
+    </div>
   );
 }
 export function ExportFinance({
@@ -146,12 +130,12 @@ export function ExportFinance({
     statement: "Extrato filtrado",
   };
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <label className="text-sm">
-        Exportação
+    <div className="flex flex-wrap items-center gap-2">
+      <label className="flex items-center gap-2 text-sm">
+        Exportar
         <select
           aria-label="Tipo de exportação"
-          className={cls}
+          className="min-h-11 rounded-lg border bg-background p-2 text-sm"
           value={kind}
           onChange={(e) => setKind(e.target.value)}
         >
@@ -184,6 +168,7 @@ export function ExportFinance({
       {q.data?.status === "finished" &&
         hasPermission("export-jobs:download") && (
           <Button
+            variant="secondary"
             onClick={async () => {
               try {
                 await financeApi.download(id!);
@@ -201,7 +186,7 @@ export function ExportFinance({
         </span>
       )}
       {(error || q.error || q.data?.error_message) && (
-        <p role="alert">{error || q.error?.message || q.data?.error_message}</p>
+        <p role="alert" className="text-sm text-destructive-text">{error || q.error?.message || q.data?.error_message}</p>
       )}
     </div>
   );
