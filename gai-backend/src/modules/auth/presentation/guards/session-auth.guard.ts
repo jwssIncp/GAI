@@ -80,7 +80,7 @@ export class SessionAuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Authentication required',
+        message: 'Entre no sistema para continuar.',
       });
     }
 
@@ -89,7 +89,7 @@ export class SessionAuthGuard implements CanActivate {
     if (!session) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired session',
+        message: 'Sessão inválida ou expirada. Entre novamente.',
       });
     }
 
@@ -97,7 +97,7 @@ export class SessionAuthGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired session',
+        message: 'Sessão inválida ou expirada. Entre novamente.',
       });
     }
 
@@ -107,7 +107,7 @@ export class SessionAuthGuard implements CanActivate {
     ) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired session',
+        message: 'Sessão inválida ou expirada. Entre novamente.',
       });
     }
 
@@ -117,7 +117,7 @@ export class SessionAuthGuard implements CanActivate {
     ) {
       throw new UnauthorizedException({
         code: 'UNAUTHORIZED',
-        message: 'Invalid or expired session',
+        message: 'Sessão inválida ou expirada. Entre novamente.',
       });
     }
 

@@ -30,7 +30,8 @@ import { ASSISTED_ENTITIES } from '../../src/modules/assisted-reconciliation/ass
 import { AssistedReconciliationModule } from '../../src/modules/assisted-reconciliation/assisted.module';
 import { FIELD_ENTITIES } from '../../src/modules/field-coordination/field.entity';
 import { FieldCoordinationModule } from '../../src/modules/field-coordination/field.module';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
+import { createValidationPipe } from '../../src/common/validation/validation-exception.factory';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -316,13 +317,7 @@ export async function createTestApp(
 
   const app = moduleFixture.createNestApplication();
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
+  app.useGlobalPipes(createValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
   await app.init();
   return app;
