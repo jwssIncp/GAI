@@ -1,4 +1,6 @@
+import { Lock } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { financeStatuses, financeToneClass, type FinanceStatus } from './financeStatus';
 
 const tone: Record<string, string> = {
   ACTIVE: 'bg-success-subtle text-success ring-success/20',
@@ -16,15 +18,15 @@ const tone: Record<string, string> = {
   ignored: 'bg-muted text-muted-foreground ring-border',
   expired: 'bg-muted text-muted-foreground ring-border',
   low: 'bg-muted text-muted-foreground ring-border',
-  LOCKED: 'bg-destructive/10 text-destructive ring-destructive/20',
-  blocked: 'bg-destructive/10 text-destructive ring-destructive/20',
-  failed: 'bg-destructive/10 text-destructive ring-destructive/20',
-  rejected: 'bg-destructive/10 text-destructive ring-destructive/20',
-  cancelled: 'bg-destructive/10 text-destructive ring-destructive/20',
-  not_found: 'bg-destructive/10 text-destructive ring-destructive/20',
-  critical: 'bg-destructive/10 text-destructive ring-destructive/20',
-  divergent: 'bg-destructive/10 text-destructive ring-destructive/20',
-  high: 'bg-destructive/10 text-destructive ring-destructive/20',
+  LOCKED: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  blocked: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  failed: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  rejected: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  cancelled: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  not_found: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  critical: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  divergent: 'bg-destructive/10 text-destructive-text ring-destructive/20',
+  high: 'bg-destructive/10 text-destructive-text ring-destructive/20',
   pending_upload: 'bg-warning-subtle text-warning-text ring-warning/25',
   partially_processed: 'bg-warning-subtle text-warning-text ring-warning/25',
   finished_with_errors: 'bg-warning-subtle text-warning-text ring-warning/25',
@@ -84,7 +86,25 @@ const label: Record<string, string> = {
   critical: 'Crítica',
 };
 
-export function StatusBadge({ value }: { value?: string | null }) {
+const base = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-wide ring-1 ring-inset';
+const dot = 'before:size-1.5 before:rounded-full before:bg-current before:opacity-75';
+
+/**
+ * Etiqueta de status.
+ * - `value`: status cru da API (cadastros, importações etc.), com rótulo e tom deste arquivo.
+ * - `finance`: status financeiro do mapa único (`financeStatus.ts`): Previsto, A pagar,
+ *   Em atraso, Recebido, Estornado… `label` troca só o texto (ex.: "Paga" em Despesas).
+ */
+export function StatusBadge({ value, finance, label: text, title }: { value?: string | null; finance?: FinanceStatus; label?: string; title?: string }) {
+  if (finance) {
+    const status = financeStatuses[finance];
+    return (
+      <span title={title ?? status.hint} data-status={finance} className={cn(base, financeToneClass[status.tone], status.tone !== 'locked' && dot)}>
+        {status.tone === 'locked' ? <Lock size={11} aria-hidden="true" /> : null}
+        {text ?? status.label}
+      </span>
+    );
+  }
   const raw = value ?? '-';
-  return <span title={raw} className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-wide ring-1 ring-inset before:size-1.5 before:rounded-full before:bg-current before:opacity-75', tone[raw] ?? 'bg-muted text-muted-foreground ring-border')}>{label[raw] ?? raw}</span>;
+  return <span title={title ?? raw} className={cn(base, dot, tone[raw] ?? 'bg-muted text-muted-foreground ring-border')}>{text ?? label[raw] ?? raw}</span>;
 }

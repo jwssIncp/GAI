@@ -31,6 +31,7 @@ import { AppLayout } from "@/layouts/AppLayout";
 import { ProtectedRoute } from "./ProtectedRoute";
 import {
   AccountLockedPage,
+  AccessDeniedInAppPage,
   AccessDeniedPage,
   ForgotPasswordPage,
   ResetPasswordPage,
@@ -52,8 +53,26 @@ import { CompanyFormPage } from "@/features/companies/CompanyFormPage";
 import { CompanyDetailPage } from "@/features/companies/CompanyDetailPage";
 import { ProjectCreatePage } from '@/features/projects/ProjectCreatePage';
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
-import { PlaceholderPage } from "@/features/placeholders/PlaceholderPage";
 import { FieldAgentsPage } from "@/features/field-agents/FieldAgentsPage";
+import { FirstAllowedRedirect, LegacyRedirect } from "./LegacyRedirects";
+
+/**
+ * Endereços reservados antigos (em inglês) que nunca tiveram tela: levam à tela atual
+ * equivalente. Com projeto no contexto (?project_id=), abre a aba do projeto; sem, a lista.
+ */
+export const legacyRedirects: ReadonlyArray<{ path: string; to: string; projectTab?: string }> = [
+  { path: "payments", to: "/app/finance/field-agent-payments" },
+  { path: "expenses", to: "/app/finance/expenses" },
+  { path: "catalog-assets", to: "/app/projects", projectTab: "inventory-items" },
+  { path: "inventory-items", to: "/app/projects", projectTab: "inventory-items" },
+  { path: "inventory-item-images", to: "/app/projects", projectTab: "inventory-items" },
+  { path: "accounting-items", to: "/app/projects", projectTab: "accounting-items" },
+  { path: "pending-issues", to: "/app/projects", projectTab: "pending-issues" },
+  { path: "import-sessions", to: "/app/projects", projectTab: "import-sessions" },
+  { path: "export-jobs", to: "/app/projects", projectTab: "export-jobs" },
+  // Configurações pessoais (tema, senha) ficam no Perfil.
+  { path: "settings", to: "/app/profile" },
+];
 
 export const router = createBrowserRouter([
   { path: "/", element: <Navigate to="/app/dashboard" replace /> },
@@ -78,6 +97,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/app/dashboard" replace /> },
           { path: "dashboard", element: <DashboardPage /> },
+          // Acesso negado dentro do layout (menu e topo continuam disponíveis).
+          { path: "access-denied", element: <AccessDeniedInAppPage /> },
           {
             element: <ProtectedRoute permissions={["organizations:read"]} />,
             children: [
@@ -126,6 +147,8 @@ export const router = createBrowserRouter([
             path: "finance",
             element: <FinanceLayout />,
             children: [
+              // /app/finance não tem tela própria: abre a 1ª tela financeira permitida.
+              { index: true, element: <FirstAllowedRedirect section="finance" prefix="/app/finance" /> },
               {
                 element: <ProtectedRoute permissions={["dre:read"]} />,
                 children: [
@@ -210,36 +233,10 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute permissions={["field-agents:read"]} />,
             children: [{ path: "field-agents", element: <FieldAgentsPage /> }],
           },
-          {
-            path: "catalog-assets",
-            element: <PlaceholderPage title="Catalog Assets" />,
-          },
-          {
-            path: "inventory-items",
-            element: <PlaceholderPage title="Inventory Items" />,
-          },
-          {
-            path: "inventory-item-images",
-            element: <PlaceholderPage title="Inventory Item Images" />,
-          },
-          {
-            path: "accounting-items",
-            element: <PlaceholderPage title="Accounting Items" />,
-          },
-          {
-            path: "pending-issues",
-            element: <PlaceholderPage title="Pending Issues" />,
-          },
-          { path: "payments", element: <PlaceholderPage title="Payments" /> },
-          { path: "expenses", element: <PlaceholderPage title="Expenses" /> },
-          {
-            path: "import-sessions",
-            element: <PlaceholderPage title="Import Sessions" />,
-          },
-          {
-            path: "export-jobs",
-            element: <PlaceholderPage title="Export Jobs" />,
-          },
+          ...legacyRedirects.map(({ path, to, projectTab }) => ({
+            path,
+            element: <LegacyRedirect to={to} projectTab={projectTab} />,
+          })),
           {
             element: <ProtectedRoute permissions={["users:write"]} />,
             children: [
@@ -249,10 +246,6 @@ export const router = createBrowserRouter([
           },
           { path: "change-password", element: <ChangePasswordPage /> },
           { path: "profile", element: <ProfilePage /> },
-          {
-            path: "settings",
-            element: <PlaceholderPage title="Configurações" />,
-          },
         ],
       },
     ],

@@ -9,6 +9,8 @@ import { useToast } from '@/components/ui/toast-context';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { useProject } from '@/features/projects/projectQueries';
 import { projectBreadcrumbSteps } from '@/features/projects/projectNavigation';
+import { navigationSectionFor, sectionLabel } from '@/constants/navigation';
+import type { CurrentUser } from '@/types/api';
 
 const breadcrumbLabels: Record<string, string> = {
   'technical-reports': 'Laudos',
@@ -29,8 +31,8 @@ const breadcrumbLabels: Record<string, string> = {
   'accounting-items': 'Base contábil',
   'pending-issues': 'Pendências',
   finance: 'Financeiro',
-  dre:'DRE Gerencial',
-  entries:'Classificações',
+  dre:'DRE gerencial',
+  entries:'Classificações e ajustes',
   accounts:'Plano de contas',
   periods:'Competências',
   monthly:'DRE mensal',
@@ -50,11 +52,25 @@ const breadcrumbLabels: Record<string, string> = {
   settings: 'Configurações',
   preparation: 'Preparação',
   kickoff: 'Kickoff',
-  'field-coordination': 'Coordenação de Campo',
+  'field-coordination': 'Coordenação de campo',
   inventory: 'Inventário',
   sessions: 'Sessões',
   accountabilities: 'Prestações',
+  'access-denied': 'Acesso negado',
 };
+
+/**
+ * Níveis da trilha que viram link. No Financeiro, a raiz e as listas/abas também
+ * (ex.: Financeiro › Recebíveis › #12, Financeiro › DRE gerencial › Classificações e ajustes › #5);
+ * /app/finance leva à primeira tela financeira permitida.
+ */
+const linkable = ['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents', 'finance', 'receivables', 'dre', 'entries'];
+
+/** Nome da organização no topo; sem o nome (API antiga), o número; sem organização, "Plataforma". */
+function organizationLabel(user: CurrentUser | null | undefined): string {
+  if (!user?.organization_id) return 'Plataforma';
+  return user.organization_name?.trim() || `Organização #${user.organization_id}`;
+}
 
 type Crumb = { label: string; to?: string };
 
@@ -106,13 +122,19 @@ export function Breadcrumbs() {
   if (projectId) return <ProjectBreadcrumbs projectId={projectId} />;
   const parts = location.pathname.split('/').filter(Boolean).slice(1);
   if (!parts.length) return <nav aria-label="Breadcrumbs" className="min-w-0 text-sm text-topbar-muted"><ol className="flex items-center gap-1 overflow-hidden whitespace-nowrap">Visão geral</ol></nav>;
-  const linkable = ['projects', 'budgets', 'organizations', 'users', 'roles', 'companies', 'field-agents'];
-  const crumbs: Crumb[] = parts.map((part, index) => ({
-    label: /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
-    to: index < parts.length - 1 && (linkable.includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part)))
-      ? navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)
-      : undefined,
-  }));
+  // Tela do menu fora do módulo da própria URL (ex.: Parâmetros financeiros fica em
+  // /app/finance/parameters, mas no grupo Administração): o 1º nível é a seção do menu.
+  const section = navigationSectionFor(location.pathname);
+  const outsideUrlModule = parts[0] === 'finance' && section !== null && section !== 'finance';
+  const crumbs: Crumb[] = parts.map((part, index) => {
+    if (index === 0 && outsideUrlModule) return { label: sectionLabel(section) };
+    return {
+      label: /^\d+$/.test(part) ? `#${part}` : (breadcrumbLabels[part] ?? part.replaceAll('-', ' ')),
+      to: index < parts.length - 1 && (linkable.includes(part) || (index === 1 && parts[0] === 'projects' && /^\d+$/.test(part)))
+        ? navigationHref('/app/' + parts.slice(0, index + 1).join('/'), location.search)
+        : undefined,
+    };
+  });
   return <BreadcrumbList crumbs={crumbs} />;
 }
 
@@ -121,7 +143,7 @@ export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNav
   const navigate = useNavigate();
   const { theme, toggleTheme, preference, setTheme } = useTheme();
   const { toast } = useToast();
-  const organizationLabel = user?.organization_id ? `Organização #${user.organization_id}` : 'Plataforma';
+  const organization = organizationLabel(user);
   const roleLabel = user?.role_assignments?.[0]?.role_name ?? 'Acesso autorizado';
   const initials = (user?.login ?? 'U').slice(0, 2).toUpperCase();
 
@@ -133,7 +155,7 @@ export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNav
         </Button>
         <div className="min-w-0">
           <Breadcrumbs />
-          <div className="mt-1 truncate text-[0.6875rem] font-medium text-topbar-muted">{organizationLabel}</div>
+          <div className="mt-1 truncate text-[0.6875rem] font-medium text-topbar-muted">{organization}</div>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -146,7 +168,7 @@ export function Topbar({ onOpenNavigation, navigationOpen = false }: { onOpenNav
               <span className="grid size-8 place-items-center rounded-lg bg-premium-gradient text-[0.6875rem] font-extrabold text-primary-foreground shadow-glow">{initials}</span>
               <span className="hidden min-w-0 text-left sm:block">
                 <span className="block max-w-32 truncate text-xs font-bold leading-tight">{user?.login ?? 'Usuário'}</span>
-                <span className="block max-w-32 truncate text-[0.625rem] font-medium text-topbar-muted">{organizationLabel}</span>
+                <span className="block max-w-32 truncate text-[0.625rem] font-medium text-topbar-muted">{organization}</span>
               </span>
               <ChevronDown className="text-topbar-muted" size={14} />
             </Button>

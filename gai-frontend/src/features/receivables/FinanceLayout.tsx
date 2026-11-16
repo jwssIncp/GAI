@@ -2,12 +2,17 @@ import { Outlet, useLocation } from "react-router-dom";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
 import { ProjectContextLink } from "@/features/projects/ProjectContextLink";
+import { dreTabLabel } from "@/constants/dreTabs";
 
-/** Título e descrição de cada tela do módulo Financeiro (a navegação é pelo menu lateral). */
+/**
+ * Título (h1) e descrição de cada tela do módulo Financeiro (a navegação é pelo menu
+ * lateral). O rótulo acima do título vem da seção do menu (PageHeader); na DRE, o h1
+ * é o nome da aba aberta.
+ */
 const PAGES: Record<string, [title: string, description: string]> = {
   receivables: ["Recebíveis", "Parcelas a receber, recebimentos e estornos com histórico."],
   "cash-flow": ["Fluxo de caixa", "Movimentos conhecidos e obrigações abertas. Resultado do período não é saldo bancário."],
-  dre: ["DRE Gerencial", "Resultado por competência explícita, com cobertura das fontes e histórico. Não é DRE contábil oficial."],
+  dre: ["DRE gerencial", "Resultado por competência explícita, com cobertura das fontes e histórico. Não é DRE contábil oficial."],
   remuneration: ["Remuneração", "Remuneração dos técnicos por projeto."],
   "field-agent-payments": [
     "Pagamento de inventariantes",
@@ -30,6 +35,7 @@ const PAGES: Record<string, [title: string, description: string]> = {
 
 function financePage(pathname: string): [string, string] {
   const section = pathname.split("/app/finance/")[1]?.split("/")[0] ?? "";
+  if (section === "dre") return [dreTabLabel(pathname), PAGES.dre[1]];
   return PAGES[section] ?? ["Financeiro", "Recebíveis, caixa e resultado gerencial por competência."];
 }
 

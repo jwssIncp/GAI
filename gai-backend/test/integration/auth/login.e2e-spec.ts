@@ -79,6 +79,34 @@ describe('Auth - Login/Logout/Me (e2e)', () => {
     );
   });
 
+  it('login e GET /auth/me trazem o nome da organização do usuário', async () => {
+    const login = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ identifier: 'org.admin', password: fixturePasswords.orgAdmin })
+      .expect(200);
+    const loginBody = login.body as unknown as {
+      access_token: string;
+      user: { organization_name: string | null };
+    };
+    // nome fantasia tem prioridade sobre a razão social
+    expect(loginBody.user.organization_name).toBe('GAI Test');
+    const me = await request(app.getHttpServer())
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${loginBody.access_token}`)
+      .expect(200);
+    expect(
+      (me.body as { organization_name: string | null }).organization_name,
+    ).toBe('GAI Test');
+    // usuário da plataforma não tem organização
+    const admin = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({ identifier: 'platform.admin', password: fixturePasswords.admin });
+    expect(
+      (admin.body as { user: { organization_name: string | null } }).user
+        .organization_name,
+    ).toBeNull();
+  });
+
   it('POST /auth/logout invalidates session', async () => {
     const login = await request(app.getHttpServer())
       .post('/api/v1/auth/login')

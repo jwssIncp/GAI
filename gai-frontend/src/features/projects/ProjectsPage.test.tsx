@@ -343,8 +343,9 @@ describe("Project registration and management", () => {
     expect(
       await screen.findByRole("heading", { name: "Descartar alterações?" }),
     ).toBeInTheDocument();
+    // ConfirmDialog: "Voltar" fecha sem descartar.
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Cancelar" }).at(-1)!,
+      screen.getAllByRole("button", { name: "Voltar" }).at(-1)!,
     );
     expect(screen.getByLabelText("Nome do projeto")).toHaveValue(
       "  Projeto Novo  ",

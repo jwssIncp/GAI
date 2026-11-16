@@ -49,3 +49,49 @@ export function ProgressCard({ label, value }: { label: string; value: number })
     </div>
   );
 }
+
+export type KpiTone = 'default' | 'danger' | 'warning' | 'highlight';
+
+/**
+ * Indicador compacto (KPI) das telas: rótulo, valor (algarismos tabulares, sem quebra),
+ * dica e nota de aviso opcionais.
+ * - `tone`: "danger" (borda e valor vermelhos), "warning" (borda âmbar), "highlight" (borda primária, ex.: valor simulado).
+ * - `negative`: só o valor em vermelho (ex.: saldo negativo).
+ * - `onClick` + `active`: vira botão de filtro (aria-pressed).
+ * - `children`: linha extra abaixo do valor (ex.: "sem a venda: R$ …").
+ */
+export function Kpi({ label, value, hint, note, tone = 'default', negative = false, active, onClick, children }: {
+  label: string;
+  value: ReactNode;
+  hint?: ReactNode;
+  /** Aviso curto (texto âmbar AA). */
+  note?: ReactNode;
+  tone?: KpiTone;
+  negative?: boolean;
+  active?: boolean;
+  onClick?: () => void;
+  children?: ReactNode;
+}) {
+  const body = (
+    <>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={cn('numeric text-lg font-semibold', (negative || tone === 'danger') && 'text-destructive-text')}>{value}</p>
+      {children}
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {note ? <p className="text-xs text-warning-text">{note}</p> : null}
+    </>
+  );
+  const className = cn(
+    'rounded-lg border bg-card p-3 text-left',
+    tone === 'danger' && 'border-destructive/50',
+    tone === 'warning' && 'border-warning/50',
+    tone === 'highlight' && 'border-primary/60',
+    active && 'ring-2 ring-primary',
+  );
+  if (!onClick) return <div className={className}>{body}</div>;
+  return (
+    <button type="button" className={cn(className, 'hover:bg-primary/[0.05]')} aria-pressed={Boolean(active)} onClick={onClick}>
+      {body}
+    </button>
+  );
+}

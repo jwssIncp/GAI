@@ -3,20 +3,12 @@ import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { GaiLogo } from '@/components/base/GaiLogo';
-import { navigation, type NavigationSection } from '@/constants/navigation';
+import { navigation, navigationSections } from '@/constants/navigation';
 import { usePermissions } from '@/features/auth/usePermissions';
 import { navigationContext, navigationHref } from '@/features/projects/navigationContext';
 import { cn } from '@/utils/cn';
 
 type SidebarProps = { mobileOpen: boolean; onMobileOpenChange: (open: boolean) => void };
-// Ordem e títulos das seções do menu (módulos). "overview" não tem título.
-const sections: Array<[NavigationSection, string | null]> = [
-  ['overview', null],
-  ['projects', 'Projetos'],
-  ['commercial', 'Comercial'],
-  ['finance', 'Financeiro'],
-  ['management', 'Administração'],
-];
 
 export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
   const location = useLocation();
@@ -46,7 +38,7 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
           onCloseAutoFocus={event => { event.preventDefault(); document.getElementById('gai-navigation-trigger')?.focus(); }}
           className="fixed inset-y-0 left-0 z-50 w-[min(88vw,320px)] border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-elevated">
           <Dialog.Title className="sr-only">Navegação principal</Dialog.Title>
-          <Dialog.Close aria-label="Fechar menu" className="absolute right-3 top-4 z-10 grid size-11 place-items-center rounded-lg text-sidebar-muted hover:bg-sidebar-accent hover:text-white"><X size={19} /></Dialog.Close>
+          <Dialog.Close aria-label="Fechar menu" className="absolute right-3 top-4 z-10 grid size-11 place-items-center rounded-lg text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"><X size={19} /></Dialog.Close>
           <SidebarContent />
         </Dialog.Content>
       </Dialog.Portal>
@@ -70,7 +62,9 @@ function SidebarContent({ collapsed = false, onToggle }: { collapsed?: boolean; 
       <GaiLogo variant={collapsed ? 'symbol' : 'horizontal'} appearance="dark" />
     </div>
     <nav className="flex-1 overflow-y-auto px-3 py-5" aria-label="Navegação principal">
-      {sections.map(([section, title]) => {
+      {navigationSections.map(([section, label]) => {
+        // "Visão geral" é um item só: o grupo não tem título.
+        const title = section === 'overview' ? null : label;
         const items = visible.filter(item => item.section === section);
         if (!items.length) return null;
         return <div key={section} className="mb-6 last:mb-0">
@@ -81,7 +75,7 @@ function SidebarContent({ collapsed = false, onToggle }: { collapsed?: boolean; 
               return <NavLink key={item.to}
                 to={item.to.startsWith('/app/budgets') || item.to.startsWith('/app/finance') || item.to === '/app/projects' ? navigationHref(item.to, context) : item.to}
                 aria-label={collapsed ? item.label : undefined} title={collapsed ? item.label : undefined}
-                className={({ isActive }) => cn('group relative flex min-h-11 items-center gap-3 rounded-lg text-sm font-medium text-sidebar-muted transition-colors hover:bg-sidebar-accent/70 hover:text-white', collapsed ? 'justify-center px-1' : 'px-3', isActive && 'bg-sidebar-accent text-white shadow-inner-highlight')}>
+                className={({ isActive }) => cn('group relative flex min-h-11 items-center gap-3 rounded-lg text-sm font-medium text-sidebar-muted transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground', collapsed ? 'justify-center px-1' : 'px-3', isActive && 'bg-sidebar-accent text-sidebar-foreground shadow-inner-highlight')}>
                 {({ isActive }) => <>
                   <span className={cn('absolute inset-y-3 left-0 w-0.5 rounded-full bg-primary', !isActive && 'opacity-0')} />
                   <Icon size={19} strokeWidth={1.8} className={cn('shrink-0', isActive && 'text-primary')} aria-hidden="true" />
@@ -94,7 +88,7 @@ function SidebarContent({ collapsed = false, onToggle }: { collapsed?: boolean; 
       })}
     </nav>
     {onToggle && <div className="border-t border-sidebar-border p-3">
-      <button type="button" onClick={onToggle} aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'} aria-expanded={!collapsed} title={collapsed ? 'Expandir menu lateral' : undefined} className={cn('flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-xs font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-white', collapsed && 'justify-center px-0')}>
+      <button type="button" onClick={onToggle} aria-label={collapsed ? 'Expandir menu lateral' : 'Recolher menu lateral'} aria-expanded={!collapsed} title={collapsed ? 'Expandir menu lateral' : undefined} className={cn('flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-xs font-medium text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground', collapsed && 'justify-center px-0')}>
         {collapsed ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher menu</>}
       </button>
     </div>}

@@ -84,6 +84,13 @@ describe("DRE nested navigation and explicit classification", () => {
     await screen.findByText("Cobertura incompleta não equivale a zero.");
     fireEvent.click(screen.getByRole("link", { name: "Plano de contas" }));
     await screen.findByRole("button", { name: "Nova conta gerencial" });
+    // h1 = nome da aba (mesmo rótulo da aba e da trilha)
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Plano de contas" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Plano de contas" }),
+    ).toHaveAttribute("aria-current", "page");
     expect(screen.getByTestId("location")).toHaveTextContent(
       "/app/finance/dre/accounts?project_id=25",
     );

@@ -56,7 +56,7 @@ export function OrganizationOverviewPage() {
   }
   const data = invalidDates ? undefined : query.data;
   return <PageContainer>
-    <PageHeader title="Visão Geral" description="Projetos da sua organização e indicadores gerenciais." />
+    <PageHeader title="Visão geral" description="Projetos da sua organização e indicadores gerenciais." />
     <form key={params.toString()} className="premium-panel grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3" onSubmit={event => {
       event.preventDefault();
       const values = new FormData(event.currentTarget);

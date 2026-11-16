@@ -40,7 +40,7 @@ function OperationalDashboardPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Dashboard operacional" description="Uma leitura clara da sua operação, respeitando escopos e permissões de acesso." />
+      <PageHeader title="Visão geral" description="Uma leitura clara da sua operação, respeitando escopos e permissões de acesso." />
       {loading ? <LoadingState /> : error ? <ErrorState /> : visibleCards.length ? (
         <>
           <section className="relative grid min-h-[300px] overflow-hidden rounded-2xl border border-sidebar-border bg-brand-hero text-white shadow-elevated lg:grid-cols-[1.05fr_0.95fr]">

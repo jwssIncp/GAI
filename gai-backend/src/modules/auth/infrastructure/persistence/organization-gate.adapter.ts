@@ -16,4 +16,12 @@ export class OrganizationGateAdapter implements OrganizationGate {
     const org = await this.orgRepo.findOne({ where: { id: organizationId } });
     return org?.status === OrganizationStatus.ACTIVE;
   }
+
+  async displayName(organizationId: number): Promise<string | null> {
+    const org = await this.orgRepo.findOne({
+      where: { id: organizationId },
+      select: { id: true, legalName: true, tradeName: true },
+    });
+    return org ? org.tradeName?.trim() || org.legalName : null;
+  }
 }

@@ -30,6 +30,13 @@ export class CurrentUserDto {
   @ApiPropertyOptional({ type: 'integer', format: 'int64', nullable: true })
   organization_id!: number | null;
 
+  @ApiPropertyOptional({
+    nullable: true,
+    description:
+      'Nome de exibição da organização do usuário (nome fantasia ou razão social); null para usuários da plataforma.',
+  })
+  organization_name?: string | null;
+
   @ApiProperty({ type: [RoleAssignmentResponseDto] })
   role_assignments!: RoleAssignmentResponseDto[];
 
@@ -44,6 +51,7 @@ export class CurrentUserDto {
     email: string;
     status: UserStatus;
     organizationId: number | null;
+    organizationName?: string | null;
     roleAssignments: RoleAssignmentResponseDto[];
     permissions: ResolvedPermission[];
   }): CurrentUserDto {
@@ -55,6 +63,7 @@ export class CurrentUserDto {
       email: user.email,
       status: user.status,
       organization_id: user.organizationId,
+      organization_name: user.organizationName ?? null,
       role_assignments: user.roleAssignments,
       permissions: user.permissions,
     };

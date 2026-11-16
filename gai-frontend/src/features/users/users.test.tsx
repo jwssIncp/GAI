@@ -200,8 +200,9 @@ describe("Dedicated user pages", () => {
     );
     await events.click(screen.getByRole("button", { name: "Cancelar" }));
     const dialog = await screen.findByRole("dialog");
+    // ConfirmDialog: "Voltar" fecha sem descartar.
     await events.click(
-      within(dialog).getByRole("button", { name: "Cancelar" }),
+      within(dialog).getByRole("button", { name: "Voltar" }),
     );
     expect(screen.getByLabelText("Nome completo")).toHaveValue(
       "Informação pendente",

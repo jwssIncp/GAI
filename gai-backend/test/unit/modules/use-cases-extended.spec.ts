@@ -31,16 +31,22 @@ describe('Auth transactional facades', () => {
         .fn()
         .mockResolvedValue([{ key: 'projects:read', scope: 'ORGANIZATION' }]),
     };
+    const organizations = {
+      displayName: jest.fn().mockResolvedValue('Organização Exemplo'),
+    };
     const result = await new LoginUseCase(
       credentials as never,
       assignments as never,
       permissions as never,
+      organizations as never,
     ).execute(
       { identifier: 'person', password: 'valid legacy password' },
       null,
     );
     expect(result.access_token).toBe('synthetic-session');
     expect(result.user.permissions).toHaveLength(1);
+    expect(result.user.organization_name).toBe('Organização Exemplo');
+    expect(organizations.displayName).toHaveBeenCalledWith(1);
   });
   it('delegates a public reset request without exposing tokens', async () => {
     const service = {

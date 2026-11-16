@@ -120,7 +120,8 @@ describe('Company pages', () => {
     await ctx.user.click(screen.getByRole('button', { name: 'Voltar à listagem' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Descartar alterações?');
-    await ctx.user.click(screen.getAllByRole('button', { name: 'Cancelar' }).at(-1)!);
+    // ConfirmDialog: "Voltar" fecha sem descartar.
+    await ctx.user.click(screen.getAllByRole('button', { name: 'Voltar' }).at(-1)!);
     expect(screen.getByLabelText('Nome da empresa')).toHaveValue('Pendente');
     await ctx.user.click(screen.getByRole('button', { name: 'Voltar à listagem' }));
     await ctx.user.click(await screen.findByRole('button', { name: 'Confirmar' }));

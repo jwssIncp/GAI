@@ -50,7 +50,13 @@ export function DrawerForm({ open, onOpenChange, title, children }: { open: bool
   );
 }
 
-export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, busy = false, error }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void; busy?: boolean; /** Falha da ação: aparece no diálogo, que continua aberto. */ error?: string | null }) {
+/**
+ * Confirmação de uma ação. `variant`: "danger" (padrão; excluir, estornar, cancelar)
+ * ou "primary" (ação comum que só pede confirmação, ex.: registrar pagamento).
+ * `confirmLabel` deve dizer a ação ("Estornar", "Registrar pagamento"); `cancelLabel`
+ * fecha sem fazer nada. `error` mostra a falha da ação com o diálogo aberto.
+ */
+export function ConfirmDialog({ open, onOpenChange, title, description, onConfirm, busy = false, error, variant = 'danger', confirmLabel = 'Confirmar', cancelLabel = 'Voltar' }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; description: string; onConfirm: () => void; busy?: boolean; /** Falha da ação: aparece no diálogo, que continua aberto. */ error?: string | null; variant?: 'danger' | 'primary'; confirmLabel?: string; cancelLabel?: string }) {
   return (
     <ModalForm open={open} onOpenChange={onOpenChange} title={title}>
       <p className="text-sm text-muted-foreground">{description}</p>
@@ -61,10 +67,10 @@ export function ConfirmDialog({ open, onOpenChange, title, description, onConfir
       ) : null}
       <div className="mt-7 flex flex-col-reverse justify-end gap-2 sm:flex-row">
         <Button type="button" variant="secondary" disabled={busy} onClick={() => onOpenChange(false)}>
-          Cancelar
+          {cancelLabel}
         </Button>
-        <Button type="button" variant="danger" loading={busy} disabled={busy} onClick={onConfirm}>
-          Confirmar
+        <Button type="button" variant={variant} loading={busy} disabled={busy} onClick={onConfirm}>
+          {confirmLabel}
         </Button>
       </div>
     </ModalForm>
