@@ -479,18 +479,43 @@ function PayDialog({ rows, today, onClose, onDone }: { rows: ConsolidatedRow[]; 
 }
 
 function RevertDialog({ rows, onClose, onDone }: { rows: ConsolidatedRow[]; onClose: () => void; onDone: (r: BatchResult) => void }) {
-  const revert = useMutation({ mutationFn: () => fieldAgentPaymentsApi.revert(rows.map((r) => r.id)), onSuccess: onDone });
+  const [reason, setReason] = useState("");
+  const tooShort = reason.trim().length < 5;
+  const revert = useMutation({
+    mutationFn: () => fieldAgentPaymentsApi.revert(rows.map((r) => r.id), reason.trim()),
+    onSuccess: onDone,
+  });
   return (
     <ModalForm open onOpenChange={(open) => !open && onClose()} title="Desfazer pagamento">
-      <p className="text-sm text-muted-foreground">
-        Desfazer o pagamento de {rows.length} lançamento(s)? Eles voltam para em aberto: a data de pagamento é limpa e a data
-        prevista é mantida. Lançamentos aprovados voltam a "aprovado"; os pagos sem aprovação voltam a "pendente".
-      </p>
-      {revert.isError ? <p role="alert" className="mt-2 text-sm text-destructive-text">{(revert.error as Error).message}</p> : null}
-      <div className="mt-6 flex justify-end gap-2">
-        <Button type="button" variant="secondary" onClick={onClose} disabled={revert.isPending}>Voltar</Button>
-        <Button type="button" loading={revert.isPending} onClick={() => revert.mutate()}>Desfazer pagamento</Button>
-      </div>
+      <form
+        className="grid gap-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!tooShort) revert.mutate();
+        }}
+      >
+        <p className="text-sm text-muted-foreground">
+          Desfazer o pagamento de {rows.length} lançamento(s)? Eles voltam para em aberto: a data de pagamento é limpa e a data
+          prevista é mantida. Lançamentos aprovados voltam a "aprovado"; os pagos sem aprovação voltam a "pendente".
+        </p>
+        <label className="grid gap-1 text-sm">
+          Justificativa
+          <textarea
+            aria-label="Justificativa"
+            className="min-h-16 rounded-md border bg-background px-3 py-2 text-sm"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            required
+            minLength={5}
+          />
+          <span className="text-xs text-muted-foreground">Mínimo de 5 caracteres; fica na auditoria de cada lançamento.</span>
+        </label>
+        {revert.isError ? <p role="alert" className="text-sm text-destructive-text">{(revert.error as Error).message}</p> : null}
+        <div className="mt-3 flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={revert.isPending}>Voltar</Button>
+          <Button type="submit" loading={revert.isPending} disabled={tooShort}>Desfazer pagamento</Button>
+        </div>
+      </form>
     </ModalForm>
   );
 }

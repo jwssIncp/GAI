@@ -79,7 +79,8 @@ export const fieldAgentPaymentsApi = {
     api.get<Blob>("/field-agent-payments/export", { params: filters, responseType: "blob" }).then((r) => r.data),
   pay: (payload: { ids: number[]; date_mode: "today" | "chosen" | "individual"; payment_date?: string; dates?: Record<string, string> }) =>
     api.post<BatchResult>("/field-agent-payments/pay", payload).then((r) => r.data),
-  revert: (ids: number[]) => api.post<BatchResult>("/field-agent-payments/revert", { ids }).then((r) => r.data),
+  revert: (ids: number[], reason: string) =>
+    api.post<BatchResult>("/field-agent-payments/revert", { ids, reason }).then((r) => r.data),
   changeDate: (id: number, payload: { kind: "payment" | "expected"; date: string }) =>
     api.post<{ ok: true }>(`/field-agent-payments/${id}/date`, payload).then((r) => r.data),
 };

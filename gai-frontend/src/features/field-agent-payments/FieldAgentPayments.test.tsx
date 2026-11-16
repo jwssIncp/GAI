@@ -216,8 +216,12 @@ describe("Pagamento de inventariantes", () => {
 
     // Confirmar "voltar" executa só o voltar, com os ids daquele diálogo.
     await u.click(screen.getByRole("button", { name: /Desfazer pagamento \(1\)/ }));
-    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Desfazer pagamento" }));
-    await waitFor(() => expect(mocks.revert).toHaveBeenCalledWith([3]));
+    const revertDialog = within(screen.getByRole("dialog"));
+    // Sem justificativa (mínimo de 5 caracteres) não desfaz.
+    expect(revertDialog.getByRole("button", { name: "Desfazer pagamento" })).toBeDisabled();
+    await u.type(revertDialog.getByLabelText("Justificativa"), "Pago por engano");
+    await u.click(revertDialog.getByRole("button", { name: "Desfazer pagamento" }));
+    await waitFor(() => expect(mocks.revert).toHaveBeenCalledWith([3], "Pago por engano"));
     expect(mocks.pay).toHaveBeenCalledTimes(1);
   });
 

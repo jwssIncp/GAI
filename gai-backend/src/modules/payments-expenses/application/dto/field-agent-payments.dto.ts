@@ -10,7 +10,9 @@ import {
   IsOptional,
   IsString,
   Matches,
+  MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 import { BATCH_LIMIT } from '../services/field-agent-payments.service';
 
@@ -44,6 +46,11 @@ export class PaymentIdsDto {
   @IsInt({ each: true })
   @Min(1, { each: true })
   ids!: number[];
+}
+
+/** Desfazer pagamento: a justificativa fica na auditoria de cada lançamento. */
+export class RevertPaymentsDto extends PaymentIdsDto {
+  @IsString() @MinLength(5) @MaxLength(2000) reason!: string;
 }
 
 export class BatchPayDto extends PaymentIdsDto {

@@ -87,10 +87,11 @@ class UndoReceiptDto {
   @ValidateNested({ each: true })
   @Type(() => EventRefDto)
   items!: EventRefDto[];
+  /** Justificativa do estorno (fica no histórico de cada recebível). */
+  @IsString() @MinLength(5) @MaxLength(2000) reason!: string;
 }
 class RedateReceiptDto extends UndoReceiptDto {
   @IsCivilDate() received_on!: string;
-  @IsString() @MinLength(5) @MaxLength(2000) reason!: string;
 }
 class RescheduleDto {
   @IsArray()
@@ -107,6 +108,12 @@ class SettleDto extends KeysDto {
   @ValidateIf((_, v) => v !== null)
   @IsCivilDate()
   paid_on!: string | null;
+  /** Obrigatória ao desfazer a baixa (paid_on nulo); fica na auditoria do fluxo. */
+  @ValidateIf((o: SettleDto) => o.paid_on === null)
+  @IsString()
+  @MinLength(5)
+  @MaxLength(2000)
+  reason?: string;
 }
 
 /** Fluxo de caixa (etapa 7): visão, propostas de recebível, baixas de entrada e saída. */
@@ -204,7 +211,7 @@ export class CashFlowBoardController {
   @HttpCode(200)
   @RequirePermissions('cash-flow:read', 'receivables:reverse')
   undo(@Body() dto: UndoReceiptDto, @Req() req: Request) {
-    return this.board.undoReceipts(dto.items, this.actor(req));
+    return this.board.undoReceipts(dto.items, dto.reason, this.actor(req));
   }
 
   /** Alterar a data de recebimento (estorno + novo recebimento, mesma transação). */
@@ -240,6 +247,8 @@ export class CashFlowBoardController {
   @HttpCode(200)
   @RequirePermissions('cash-flow:read')
   settle(@Body() dto: SettleDto, @Req() req: Request) {
-    return this.board.settle(dto.keys, dto.paid_on, this.actor(req));
+    return this.board.settle(dto.keys, dto.paid_on, this.actor(req), {
+      reason: dto.reason,
+    });
   }
 }

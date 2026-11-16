@@ -25,7 +25,7 @@ import {
   BatchPayDto,
   ChangePaymentDateDto,
   ConsolidatedPaymentsQueryDto,
-  PaymentIdsDto,
+  RevertPaymentsDto,
 } from '../application/dto/field-agent-payments.dto';
 import { FieldAgentPaymentsService } from '../application/services/field-agent-payments.service';
 import type { PaymentsExpensesActorContext } from '../application/services/payments-expenses-scope.service';
@@ -146,8 +146,8 @@ export class FieldAgentPaymentsController {
   @Post('revert')
   @HttpCode(200)
   @RequirePermissions('payments:read', 'payments:revert-payment')
-  revert(@Body() dto: PaymentIdsDto, @Req() req: AuthenticatedRequest) {
-    return this.service.revert(dto.ids, this.actor(req));
+  revert(@Body() dto: RevertPaymentsDto, @Req() req: AuthenticatedRequest) {
+    return this.service.revert(dto.ids, dto.reason, this.actor(req));
   }
 
   @Post(':id/date')

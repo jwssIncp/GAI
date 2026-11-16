@@ -150,7 +150,10 @@ describe('Competência fechada: trava em todas as baixas e estornos (e2e)', () =
     expect(
       (
         await api('post', '/finance/cash-flow/receipts/undo')
-          .send({ items: [{ receivable_id: r.id, event_id: event.id }] })
+          .send({
+            items: [{ receivable_id: r.id, event_id: event.id }],
+            reason: 'Recebimento lançado por engano',
+          })
           .expect(200)
       ).body,
     ).toMatchObject({ done: 0, failed: 1 });
@@ -170,7 +173,11 @@ describe('Competência fechada: trava em todas as baixas e estornos (e2e)', () =
     ).body.id;
     const settle = (paid_on: string | null) =>
       api('post', '/finance/cash-flow/outflows/settle')
-        .send({ keys: [`expense:${expense}`], paid_on })
+        .send({
+          keys: [`expense:${expense}`],
+          paid_on,
+          reason: 'Ajuste de baixa no teste',
+        })
         .expect(200);
     expect((await settle('2026-10-25')).body.results[0].message).toBe(
       refused('Não é possível registrar o pagamento'),

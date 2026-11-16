@@ -599,9 +599,22 @@ export class FieldAgentPaymentsService {
     );
   }
 
-  /** Voltar para em aberto (D-C), com permissão própria; bloqueado em competência fechada da DRE. */
-  async revert(ids: number[], actor: PaymentsExpensesActorContext) {
+  /**
+   * Voltar para em aberto (D-C), com permissão própria e justificativa (fica
+   * na auditoria); bloqueado em competência fechada da DRE.
+   */
+  async revert(
+    ids: number[],
+    reason: string,
+    actor: PaymentsExpensesActorContext,
+  ) {
     const organizationId = this.organization(actor);
+    const why = (reason ?? '').trim();
+    if (why.length < 5)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: 'Justificativa significativa obrigatória.',
+      });
     return this.each(ids, async (id) => {
       await this.assertOpenPeriod(
         organizationId,
@@ -610,7 +623,10 @@ export class FieldAgentPaymentsService {
       );
       return this.mutate(id, actor, (payment) => ({
         operation: PaymentExpenseAuditOperation.REVERT_PAYMENT,
-        changes: payment.revertPayment(actor.id),
+        changes: {
+          ...payment.revertPayment(actor.id),
+          reason: { before: null, after: why },
+        },
       }));
     });
   }

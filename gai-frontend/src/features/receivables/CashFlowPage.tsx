@@ -7,7 +7,7 @@ import { ErrorState, LoadingState } from "@/components/base/States";
 import { Kpi } from "@/components/base/Cards";
 import { useToast } from "@/components/ui/toast-context";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
+import { ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
@@ -640,27 +640,31 @@ export function CashFlowPage() {
         />
       ) : null}
       {dialog?.kind === "undo" || dialog?.kind === "unsettle" ? (
-        <ConfirmDialog
-          open
-          onOpenChange={(o) => !o && !run.isPending && setDialog(null)}
+        // Desfazer pede justificativa, como o estorno no recebível.
+        <DateDialog
           title={
             dialog.kind === "undo"
               ? `Desfazer ${dialog.items.length} recebimento(s)?`
               : `Desfazer ${dialog.items.length} pagamento(s)?`
           }
-          description={
+          label=""
+          help={
             dialog.kind === "undo"
-              ? "O recebimento é estornado e a parcela volta a ficar em aberto. O estorno fica no histórico do recebível."
-              : "A saída volta a ficar a pagar, sem data de pagamento."
+              ? "O recebimento é estornado e a parcela volta a ficar em aberto. O estorno e a justificativa ficam no histórico do recebível."
+              : "A saída volta a ficar a pagar, sem data de pagamento. A justificativa fica na auditoria do fluxo."
           }
+          today={data.as_of}
+          withReason
+          noDate
           confirmLabel={dialog.kind === "undo" ? "Desfazer recebimento" : "Desfazer pagamento"}
-          busy={run.isPending}
           error={failure}
-          onConfirm={() =>
+          busy={run.isPending}
+          onClose={() => !run.isPending && setDialog(null)}
+          onConfirm={(_d, reason) =>
             run.mutate(() =>
               dialog.kind === "undo"
-                ? cashFlowApi.undoReceipts(eventsOf(dialog.items))
-                : cashFlowApi.settle(settleKeys(dialog.items), null),
+                ? cashFlowApi.undoReceipts(eventsOf(dialog.items), reason!)
+                : cashFlowApi.settle(settleKeys(dialog.items), null, reason!),
             )
           }
         />
@@ -738,6 +742,8 @@ function DateDialog({
   max,
   withReason,
   noDate,
+  confirmLabel = "Confirmar",
+  error,
   busy,
   onClose,
   onConfirm,
@@ -750,6 +756,9 @@ function DateDialog({
   max?: string;
   withReason?: boolean;
   noDate?: boolean;
+  confirmLabel?: string;
+  /** Falha da operação, mostrada dentro do diálogo. */
+  error?: string | null;
   busy: boolean;
   onClose: () => void;
   onConfirm: (date: string, reason?: string) => void;
@@ -798,6 +807,11 @@ function DateDialog({
             </span>
           </FormField>
         ) : null}
+        {error ? (
+          <p role="alert" className="text-sm text-destructive-text">
+            {error}
+          </p>
+        ) : null}
         <div className="flex justify-end gap-2">
           <Button
             type="button"
@@ -808,7 +822,7 @@ function DateDialog({
             Cancelar
           </Button>
           <Button type="submit" loading={busy} disabled={invalid}>
-            Confirmar
+            {confirmLabel}
           </Button>
         </div>
       </form>
