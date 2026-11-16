@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { transferableAbortController } from "node:util";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import baseUserEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/http";
@@ -9,6 +9,9 @@ import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import type { CurrentUser, Project } from "@/types/api";
 import { ProjectsPage } from "./ProjectsPage";
 import { ProjectCreatePage } from "./ProjectCreatePage";
+
+// Sem pausa entre as teclas: a suíte digita muitos campos e a pausa padrão só deixava os testes lentos.
+let userEvent = baseUserEvent.setup({ delay: null });
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
@@ -117,6 +120,7 @@ async function review() {
 }
 describe("Project registration and management", () => {
   beforeEach(() => {
+    userEvent = baseUserEvent.setup({ delay: null });
     vi.clearAllMocks();
     vi.stubGlobal("AbortController", function () {
       return transferableAbortController();
@@ -405,8 +409,10 @@ describe("Project registration and management", () => {
     );
     await fillGeneral();
     await userEvent.click(screen.getByRole("button", { name: "Avançar" }));
+    const responsible = await screen.findByLabelText("Responsável pelo projeto");
+    await within(responsible).findByRole("option", { name: "Responsável Alpha" });
     await userEvent.selectOptions(
-      await screen.findByLabelText("Responsável pelo projeto"),
+      responsible,
       "8",
     );
     await userEvent.click(screen.getByRole("button", { name: "Voltar" }));

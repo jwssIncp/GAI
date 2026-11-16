@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => ({
   restore: vi.fn(),
   invite: vi.fn(),
   resendInvitation: vi.fn(),
+  summary: vi.fn(),
 }));
 
 vi.mock("@/api/endpoints", () => ({
@@ -47,6 +48,7 @@ vi.mock("@/api/endpoints", () => ({
     restore: mocks.restore,
     invite: mocks.invite,
     resendInvitation: mocks.resendInvitation,
+    summary: mocks.summary,
     list: mocks.list,
     create: mocks.create,
     get: mocks.get,
@@ -181,6 +183,7 @@ describe("FieldAgentsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.list.mockResolvedValue(page([agent]));
+    mocks.summary.mockResolvedValue({ total: 1, states_count: 1, without_state: 0, states: [{ state: "SP", count: 1 }] });
     mocks.get.mockResolvedValue(agent);
     mocks.create.mockResolvedValue(agent);
     mocks.update.mockResolvedValue(agent);

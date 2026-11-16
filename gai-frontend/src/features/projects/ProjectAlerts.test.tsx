@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -152,7 +152,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
   it("mostra ⚠ no grupo (1º nível) e na aba (2º nível), sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user([...everything, "payments:approve"]));
     const tab = await nav.findByRole("link", { name: "Pendências" });
-    await vi.waitFor(() => expect(tab).toHaveAttribute("aria-describedby"));
+    await waitFor(() => expect(tab).toHaveAttribute("aria-describedby"));
     expect(description(tab)).toBe("Atenção: 5 pendências abertas ou em revisão, 1 crítica ou alta");
     const group = nav.getByRole("link", { name: "Inventário" });
     expect(description(group)).toBe("Atenção: Pendências: 5 pendências abertas ou em revisão, 1 crítica ou alta");
@@ -165,7 +165,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
 
   it("sem permissão de aprovar, o grupo Financeiro não alerta", async () => {
     const nav = renderAt("/app/projects/10/finance", user(everything));
-    await vi.waitFor(() => expect(nav.getByRole("link", { name: "Inventário" })).toHaveAttribute("aria-describedby"));
+    await waitFor(() => expect(nav.getByRole("link", { name: "Inventário" })).toHaveAttribute("aria-describedby"));
     expect(nav.getByRole("link", { name: "Financeiro" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Remuneração" }).textContent).toBe("Remuneração");
     expect(nav.getByRole("link", { name: "Despesas" }).textContent).toBe("Despesas");
@@ -174,7 +174,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
   it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user(everything));
     const tab = await nav.findByRole("link", { name: "Pendências" });
-    await vi.waitFor(() => expect(tab.textContent).toBe("Pendências5"));
+    await waitFor(() => expect(tab.textContent).toBe("Pendências5"));
     expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação");
     expect(nav.getByRole("link", { name: "Inventário" }).textContent).toBe("Inventário");
   });
@@ -184,7 +184,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
     renderAt("/app/projects/10/inventory-items", user(["projects:read", "inventory-items:read", "inventory-sessions:read", "field-coordination:read"]));
     await screen.findByRole("link", { name: "Itens e avaliação" });
     const nav = within(screen.getByRole("navigation", { name: "Abas do projeto" }));
-    await vi.waitFor(() => expect(nav.getByRole("link", { name: "Itens e avaliação" })).toHaveAttribute("aria-describedby"));
+    await waitFor(() => expect(nav.getByRole("link", { name: "Itens e avaliação" })).toHaveAttribute("aria-describedby"));
     expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação2");
     expect(description(nav.getByRole("link", { name: "Inventário" }))).toBe("Atenção: Itens e avaliação: 2 itens divergentes, sem pendência gerada");
     const hidden = document.querySelector('[aria-label="Abas do projeto"] [hidden]')?.textContent ?? "";
@@ -195,7 +195,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
 
   it("faz uma única chamada ao dashboard ao navegar entre abas e nenhuma sem projects:read", async () => {
     const nav = renderAt("/app/projects/10/summary", user(everything));
-    await vi.waitFor(() => expect(dashboard).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(dashboard).toHaveBeenCalledTimes(1));
     await userEvent.click(nav.getByRole("link", { name: "Inventário" }));
     await userEvent.click(await nav.findByRole("link", { name: "Pendências" }));
     await userEvent.click(nav.getByRole("link", { name: "Financeiro" }));

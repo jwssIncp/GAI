@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -44,7 +44,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     const source: EntitySource = { key: "long", search: async () => ({ items: long, hasMore: false }) };
     mount(<EntityCombobox aria-label="Projeto" source={source} value={2} />);
     const box = screen.getByRole("combobox", { name: "Projeto" });
-    box.focus();
+    act(() => box.focus());
     const [a, b] = await screen.findAllByRole("option");
     // nome inteiro (sem reticências), em até 2 linhas, e o código visível
     for (const [opt, o] of [[a, long[0]], [b, long[1]]] as const) {
@@ -63,7 +63,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     const onChange = vi.fn();
     mount(<EntityCombobox aria-label="Projeto" source={source} onChange={onChange} />);
     const box = screen.getByRole("combobox", { name: "Projeto" });
-    box.focus();
+    act(() => box.focus());
     await screen.findByRole("option", { name: "Projeto 01 (P-1)" });
     await userEvent.keyboard("{ArrowDown}{ArrowDown}");
     expect(box.getAttribute("aria-activedescendant")).toMatch(/-3$/);
@@ -71,7 +71,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     expect(box.getAttribute("aria-activedescendant")).toMatch(/-1$/);
     await userEvent.keyboard("{Enter}");
     expect(onChange).toHaveBeenCalledWith(1, expect.anything());
-    box.focus();
+    act(() => box.focus());
     await userEvent.keyboard("{Escape}");
     expect(box).toHaveAttribute("aria-expanded", "false");
   });
@@ -117,7 +117,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     expect((box as HTMLInputElement).validationMessage).toBe("Escolha um item da lista.");
     await userEvent.click(screen.getByRole("button", { name: "Enviar" }));
     expect(sent).not.toHaveBeenCalled();
-    box.focus();
+    act(() => box.focus());
     await userEvent.click(await screen.findByRole("option", { name: "Projeto 02 (P-2)" }));
     expect((box as HTMLInputElement).validationMessage).toBe("");
   });
@@ -135,7 +135,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
         <EntityCombobox aria-label="Contrato" source={source} context={{ company_id: 9 }} requiresContext="Escolha o cliente primeiro" />
       </QueryClientProvider>,
     );
-    screen.getByRole("combobox", { name: "Contrato" }).focus();
+    act(() => screen.getByRole("combobox", { name: "Contrato" }).focus());
     await waitFor(() => expect(search).toHaveBeenCalledWith(expect.objectContaining({ context: { company_id: 9 } })));
   });
 
@@ -143,7 +143,7 @@ describe("EntityCombobox (seleção com busca pelo nome)", () => {
     const { source } = fakeSource();
     mount(<EntityCombobox aria-label="Projeto" source={source} />);
     const box = screen.getByRole("combobox", { name: "Projeto" });
-    box.focus();
+    act(() => box.focus());
     const list = await screen.findByRole("listbox", { name: "Projeto" });
     await waitFor(() => expect(within(list).getAllByRole("option")).toHaveLength(20));
     await userEvent.click(within(list).getByRole("button", { name: "Carregar mais" }));
