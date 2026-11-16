@@ -106,7 +106,7 @@ export function FieldAgentDetailDrawer({
                 Cadastro excluído. Novas atuações não são permitidas.
               </p>
             ) : item.status !== "active" ? (
-              <p className="mt-2 text-warning">
+              <p className="mt-2 text-warning-text">
                 Novas atuações estão impedidas pela situação operacional.
               </p>
             ) : null}

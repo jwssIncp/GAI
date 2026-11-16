@@ -1,5 +1,4 @@
 import { EXPORT_STATUS, formatMonth, localMonth } from "@/utils/format";
-import { navigationContext } from "@/features/projects/navigationContext";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/base/DataTable";
 import { MetricCard } from "@/components/base/Cards";
 import { LoadingState, ErrorState } from "@/components/base/States";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
 import {
@@ -88,6 +88,16 @@ export function DreReportPage() {
     q.data?.rows.filter(
       (r) => r.currency === currency && ids.includes(r.entry_id),
     ) ?? [];
+  /** Filtros com aplicação imediata (vão para a URL). Início e fim não ficam vazios. */
+  const update = (changes: Record<string, string>) => {
+    const next = new URLSearchParams(p);
+    for (const [k, v] of Object.entries(changes)) {
+      if (v) next.set(k, v);
+      else next.delete(k);
+    }
+    next.delete("page");
+    setP(next, { replace: true });
+  };
   const projects = q.data?.projects ?? [];
   /** Nome do projeto (código entre parênteses), não só o ID. */
   const projectLabel = (id: number | null) => {
@@ -97,26 +107,15 @@ export function DreReportPage() {
   };
   return (
     <div className="grid gap-4">
-      <form
-        key={p.toString()}
-        className="premium-panel grid gap-3 p-4 sm:grid-cols-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const fd = new FormData(e.currentTarget),
-            next = navigationContext(p);
-          for (const [k,v] of Object.entries(scope(p))) next.set(k,v);
-          next.delete("project_id");
-          for (const [k, v] of fd) if (v) next.set(k, String(v));
-          setP(next);
-        }}
-      >
+      <div role="search" aria-label="Filtros do demonstrativo" className="premium-panel grid gap-3 p-4 sm:grid-cols-3">
         <label className="grid gap-1 text-sm">
           Início da competência
           <input
             className={cls}
             type="month"
             name="start_month"
-            defaultValue={f.start_month}
+            value={f.start_month}
+            onChange={(e) => e.target.value && update({ start_month: e.target.value })}
             required
           />
         </label>
@@ -126,7 +125,8 @@ export function DreReportPage() {
             className={cls}
             type="month"
             name="end_month"
-            defaultValue={f.end_month}
+            value={f.end_month}
+            onChange={(e) => e.target.value && update({ end_month: e.target.value })}
             required
           />
         </label>
@@ -135,8 +135,8 @@ export function DreReportPage() {
           <select
             className={cls}
             name="project_id"
-            key={projects.length}
-            defaultValue={p.get("project_id") ?? ""}
+            value={p.get("project_id") ?? ""}
+            onChange={(e) => update({ project_id: e.target.value })}
           >
             <option value="">Todos os projetos</option>
             {projects.map((x) => (
@@ -152,7 +152,8 @@ export function DreReportPage() {
             className={cls}
             type="month"
             name="compare_start_month"
-            defaultValue={f.compare_start_month ?? ""}
+            value={f.compare_start_month ?? ""}
+            onChange={(e) => update({ compare_start_month: e.target.value })}
           />
         </label>
         <label className="grid gap-1 text-sm">
@@ -161,10 +162,10 @@ export function DreReportPage() {
             className={cls}
             type="month"
             name="compare_end_month"
-            defaultValue={f.compare_end_month ?? ""}
+            value={p.get("compare_end_month") ?? ""}
+            onChange={(e) => update({ compare_end_month: e.target.value })}
           />
         </label>
-        <Button type="submit">Consultar DRE</Button>
         <div className="flex flex-wrap gap-2 sm:col-span-3">
           {[
             ["year", "Ano atual"],
@@ -188,14 +189,14 @@ export function DreReportPage() {
                       : key === "quarter"
                         ? `${year}-${String(Math.floor((m - 1) / 3) * 3 + 3).padStart(2, "0")}`
                         : current();
-                setP({ ...Object.fromEntries(navigationContext(p)), ...scope(p), start_month: start, end_month: end });
+                update({ start_month: start, end_month: end });
               }}
             >
               {label}
             </Button>
           ))}
         </div>
-      </form>
+      </div>
       {q.isLoading ? (
         <LoadingState />
       ) : q.error ? (
@@ -297,10 +298,12 @@ export function DreReportPage() {
                     },
                     {
                       header: "Apurado",
+                      numeric: true,
                       cell: (l) => money(l.known_amount, t.currency),
                     },
                     {
                       header: "Valor validado",
+                      numeric: true,
                       cell: (l) =>
                         l.amount == null
                           ? "Não validado"
@@ -312,6 +315,7 @@ export function DreReportPage() {
                     },
                     {
                       header: "Comparação",
+                      numeric: true,
                       cell: (l) => {
                         const other = q.data?.comparison?.totals
                           .find((x) => x.currency === t.currency)
@@ -358,6 +362,7 @@ export function DreReportPage() {
                           },
                           {
                             header: "Valor",
+                            numeric: true,
                             cell: (r) => money(r.amount, r.currency),
                           },
                           {
@@ -403,7 +408,9 @@ export function DreReportPage() {
             <h3 className="font-semibold">
               Distribuição de custos e despesas por conta
             </h3>
+            {q.data.rows.some((r) => ["direct_cost", "operating_expense"].includes(r.group ?? "")) ? (
             <DataTable
+              caption="Distribuição de custos e despesas por conta"
               items={q.data.rows.filter((r) =>
                 ["direct_cost", "operating_expense"].includes(r.group ?? ""),
               )}
@@ -415,11 +422,16 @@ export function DreReportPage() {
                   header: "Projeto",
                   cell: (r) => projectLabel(r.project_id),
                 },
-                { header: "Apurado", cell: (r) => money(r.amount, r.currency) },
+                { header: "Apurado", numeric: true, cell: (r) => money(r.amount, r.currency) },
               ]}
             />
+            ) : (
+              <p className="premium-panel p-4 text-sm text-muted-foreground">Nenhum custo ou despesa classificado no período.</p>
+            )}
             <h3 className="font-semibold">Comparação entre projetos</h3>
+            {q.data.by_project.length ? (
             <DataTable
+              caption="Comparação entre projetos"
               items={q.data.by_project}
               getKey={(r) => String(r.project_id) + r.currency}
               columns={[
@@ -430,16 +442,23 @@ export function DreReportPage() {
                 { header: "Moeda", cell: (r) => r.currency },
                 {
                   header: "Receita apurada",
+                  numeric: true,
                   cell: (r) => money(value(r, "revenue"), r.currency),
                 },
                 {
                   header: "Resultado parcial",
+                  numeric: true,
                   cell: (r) => money(value(r, keys.result), r.currency),
                 },
               ]}
             />
+            ) : (
+              <p className="premium-panel p-4 text-sm text-muted-foreground">Nenhum projeto com valores no período.</p>
+            )}
             <h3 className="font-semibold">Não classificados</h3>
+            {q.data.unclassified.length ? (
             <DataTable
+              caption="Não classificados"
               items={q.data.unclassified}
               getKey={(r) => r.entry_id + ":" + r.month + ":" + r.account_code}
               columns={[
@@ -457,11 +476,15 @@ export function DreReportPage() {
                 { header: "Competência", cell: (r) => formatMonth(r.month) },
                 {
                   header: "Valor fora das linhas classificadas",
+                  numeric: true,
                   cell: (r) => money(r.amount, r.currency),
                 },
                 { header: "Motivo", cell: (r) => r.reason },
               ]}
             />
+            ) : (
+              <p className="premium-panel p-4 text-sm text-muted-foreground">Nenhum valor não classificado no período.</p>
+            )}
             <p className="text-sm">
               As fontes ainda sem decisão econômica podem ser consultadas em
               Classificações e ajustes. Não foram incluídas em receita ou custo
@@ -490,6 +513,7 @@ export function DreReportPage() {
                     { header: "Descrição", cell: (s) => s.description },
                     {
                       header: "Valor documental",
+                      numeric: true,
                       cell: (s) =>
                         s.amount && s.currency
                           ? money(s.amount, s.currency)
@@ -498,6 +522,7 @@ export function DreReportPage() {
                     },
                     {
                       header: "Saldo sem competência",
+                      numeric: true,
                       cell: (s) =>
                         s.remaining_amount
                           ? s.currency
@@ -528,10 +553,10 @@ export function DreReportPage() {
         )
       )}
       {hasPermission("dre:export") && (
-        <div className="flex flex-wrap items-center gap-3">
+        <FinanceHeaderActions>
           <select
             aria-label="Exportar DRE"
-            className={cls + " max-w-xs"}
+            className="min-h-11 max-w-xs rounded-lg border bg-background p-2 text-sm"
             value={kind}
             onChange={(e) => setKind(e.target.value)}
           >
@@ -551,6 +576,7 @@ export function DreReportPage() {
           </select>
           {hasPermission("export-jobs:create") && (
             <Button
+              variant="secondary"
               onClick={async () => {
                 setError("");
                 try {
@@ -566,6 +592,7 @@ export function DreReportPage() {
           {exportStatus.data?.status === "finished" &&
             hasPermission("export-jobs:download") && (
               <Button
+                variant="secondary"
                 onClick={async () => {
                   try {
                     await dreApi.download(job!);
@@ -577,11 +604,11 @@ export function DreReportPage() {
                 Baixar XLSX da DRE
               </Button>
             )}
-          <span className="text-sm">{exportStatus.data ? (EXPORT_STATUS[exportStatus.data.status] ?? exportStatus.data.status) : null}</span>
-        </div>
+          {exportStatus.data ? <span className="text-sm">{EXPORT_STATUS[exportStatus.data.status] ?? exportStatus.data.status}</span> : null}
+        </FinanceHeaderActions>
       )}
       {(error || exportStatus.error || exportStatus.data?.error_message) && (
-        <p role="alert">
+        <p role="alert" className="text-sm text-destructive-text">
           {error ||
             exportStatus.error?.message ||
             exportStatus.data?.error_message}

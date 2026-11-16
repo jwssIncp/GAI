@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { FormField } from "@/components/base/FormField";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/utils/format";
@@ -8,13 +9,14 @@ import { BRAZILIAN_STATES } from "@/features/field-agents/brazilianStates";
 import {
   computeRemuneration,
   daysInclusive,
-  moneyBr,
   normalizeMoney,
   type ProjectRemuneration,
   type RemunerationInput,
   type RemunerationItem,
 } from "./remunerationApi";
 import { validateDraft, type Draft } from "./remunerationDraft";
+
+type MoneyKey = "daily_rate" | "additional_amount" | "discount_amount" | "total_amount";
 
 export function RemunerationForm({
   data,
@@ -40,11 +42,12 @@ export function RemunerationForm({
     start_date: initial?.start_date ?? "",
     end_date: initial?.end_date ?? "",
     expected_payment_date: initial?.expected_payment_date ?? "",
-    daily_rate: moneyBr(initial?.daily_rate ?? data.parameters.default_daily_rate ?? ""),
-    additional_amount: moneyBr(initial?.additional_amount ?? "0.00"),
+    // valores em R$ no formato da API ("185.00"); o MoneyInput mostra "185,00"
+    daily_rate: initial?.daily_rate ?? data.parameters.default_daily_rate ?? "",
+    additional_amount: initial?.additional_amount ?? "0.00",
     total_manual: initial?.total_manual ?? false,
-    total_amount: moneyBr(initial?.total_manual ? initial.total_amount : ""),
-    discount_amount: moneyBr(initial?.discount_amount ?? "0.00"),
+    total_amount: initial?.total_manual ? initial.total_amount : "",
+    discount_amount: initial?.discount_amount ?? "0.00",
     notes: initial?.notes ?? "",
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -58,6 +61,11 @@ export function RemunerationForm({
     if (rate === null || additional === null || discount === null || (draft.total_manual && manual === null)) return null;
     return computeRemuneration({ days, dailyRate: rate, additional, discount, manualTotal: manual });
   }, [days, draft]);
+  const money = (key: MoneyKey, label: string) => (
+    <FormField label={label} error={errors[key]}>
+      <MoneyInput data-money={key} value={String(draft[key])} onValueChange={(api) => set(key, api)} />
+    </FormField>
+  );
   const field = (key: keyof Draft, label: string, props: Record<string, unknown> = {}) => (
     <FormField label={label} error={errors[key]}>
       <Input
@@ -76,8 +84,13 @@ export function RemunerationForm({
       onSubmit={(event) => {
         event.preventDefault();
         const result = validateDraft(draft);
+        // texto que não é valor (ex.: "abc") chega vazio: o MoneyInput marca o campo como inválido
+        const invalid = [...event.currentTarget.querySelectorAll<HTMLInputElement>("input[data-money]")]
+          .filter((input) => input.validity.customError)
+          .map((input) => input.dataset.money as MoneyKey);
+        for (const key of invalid) result.errors[key] = "Valor inválido. Use o formato 50.000,00.";
         setErrors(result.errors);
-        if (result.payload) onSubmit(result.payload);
+        if (result.payload && !invalid.length) onSubmit(result.payload);
       }}
     >
       {data.parameters.settings_missing ? (
@@ -126,9 +139,9 @@ export function RemunerationForm({
         <FormField label="Dias">
           <Input value={String(days)} readOnly aria-readonly="true" />
         </FormField>
-        {field("daily_rate", "Diária (R$)", { inputMode: "decimal" })}
-        {field("additional_amount", "Valor adicional (R$)", { inputMode: "decimal" })}
-        {field("discount_amount", "Descontos (R$)", { inputMode: "decimal" })}
+        {money("daily_rate", "Diária (R$)")}
+        {money("additional_amount", "Valor adicional (R$)")}
+        {money("discount_amount", "Descontos (R$)")}
       </div>
       <label className="flex items-center gap-2 text-sm">
         <input
@@ -138,7 +151,7 @@ export function RemunerationForm({
             setDraft((d) => ({
               ...d,
               total_manual: event.target.checked,
-              total_amount: event.target.checked && preview ? moneyBr(preview.total) : d.total_amount,
+              total_amount: event.target.checked && preview ? preview.total : d.total_amount,
             }))
           }
         />
@@ -146,8 +159,8 @@ export function RemunerationForm({
       </label>
       {draft.total_manual ? (
         <>
-          {field("total_amount", "Total (R$)", { inputMode: "decimal" })}
-          <p role="note" className="text-sm font-medium text-warning">
+          {money("total_amount", "Total (R$)")}
+          <p role="note" className="text-sm font-medium text-warning-text">
             Valor informado manualmente: o total não segue dias × diária + adicional.
           </p>
         </>
@@ -156,15 +169,15 @@ export function RemunerationForm({
       <dl className="grid grid-cols-2 gap-2 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-3" aria-label="Cálculo">
         <div>
           <dt className="text-muted-foreground">Dias × diária</dt>
-          <dd className="font-semibold">{preview ? formatMoney(preview.dailyTotal) : "—"}</dd>
+          <dd className="numeric font-semibold">{preview ? formatMoney(preview.dailyTotal) : "—"}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Total{draft.total_manual ? " (manual)" : ""}</dt>
-          <dd className="font-semibold">{preview ? formatMoney(preview.total) : "—"}</dd>
+          <dd className="numeric font-semibold">{preview ? formatMoney(preview.total) : "—"}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Final</dt>
-          <dd className={`font-semibold ${preview?.negative ? "text-destructive" : ""}`}>
+          <dd className={`numeric font-semibold ${preview?.negative ? "text-destructive-text" : ""}`}>
             {preview ? formatMoney(preview.final) : "—"}
           </dd>
         </div>

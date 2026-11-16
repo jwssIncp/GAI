@@ -111,7 +111,7 @@ describe("Pagamento de inventariantes", () => {
       ["Em aberto em 11/2026", "R$ 1.425,00"], ["Em aberto no próximo mês", "R$ 300,00"],
     ])
       expect(kpis.getByText(label).nextSibling).toHaveTextContent(value);
-    expect(kpis.getByText("1 lançamento(s) com previsão vencida")).toBeInTheDocument();
+    expect(kpis.getByText("1 lançamento(s) em atraso")).toBeInTheDocument();
   });
 
   it("diária antiga sem previsão: KPI 'Sem previsão' filtra, linha mostra 'Informar' que abre a data prevista", async () => {
@@ -136,7 +136,7 @@ describe("Pagamento de inventariantes", () => {
 
   it("status: rótulo curto 'Em aberto' com a explicação na dica", async () => {
     mount();
-    const status = await screen.findByLabelText("Filtrar por status");
+    const status = await screen.findByLabelText("Filtrar por situação");
     await within(status).findByRole("option", { name: "Em aberto (3)" });
     expect(status.getAttribute("title")).toMatch(/pendentes e aprovados ainda não pagos/);
   });
@@ -147,7 +147,7 @@ describe("Pagamento de inventariantes", () => {
     const project = await screen.findByLabelText("Filtrar por projeto");
     await within(project).findByRole("option", { name: "Alfa (4)" });
     expect(within(project).getAllByRole("option").map((o) => o.textContent)).toEqual(["Projeto: todos (6)", "Alfa (4)", "Beta (2)"]);
-    expect(within(screen.getByLabelText("Filtrar por mês (previsão)")).getByRole("option", { name: "11/2026 (3)" })).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Filtrar por mês previsto")).getByRole("option", { name: "11/2026 (3)" })).toBeInTheDocument();
     await u.selectOptions(project, "11");
     await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ project_id: 11, status: "open" })));
     await u.click(within(screen.getByRole("region", { name: "Resumo por inventariante" })).getByRole("button", { name: "Bruno" }));
@@ -161,7 +161,7 @@ describe("Pagamento de inventariantes", () => {
     mount();
     await u.click(await screen.findByLabelText("Selecionar todos os exibidos"));
     expect(screen.getByRole("button", { name: /Pagar selecionados \(2\)/ })).toBeEnabled(); // só os aprovados (inclui o antigo sem previsão)
-    expect(screen.getByRole("button", { name: /Voltar para em aberto \(1\)/ })).toBeEnabled(); // só o pago
+    expect(screen.getByRole("button", { name: /Desfazer pagamento \(1\)/ })).toBeEnabled(); // só o pago
     await u.click(screen.getByRole("button", { name: /Pagar selecionados/ }));
     const dialog = within(screen.getByRole("dialog"));
     expect(dialog.getByLabelText(/Hoje \(13\/11\/2026\)/)).toBeChecked();
@@ -208,15 +208,15 @@ describe("Pagamento de inventariantes", () => {
     // Nova seleção; abre "pagar" e cancela; abre "voltar para em aberto" e cancela.
     await u.click(await screen.findByLabelText("Selecionar todos os exibidos"));
     await u.click(screen.getByRole("button", { name: /Pagar selecionados/ }));
-    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancelar" }));
-    await u.click(screen.getByRole("button", { name: /Voltar para em aberto \(1\)/ }));
-    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancelar" }));
+    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Voltar" }));
+    await u.click(screen.getByRole("button", { name: /Desfazer pagamento \(1\)/ }));
+    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Voltar" }));
     expect(mocks.pay).toHaveBeenCalledTimes(1);
     expect(mocks.revert).not.toHaveBeenCalled();
 
     // Confirmar "voltar" executa só o voltar, com os ids daquele diálogo.
-    await u.click(screen.getByRole("button", { name: /Voltar para em aberto \(1\)/ }));
-    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Voltar para em aberto" }));
+    await u.click(screen.getByRole("button", { name: /Desfazer pagamento \(1\)/ }));
+    await u.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Desfazer pagamento" }));
     await waitFor(() => expect(mocks.revert).toHaveBeenCalledWith([3]));
     expect(mocks.pay).toHaveBeenCalledTimes(1);
   });
@@ -246,7 +246,7 @@ describe("Pagamento de inventariantes", () => {
     expect(screen.getByRole("columnheader", { name: "Diária" })).toBeInTheDocument();
     await u.click(screen.getByLabelText("UF"));
     expect(screen.queryByRole("columnheader", { name: "UF" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Pagar selecionados|Voltar para em aberto|Exportar Excel/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Pagar selecionados|Desfazer pagamento|Exportar Excel/ })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Editar a data/)).not.toBeInTheDocument();
   });
 });

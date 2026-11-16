@@ -180,7 +180,7 @@ describe("Remuneração do projeto (Tela B)", () => {
     await u.click(await screen.findByLabelText("Reabrir para edição o lançamento de Bruno Lima"));
     const dialog = screen.getByRole("dialog");
     await u.type(within(dialog).getByLabelText(/Justificativa/), "Corrigir diária");
-    await u.click(within(dialog).getByRole("button", { name: "Reabrir para edição" }));
+    await u.click(within(dialog).getByRole("button", { name: "Reabrir" }));
     await waitFor(() => expect(mocks.reopen).toHaveBeenCalledWith(3, 2, "Corrigir diária"));
   });
 
@@ -219,14 +219,51 @@ describe("Remuneração do projeto (Tela B)", () => {
     );
   });
 
-  it("filtro de status 'em aberto' e exportação com os filtros", async () => {
+  it("diária colada no padrão brasileiro ('50.000,00') vai à API como '50000.00'", async () => {
+    const u = userEvent.setup();
+    mount(<ProjectRemunerationPage />, user(all));
+    await u.click(await screen.findByRole("button", { name: "Lançar" }));
+    const form = within(screen.getByRole("form", { name: "Lançamento de remuneração" }));
+    await u.type(form.getByLabelText("Data inicial"), "2026-11-03");
+    await u.type(form.getByLabelText("Data final"), "2026-11-03");
+    await u.type(form.getByLabelText("Data prevista de pagamento"), "2026-11-20");
+    const rate = form.getByRole("textbox", { name: "Diária (R$)" });
+    await u.clear(rate);
+    await u.paste("50.000,00");
+    const discount = form.getByRole("textbox", { name: "Descontos (R$)" });
+    await u.clear(discount);
+    await u.paste("1.000,5");
+    await u.click(form.getByRole("button", { name: "Lançar" }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+    expect(mocks.create.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ daily_rate: "50000.00", additional_amount: "0.00", discount_amount: "1000.50", total_manual: false }),
+    );
+  });
+
+  it("valor que não é número fica marcado e não envia", async () => {
+    const u = userEvent.setup();
+    mount(<ProjectRemunerationPage />, user(all));
+    await u.click(await screen.findByRole("button", { name: "Lançar" }));
+    const form = within(screen.getByRole("form", { name: "Lançamento de remuneração" }));
+    await u.type(form.getByLabelText("Data inicial"), "2026-11-03");
+    await u.type(form.getByLabelText("Data final"), "2026-11-03");
+    await u.type(form.getByLabelText("Data prevista de pagamento"), "2026-11-20");
+    const additional = form.getByRole("textbox", { name: "Valor adicional (R$)" });
+    await u.clear(additional);
+    await u.type(additional, "abc");
+    await u.click(form.getByRole("button", { name: "Lançar" }));
+    expect(form.getByText("Valor inválido. Use o formato 50.000,00.")).toBeInTheDocument();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("filtro de situação 'em aberto' e exportação com os filtros", async () => {
     const u = userEvent.setup();
     mocks.exportFile.mockResolvedValue(new Blob(["x"]));
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     URL.createObjectURL = vi.fn(() => "blob:x");
     URL.revokeObjectURL = vi.fn();
     mount(<ProjectRemunerationPage />, user(all));
-    await u.selectOptions(await screen.findByLabelText("Filtrar por status"), "open");
+    await u.selectOptions(await screen.findByLabelText("Filtrar por situação"), "open");
     await waitFor(() => expect(mocks.project).toHaveBeenLastCalledWith(3, expect.objectContaining({ status_group: "open" })));
     await u.click(screen.getByRole("button", { name: /exportar excel/i }));
     await waitFor(() => expect(mocks.exportFile).toHaveBeenCalledWith(3, expect.objectContaining({ status_group: "open" })));

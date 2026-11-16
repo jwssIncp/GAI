@@ -10,6 +10,10 @@ import {
 } from '../../domain/ports/user.repository.port';
 import { CurrentUserDto } from '../dto/login-response.dto';
 import {
+  ORGANIZATION_GATE,
+  type OrganizationGate,
+} from '../../domain/ports/organization-gate.port';
+import {
   PERMISSION_RESOLVER,
   type PermissionResolver,
 } from '../../domain/ports/permission-resolver.port';
@@ -22,6 +26,8 @@ export class GetCurrentUserUseCase {
     private readonly assignments: UserRoleAssignmentRepository,
     @Inject(PERMISSION_RESOLVER)
     private readonly permissions: PermissionResolver,
+    @Inject(ORGANIZATION_GATE)
+    private readonly organizations: OrganizationGate,
   ) {}
 
   async execute(userId: number): Promise<CurrentUserDto> {
@@ -43,6 +49,9 @@ export class GetCurrentUserUseCase {
       email: user.email,
       status: user.status,
       organizationId: user.organizationId,
+      organizationName: user.organizationId
+        ? await this.organizations.displayName(user.organizationId)
+        : null,
       roleAssignments: roleAssignments.map((assignment) =>
         RoleAssignmentResponseDto.fromAssignedRole(assignment),
       ),

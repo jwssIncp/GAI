@@ -5,17 +5,21 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { DataTable } from "@/components/base/DataTable";
-import { ErrorState, LoadingState } from "@/components/base/States";
+import { ErrorState, LoadingState, EmptyState } from "@/components/base/States";
+import { StatusBadge } from "@/components/base/StatusBadge";
+import { useToast } from "@/components/ui/toast-context";
 import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { cls, dreApi, groups, money, scope, type Period } from "./dreApi";
 import { dreClosingApi } from "./dreMonthlyApi";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 export function DrePeriodsPage() {
   const [p] = useSearchParams(),
     f = scope(p, false),
     { user } = useAuth(),
     { hasPermission } = usePermissions(),
-    cache = useQueryClient();
+    cache = useQueryClient(),
+    { toast } = useToast();
   const q = useQuery({
       queryKey: ["dre", "periods", user?.id, f],
       queryFn: () => dreApi.periods(f),
@@ -63,22 +67,25 @@ export function DrePeriodsPage() {
         atuais/futuros não podem ser fechados.
       </p>
       {hasPermission("dre:periods") && (
-        <Button onClick={() => open("close")}>Fechar competência</Button>
+        <FinanceHeaderActions>
+          <Button onClick={() => open("close")}>Fechar competência</Button>
+        </FinanceHeaderActions>
       )}
       {q.isLoading ? (
         <LoadingState />
       ) : q.error ? (
         <ErrorState message={q.error.message} />
       ) : (
-        q.data && (
+        q.data && (q.data.length ? (
           <DataTable
+            caption="Competências"
             items={q.data}
             getKey={(r) => r.id}
             columns={[
               { header: "Competência", cell: (r) => formatMonth(r.month) },
               {
-                header: "Estado",
-                cell: (r) => (r.closed ? "Fechada" : "Reaberta"),
+                header: "Situação",
+                cell: (r) => (r.closed ? <StatusBadge finance="closed" /> : <StatusBadge finance="forecast" label="Reaberta" title="Competência reaberta; aceita alteração" />),
               },
               { header: "Moeda revisada", cell: (r) => r.data.currency },
               {
@@ -123,7 +130,9 @@ export function DrePeriodsPage() {
               },
             ]}
           />
-        )
+        ) : (
+          <EmptyState title="Nenhuma competência fechada ou reaberta." description="Feche uma competência para congelar os valores do mês na DRE." />
+        ))
       )}
       <ModalForm
         open={!!mode}
@@ -164,6 +173,7 @@ export function DrePeriodsPage() {
                   f,
                 );
               await cache.invalidateQueries({ queryKey: ["dre"] });
+              toast({ title: mode === "reopen" ? `Competência ${formatMonth(c)} reaberta.` : `Competência ${formatMonth(c)} fechada.`, tone: "success" });
               setMode("");
             } catch (e) {
               setError((e as Error).message);
@@ -214,7 +224,7 @@ export function DrePeriodsPage() {
                     Verificação da DRE mensal ({monthlyCheck.automatic ? "mês alimentado pelo fluxo" : "mês antes do corte: lançado/importado"})
                   </p>
                   {monthlyCheck.blockers.map((b) => (
-                    <p key={b.code} role="alert" className="text-destructive">⛔ {b.message}</p>
+                    <p key={b.code} role="alert" className="text-destructive-text">⛔ {b.message}</p>
                   ))}
                   {monthlyCheck.warnings.map((w) => (
                     <label key={w.code} className="flex items-start gap-2">
@@ -281,6 +291,7 @@ export function DrePeriodsPage() {
               try {
                 await dreClosingApi.freeze(freezing!.month, freezePreview.data.revision, freezeReason.trim());
                 await cache.invalidateQueries({ queryKey: ["dre"] });
+                toast({ title: `Coluna de ${formatMonth(freezing!.month)} congelada.`, tone: "success" });
                 setFreezing(undefined);
               } catch (err) {
                 setError((err as Error).message);
@@ -306,9 +317,9 @@ export function DrePeriodsPage() {
                 {freezePreview.data.lines.map((l) => (
                   <tr key={l.key} className="border-t">
                     <td className="py-1">{l.label}</td>
-                    <td className="py-1 text-right tabular-nums">{l.stored === null ? "—" : money(l.stored, "BRL")}</td>
-                    <td className="py-1 text-right tabular-nums">{money(l.recalculated, "BRL")}</td>
-                    <td className={`py-1 text-right tabular-nums ${l.difference && l.difference !== "0.00" ? "font-semibold text-warning" : ""}`}>
+                    <td className="numeric py-1 text-right">{l.stored === null ? "—" : money(l.stored, "BRL")}</td>
+                    <td className="numeric py-1 text-right">{money(l.recalculated, "BRL")}</td>
+                    <td className={`numeric py-1 text-right ${l.difference && l.difference !== "0.00" ? "font-semibold text-warning-text" : ""}`}>
                       {l.difference === null ? "—" : money(l.difference, "BRL")}
                     </td>
                   </tr>

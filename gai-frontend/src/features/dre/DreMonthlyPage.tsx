@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
+import { MoneyInput } from "@/components/base/MoneyInput";
+import { useToast } from "@/components/ui/toast-context";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { Button } from "@/components/ui/button";
-import { ModalForm } from "@/components/ui/dialog";
+import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { formatDateTime, formatMoney } from "@/utils/format";
@@ -14,7 +17,6 @@ import {
   dreMonthlyApi,
   dreMonthlyKeys,
   monthLabel,
-  parseSignedMoney,
   type DreCell,
   type DreGridAccount,
   type DreImportPlan,
@@ -62,6 +64,7 @@ const money = (v: string) => formatMoney(v);
 export function DreMonthlyPage() {
   const { hasPermission } = usePermissions();
   const cache = useQueryClient();
+  const { toast } = useToast();
   const thisYear = String(new Date().getFullYear());
   // ?year=AAAA abre o ano pedido (ex.: "Ajustar na DRE" a partir do fluxo de caixa).
   const [params] = useSearchParams();
@@ -74,7 +77,13 @@ export function DreMonthlyPage() {
   const [showHidden, setShowHidden] = useState(false);
   const [cell, setCell] = useState<{ account: DreGridAccount; month: string } | null>(null);
   const [dialog, setDialog] = useState<"import" | "config" | "model" | null>(null);
-  const [feedback, setFeedback] = useState<{ message: string; error?: boolean } | null>(null);
+  // Sucesso vai por toast; erro fica na tela (inline).
+  const [failure, setFailure] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<{ id: number; revision: number; name: string } | null>(null);
+  const done = (message: string) => {
+    setFailure(null);
+    toast({ title: message, tone: "success" });
+  };
   const q = { year, ...(compareYear ? { compare_year: compareYear } : {}) };
   const view = useQuery({ queryKey: dreMonthlyKeys.view(q), queryFn: () => dreMonthlyApi.view(q), placeholderData: keepPreviousData });
   const refresh = () => cache.invalidateQueries({ queryKey: dreMonthlyKeys.all });
@@ -82,16 +91,16 @@ export function DreMonthlyPage() {
     mutationFn: ({ layout, reason }: { layout: DreLayout; reason: string }) =>
       dreMonthlyApi.saveLayout((view.data as Configured).config.layout.revision, layout, reason),
     onSuccess: () => void refresh(),
-    onError: (e) => setFeedback({ message: (e as Error).message, error: true }),
+    onError: (e) => setFailure((e as Error).message),
   });
   const accountMutation = useMutation({
     mutationFn: (a: { id: number; revision: number; name: string; active: boolean }) =>
       dreMonthlyApi.setAccountActive(a.id, a.revision, a.name, a.active, a.active ? "Restaurar linha da DRE" : "Excluir linha da DRE"),
     onSuccess: (_r, a) => {
-      setFeedback({ message: a.active ? `Linha "${a.name}" restaurada.` : `Linha "${a.name}" excluída. Ela pode ser restaurada em "Linhas excluídas".` });
+      done(a.active ? `Linha "${a.name}" restaurada.` : `Linha "${a.name}" excluída. Ela pode ser restaurada em "Linhas excluídas".`);
       void refresh();
     },
-    onError: (e) => setFeedback({ message: (e as Error).message, error: true }),
+    onError: (e) => setFailure((e as Error).message),
   });
   const years = useMemo(() => Array.from({ length: 7 }, (_, i) => String(Number(thisYear) + 1 - i)), [thisYear]);
 
@@ -127,7 +136,7 @@ export function DreMonthlyPage() {
   const cellView = (a: DreGridAccount, c: DreCell) => (
     <button
       type="button"
-      className={`w-full text-right tabular-nums ${c.estimate ? "italic text-muted-foreground" : ""} ${c.value.startsWith("-") ? "text-destructive" : ""}`}
+      className={`numeric w-full text-right ${c.estimate ? "italic text-muted-foreground" : ""} ${c.value.startsWith("-") ? "text-destructive-text" : ""}`}
       title={c.estimate ? `Estimativa (não gravada): ${c.estimate_basis}` : c.closed ? "Competência fechada" : Number(c.flow) ? "Inclui valores do fluxo de caixa" : "Ver detalhes"}
       onClick={() => setCell({ account: a, month: c.month })}
     >
@@ -140,17 +149,17 @@ export function DreMonthlyPage() {
     <div className="grid min-w-0 gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg font-semibold">DRE mensal {g.year}</h1>
+          <h2 className="text-lg font-semibold">DRE mensal {g.year}</h2>
           <p className="text-sm text-muted-foreground">
             Até {monthLabel(addMonth(g.cutoff, -1))}: valores lançados ou importados. Desde {monthLabel(g.cutoff)}: fluxo de caixa pelas regras + ajustes lançados.
             Meses fechados ficam congelados; <span className="italic">≈ valores em itálico</span> são estimativas dos meses abertos (não gravadas).
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <FinanceHeaderActions>
           {hasPermission("dre:import") ? <Button type="button" variant="secondary" onClick={() => setDialog("import")}>Importar planilha</Button> : null}
           {canConfigure ? <Button type="button" variant="secondary" onClick={() => setDialog("model")}>Aplicar modelo padrão</Button> : null}
           {canConfigure ? <Button type="button" variant="secondary" onClick={() => setDialog("config")}>Configurar</Button> : null}
-        </div>
+        </FinanceHeaderActions>
       </div>
 
       {g.warnings.length ? (
@@ -158,7 +167,16 @@ export function DreMonthlyPage() {
           {g.warnings.map((w) => <li key={w}>⚠ {w}</li>)}
         </ul>
       ) : null}
-      {feedback ? <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>{feedback.message}</p> : null}
+      <ConfirmDialog
+        open={removing !== null}
+        onOpenChange={(open) => !open && setRemoving(null)}
+        title="Excluir linha da DRE"
+        description={`Excluir a linha "${removing?.name ?? ""}"? Os valores ficam guardados e a linha pode ser restaurada em "Linhas excluídas".`}
+        confirmLabel="Excluir linha"
+        busy={accountMutation.isPending}
+        onConfirm={() => removing && accountMutation.mutate({ ...removing, active: false }, { onSettled: () => setRemoving(null) })}
+      />
+      {failure ? <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">{failure}</p> : null}
 
       <FilterPanel>
         <select aria-label="Ano" className={select} value={year} onChange={(e) => setYear(e.target.value)}>
@@ -179,18 +197,19 @@ export function DreMonthlyPage() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />Mostrar linhas ocultas</label>
       </FilterPanel>
 
-      <div className="relative min-w-0 max-w-full scroll-pl-40 overflow-x-auto rounded-lg border sm:scroll-pl-[17rem]">
+      <div className="relative min-w-0 max-w-full scroll-pl-48 overflow-x-auto rounded-lg border sm:scroll-pl-[19rem]">
         <table className="w-full min-w-max text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="sticky left-0 z-10 w-36 max-w-36 bg-muted px-3 py-2 text-left sm:w-64 sm:max-w-64">Conta</th>
+              <th className="sticky left-0 z-10 w-48 min-w-48 max-w-48 bg-muted px-3 py-2 text-left sm:w-72 sm:min-w-72 sm:max-w-72">Conta</th>
               {!onlyTotal && !data.compare
                 ? months.map((m) => {
                     const st = g.month_state.find((s) => s.month === m)!;
                     return (
-                      <th key={m} className="px-3 py-2 text-right font-medium">
+                      <th key={m} className="px-3 py-2 text-right font-medium" title={m < g.cutoff ? "Antes do corte, a DRE usa o lançado/importado." : undefined}>
                         {monthLabel(m)}
                         <span className="block text-xs font-normal text-muted-foreground">{st.closed ? "🔒 fechado" : st.projected ? "previsto" : st.automatic ? "fluxo" : "lançado"}</span>
+                        {m < g.cutoff ? <span className="sr-only">Antes do corte, a DRE usa o lançado/importado.</span> : null}
                       </th>
                     );
                   })
@@ -206,7 +225,7 @@ export function DreMonthlyPage() {
               if (r.kind === "group")
                 return (
                   <tr key={`g${i}`} className="bg-muted/30">
-                    <td className="sticky left-0 z-[1] w-36 max-w-36 bg-muted px-3 py-1 sm:w-64 sm:max-w-64 text-xs font-semibold uppercase tracking-wide text-muted-foreground" colSpan={1}>{r.label}</td>
+                    <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-muted px-3 py-1 sm:w-72 sm:min-w-72 sm:max-w-72 text-xs font-semibold uppercase tracking-wide text-muted-foreground" colSpan={1}>{r.label}</td>
                     <td colSpan={(onlyTotal || data.compare ? 0 : months.length) + 1 + (data.compare ? 2 : 0) + (canConfigure && !summary ? 1 : 0)} />
                   </tr>
                 );
@@ -217,11 +236,11 @@ export function DreMonthlyPage() {
                 const cmpTotal = cmp ? sum(cmp.values) : null;
                 return (
                   <tr key={r.key} className={`border-t ${r.strong ? "bg-primary/5 font-semibold" : "font-medium"}`}>
-                    <td className="sticky left-0 z-[1] w-36 max-w-36 bg-card px-3 py-2 sm:w-64 sm:max-w-64">{r.label}</td>
-                    {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className={`px-3 py-2 text-right tabular-nums ${l.values[j].startsWith("-") ? "text-destructive" : ""}`}>{money(l.values[j])}</td>) : null}
-                    <td className={`px-3 py-2 text-right tabular-nums ${total.startsWith("-") ? "text-destructive" : ""}`}>{money(total)}</td>
-                    {data.compare ? <td className="px-3 py-2 text-right tabular-nums">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
-                    {data.compare ? <td className="px-3 py-2 text-right tabular-nums">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
+                    <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-card px-3 py-2 sm:w-72 sm:min-w-72 sm:max-w-72">{r.label}</td>
+                    {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className={`numeric px-3 py-2 text-right ${l.values[j].startsWith("-") ? "text-destructive-text" : ""}`}>{money(l.values[j])}</td>) : null}
+                    <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
+                    {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
+                    {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
                     {canConfigure && !summary ? <td /> : null}
                   </tr>
                 );
@@ -233,16 +252,25 @@ export function DreMonthlyPage() {
               const info = accountInfo(a.id);
               return (
                 <tr key={a.id} className={`border-t ${hidden.has(a.id) ? "opacity-60" : ""}`}>
-                  <td className="sticky left-0 z-[1] w-36 max-w-36 truncate bg-card px-3 py-2 sm:w-64 sm:max-w-64" title={`${a.code} ${a.name}`}>
-                    {a.code} {a.name}
-                    {a.flow_kinds.length ? <span className="ml-2 rounded bg-primary/10 px-1.5 text-xs text-primary" title={a.flow_kinds.map((k) => data.config.rule_labels[k]).join("; ")}>fluxo</span> : null}
-                    {a.role ? <span className="ml-2 rounded bg-muted px-1.5 text-xs" title={data.config.rule_labels[a.role]}>projeção</span> : null}
-                    {hidden.has(a.id) ? <span className="ml-2 text-xs text-muted-foreground">(oculta)</span> : null}
+                  <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-card px-3 py-2 sm:w-72 sm:min-w-72 sm:max-w-72">
+                    {/* nome em até 2 linhas, com o nome completo na dica; a etiqueta nunca é cortada */}
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-2">
+                      <span className="line-clamp-2 min-w-0 break-words sm:flex-1" title={`${a.code} ${a.name}`} data-testid="dre-account-name">
+                        {a.code} {a.name}
+                      </span>
+                      {a.flow_kinds.length || a.role || hidden.has(a.id) ? (
+                        <span className="flex shrink-0 flex-wrap gap-1">
+                          {a.flow_kinds.length ? <span className="whitespace-nowrap rounded bg-primary/10 px-1.5 text-xs text-primary" title={a.flow_kinds.map((k) => data.config.rule_labels[k]).join("; ")}>fluxo</span> : null}
+                          {a.role ? <span className="whitespace-nowrap rounded bg-muted px-1.5 text-xs" title={data.config.rule_labels[a.role]}>projeção</span> : null}
+                          {hidden.has(a.id) ? <span className="whitespace-nowrap text-xs text-muted-foreground">(oculta)</span> : null}
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                   {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className="px-3 py-2">{cellView(a, a.cells[j])}</td>) : null}
-                  <td className={`px-3 py-2 text-right tabular-nums ${total.startsWith("-") ? "text-destructive" : ""}`}>{money(total)}</td>
-                  {data.compare ? <td className="px-3 py-2 text-right tabular-nums">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
-                  {data.compare ? <td className="px-3 py-2 text-right tabular-nums">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
+                  <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
+                  {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
+                  {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
                   {canConfigure && !summary ? (
                     <td className="whitespace-nowrap px-2 py-1 text-right">
                       <Button type="button" variant="ghost" onClick={() => layoutMutation.mutate({ layout: { ...layout, hidden: toggle(layout.hidden, a.id) }, reason: hidden.has(a.id) ? "Mostrar linha" : "Ocultar linha" })}>
@@ -255,10 +283,7 @@ export function DreMonthlyPage() {
                         <Button
                           type="button"
                           variant="ghost"
-                          onClick={() => {
-                            if (window.confirm(`Excluir a linha "${a.name}"? Os valores ficam guardados e a linha pode ser restaurada.`))
-                              accountMutation.mutate({ id: a.id, revision: info.revision, name: info.name, active: false });
-                          }}
+                          onClick={() => setRemoving({ id: a.id, revision: info.revision, name: info.name })}
                         >
                           Excluir
                         </Button>
@@ -286,11 +311,11 @@ export function DreMonthlyPage() {
         </section>
       ) : null}
 
-      {cell ? <CellDialog account={cell.account} month={cell.month} canEdit={hasPermission("dre:adjust")} onClose={() => setCell(null)} onSaved={() => { setCell(null); void refresh(); }} /> : null}
-      {dialog === "import" ? <ImportDialog defaultYear={year} onClose={() => setDialog(null)} onDone={(n) => { setDialog(null); setFeedback({ message: `Importação concluída: ${n} valor(es) gravado(s).` }); void refresh(); }} /> : null}
-      {dialog === "model" ? <ModelDialog onClose={() => setDialog(null)} onDone={(m) => { setDialog(null); setFeedback({ message: m }); void refresh(); }} /> : null}
-      {hasPermission("dre:classify") && hasPermission("dre:adjust") ? <ReviewPanel onDone={(m) => { setFeedback({ message: m }); void refresh(); }} /> : null}
-      {dialog === "config" ? <ConfigDialog data={data} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); setFeedback({ message: "Configuração da DRE salva." }); void refresh(); }} /> : null}
+      {cell ? <CellDialog account={cell.account} month={cell.month} canEdit={hasPermission("dre:adjust")} onClose={() => setCell(null)} onSaved={() => { setCell(null); done("Valor da DRE salvo."); void refresh(); }} /> : null}
+      {dialog === "import" ? <ImportDialog defaultYear={year} onClose={() => setDialog(null)} onDone={(n) => { setDialog(null); done(`Importação concluída: ${n} valor(es) gravado(s).`); void refresh(); }} /> : null}
+      {dialog === "model" ? <ModelDialog onClose={() => setDialog(null)} onDone={(m) => { setDialog(null); done(m); void refresh(); }} /> : null}
+      {hasPermission("dre:classify") && hasPermission("dre:adjust") ? <ReviewPanel onDone={(m) => { done(m); void refresh(); }} /> : null}
+      {dialog === "config" ? <ConfigDialog data={data} onClose={() => setDialog(null)} onSaved={() => { setDialog(null); done("Configuração da DRE salva."); void refresh(); }} /> : null}
     </div>
   );
 }
@@ -302,7 +327,9 @@ function addMonth(ym: string, n: number) {
 
 function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: DreGridAccount; month: string; canEdit: boolean; onClose: () => void; onSaved: () => void }) {
   const detail = useQuery({ queryKey: ["dre-monthly", "detail", account.id, month], queryFn: () => dreMonthlyApi.detail(account.id, month) });
+  // Valor no formato da API ("6200.00", aceita negativo); o campo mostra "6.200,00".
   const [amount, setAmount] = useState<string | null>(null);
+  const input = useRef<HTMLInputElement>(null);
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const save = useMutation({
@@ -312,11 +339,12 @@ function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: Dr
   });
   const d = detail.data;
   const c = d?.cell;
-  const current = amount ?? (c?.entered ? c.entered.replace(".", ",") : "");
+  const current = amount ?? c?.entered ?? "";
   const submit = (clear: boolean) => {
     if (reason.trim().length < 5) return setError("Informe o motivo (mínimo de 5 caracteres).");
-    const parsed = clear ? null : parseSignedMoney(current);
-    if (parsed === undefined) return setError("Valor inválido (ex.: 1.234,56 ou -500,00).");
+    const typed = Boolean(input.current?.value.trim());
+    if (!clear && typed && !current) return setError("Valor inválido (ex.: 1.234,56 ou -500,00).");
+    const parsed = clear || !current ? null : current;
     if (!clear && parsed === null) return setError("Informe o valor ou use “Apagar lançamento”.");
     setError("");
     save.mutate(parsed);
@@ -342,7 +370,7 @@ function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: Dr
                 {d.movements.map((m, i) => (
                   <li key={i} className="flex justify-between gap-2">
                     <span>{m.date.split("-").reverse().join("/")} · {m.project_name} · {m.description}</span>
-                    <span className={`tabular-nums ${m.sign < 0 ? "text-destructive" : ""}`}>{formatMoney(m.sign < 0 ? -Number(m.gross) : m.gross)}</span>
+                    <span className={`numeric ${m.sign < 0 ? "text-destructive-text" : ""}`}>{formatMoney(m.sign < 0 ? -Number(m.gross) : m.gross)}</span>
                   </li>
                 ))}
               </ul>
@@ -362,13 +390,13 @@ function CellDialog({ account, month, canEdit, onClose, onSaved }: { account: Dr
           ) : null}
           {canEdit && !c.closed ? (
             <form className="grid gap-3 border-t pt-3" onSubmit={(e) => { e.preventDefault(); submit(false); }}>
-              <FormField label={account.flow_kinds.length ? "Ajuste lançado (soma ao fluxo a partir do corte)" : "Valor lançado"}>
-                <Input aria-label="Valor lançado" inputMode="decimal" placeholder={c.estimate ? `estimativa ${c.estimate.replace(".", ",")}` : "0,00"} value={current} onChange={(e) => setAmount(e.target.value)} />
+              <FormField label={account.flow_kinds.length ? "Ajuste lançado (R$, soma ao fluxo a partir do corte)" : "Valor lançado (R$)"}>
+                <MoneyInput ref={input} negative aria-label="Valor lançado (R$)" placeholder={c.estimate ? `estimativa ${c.estimate.replace(".", ",")}` : "0,00"} value={current} onValueChange={setAmount} />
               </FormField>
               <FormField label="Motivo">
                 <Input aria-label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} />
               </FormField>
-              {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+              {error ? <p role="alert" className="text-destructive-text">{error}</p> : null}
               <div className="flex flex-wrap justify-end gap-2">
                 {c.entered !== null ? <Button type="button" variant="ghost" onClick={() => submit(true)}>Apagar lançamento</Button> : null}
                 <Button type="submit" disabled={save.isPending}>Salvar</Button>
@@ -448,7 +476,7 @@ function ImportDialog({ defaultYear, onClose, onDone }: { defaultYear: string; o
             </FormField>
           </>
         ) : null}
-        {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+        {error ? <p role="alert" className="text-destructive-text">{error}</p> : null}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button type="button" disabled={!plan || plan.totals.apply === 0 || reason.trim().length < 5 || confirm.isPending || JSON.stringify(mapping) !== JSON.stringify(plan.mapping) && Object.keys(mapping).length > 0} onClick={() => confirm.mutate()}>
@@ -501,7 +529,7 @@ function ConfigDialog({ data, onClose, onSaved }: { data: Configured; onClose: (
         <FormField label="Motivo">
           <Input aria-label="Motivo da configuração" value={reason} onChange={(e) => setReason(e.target.value)} />
         </FormField>
-        {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+        {error ? <p role="alert" className="text-destructive-text">{error}</p> : null}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button type="submit" disabled={save.isPending}>Salvar</Button>
@@ -545,7 +573,7 @@ function ModelDialog({ onClose, onDone }: { onClose: () => void; onDone: (messag
                 {p.accounts.map((a) => (
                   <tr key={a.code} className={`border-t ${a.synthetic ? "font-semibold" : ""}`}>
                     <td className="p-1">{a.code} {a.name}</td>
-                    <td className={`p-1 ${a.action === "conflict" ? "text-warning" : ""}`}>{MODEL_ACTION[a.action]}{a.note ? ` — ${a.note}` : ""}</td>
+                    <td className={`p-1 ${a.action === "conflict" ? "text-warning-text" : ""}`}>{MODEL_ACTION[a.action]}{a.note ? ` — ${a.note}` : ""}</td>
                   </tr>
                 ))}
               </tbody>
@@ -560,7 +588,7 @@ function ModelDialog({ onClose, onDone }: { onClose: () => void; onDone: (messag
           <FormField label="Motivo">
             <Input aria-label="Motivo da aplicação do modelo" value={reason} onChange={(e) => setReason(e.target.value)} />
           </FormField>
-          {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+          {error ? <p role="alert" className="text-destructive-text">{error}</p> : null}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
             <Button type="button" disabled={reason.trim().length < 5 || apply.isPending || (p.totals.create === 0 && p.totals.map === 0)} onClick={() => apply.mutate()}>
@@ -609,7 +637,7 @@ function ReviewPanel({ onDone }: { onDone: (message: string) => void }) {
             <FormField label="Motivo">
               <Input aria-label="Motivo da anulação" value={reason} onChange={(e) => setReason(e.target.value)} />
             </FormField>
-            {error ? <p role="alert" className="text-destructive">{error}</p> : null}
+            {error ? <p role="alert" className="text-destructive-text">{error}</p> : null}
             <Button type="submit" disabled={voidIt.isPending}>Anular classificação</Button>
           </form>
         </ModalForm>

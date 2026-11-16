@@ -5,6 +5,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { FormField } from "@/components/base/FormField";
+import { MoneyInput } from "@/components/base/MoneyInput";
+import { useToast } from "@/components/ui/toast-context";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
@@ -71,7 +74,7 @@ function summaryRows(v: FinanceSettingsValues): Array<[string, Array<[string, st
         ["Diária padrão do inventariante", brl(v.default_daily_rate)],
         ["Produtividade para orçar inventariantes", `${v.budget_productivity_items_per_day} itens/dia`],
         ["Despesas não reembolsáveis orçadas", pct(v.budgeted_non_reimbursable_expense_pct)],
-        ["Alerta de despesas de técnicos", pct(v.technician_expense_alert_pct)],
+        ["Alerta de despesas de inventariantes", pct(v.technician_expense_alert_pct)],
         ["Exigir aprovação de diárias e despesas", v.require_approval ? "Sim" : "Não"],
       ],
     ],
@@ -150,6 +153,7 @@ function VersionForm({
   onCancel: () => void;
 }) {
   const cache = useQueryClient();
+  const { toast } = useToast();
   const [validFrom, setValidFromState] = useState(() => startDate ?? nextValidFrom(overview));
   // Corte da DRE automática: a versão nova herda o da versão vizinha (mudar
   // exige ação explícita, com o aviso do impacto). Só na 1ª versão o padrão é
@@ -190,6 +194,7 @@ function VersionForm({
       }),
     onSuccess: async () => {
       await cache.invalidateQueries({ queryKey: financeSettingsKeys.all });
+      toast({ title: "Versão dos parâmetros salva.", tone: "success" });
       onCancel();
     },
   });
@@ -202,6 +207,12 @@ function VersionForm({
         value={String(values[key])}
         onChange={(event) => set(key, event.target.value.replace(",", ".") as never)}
       />
+    </FormField>
+  );
+  /** Valor em R$: mostra "10.915,00" e guarda "10915.00" (formato da API). */
+  const money = (key: "default_daily_rate" | "fixed_cost_operation" | "fixed_cost_branch", label: string, help?: string) => (
+    <FormField label={label} help={help}>
+      <MoneyInput aria-label={label} value={values[key]} onValueChange={(v) => set(key, v)} required />
     </FormField>
   );
   const integer = (key: keyof FinanceSettingsValues, label: string) => (
@@ -256,14 +267,14 @@ function VersionForm({
     </FormField>
     {values.fixed_cost_item_modes[key] === "fixed" ? (
       <FormField label={`${label}: valor fixo (R$/mês)`}>
-        <Input
-          inputMode="decimal"
+        <MoneyInput
+          aria-label={`${label}: valor fixo (R$/mês)`}
           required
           value={values.fixed_cost_item_amounts[key]}
-          onChange={(event) =>
+          onValueChange={(v) =>
             set("fixed_cost_item_amounts", {
               ...values.fixed_cost_item_amounts,
-              [key]: event.target.value.replace(",", "."),
+              [key]: v,
             })
           }
         />
@@ -391,10 +402,10 @@ function VersionForm({
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-2 font-semibold">Remuneração e orçado</legend>
-        {text("default_daily_rate", "Diária padrão do inventariante (R$)", "Diária paga ao técnico; pode diferir da diária usada no preço do orçamento.")}
+        {money("default_daily_rate", "Diária padrão do inventariante (R$)", "Diária paga ao inventariante; pode diferir da diária usada no preço do orçamento.")}
         {integer("budget_productivity_items_per_day", "Produtividade para orçar (itens/dia)")}
         {text("budgeted_non_reimbursable_expense_pct", "Despesas não reembolsáveis orçadas (%)")}
-        {text("technician_expense_alert_pct", "Alerta de despesas de técnicos (%)")}
+        {text("technician_expense_alert_pct", "Alerta de despesas de inventariantes (%)")}
         <FormField label="Exigir aprovação de diárias e despesas">
           <select
             className="h-11 rounded-md border bg-background px-3 text-sm"
@@ -408,8 +419,8 @@ function VersionForm({
       </fieldset>
       <fieldset className="grid gap-4 sm:grid-cols-3">
         <legend className="mb-2 font-semibold">Custos fixos e indicadores</legend>
-        {text("fixed_cost_operation", "Custo fixo da operação (R$)")}
-        {text("fixed_cost_branch", "Custo fixo da filial (R$)")}
+        {money("fixed_cost_operation", "Custo fixo da operação (R$)")}
+        {money("fixed_cost_branch", "Custo fixo da filial (R$)")}
         {text("economic_break_even_margin_pct", "Margem do PE econômico (%)")}
         {mode("additional_income_tax", "Adicional de IR")}
         {mode("equipment", "Equipamentos")}
@@ -493,7 +504,7 @@ function VersionForm({
         {integer("expense_attachment_max_files", "Anexos por despesa")}
       </fieldset>
       {save.isError ? (
-        <p role="alert" className="rounded-lg border p-3 text-sm text-destructive">
+        <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">
           {(save.error as Error).message}
         </p>
       ) : null}
@@ -544,13 +555,13 @@ export function FinanceSettingsPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-start justify-end gap-3">
-        {canUpdate && !draft && base ? (
+      {canUpdate && !draft && base ? (
+        <FinanceHeaderActions>
           <Button type="button" onClick={() => setDraft(base.values)}>
             Nova versão
           </Button>
-        ) : null}
-      </div>
+        </FinanceHeaderActions>
+      ) : null}
 
       {draft ? (
         <VersionForm overview={overview} initial={draft} startDate={startDate} onCancel={() => { setDraft(null); setStartDate(undefined); }} />

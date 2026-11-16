@@ -139,7 +139,7 @@ export interface PreparationHistory {
 }
 export const kindLabels: Record<PreparationKind, string> = {
   kickoff: 'Kick-off',
-  client_checklist: 'Checklist do Cliente',
+  client_checklist: 'Checklist do cliente',
 };
 export const statusLabels = {
   draft: 'Rascunho',

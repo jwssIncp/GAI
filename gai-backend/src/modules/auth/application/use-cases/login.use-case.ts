@@ -8,6 +8,10 @@ import {
   PERMISSION_RESOLVER,
   type PermissionResolver,
 } from '../../domain/ports/permission-resolver.port';
+import {
+  ORGANIZATION_GATE,
+  type OrganizationGate,
+} from '../../domain/ports/organization-gate.port';
 import { RoleAssignmentResponseDto } from '../../../users/application/dto/user-response.dto';
 import { LoginDto } from '../dto/login.dto';
 import { CurrentUserDto, LoginResponseDto } from '../dto/login-response.dto';
@@ -19,6 +23,8 @@ export class LoginUseCase {
     private readonly assignments: UserRoleAssignmentRepository,
     @Inject(PERMISSION_RESOLVER)
     private readonly permissions: PermissionResolver,
+    @Inject(ORGANIZATION_GATE)
+    private readonly organizations: OrganizationGate,
   ) {}
   async execute(dto: LoginDto, ip: string | null): Promise<LoginResponseDto> {
     const { user, session } = await this.credentials.authenticate(
@@ -32,6 +38,9 @@ export class LoginUseCase {
       expires_at: session.expiresAt.toISOString(),
       user: CurrentUserDto.fromUser({
         ...user,
+        organizationName: user.organizationId
+          ? await this.organizations.displayName(user.organizationId)
+          : null,
         roleAssignments: roles.map((role) =>
           RoleAssignmentResponseDto.fromAssignedRole(role),
         ),

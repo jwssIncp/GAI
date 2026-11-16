@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { DateInput, MoneyInput } from '@/components/base/Inputs';
+import { Controller, useForm } from 'react-hook-form';
+import { DateInput } from '@/components/base/Inputs';
 import { FormField } from '@/components/base/FormField';
+import { MoneyInput } from '@/components/base/MoneyInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { accountingItemFormSchema, accountingItemStatuses, type AccountingItemFormValues } from './accountingItemSchemas';
@@ -42,7 +43,24 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
       <FormField label="Conta contábil"><Input {...form.register('accounting_account_description')} /></FormField>
       <div className="grid gap-4 md:grid-cols-3">
         <FormField label="Data de aquisição"><DateInput {...form.register('acquisition_date')} /></FormField>
-        <FormField label="Valor de aquisição" error={form.formState.errors.acquisition_value?.message}><MoneyInput {...form.register('acquisition_value')} /></FormField>
+        <Controller
+          control={form.control}
+          name="acquisition_value"
+          render={({ field, fieldState }) => (
+            <FormField label="Valor de aquisição (R$)" error={fieldState.error?.message}>
+              <MoneyInput
+                ref={field.ref}
+                value={field.value ?? ''}
+                onValueChange={field.onChange}
+                onBlur={(event) => {
+                  field.onBlur();
+                  // texto que não é valor chega vazio: avisa no próprio campo
+                  if (event.currentTarget.validity.customError) form.setError('acquisition_value', { message: 'Valor inválido. Use o formato 50.000,00.' });
+                }}
+              />
+            </FormField>
+          )}
+        />
         <FormField label="Status">
           <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('status')}>
             {accountingItemStatuses.map((status) => <option key={status} value={status}>{status}</option>)}

@@ -113,6 +113,7 @@ describe('GetCurrentUserUseCase', () => {
     const assignments = {
       findActiveByUserId: jest.fn().mockResolvedValue([]),
     };
+    const organizations = { isActive: jest.fn(), displayName: jest.fn() };
     const useCase = new GetCurrentUserUseCase(
       users as never,
       assignments as never,
@@ -120,8 +121,12 @@ describe('GetCurrentUserUseCase', () => {
         resolveForUser: jest.fn().mockResolvedValue([]),
         findScopesByKeys: jest.fn().mockResolvedValue(new Map()),
       },
+      organizations,
     );
     const result = await useCase.execute(1);
     expect(result.login).toBe('admin');
+    // usuário da plataforma (sem organização): não consulta o nome
+    expect(result.organization_name).toBeNull();
+    expect(organizations.displayName).not.toHaveBeenCalled();
   });
 });

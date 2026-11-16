@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { DateInput, MoneyInput } from '@/components/base/Inputs';
+import { Controller, useForm } from 'react-hook-form';
+import { DateInput } from '@/components/base/Inputs';
 import { FormField } from '@/components/base/FormField';
+import { MoneyInput } from '@/components/base/MoneyInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { inventoryItemFormSchema, inventoryItemStatuses, type InventoryItemFormValues } from './inventoryItemSchemas';
@@ -57,8 +58,27 @@ export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: Inven
       </div>
       <FormField label="Endereço"><Input {...form.register('address_text')} /></FormField>
       <div className="grid gap-4 md:grid-cols-3">
-        <FormField label="Valor usado" error={form.formState.errors.used_value?.message}><MoneyInput {...form.register('used_value')} /></FormField>
-        <FormField label="Valor novo" error={form.formState.errors.new_value?.message}><MoneyInput {...form.register('new_value')} /></FormField>
+        {(['used_value', 'new_value'] as const).map((name) => (
+          <Controller
+            key={name}
+            control={form.control}
+            name={name}
+            render={({ field, fieldState }) => (
+              <FormField label={name === 'used_value' ? 'Valor usado (R$)' : 'Valor novo (R$)'} error={fieldState.error?.message}>
+                <MoneyInput
+                  ref={field.ref}
+                  value={field.value ?? ''}
+                  onValueChange={field.onChange}
+                  onBlur={(event) => {
+                    field.onBlur();
+                    // texto que não é valor chega vazio: avisa no próprio campo
+                    if (event.currentTarget.validity.customError) form.setError(name, { message: 'Valor inválido. Use o formato 50.000,00.' });
+                  }}
+                />
+              </FormField>
+            )}
+          />
+        ))}
         <FormField label="Status">
           <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('status')}>
             {inventoryItemStatuses.map((status) => <option key={status} value={status}>{status}</option>)}

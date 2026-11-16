@@ -50,10 +50,10 @@ describe("Menu lateral por módulo", () => {
   // mais os itens novos acrescentados depois (paridade financeira, etapa 1: Parâmetros financeiros).
   const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes", "Despesas", "Placas de patrimônio", "Comissões"];
   it.each([
-    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
-    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
+    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
+    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
     ["operador de campo", user({ permissions: ["projects:read", "field-agents:read", "inventory-items:read"] }), ["Visão geral", "Projetos", "Inventariantes"]],
-    ["financeiro", user({ permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read", "budgets:read", "companies:read"] }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE Gerencial", "Empresas"]],
+    ["financeiro", user({ permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read", "budgets:read", "companies:read"] }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Empresas"]],
   ])("%s vê exatamente os mesmos itens de antes, agrupados por módulo", (_label, current, before) => {
     const { items } = renderMenu(current);
     const renamed = before.map((label) => (label === "Contas a receber" ? "Recebíveis" : label));
@@ -71,7 +71,7 @@ describe("Menu lateral por módulo", () => {
       "Empresas",
       "Recebíveis",
       "Fluxo de caixa",
-      "DRE Gerencial",
+      "DRE gerencial",
       "Remuneração",
       "Pagamento de inventariantes",
       "Despesas",

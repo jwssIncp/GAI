@@ -1,10 +1,6 @@
 import type { ComponentProps } from 'react';
 import { Input } from '@/components/ui/input';
 
-export function MoneyInput(props: React.ComponentProps<typeof Input>) {
-  return <Input inputMode="decimal" placeholder="0,00" {...props} />;
-}
-
 export function DateInput(props: React.ComponentProps<typeof Input>) {
   return <Input type="date" {...props} />;
 }

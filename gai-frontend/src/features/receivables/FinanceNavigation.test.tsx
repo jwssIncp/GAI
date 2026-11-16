@@ -229,12 +229,14 @@ describe("Financial navigation through real nested routes", () => {
     fireEvent.focus(project);
     fireEvent.change(project, { target: { value: "Vinte" } });
     fireEvent.mouseDown(await screen.findByRole("option", { name: /^Projeto Vinte e Cinco P-25/ }));
-    await waitFor(() => expect(screen.getByRole("combobox", { name: "Contrato" })).toBeEnabled());
-    fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
+    // aplicação imediata: sem botão "Aplicar filtros"
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("project_id=25"));
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Contrato" })).toBeEnabled());
+    expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
+    expect(screen.getByText("Nenhum recebível com estes filtros.")).toBeInTheDocument();
   });
 
-  it("origem Contrato: cliente e projeto vêm da origem, travados; projeto não é pedido duas vezes; Manual fica livre", async () => {
+  it("origem Contrato: cliente vem da origem, travado; projeto só no seletor da origem (vai no envio); Manual fica livre", async () => {
     grants.add("contracts:read");
     vi.mocked(financeApi.source).mockResolvedValue({ company_id: 1, project_id: 25, description: "Contrato CT-9", amount: "1000.00", currency: "BRL", issued_on: "2026-11-01" });
     mount("/app/finance/receivables/new");
@@ -253,10 +255,15 @@ describe("Financial navigation through real nested routes", () => {
     const client = screen.getByRole("combobox", { name: "Cliente (da origem)" });
     await waitFor(() => expect(client).toHaveValue("Cliente Um"));
     expect(client).toBeDisabled();
-    const fromProject = screen.getByRole("combobox", { name: "Projeto (da origem)" });
-    await waitFor(() => expect(fromProject).toHaveValue("Projeto Vinte e Cinco (P-25)"));
-    expect(fromProject).toBeDisabled();
+    // o projeto não aparece de novo travado: já foi escolhido em "Projeto da origem"
+    expect(screen.queryByRole("combobox", { name: "Projeto (da origem)" })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "Projeto" })).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Valor total (R$)" })).toHaveValue("1.000,00");
+    fireEvent.change(screen.getByLabelText("Justificativa"), { target: { value: "Teste sintético" } });
+    vi.mocked(financeApi.preview).mockResolvedValue({ preview_hash: "c".repeat(64), data: row.data, plan: { rows: [] } });
+    fireEvent.click(screen.getByRole("button", { name: "Gerar prévia de parcelas" }));
+    await waitFor(() => expect(financeApi.preview).toHaveBeenCalled());
+    expect(vi.mocked(financeApi.preview).mock.calls.at(-1)![0]).toMatchObject({ project_id: 25, company_id: 1, amount: "1000.00", source_id: 4 });
     // Manual: campos livres de novo
     fireEvent.change(screen.getByLabelText("Origem"), { target: { value: "manual" } });
     expect(screen.getByRole("combobox", { name: "Cliente" })).toBeEnabled();
@@ -284,10 +291,10 @@ describe("Financial navigation through real nested routes", () => {
     await chooseClient();
     for (const [label, value] of [
       ["Descrição", "SINTETICO navegação"],
-      ["Valor total (decimal)", "10.01"],
       ["Justificativa", "Teste sintético"],
     ])
       fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Valor total (R$)" }), { target: { value: "10,01" } });
     fireEvent.click(
       screen.getByRole("button", { name: "Gerar prévia de parcelas" }),
     );
@@ -312,11 +319,11 @@ describe("Financial navigation through real nested routes", () => {
     await chooseClient();
     for (const [label, value] of [
       ["Descrição", "SINTETICO datas"],
-      ["Valor total (decimal)", "10.00"],
       ["Justificativa", "Teste sintético"],
       ["Vencimentos personalizados (opcional)", "31/01/2026\n2026-02-28"],
     ])
       fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Valor total (R$)" }), { target: { value: "10.00" } });
     expect(screen.getByLabelText("Vencimentos personalizados (opcional)")).toHaveAttribute(
       "placeholder",
       "dd/mm/aaaa, uma por linha",
@@ -325,5 +332,23 @@ describe("Financial navigation through real nested routes", () => {
     await waitFor(() => expect(financeApi.preview).toHaveBeenCalled());
     const dto = vi.mocked(financeApi.preview).mock.calls.at(-1)![0];
     expect(dto.payment).toMatchObject({ dates: ["2026-01-31", "2026-02-28"] });
+  });
+
+  it("valor em R$: colar \"50.000,00\" envia \"50000.00\" (total e entrada)", async () => {
+    vi.mocked(financeApi.preview).mockResolvedValue({ preview_hash: "d".repeat(64), data: row.data, plan: { rows: [] } });
+    mount("/app/finance/receivables/new");
+    await chooseClient();
+    fireEvent.change(screen.getByLabelText("Descrição"), { target: { value: "SINTETICO valor" } });
+    fireEvent.change(screen.getByLabelText("Justificativa"), { target: { value: "Teste sintético" } });
+    const total = screen.getByRole("textbox", { name: "Valor total (R$)" });
+    fireEvent.change(total, { target: { value: "50.000,00" } });
+    fireEvent.blur(total);
+    expect(total).toHaveValue("50.000,00");
+    fireEvent.change(screen.getByRole("textbox", { name: "Entrada (R$, opcional)" }), { target: { value: "5000,5" } });
+    fireEvent.click(screen.getByRole("button", { name: "Gerar prévia de parcelas" }));
+    await waitFor(() => expect(financeApi.preview).toHaveBeenCalled());
+    const dto = vi.mocked(financeApi.preview).mock.calls.at(-1)![0];
+    expect(dto.amount).toBe("50000.00");
+    expect(dto.payment).toMatchObject({ entry_amount: "5000.50" });
   });
 });

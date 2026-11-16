@@ -4,6 +4,23 @@ import { ArrowLeftRight, BadgeDollarSign, HandCoins, Percent, ReceiptText, Tags,
 // primeiros itens permitidos como "acesso rápido"; o Sidebar agrupa por seção.
 export type NavigationSection = 'overview' | 'projects' | 'commercial' | 'finance' | 'management';
 
+/**
+ * Ordem e rótulos das seções (módulos). Fonte única: o menu lateral usa como título
+ * de grupo (exceto "Visão geral", que não tem título) e o PageHeader usa como rótulo
+ * acima do título (eyebrow) de cada tela.
+ */
+export const navigationSections: ReadonlyArray<readonly [NavigationSection, string]> = [
+  ['overview', 'Visão geral'],
+  ['projects', 'Projetos'],
+  ['commercial', 'Comercial'],
+  ['finance', 'Financeiro'],
+  ['management', 'Administração'],
+];
+
+export function sectionLabel(section: NavigationSection): string {
+  return navigationSections.find(([key]) => key === section)![1];
+}
+
 export const navigation: Array<{ label: string; to: string; icon: typeof LayoutDashboard; permissions?: string[]; section: NavigationSection }> = [
   { label: 'Visão geral', to: '/app/dashboard', icon: LayoutDashboard, section: 'overview' },
   { label: 'Projetos', to: '/app/projects', icon: FolderKanban, permissions: ['projects:read'], section: 'projects' },
@@ -11,7 +28,7 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
   { label: 'Inventariantes', to: '/app/field-agents', icon: ContactRound, permissions: ['field-agents:read'], section: 'projects' },
   {label:'Recebíveis',to:'/app/finance/receivables',icon:Wallet,permissions:['receivables:read'],section:'finance'},
   {label:'Fluxo de caixa',to:'/app/finance/cash-flow',icon:ArrowLeftRight,permissions:['cash-flow:read'],section:'finance'},
-  {label:'DRE Gerencial',to:'/app/finance/dre',icon:FileSpreadsheet,permissions:['dre:read'],section:'finance'},
+  {label:'DRE gerencial',to:'/app/finance/dre',icon:FileSpreadsheet,permissions:['dre:read'],section:'finance'},
   { label: 'Remuneração', to: '/app/finance/remuneration', icon: BadgeDollarSign, permissions: ['payments:read'], section: 'finance' },
   { label: 'Pagamento de inventariantes', to: '/app/finance/field-agent-payments', icon: HandCoins, permissions: ['payments:read'], section: 'finance' },
   { label: 'Despesas', to: '/app/finance/expenses', icon: ReceiptText, permissions: ['expenses:read'], section: 'finance' },
@@ -29,6 +46,22 @@ export const navigation: Array<{ label: string; to: string; icon: typeof LayoutD
  * (uma fonte só), para nunca mostrar um item que cai em acesso negado nem
  * abrir por link uma tela cuja API recusa.
  */
+/**
+ * Seção (módulo) da rota atual: tudo dentro de /app/projects/:id é "Projetos"; nas
+ * demais, vale o item do menu de prefixo mais longo (ex.: /app/finance/parameters fica
+ * em "Administração", /app/finance/receivables/12 em "Financeiro"). Telas fora do menu
+ * no Financeiro (ex.: /app/finance) ficam em "Financeiro". Sem seção: null.
+ */
+export function navigationSectionFor(pathname: string): NavigationSection | null {
+  if (/^\/app\/projects(\/|$)/.test(pathname)) return 'projects';
+  const match = navigation
+    .filter((item) => pathname === item.to || pathname.startsWith(item.to + '/'))
+    .sort((a, b) => b.to.length - a.to.length)[0];
+  if (match) return match.section;
+  if (/^\/app\/finance(\/|$)/.test(pathname)) return 'finance';
+  return null;
+}
+
 export function navigationPermissions(to: string): string[] {
   const item = navigation.find((i) => i.to === to);
   if (!item) throw new Error(`Rota fora do menu: ${to}`);

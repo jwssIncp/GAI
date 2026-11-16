@@ -10,7 +10,6 @@ import { type RouteObject } from "react-router-dom";
 import { ContextRedirect } from "./ContextRedirect";
 import { ProjectContractsPage } from "@/features/contracts/ProjectContractsPage";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { PlaceholderPage } from "@/features/placeholders/PlaceholderPage";
 import { ProjectLayout } from "@/features/projects/ProjectLayout";
 import { FieldCoordinationPage } from "@/features/field-coordination/FieldCoordinationPage";
 import { ProjectSummaryPage } from "@/features/projects/ProjectSummaryPage";
@@ -79,15 +78,8 @@ export const projectRoute: RouteObject = {
         { index: true, element: <ContextRedirect to="summary" /> },
         { path: "summary", element: <ProjectSummaryPage /> },
         { path: "dashboard", element: <ProjectDashboardPage /> },
-        {
-          path: "area",
-          element: (
-            <PlaceholderPage
-              title="Project Area"
-              dependency="Abas preparadas; os fluxos profundos entram na próxima rodada."
-            />
-          ),
-        },
+        // Endereço reservado antigo ("Project Area", sem tela): abre o resumo do projeto.
+        { path: "area", element: <ContextRedirect to="../summary" /> },
       ],
     },
     {

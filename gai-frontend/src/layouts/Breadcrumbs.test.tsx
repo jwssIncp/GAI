@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { projectBreadcrumbSteps } from "@/features/projects/projectNavigation";
 import { projectKeys } from "@/features/projects/projectQueries";
 import type { CurrentUser } from "@/types/api";
-import { Breadcrumbs } from "./Topbar";
+import { Breadcrumbs, Topbar } from "./Topbar";
 
 const get = vi.fn();
 vi.mock("@/api/endpoints", async (original) => ({
@@ -99,8 +99,73 @@ describe("Breadcrumbs do workspace do projeto", () => {
     const crumbs = renderAt("/app/finance/dre/accounts", user(["dre:read"]));
     expect(crumbs.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Financeiro",
-      "DRE Gerencial",
+      "DRE gerencial",
       "Plano de contas",
     ]);
+  });
+});
+
+describe("Breadcrumbs fora do projeto", () => {
+  const texts = (crumbs: ReturnType<typeof renderAt>) => crumbs.getAllByRole("listitem").map((item) => item.textContent);
+
+  it("Parâmetros financeiros fica em Administração (mesma seção do menu), sem link no grupo", () => {
+    const crumbs = renderAt("/app/finance/parameters", user(["finance-settings:read"]));
+    expect(texts(crumbs)).toEqual(["Administração", "Parâmetros financeiros"]);
+    expect(crumbs.queryAllByRole("link")).toHaveLength(0);
+  });
+
+  it("detalhe do recebível: Financeiro e Recebíveis são links, mantendo o projeto do contexto", () => {
+    const crumbs = renderAt("/app/finance/receivables/12?project_id=10", user(["receivables:read"]));
+    expect(texts(crumbs)).toEqual(["Financeiro", "Recebíveis", "#12"]);
+    expect(crumbs.getByRole("link", { name: "Financeiro" })).toHaveAttribute("href", "/app/finance?project_id=10");
+    expect(crumbs.getByRole("link", { name: "Recebíveis" })).toHaveAttribute("href", "/app/finance/receivables?project_id=10");
+    expect(crumbs.getByText("#12")).toHaveAttribute("aria-current", "page");
+  });
+
+  it("detalhe da classificação da DRE: mesmo rótulo da aba e links nos níveis", () => {
+    const crumbs = renderAt("/app/finance/dre/entries/5", user(["dre:read"]));
+    expect(texts(crumbs)).toEqual(["Financeiro", "DRE gerencial", "Classificações e ajustes", "#5"]);
+    expect(crumbs.getByRole("link", { name: "DRE gerencial" })).toHaveAttribute("href", "/app/finance/dre");
+    expect(crumbs.getByRole("link", { name: "Classificações e ajustes" })).toHaveAttribute("href", "/app/finance/dre/entries");
+  });
+
+  it("acesso negado dentro do layout", () => {
+    expect(texts(renderAt("/app/access-denied", user([])))).toEqual(["Acesso negado"]);
+  });
+});
+
+describe("Topbar: organização pelo nome", () => {
+  beforeAll(() =>
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }))),
+  );
+  afterAll(() => vi.unstubAllGlobals());
+
+  function renderTopbar(current: CurrentUser) {
+    const auth: AuthState = { user: current, accessToken: "t", expiresAt: "2099-01-01", bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <AuthContext.Provider value={auth}>
+          <MemoryRouter initialEntries={["/app/dashboard"]}>
+            <Topbar onOpenNavigation={vi.fn()} />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("mostra o nome da organização, nunca \"Organização #id\"", () => {
+    renderTopbar({ ...user([]), organization_name: "Center Norte Patrimônio" });
+    expect(screen.getAllByText("Center Norte Patrimônio").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Organização #/)).not.toBeInTheDocument();
+  });
+
+  it("API antiga sem o nome: mostra o número da organização", () => {
+    renderTopbar(user([]));
+    expect(screen.getAllByText("Organização #1").length).toBeGreaterThan(0);
+  });
+
+  it("usuário da plataforma (sem organização)", () => {
+    renderTopbar({ ...user([]), organization_id: null, organization_name: null });
+    expect(screen.getAllByText("Plataforma").length).toBeGreaterThan(0);
   });
 });

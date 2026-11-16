@@ -1,6 +1,6 @@
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { PageContainer } from '@/components/base/PageContainer';
-import { PageHeader } from '@/components/base/PageHeader';
+
 import { ProjectExpensesPage } from '@/features/expenses/ProjectExpensesPage';
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
 
@@ -17,11 +17,11 @@ export function ProjectFinancePage() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Despesas"
+      {/* o cabeçalho (com as ações) fica em ProjectExpensesPage, que tem o estado dos diálogos */}
+      <ProjectExpensesPage
+        projectId={projectId}
         description={`${projectLabel}. Despesas, adiantamentos, prestação de contas (lotes de reembolso ao cliente) e comprovantes.`}
       />
-      <ProjectExpensesPage projectId={projectId} />
     </PageContainer>
   );
 }

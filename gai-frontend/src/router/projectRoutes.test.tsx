@@ -26,7 +26,7 @@ function Probe({ title }: { title: string }) {
             Kick-off
           </Link>
           <Link to={`/app/projects/${projectId}/preparation/client-checklist`}>
-            Checklist do Cliente
+            Checklist do cliente
           </Link>
         </>
       ) : null}
@@ -106,8 +106,14 @@ const ui = userEvent.setup({ delay: null });
 function setup(path = "/app/projects/31/summary", user = admin) {
   const router = createMemoryRouter(
     [
-      { path: "/app", children: [projectRoute] },
-      { path: "/access-denied", element: <h1>Acesso negado</h1> },
+      {
+        path: "/app",
+        children: [
+          projectRoute,
+          // Acesso negado abre dentro do layout do aplicativo.
+          { path: "access-denied", element: <h1>Acesso negado</h1> },
+        ],
+      },
     ],
     { initialEntries: [path] },
   );
@@ -143,6 +149,13 @@ describe("Production project route tree: persistent navigation", () => {
     await ui.click(within(nav).getByRole("link", { name: group }));
     await ui.click(await within(nav).findByRole("link", { name: tab }));
   }
+
+  it("o endereço antigo /area (Project Area, sem tela) abre o resumo do projeto mantendo o contexto", async () => {
+    const router = setup("/app/projects/31/area?return_to=%2Fapp%2Fdashboard");
+    expect(await screen.findByRole("heading", { name: "Resumo · 31" })).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/app/projects/31/summary");
+    expect(router.state.location.search).toBe("?return_to=%2Fapp%2Fdashboard");
+  });
 
   it("navigates continuously across groups, tabs, anchors, preparation and browser history without remounting navigation", async () => {
     const router = setup();
@@ -257,7 +270,7 @@ describe("Production project route tree: persistent navigation", () => {
     expect(within(tabs).getAllByRole("link").map((link) => link.textContent)).toEqual([
       "Recebíveis",
       "Fluxo de caixa",
-      "DRE Gerencial",
+      "DRE gerencial",
     ]);
     expect(within(tabs).getByRole("link", { name: "Recebíveis" })).toHaveAttribute(
       "href",

@@ -7,6 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/base/DataTable";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { useAuth } from "@/features/auth/AuthContext";
 import {
@@ -265,7 +266,9 @@ export function ReceivableForm() {
         ) : null}
         {fromOrigin ? (
           <>
-            {/* Da origem: preenchidos e travados (o projeto não é pedido duas vezes). */}
+            {/* Da origem: o cliente vem preenchido e travado. O projeto já foi
+                escolhido em "Projeto da origem" (não é pedido duas vezes); no
+                orçamento, que não tem esse seletor, ele aparece travado. */}
             <label className="grid gap-1 text-sm">
               Cliente (da origem)
               <EntityCombobox
@@ -277,17 +280,21 @@ export function ReceivableForm() {
                 disabled
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              Projeto (da origem)
-              <EntityCombobox
-                aria-label="Projeto (da origem)"
-                name="project_id"
-                source={projectSource}
-                value={source?.project_id ?? null}
-                placeholder={source ? "Sem projeto" : "Escolha a origem primeiro"}
-                disabled
-              />
-            </label>
+            {origin === "budget" ? (
+              <label className="grid gap-1 text-sm">
+                Projeto (da origem)
+                <EntityCombobox
+                  aria-label="Projeto (da origem)"
+                  name="project_id"
+                  source={projectSource}
+                  value={source?.project_id ?? null}
+                  placeholder={source ? "Sem projeto" : "Escolha a origem primeiro"}
+                  disabled
+                />
+              </label>
+            ) : (
+              <input type="hidden" name="project_id" value={source?.project_id ?? ""} />
+            )}
           </>
         ) : (
           <>
@@ -320,7 +327,16 @@ export function ReceivableForm() {
           </>
         )}
         {field("description", "Descrição", "text", source?.description)}
-        {field("amount", "Valor total (decimal)", "text", source?.amount)}
+        <label className="grid gap-1 text-sm">
+          Valor total (R$)
+          {/* controlado como os demais campos: o valor da origem chega depois de montar */}
+          <MoneyInput
+            name="amount"
+            value={values.amount ?? String(source?.amount ?? "")}
+            onValueChange={(v) => setValues((current) => ({ ...current, amount: v }))}
+            required
+          />
+        </label>
         <label className="grid gap-1 text-sm">
           Moeda
           <select
@@ -358,7 +374,10 @@ export function ReceivableForm() {
           </label>
           {field("count", "Quantidade de parcelas do saldo", "number", 1)}
           {field("first_due_on", "Primeiro vencimento", "date", today())}
-          {field("entry_amount", "Entrada (valor opcional)", "text", "", false)}
+          <label className="grid gap-1 text-sm">
+            Entrada (R$, opcional)
+            <MoneyInput name="entry_amount" />
+          </label>
           {field("entry_due_on", "Vencimento da entrada", "date", "", false)}
           {mode !== "equal" && (
             <label className="grid gap-1 text-sm">
@@ -390,7 +409,7 @@ export function ReceivableForm() {
         <textarea className={cls} name="notes" />
       </label>
       {error && (
-        <p role="alert" className="text-destructive">
+        <p role="alert" className="text-sm text-destructive-text">
           {error}
         </p>
       )}
@@ -413,12 +432,13 @@ export function ReceivableForm() {
           </p>
           <DataTable
             items={preview.plan.rows}
+            caption="Prévia das parcelas"
             getKey={(i) => i.position}
             columns={[
               { header: "Parcela", cell: (i) => i.position },
-              { header: "Vencimento", cell: (i) => formatCivilDate(i.due_on) },
+              { header: "Data prevista", cell: (i) => formatCivilDate(i.due_on) },
               {
-                header: "Valor",
+                header: "Valor", numeric: true,
                 cell: (i) => money(i.amount, preview.data.currency),
               },
             ]}

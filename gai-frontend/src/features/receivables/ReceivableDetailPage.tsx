@@ -6,8 +6,11 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { DataTable } from "@/components/base/DataTable";
-import { LoadingState, ErrorState } from "@/components/base/States";
+import { LoadingState, ErrorState, EmptyState } from "@/components/base/States";
 import { MetricCard } from "@/components/base/Cards";
+import { MoneyInput } from "@/components/base/MoneyInput";
+import { Tabs } from "@/components/base/Tabs";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { useAuth } from "@/features/auth/AuthContext";
 import {
@@ -15,10 +18,10 @@ import {
   financeApi,
   money,
   originLabel,
-  statusLabels,
   today,
   type Event,
 } from "./financeApi";
+import { ReceivableStatus } from "./FinanceShared";
 const operations: Record<string, string> = {
   create: "Criação",
   edit: "Edição",
@@ -32,7 +35,8 @@ export function ReceivableDetailPage() {
     tab = p.get("tab") ?? "installments",
     { user } = useAuth(),
     { hasPermission } = usePermissions(),
-    cache = useQueryClient();
+    cache = useQueryClient(),
+    { toast } = useToast();
   const q = useQuery({
     queryKey: ["finance", "detail", user?.id, receivableId],
     queryFn: () => financeApi.detail(receivableId),
@@ -57,24 +61,25 @@ export function ReceivableDetailPage() {
     cancel: "Cancelar recebível",
     edit: "Editar recebível",
   };
+  const done: Record<string, string> = {
+    receipt: "Recebimento registrado.",
+    reversal: "Recebimento estornado.",
+    cancel: "Recebível cancelado.",
+    edit: "Recebível atualizado.",
+  };
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold">{r.data.description}</h2>
-          <p className="text-sm text-muted-foreground">
-            Recebível #{r.id} · {statusLabels[r.status]} · Revisão {r.revision}
-            {r.overdue ? " · Vencido" : ""}
+          <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span>Recebível #{r.id}</span>
+            <ReceivableStatus status={r.status} overdue={r.overdue} />
+            <span>Revisão {r.revision}</span>
           </p>
         </div>
+        {/* Secundárias primeiro; a primária (Registrar recebimento) por último, à direita. */}
         <div className="flex flex-wrap gap-2">
-          {!r.cancelled &&
-            hasPermission("receivables:receive") &&
-            r.status !== "paid" && (
-              <Button onClick={() => open("receipt")}>
-                Registrar recebimento
-              </Button>
-            )}
           {!r.cancelled && hasPermission("receivables:edit") && (
             <>
               <Button variant="secondary" onClick={() => open("edit")}>
@@ -85,6 +90,13 @@ export function ReceivableDetailPage() {
               </Button>
             </>
           )}
+          {!r.cancelled &&
+            hasPermission("receivables:receive") &&
+            r.status !== "paid" && (
+              <Button onClick={() => open("receipt")}>
+                Registrar recebimento
+              </Button>
+            )}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -125,44 +137,37 @@ export function ReceivableDetailPage() {
           Fluxo do cliente
         </Link>
       </div>
-      <nav
-        aria-label="Detalhe do recebível"
-        className="flex gap-4 border-b pb-3 text-sm"
-      >
-        {[
-          ["installments", "Parcelas"],
-          ["history", "Histórico"],
-          ["details", "Dados e origem"],
-        ].map(([v, l]) => (
-          <Button
-            key={v}
-            variant="ghost"
-            className={tab === v ? "text-primary font-bold" : ""}
-            onClick={() => setP({ ...Object.fromEntries(p), tab: v })}
-          >
-            {l}
-          </Button>
-        ))}
-      </nav>
+      <Tabs
+        label="Detalhe do recebível"
+        value={tab}
+        onChange={(v) => setP({ ...Object.fromEntries(p), tab: v })}
+        tabs={[
+          { value: "installments", label: "Parcelas" },
+          { value: "history", label: "Histórico" },
+          { value: "details", label: "Dados e origem" },
+        ]}
+      />
       {tab === "installments" ? (
         <DataTable
+          caption="Parcelas do recebível"
           items={r.installments}
           getKey={(i) => i.id}
           columns={[
             { header: "Parcela", cell: (i) => i.position },
-            { header: "Vencimento", cell: (i) => formatCivilDate(i.dueOn) },
-            { header: "Original", cell: (i) => money(i.amount, r.currency) },
-            { header: "Recebido", cell: (i) => money(i.received, r.currency) },
-            { header: "Saldo", cell: (i) => money(i.open, r.currency) },
+            { header: "Data prevista", cell: (i) => formatCivilDate(i.dueOn) },
+            { header: "Original", numeric: true, cell: (i) => money(i.amount, r.currency) },
+            { header: "Recebido", numeric: true, cell: (i) => money(i.received, r.currency) },
+            { header: "Saldo", numeric: true, cell: (i) => money(i.open, r.currency) },
             {
               header: "Situação",
-              cell: (i) =>
-                `${statusLabels[i.status]}${i.overdue ? " · Vencida" : ""}`,
+              cell: (i) => <ReceivableStatus status={i.status} overdue={i.overdue} />,
             },
           ]}
         />
       ) : tab === "history" ? (
+        r.events.length ? (
         <DataTable
+          caption="Histórico do recebível"
           items={r.events}
           getKey={(e) => e.id}
           columns={[
@@ -170,9 +175,10 @@ export function ReceivableDetailPage() {
               header: "Evento",
               cell: (e) => `#${e.id} ${operations[e.operation] ?? e.operation}`,
             },
-            { header: "Data efetiva", cell: (e) => formatCivilDate(e.effectiveOn) || "—" },
+            { header: "Data", cell: (e) => formatCivilDate(e.effectiveOn) || "—" },
             {
               header: "Valor",
+              numeric: true,
               cell: (e) => (e.amount ? money(e.amount, r.currency) : "—"),
             },
             {
@@ -207,6 +213,9 @@ export function ReceivableDetailPage() {
             },
           ]}
         />
+        ) : (
+          <EmptyState title="Nenhum evento no histórico deste recebível." description="Criação, recebimentos, estornos e cancelamento aparecem aqui." />
+        )
       ) : tab === "details" ? (
         <div className="premium-panel grid gap-2 p-5 text-sm">
           <p>
@@ -274,6 +283,7 @@ export function ReceivableDetailPage() {
                   notes: v("notes"),
                 });
               await cache.invalidateQueries({ queryKey: ["finance"] });
+              toast({ title: done[modal] ?? "Operação registrada.", tone: "success" });
               setModal("");
             } catch (err) {
               setError((err as Error).message);
@@ -297,9 +307,12 @@ export function ReceivableDetailPage() {
                     ))}
                 </select>
               </label>
+              <label className="grid gap-1 text-sm">
+                Valor recebido (R$)
+                <MoneyInput name="amount" required />
+              </label>
               {[
-                ["amount", "Valor recebido", "text", ""],
-                ["received_on", "Data do recebimento", "date", today()],
+                ["received_on", "Data de recebimento", "date", today()],
                 ["method", "Forma de recebimento", "text", ""],
                 ["reference", "Referência única do recebimento", "text", ""],
               ].map(([name, label, type, value]) => (
@@ -373,7 +386,7 @@ export function ReceivableDetailPage() {
             Confirmo os dados e a operação financeira
           </label>
           {error && (
-            <p role="alert" className="text-destructive">
+            <p role="alert" className="text-sm text-destructive-text">
               {error}
             </p>
           )}

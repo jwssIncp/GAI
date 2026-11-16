@@ -16,7 +16,7 @@ test('login, refresh, deep link and logout against the real API', async ({
 
   await page.waitForURL('**/app/dashboard');
   await expect(
-    page.getByRole('heading', { name: 'Dashboard operacional' }),
+    page.getByRole('heading', { name: 'Visão geral' }),
   ).toBeVisible();
 
   const deepLink =

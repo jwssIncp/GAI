@@ -12,6 +12,7 @@ import {
   UserX,
 } from "lucide-react";
 import { normalizePage } from "@/api/pagination";
+import { Kpi } from "@/components/base/Cards";
 import { DataTable, type Column } from "@/components/base/DataTable";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { PageContainer } from "@/components/base/PageContainer";
@@ -318,12 +319,12 @@ export function FieldAgentsPage() {
       >
         <Kpi
           label="Inventariantes"
-          value={summary.data?.total}
+          value={count(summary.data?.total)}
           hint="Cadastros atuais da organização"
         />
         <Kpi
           label="UFs"
-          value={summary.data?.states_count}
+          value={count(summary.data?.states_count)}
           hint={
             summary.data?.without_state
               ? `${summary.data.without_state} sem UF informada`
@@ -332,7 +333,7 @@ export function FieldAgentsPage() {
         />
         <Kpi
           label="Exibidos"
-          value={data?.totalItems}
+          value={count(data?.totalItems)}
           hint="Resultado dos filtros atuais"
         />
       </section>
@@ -573,24 +574,9 @@ export function FieldAgentsPage() {
   );
 }
 
-function Kpi({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value?: number;
-  hint: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-card p-4">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="text-2xl font-semibold tabular-nums">
-        {value == null ? "–" : value.toLocaleString("pt-BR")}
-      </p>
-      <p className="text-xs text-muted-foreground">{hint}</p>
-    </div>
-  );
+/** Contagem para o KPI: "–" enquanto carrega. */
+function count(value?: number) {
+  return value == null ? "–" : value.toLocaleString("pt-BR");
 }
 
 function actionLabel(

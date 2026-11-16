@@ -15,7 +15,7 @@ const COLUMNS: Array<[string, string]> = [
   ["Não reemb.", "Despesas não reembolsáveis"],
   ["% Contrato", "(reembolsáveis + não reembolsáveis) ÷ valor do contrato"],
   ["Concluído", "Financeiro do projeto concluído"],
-  ["Status", "Status do projeto"],
+  ["Situação", "Situação do projeto"],
   ["Escopo", "Escopo do contrato"],
 ];
 
@@ -28,7 +28,7 @@ export function ExpenseProjectsPage() {
   const params = { search: term || undefined, only_open: onlyOpen, year: year ? Number(year) : undefined };
   const query = useQuery({ queryKey: expensesKeys.projects(params), queryFn: () => expensesApi.projects(params) });
   const data = query.data;
-  const cell = "whitespace-nowrap border-b px-2.5 py-3 tabular-nums";
+  const cell = "numeric border-b px-2.5 py-3";
 
   return (
     <div className="grid gap-4">
@@ -95,7 +95,7 @@ export function ExpenseProjectsPage() {
                     <td className={cell}>
                       {formatMoney(row.non_reimbursable)}
                       {row.unclassified_count ? (
-                        <span className="ml-1 text-xs text-warning" title="Despesas antigas sem tipo: não entram em reembolsáveis nem em não reembolsáveis">
+                        <span className="ml-1 text-xs text-warning-text" title="Despesas antigas sem tipo: não entram em reembolsáveis nem em não reembolsáveis">
                           +{row.unclassified_count} sem tipo
                         </span>
                       ) : null}
@@ -118,11 +118,14 @@ export function ExpenseProjectsPage() {
                     </td>
                   </tr>
                 ))}
+                {!data.items.length ? (
+                  <tr><td colSpan={COLUMNS.length + 1} className="px-3 py-6 text-center text-muted-foreground">Nenhum projeto com estes filtros.</td></tr>
+                ) : null}
               </tbody>
               <tfoot>
                 <tr className="font-semibold">
                   <td colSpan={2} className="px-3 py-3">Subtotal dos projetos exibidos ({data.items.length})</td>
-                  <td className="whitespace-nowrap px-2.5 py-3 tabular-nums">{formatMoney(data.subtotal_to_reimburse)}</td>
+                  <td className="numeric px-2.5 py-3">{formatMoney(data.subtotal_to_reimburse)}</td>
                   <td colSpan={6} />
                 </tr>
               </tfoot>

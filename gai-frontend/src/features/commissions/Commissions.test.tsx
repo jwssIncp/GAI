@@ -77,18 +77,20 @@ describe("Comissões", () => {
     mount();
     await userEvent.click((await screen.findAllByRole("button", { name: "Excluir comissão de Ana (Ação) em Alfa" }))[0]);
     const dialog = await screen.findByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Confirmar" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Excluir comissão" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Não é possível excluir a comissão: a competência 01/2026 está fechada na DRE. Reabra a competência 01/2026 na DRE (exige permissão e justificativa) e lance novamente.");
     expect(mocks.remove).toHaveBeenCalledTimes(1);
   });
 
-  it("KPIs em R$ com atrasadas em destaque, status automático e valor manual marcado", async () => {
+  it("KPIs em R$ com as em atraso em destaque, situação automática e valor manual marcado", async () => {
     mount();
     const kpis = within(await screen.findByRole("region", { name: "Indicadores das comissões" }));
-    expect(kpis.getByText("Atrasadas").nextSibling).toHaveTextContent("R$ 8.000,00");
-    expect(kpis.getByText("Atrasadas").nextSibling).toHaveClass("text-destructive");
+    expect(kpis.getByText("Em atraso").nextSibling).toHaveTextContent("R$ 8.000,00");
+    expect(kpis.getByText("Em atraso").nextSibling).toHaveClass("text-destructive-text");
     const table = within(screen.getByRole("region", { name: "Lançamentos de comissões" }));
-    expect(table.getByText("Atrasado")).toBeInTheDocument();
+    expect(table.getByText("Em atraso")).toHaveAttribute("data-status", "overdue");
+    expect(table.getByRole("columnheader", { name: "Projeto" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Filtrar por projeto" })).toBeInTheDocument();
     expect(table.getByText("Pago")).toBeInTheDocument();
     expect(table.getByTitle("Informado à mão (calculado: R$ 2.000,00)")).toHaveTextContent("manual");
   });
@@ -111,16 +113,36 @@ describe("Comissões", () => {
     mount();
     await u.click(await screen.findByRole("button", { name: /Nova comissão/ }));
     const dialog = within(screen.getByRole("dialog"));
-    await u.selectOptions(dialog.getByLabelText("Contrato"), "10");
-    expect(dialog.getByLabelText("Valor do contrato (R$)")).toHaveValue("100.000,00");
-    await u.selectOptions(dialog.getByLabelText("Contrato"), "11");
-    expect(dialog.getByLabelText("Valor do contrato (R$)")).toHaveValue("85.350,00");
+    await u.selectOptions(dialog.getByLabelText("Projeto"), "10");
+    expect(dialog.getByRole("textbox", { name: "Valor do contrato (R$)" })).toHaveValue("100.000,00");
+    await u.selectOptions(dialog.getByLabelText("Projeto"), "11");
+    expect(dialog.getByRole("textbox", { name: "Valor do contrato (R$)" })).toHaveValue("85.350,00");
     await u.selectOptions(dialog.getByLabelText("Parceiro"), "5");
     await u.type(dialog.getByLabelText("% comissão"), "6");
     expect(dialog.getByText(/Calculado: R\$ 5\.121,00/)).toBeInTheDocument();
     await u.click(dialog.getByRole("button", { name: "Lançar comissão" }));
     await waitFor(() =>
       expect(mocks.create).toHaveBeenCalledWith({ project_id: 11, partner_id: 5, contract_value: "85350.00", percent: "6.00", amount_manual: null, expected_payment_on: null, paid_on: null }),
+    );
+  });
+
+  it("nova comissão: colar \"50.000,00\" no valor do contrato e no valor manual envia \"50000.00\"", async () => {
+    const u = userEvent.setup();
+    mount();
+    await u.click(await screen.findByRole("button", { name: /Nova comissão/ }));
+    const dialog = within(screen.getByRole("dialog"));
+    await u.selectOptions(dialog.getByLabelText("Projeto"), "10");
+    await u.selectOptions(dialog.getByLabelText("Parceiro"), "5");
+    const value = dialog.getByRole("textbox", { name: "Valor do contrato (R$)" });
+    await u.clear(value);
+    await u.click(value);
+    await u.paste("50.000,00");
+    await u.type(dialog.getByLabelText("% comissão"), "4");
+    await u.click(dialog.getByRole("textbox", { name: "Valor da comissão (R$)" }));
+    await u.paste("2.500,50");
+    await u.click(dialog.getByRole("button", { name: "Lançar comissão" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith({ project_id: 10, partner_id: 5, contract_value: "50000.00", percent: "4.00", amount_manual: "2500.50", expected_payment_on: null, paid_on: null }),
     );
   });
 

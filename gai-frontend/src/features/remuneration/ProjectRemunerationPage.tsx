@@ -4,12 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, CreditCard, Download, Pencil, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
+import { Kpi } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { projectKeys } from "@/features/projects/projectQueries";
 import { useProjectLabel } from "@/features/projects/useProjectLabel";
@@ -27,11 +29,21 @@ import {
 } from "./remunerationApi";
 
 const civil = (value: string | null) => (value ? value.split("-").reverse().join("/") : null);
+const MONEY_COLUMNS = new Set(["Diária", "Adicional", "Total", "Descontos", "Final"]);
+const moneyCell = "numeric border-b px-2 py-2.5 text-right";
+const doneText = {
+  approve: "Lançamento aprovado.",
+  pay: "Pagamento registrado.",
+  cancel: "Lançamento cancelado.",
+  reopen: "Lançamento reaberto para edição.",
+  delete: "Lançamento excluído.",
+} as const;
 
 export function ProjectRemunerationPage() {
   const projectId = Number(useParams().projectId);
   const label = useProjectLabel(projectId);
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const cache = useQueryClient();
   const [filters, setFilters] = useState<RemunerationFilters>({ status_group: "all" });
   const [form, setForm] = useState<
@@ -40,7 +52,8 @@ export function ProjectRemunerationPage() {
   const [action, setAction] = useState<{ kind: "approve" | "pay" | "cancel" | "reopen" | "delete"; item: RemunerationItem } | null>(null);
   const [payDate, setPayDate] = useState("");
   const [reason, setReason] = useState("");
-  const [feedback, setFeedback] = useState<{ error?: boolean; message: string } | null>(null);
+  /** Falha fora dos diálogos (ex.: exportar); sucesso vai para o toast. */
+  const [feedback, setFeedback] = useState<string | null>(null);
   const query = useQuery({
     queryKey: remunerationKeys.project(projectId, filters),
     queryFn: () => remunerationApi.project(projectId, filters),
@@ -58,7 +71,8 @@ export function ProjectRemunerationPage() {
         : remunerationApi.create(projectId, payload),
     onSuccess: async () => {
       await refresh();
-      setFeedback({ message: form?.mode === "edit" ? "Lançamento atualizado." : "Lançamento criado." });
+      setFeedback(null);
+      toast({ title: form?.mode === "edit" ? "Lançamento atualizado." : "Lançamento criado.", tone: "success" });
       setForm(null);
     },
   });
@@ -74,11 +88,16 @@ export function ProjectRemunerationPage() {
     },
     onSuccess: async () => {
       await refresh();
-      setFeedback({ message: "Operação concluída. Histórico registrado." });
+      setFeedback(null);
+      if (action) toast({ title: doneText[action.kind], tone: "success" });
       setAction(null);
     },
-    onError: (error) => setFeedback({ error: true, message: (error as Error).message }),
   });
+  // abre um diálogo de ação sem o erro da ação anterior
+  const openAction = (next: NonNullable<typeof action>) => {
+    run.reset();
+    setAction(next);
+  };
 
   const data = query.data;
   const requireApproval = data?.parameters.require_approval ?? true;
@@ -99,7 +118,7 @@ export function ProjectRemunerationPage() {
       anchor.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      setFeedback({ error: true, message: (error as Error).message });
+      setFeedback((error as Error).message);
     }
   }
 
@@ -110,6 +129,7 @@ export function ProjectRemunerationPage() {
     reopen: ["Reabrir para edição", "Reabrir para edição o lançamento de"],
     delete: ["Excluir lançamento", "Excluir o lançamento de"],
   } as const;
+  const confirmText = { approve: "Aprovar", pay: "Pagar", cancel: "Cancelar lançamento", reopen: "Reabrir", delete: "Excluir" } as const;
 
   return (
     <PageContainer>
@@ -117,7 +137,7 @@ export function ProjectRemunerationPage() {
         title="Remuneração"
         description={`Diárias dos inventariantes${label ? ` · ${label}` : ""}. Total = dias × diária + adicional; final = total − descontos.`}
         action={
-          <div className="flex flex-wrap gap-2">
+          <>
             {hasPermission("payments:export") ? (
               <Button type="button" variant="secondary" onClick={() => void exportList()}>
                 <Download size={17} /> Exportar Excel
@@ -128,21 +148,13 @@ export function ProjectRemunerationPage() {
                 <Plus size={17} /> Novo lançamento
               </Button>
             ) : null}
-          </div>
+          </>
         }
       />
       {data ? (
         <section aria-label="Indicadores da remuneração" className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">Total final</p>
-            <p className="text-2xl font-semibold tabular-nums">{formatMoney(data.kpis.total_final)}</p>
-            <p className="text-xs text-muted-foreground">{formatMoney(data.kpis.paid_final)} já pago · cancelados fora</p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <p className="text-sm text-muted-foreground">A lançar</p>
-            <p className="text-2xl font-semibold tabular-nums">{data.to_launch.length}</p>
-            <p className="text-xs text-muted-foreground">Vinculados ativos sem nenhum lançamento</p>
-          </div>
+          <Kpi label="Total final" value={formatMoney(data.kpis.total_final)} hint={`${formatMoney(data.kpis.paid_final)} já pago · cancelados fora`} />
+          <Kpi label="A lançar" value={data.to_launch.length} hint="Vinculados ativos sem nenhum lançamento" />
         </section>
       ) : null}
       <FilterPanel>
@@ -169,20 +181,20 @@ export function ProjectRemunerationPage() {
           ))}
         </select>
         <select
-          aria-label="Filtrar por status"
+          aria-label="Filtrar por situação"
           className="h-10 rounded-md border bg-background px-3 text-sm"
           value={filters.status_group ?? "all"}
           onChange={(e) => setFilters((f) => ({ ...f, status_group: e.target.value as RemunerationStatusGroup }))}
         >
-          <option value="all">Todos os status</option>
+          <option value="all">Todas as situações</option>
           <option value="open">Em aberto (pendente e aprovado)</option>
           <option value="paid">Pago</option>
           <option value="cancelled">Cancelado</option>
         </select>
       </FilterPanel>
       {feedback ? (
-        <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>
-          {feedback.message}
+        <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">
+          {feedback}
         </p>
       ) : null}
       {query.isLoading ? (
@@ -195,8 +207,8 @@ export function ProjectRemunerationPage() {
             <table className="w-full min-w-[980px] border-separate border-spacing-0 text-left text-sm">
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
-                  {["Inventariante / UF", "Período / dias", "Previsto", "Pago em", "Diária", "Adicional", "Total", "Descontos", "Final", "Status"].map((h) => (
-                    <th key={h} scope="col" className="whitespace-nowrap border-b px-2 py-2.5 font-semibold">{h}</th>
+                  {["Inventariante / UF", "Período / dias", "Previsto", "Pago em", "Diária", "Adicional", "Total", "Descontos", "Final", "Situação"].map((h) => (
+                    <th key={h} scope="col" className={`whitespace-nowrap border-b px-2 py-2.5 font-semibold ${MONEY_COLUMNS.has(h) ? "text-right" : ""}`}>{h}</th>
                   ))}
                   <th scope="col" className="whitespace-nowrap border-b px-2 py-2.5 font-semibold md:sticky md:right-0 md:bg-muted">Ações</th>
                 </tr>
@@ -220,40 +232,40 @@ export function ProjectRemunerationPage() {
                       ) : item.status === "paid" || item.status === "cancelled" ? (
                         "—"
                       ) : (
-                        <span className="rounded bg-destructive/15 px-2 py-0.5 font-semibold text-destructive">Informar</span>
+                        <span className="rounded bg-destructive/10 px-2 py-0.5 font-semibold text-destructive-text">Informar</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap border-b px-2 py-2.5" title={item.payment_date ? "Data real de pagamento" : undefined}>
                       {item.status === "paid" ? civil(item.payment_date) : ""}
                     </td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.daily_rate)}</td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.additional_amount)}</td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">
+                    <td className={moneyCell}>{formatMoney(item.daily_rate)}</td>
+                    <td className={moneyCell}>{formatMoney(item.additional_amount)}</td>
+                    <td className={moneyCell}>
                       {formatMoney(item.total_amount)}
-                      {item.total_manual ? <span className="mt-0.5 block w-fit rounded bg-warning/15 px-1.5 text-xs font-semibold text-warning" title="Valor informado manualmente">manual</span> : null}
+                      {item.total_manual ? <span className="ml-auto mt-0.5 block w-fit rounded bg-warning-subtle px-1.5 text-xs font-semibold text-warning-text" title="Valor informado manualmente">manual</span> : null}
                     </td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 tabular-nums">{formatMoney(item.discount_amount)}</td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 font-semibold tabular-nums">{formatMoney(item.final_amount)}</td>
-                    <td className="border-b px-2 py-2.5"><StatusBadge value={item.status} /></td>
+                    <td className={moneyCell}>{formatMoney(item.discount_amount)}</td>
+                    <td className={`${moneyCell} font-semibold`}>{formatMoney(item.final_amount)}</td>
+                    <td className="border-b px-2 py-2.5"><StatusBadge finance={item.status} label={statusLabel[item.status]} /></td>
                     <td className="whitespace-nowrap border-b px-2 py-2.5 md:sticky md:right-0 md:bg-card">
                       <div className="flex gap-0.5">
                         {hasPermission("payments:update") && item.status === "pending" ? (
                           <Button type="button" variant="ghost" className="size-8" title={`Editar lançamento de ${item.field_agent_name}`} aria-label={`Editar lançamento de ${item.field_agent_name}`} onClick={() => { save.reset(); setForm({ mode: "edit", item }); }}><Pencil size={16} /></Button>
                         ) : null}
                         {requireApproval && hasPermission("payments:approve") && item.status === "pending" ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Aprovar lançamento de ${item.field_agent_name}`} aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Aprovar lançamento de ${item.field_agent_name}`} aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:mark-as-paid") && canPay(item) ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Registrar pagamento de ${item.field_agent_name}`} aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); setAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Registrar pagamento de ${item.field_agent_name}`} aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); openAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:reopen") && item.status === "approved" ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Reabrir para edição o lançamento de ${item.field_agent_name}`} aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); setAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Reabrir para edição o lançamento de ${item.field_agent_name}`} aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); openAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:cancel") && (item.status === "pending" || item.status === "approved") ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Cancelar lançamento de ${item.field_agent_name}`} aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Cancelar lançamento de ${item.field_agent_name}`} aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
                         ) : null}
                         {hasPermission("payments:delete") && (item.status === "pending" || item.status === "cancelled") ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Excluir lançamento de ${item.field_agent_name}`} aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => setAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
+                          <Button type="button" variant="ghost" className="size-8" title={`Excluir lançamento de ${item.field_agent_name}`} aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
                         ) : null}
                       </div>
                     </td>
@@ -279,9 +291,9 @@ export function ProjectRemunerationPage() {
               <tfoot>
                 <tr className="font-semibold">
                   <td colSpan={6} className="px-2 py-2.5">Total ({data.totals.count} lançamento(s); cancelados fora da soma)</td>
-                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.total_amount)}</td>
-                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.discount_amount)}</td>
-                  <td className="whitespace-nowrap px-2 py-2.5 tabular-nums">{formatMoney(data.totals.final_amount)}</td>
+                  <td className="numeric px-2 py-2.5 text-right">{formatMoney(data.totals.total_amount)}</td>
+                  <td className="numeric px-2 py-2.5 text-right">{formatMoney(data.totals.discount_amount)}</td>
+                  <td className="numeric px-2 py-2.5 text-right">{formatMoney(data.totals.final_amount)}</td>
                   <td colSpan={2} />
                 </tr>
               </tfoot>
@@ -331,9 +343,10 @@ export function ProjectRemunerationPage() {
                 <Input value={reason} minLength={5} required onChange={(e) => setReason(e.target.value)} />
               </label>
             )}
+            {run.isError ? <p role="alert" className="text-sm text-destructive-text">{(run.error as Error).message}</p> : null}
             <div className="flex justify-end gap-2">
               <Button type="button" variant="secondary" onClick={() => setAction(null)}>Voltar</Button>
-              <Button type="submit" loading={run.isPending}>{actionText[action.kind][0]}</Button>
+              <Button type="submit" loading={run.isPending}>{confirmText[action.kind]}</Button>
             </div>
           </form>
         </ModalForm>
@@ -347,7 +360,10 @@ export function ProjectRemunerationPage() {
               ? `${actionText[action.kind][1]} ${action.item.field_agent_name} (${formatMoney(action.item.final_amount)})? ${statusLabel[action.item.status]} hoje.`
               : ""
           }
+          variant={action?.kind === "approve" ? "primary" : "danger"}
+          confirmLabel={action ? confirmText[action.kind] : "Confirmar"}
           busy={run.isPending}
+          error={run.isError ? (run.error as Error).message : null}
           onConfirm={() => run.mutate()}
         />
       )}

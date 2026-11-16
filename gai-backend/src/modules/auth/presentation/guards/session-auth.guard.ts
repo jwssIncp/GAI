@@ -68,7 +68,8 @@ export class SessionAuthGuard implements CanActivate {
     private readonly roleAuth: RoleAuthorizationService,
     private readonly configService: ConfigService,
     @Inject(ORGANIZATION_GATE)
-    private readonly organizationGate: OrganizationGate,
+    // O guard só verifica se a organização está ativa.
+    private readonly organizationGate: Pick<OrganizationGate, 'isActive'>,
     @Optional() private readonly db?: DataSource,
   ) {}
 

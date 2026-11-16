@@ -200,7 +200,7 @@ describe('Projeto › Despesas (etapa 4)', () => {
     const table = within(await screen.findByRole('region', { name: 'Lançamentos de despesas' }));
     await u.click(table.getByRole('button', { name: 'Alternar tipo da despesa 1: Reembolsável' }));
     expect(mocks.changeType).not.toHaveBeenCalled();
-    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Alterar tipo' }));
     await waitFor(() => expect(mocks.changeType).toHaveBeenCalledWith(20, [1], 'non_reimbursable'));
     expect(table.queryByRole('button', { name: /Alternar tipo da despesa 3/ })).not.toBeInTheDocument();
   });
@@ -211,17 +211,17 @@ describe('Projeto › Despesas (etapa 4)', () => {
     await u.click(await screen.findByLabelText('Selecionar despesa 1'));
     await u.click(screen.getByLabelText('Selecionar despesa 3'));
     await u.click(screen.getByRole('button', { name: 'Excluir (2)' }));
-    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    await u.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Excluir' }));
     await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith(20, [1, 3]));
     expect(await screen.findByRole('alert')).toHaveTextContent('1 despesa(s) excluída(s). Não concluídas: 3: Despesa paga não pode ser excluída.');
   });
 
-  it('prestar conta: só reembolsáveis entram, em lote novo ou aberto', async () => {
+  it('incluir em lote de reembolso: só reembolsáveis entram, em lote novo ou aberto', async () => {
     const u = userEvent.setup();
     renderPage();
     await u.click(await screen.findByLabelText('Selecionar despesa 1'));
     await u.click(screen.getByLabelText('Selecionar despesa 2'));
-    await u.click(screen.getByRole('button', { name: 'Prestar conta (2)' }));
+    await u.click(screen.getByRole('button', { name: 'Incluir em lote de reembolso (2)' }));
     const dialog = within(screen.getByRole('dialog'));
     expect(dialog.getByText(/1 de 2 selecionada\(s\) são reembolsáveis/)).toBeInTheDocument();
     await u.selectOptions(dialog.getByLabelText('Lote de reembolso'), '5');
@@ -242,7 +242,7 @@ describe('Projeto › Despesas (etapa 4)', () => {
     await u.click(dialog.getByLabelText('A prazo'));
     await u.clear(dialog.getByLabelText('Número de parcelas'));
     await u.type(dialog.getByLabelText('Número de parcelas'), '3');
-    expect(dialog.getByLabelText('Valor da parcela 3')).toHaveValue('33,34');
+    expect(dialog.getByLabelText('Valor da parcela 3 (R$)')).toHaveValue('33,34');
     await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
     expect(mocks.create.mock.calls[0][1]).toMatchObject({
@@ -260,6 +260,22 @@ describe('Projeto › Despesas (etapa 4)', () => {
     });
   });
 
+  it('valor colado no padrão brasileiro ("50.000,00") vai à API como "50000.00"', async () => {
+    const u = userEvent.setup();
+    renderPage();
+    await u.click(await screen.findByRole('button', { name: /Nova despesa/ }));
+    const dialog = within(screen.getByRole('dialog'));
+    await u.selectOptions(dialog.getByLabelText('Motivo'), 'Transporte');
+    await u.click(dialog.getByRole('textbox', { name: 'Valor da despesa (R$)' }));
+    await u.paste('50.000,00');
+    await u.click(dialog.getByRole('textbox', { name: 'Valor depositado (R$)' }));
+    await u.paste('1.234,5');
+    expect(dialog.getByRole('textbox', { name: 'Valor da despesa (R$)' })).toHaveValue('50.000,00');
+    await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1));
+    expect(mocks.create.mock.calls[0][1]).toMatchObject({ amount: '50000.00', deposited_amount: '1234.50', payment_method: 'cash' });
+  });
+
   it('grade editada precisa somar o valor', async () => {
     const u = userEvent.setup();
     renderPage();
@@ -269,8 +285,8 @@ describe('Projeto › Despesas (etapa 4)', () => {
     await u.type(dialog.getByLabelText('Valor da despesa (R$)'), '100');
     await u.click(dialog.getByLabelText('A prazo'));
     await u.click(dialog.getByLabelText('Parcelas iguais (resto na última)'));
-    await u.clear(dialog.getByLabelText('Valor da parcela 1'));
-    await u.type(dialog.getByLabelText('Valor da parcela 1'), '60,00');
+    await u.clear(dialog.getByLabelText('Valor da parcela 1 (R$)'));
+    await u.type(dialog.getByLabelText('Valor da parcela 1 (R$)'), '60,00');
     await u.click(dialog.getByRole('button', { name: 'Lançar despesa' }));
     expect(dialog.getByRole('alert')).toHaveTextContent('A soma das parcelas (R$ 110,00) difere do valor (R$ 100,00).');
     expect(mocks.create).not.toHaveBeenCalled();
@@ -283,7 +299,7 @@ describe('Projeto › Despesas (etapa 4)', () => {
     const dialog = within(await screen.findByRole('dialog', { name: 'Adiantamentos de Ana Campo' }));
     await u.click(await dialog.findByRole('button', { name: 'Excluir adiantamento de 01/10/2026' }));
     expect(mocks.removeAdvance).not.toHaveBeenCalled();
-    await u.click(within(screen.getByRole('dialog', { name: 'Excluir adiantamento' })).getByRole('button', { name: 'Confirmar' }));
+    await u.click(within(screen.getByRole('dialog', { name: 'Excluir adiantamento' })).getByRole('button', { name: 'Excluir' }));
     await waitFor(() => expect(mocks.removeAdvance).toHaveBeenCalledWith(20, 9));
   });
 
@@ -299,12 +315,12 @@ describe('Projeto › Despesas (etapa 4)', () => {
     await waitFor(() => expect(mocks.closeFinance).toHaveBeenCalledWith(20, 'Projeto encerrado'));
   });
 
-  it('com o financeiro concluído: sem nova despesa nem prestar conta, com faixa e reabrir', async () => {
+  it('com o financeiro concluído: sem nova despesa nem inclusão em lote, com faixa e reabrir', async () => {
     mocks.board.mockResolvedValue(board({ closure: { closed_at: '2026-11-10T12:00:00.000Z', closed_by: 'Admin', reason: 'Encerrado' } }));
     renderPage();
     expect(await screen.findByText(/Financeiro concluído em/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Nova despesa/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Prestar conta/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Incluir em lote/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Reabrir financeiro/ })).toBeInTheDocument();
   });
 
@@ -335,7 +351,7 @@ describe('Projeto › Despesas (etapa 4)', () => {
   it('perfil só de leitura não vê ações de alteração', async () => {
     renderPage(reader);
     await screen.findByRole('region', { name: 'Lançamentos de despesas' });
-    for (const name of [/Nova despesa/, /Importar/, /Prestar conta/, /Excluir \(/, /Concluir financeiro/, /ZIP/])
+    for (const name of [/Nova despesa/, /Importar/, /Incluir em lote/, /Excluir \(/, /Concluir financeiro/, /ZIP/])
       expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Alternar tipo/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Lotes de reembolso' })).not.toBeInTheDocument();

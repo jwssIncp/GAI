@@ -169,6 +169,10 @@ describe("Project technical report navigation and editing", () => {
     await screen.findByRole("heading", {
       name: "Modelos versionados da organização",
     });
+    // um h1 por tela, com o nome da aba
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Modelos da organização" }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent(
       "/projects/25/technical-reports/templates",
     );

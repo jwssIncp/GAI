@@ -7,6 +7,7 @@ import { ModalForm } from "@/components/ui/dialog";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Pagination } from "@/components/base/Pagination";
 import { DataTable, type Column } from "@/components/base/DataTable";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { PermissionGate } from "@/features/auth/PermissionGate";
 import { exportJobsApi } from "@/api/endpoints";
 import { ApiError } from "@/api/http";
@@ -613,15 +614,8 @@ function Money({
 }) {
   return (
     <label className="grid gap-1 text-sm">
-      {label}
-      <input
-        inputMode="decimal"
-        pattern="\d{1,13}(\.\d{1,2})?"
-        placeholder="1234.56"
-        className="h-10 rounded-md border bg-background px-3"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {`${label} (R$)`}
+      <MoneyInput value={value} onValueChange={onChange} />
     </label>
   );
 }

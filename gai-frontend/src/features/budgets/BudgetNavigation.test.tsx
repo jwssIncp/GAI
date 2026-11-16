@@ -145,7 +145,7 @@ describe("Budget navigation uses real nested pages and version selection", () =>
     await user.click(
       await screen.findByRole("button", { name: "Publicar parâmetros" }),
     );
-    expect(screen.getByLabelText("Diária técnica")).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: "Diária técnica (R$)" })).toHaveValue("");
     expect(screen.getByLabelText("Impostos (%)")).toHaveValue("");
     expect(
       screen.getByLabelText("Produtividade diária por profissional"),

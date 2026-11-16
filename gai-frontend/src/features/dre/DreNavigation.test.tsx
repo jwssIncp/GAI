@@ -84,6 +84,13 @@ describe("DRE nested navigation and explicit classification", () => {
     await screen.findByText("Cobertura incompleta não equivale a zero.");
     fireEvent.click(screen.getByRole("link", { name: "Plano de contas" }));
     await screen.findByRole("button", { name: "Nova conta gerencial" });
+    // h1 = nome da aba (mesmo rótulo da aba e da trilha)
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Plano de contas" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Plano de contas" }),
+    ).toHaveAttribute("aria-current", "page");
     expect(screen.getByTestId("location")).toHaveTextContent(
       "/app/finance/dre/accounts?project_id=25",
     );
@@ -106,7 +113,8 @@ describe("DRE nested navigation and explicit classification", () => {
     fireEvent.change(screen.getByLabelText("Projeto"), {
       target: { value: "" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Consultar DRE" }));
+    // aplicação imediata: sem botão "Consultar DRE"
+    expect(screen.queryByRole("button", { name: "Consultar DRE" })).not.toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByTestId("location")).not.toHaveTextContent(
         "project_id",
@@ -140,7 +148,7 @@ describe("DRE nested navigation and explicit classification", () => {
     fireEvent.change(screen.getByLabelText("Competência 1"), {
       target: { value: "2026-01" },
     });
-    fireEvent.change(screen.getByLabelText("Valor 1"), {
+    fireEvent.change(screen.getByRole("textbox", { name: "Valor 1 (R$)" }), {
       target: { value: "100.01" },
     });
     fireEvent.change(screen.getByLabelText("Justificativa"), {
@@ -162,6 +170,29 @@ describe("DRE nested navigation and explicit classification", () => {
         }),
       ),
     );
+  });
+  it("lançamento manual: colar \"50.000,00\" (ou negativo) envia \"50000.00\"", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <DreEntryForm accounts={[]} onSave={save} />
+      </QueryClientProvider>,
+    );
+    for (const [label, value] of [
+      ["Chave do fato econômico", "synthetic-paste"],
+      ["Documento e evidência do evento", "Sintetico documento"],
+      ["Descrição", "Sintetico colado"],
+      ["Competência 1", "2026-02"],
+      ["Justificativa", "Teste sintetico colado"],
+    ])
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Valor 1 (R$)" }), { target: { value: "50.000,00" } });
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar competência" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Valor 2 (R$)" }), { target: { value: "-1.234,5" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.submit(screen.getByRole("button", { name: "Confirmar reconhecimento" }).closest("form")!);
+    await waitFor(() => expect(save).toHaveBeenCalled());
+    expect(save.mock.calls[0][0].allocations.map((a: { amount: string }) => a.amount)).toEqual(["50000.00", "-1234.50"]);
   });
   it("Demonstrativo sem parâmetros: avisa que é cálculo legado", async () => {
     const legacy = { ...(await dreApi.report({})), mode: "legacy" as const, cutoff: null };

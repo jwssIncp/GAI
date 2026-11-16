@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/base/StatusBadge";
+import type { FinanceStatus } from "@/components/base/financeStatus";
 import { formatMoney } from "@/utils/format";
 import { civilBr, type FlowItem } from "./cashFlowBoardApi";
 import { useViewPreference, useViewState } from "./useViewPreference";
@@ -12,8 +14,9 @@ export type BlockAction =
   | { kind: "confirm" | "undo" | "unsettle"; items: FlowItem[] }
   | { kind: "discard" | "receive" | "reschedule" | "redate" | "settle" | "repay"; items: FlowItem[] };
 
-const STATUS_IN: Record<FlowItem["status"], string> = { realized: "Recebido", open: "Previsto", proposed: "Não confirmado", reversed: "Estornado" };
-const STATUS_OUT: Record<FlowItem["status"], string> = { realized: "Pago", open: "A pagar", proposed: "Previsto", reversed: "Estornado" };
+/** Situação no mapa financeiro único (rótulo e cor vêm do StatusBadge). */
+const STATUS_IN: Record<FlowItem["status"], FinanceStatus> = { realized: "received", open: "forecast", proposed: "unconfirmed", reversed: "reversed" };
+const STATUS_OUT: Record<FlowItem["status"], FinanceStatus> = { realized: "paid", open: "payable", proposed: "unconfirmed", reversed: "reversed" };
 /** Permissão de baixa no fluxo por origem da saída (a mesma que o servidor exige). */
 const SETTLE_PERMISSION: Record<string, string> = {
   expense: "expenses:mark-as-paid",
@@ -96,8 +99,8 @@ function groupIncomeTax(rows: FlowItem[]): FlowItem[] {
   }
   return out;
 }
-function statusLabel(i: FlowItem) {
-  if (isFixedCost(i)) return i.refs.fixed_cost === "estimate" ? "Estimado" : "Lançado";
+function financeStatus(i: FlowItem): FinanceStatus {
+  if (isFixedCost(i)) return i.refs.fixed_cost === "estimate" ? "estimated" : "posted";
   return (i.direction === "in" ? STATUS_IN : STATUS_OUT)[i.status];
 }
 
@@ -240,13 +243,16 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
     </td>
   );
   const valueCell = (v: string, muted = false) => (
-    <td className={`whitespace-nowrap border-b px-2 py-1.5 text-right tabular-nums ${muted ? "text-muted-foreground" : ""}`}>{formatMoney(v)}</td>
+    <td className={`numeric border-b px-2 py-1.5 text-right ${muted ? "text-muted-foreground" : ""}`}>{formatMoney(v)}</td>
   );
   const statusCell = (i: FlowItem, withOverdue: boolean) => (
-    <td className="min-w-[5.5rem] border-b px-2 py-1.5 min-[1400px]:whitespace-nowrap" title={i.status === "proposed" ? "Previsto, não confirmado" : undefined}>
-      {statusLabel(i)}
+    <td className="min-w-[5.5rem] border-b px-2 py-1.5">
+      {withOverdue && i.overdue && i.status !== "realized" ? (
+        <StatusBadge finance="overdue" label={`Em atraso (${i.overdue_days} d)`} title={`${i.overdue_days} dia(s) em atraso`} />
+      ) : (
+        <StatusBadge finance={financeStatus(i)} />
+      )}
       {i.status === "reversed" && i.refs.reversed_on ? <span className="block text-xs text-muted-foreground">estornado em {civilBr(String(i.refs.reversed_on))}</span> : null}
-      {withOverdue && i.overdue ? <span className="ml-1 text-xs font-semibold text-destructive" title={`${i.overdue_days} dia(s) em atraso`}>· {i.overdue_days} d<span className="sr-only"> em atraso</span></span> : null}
     </td>
   );
   const descriptionCell = (i: FlowItem) => {
@@ -280,43 +286,43 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
   const columns: Record<BlockKind, Array<[string, (i: FlowItem) => ReactNode, boolean?]>> = {
     billing: [
       ["Data prevista", (i) => dateCell(i.expected_on ?? i.date)],
-      ["Recebido em", (i) => dateCell(i.realized_on)],
-      ["Em atraso", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5">{i.overdue ? <span className="font-semibold text-destructive">{i.overdue_days} dia(s)</span> : ""}</td>],
+      ["Data de recebimento", (i) => dateCell(i.realized_on)],
+      ["Em atraso", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5">{i.overdue ? <span className="font-semibold text-destructive-text">{i.overdue_days} dia(s)</span> : ""}</td>],
       ["Projeto", projectCell],
       ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={`${i.origin_label} · ${i.description}`}>{shortOrigin(i)}</td>],
       ["Parcela", (i) => <td className={`whitespace-nowrap border-b px-2 py-1.5 ${i.installment && i.installment.number === i.installment.of && i.installment.of > 1 ? "font-semibold" : ""}`}>{i.installment ? `${i.installment.number}/${i.installment.of}` : ""}</td>],
-      ["Status", (i) => statusCell(i, false)],
+      ["Situação", (i) => statusCell(i, false)],
       ["Valor bruto", (i) => valueCell(i.gross), true],
       ["Valor líquido", (i) => valueCell(i.net, true), true],
-      ["% do contrato", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5 text-right tabular-nums">{i.contract_pct ? `${i.contract_pct.replace(".", ",")}%` : ""}</td>, true],
+      ["% do contrato", (i) => <td className="numeric border-b px-2 py-1.5 text-right">{i.contract_pct ? `${i.contract_pct.replace(".", ",")}%` : ""}</td>, true],
     ],
     reimbursement: [
       ["Lote", (i) => dateCell(i.reference_on)],
       ["Data prevista", (i) => dateCell(i.expected_on ?? i.date)],
-      ["Recebido em", (i) => dateCell(i.realized_on)],
+      ["Data de recebimento", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
       ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
-      ["Status", (i) => statusCell(i, true)],
+      ["Situação", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
     to_reimburse: [
       ["Data", (i) => dateCell(i.reference_on ?? i.date)],
       ["Data prevista", (i) => dateCell(i.expected_on)],
-      ["Pago em", (i) => dateCell(i.realized_on)],
+      ["Data de pagamento", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
       ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
-      ["Status", (i) => statusCell(i, true)],
+      ["Situação", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
     non_reimbursable: [
       ["Data", (i) => dateCell(i.expected_on ?? i.date)],
-      ["Pago em", (i) => dateCell(i.realized_on)],
+      ["Data de pagamento", (i) => dateCell(i.realized_on)],
       ["Projeto", projectCell],
       ["Descrição", descriptionCell],
       ["Origem", (i) => <td className="whitespace-nowrap border-b px-2 py-1.5" title={i.origin_label}>{shortOrigin(i)}</td>],
-      ["Status", (i) => statusCell(i, true)],
+      ["Situação", (i) => statusCell(i, true)],
       ["Valor", (i) => valueCell(i.gross), true],
     ],
   };
@@ -343,7 +349,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
         <h2 id={`${regionId}-title`} className="text-base font-semibold">{title}</h2>
         <span className="rounded-full bg-sidebar-accent px-2 py-0.5 text-xs text-sidebar-foreground">{count}</span>
         <span className="ml-auto text-sm text-sidebar-muted" aria-label={`Subtotal de ${title}`}>
-          Subtotal <strong className="tabular-nums text-sidebar-foreground">{formatMoney(subtotal)}</strong>
+          Subtotal <strong className="numeric text-sidebar-foreground">{formatMoney(subtotal)}</strong>
         </span>
         <Button type="button" size="sm" variant="ghost" className="text-sidebar-foreground hover:border-sidebar-border hover:bg-sidebar-accent" aria-expanded={!hidden} aria-controls={regionId} onClick={() => setHidden(!hidden)}>
           {hidden ? "Mostrar" : "Ocultar"}
@@ -397,7 +403,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                 <>
                   {button("confirm", "Confirmar propostas", "primary", sourceCount(forAction("confirm")))}
                   {button("discard", "Descartar propostas", "secondary", sourceCount(forAction("discard")))}
-                  {button("receive", "Recebido", "primary")}
+                  {button("receive", "Marcar como recebido", "primary")}
                   {button("reschedule", "Alterar data prevista")}
                   {button("redate", "Alterar data de recebimento")}
                   {button("undo", "Desfazer recebimento", "ghost")}
@@ -475,7 +481,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                                   <li key={n} className="flex flex-wrap gap-x-3">
                                     <span className="tabular-nums text-muted-foreground">{civilBr(d.date)}</span>
                                     <span className="flex-1 break-words">{d.description}</span>
-                                    <span className="whitespace-nowrap tabular-nums">{formatMoney(d.amount)}</span>
+                                    <span className="numeric">{formatMoney(d.amount)}</span>
                                   </li>
                                 ))}
                               </ul>
@@ -495,8 +501,8 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                 {footer.map(([label, gross, net]) => (
                   <tr key={label} className="font-semibold">
                     <td colSpan={kind === "billing" ? width - 3 : width - 1} className="px-2 py-2">{label}</td>
-                    <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums">{formatMoney(gross)}</td>
-                    {kind === "billing" ? <td className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-muted-foreground">{formatMoney(net ?? 0)}</td> : null}
+                    <td className="numeric px-2 py-2 text-right">{formatMoney(gross)}</td>
+                    {kind === "billing" ? <td className="numeric px-2 py-2 text-right text-muted-foreground">{formatMoney(net ?? 0)}</td> : null}
                     {kind === "billing" ? <td /> : null}
                   </tr>
                 ))}

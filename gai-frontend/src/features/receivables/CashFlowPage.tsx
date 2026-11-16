@@ -4,8 +4,10 @@ import { Link, useSearchParams } from "react-router-dom";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
+import { Kpi } from "@/components/base/Cards";
+import { useToast } from "@/components/ui/toast-context";
 import { Button } from "@/components/ui/button";
-import { ModalForm } from "@/components/ui/dialog";
+import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
@@ -31,7 +33,8 @@ import {
 const select =
   "h-10 max-w-full rounded-md border bg-background px-3 text-sm md:max-w-[16rem]";
 
-function Kpi({
+/** Card do fluxo: com simulação, mostra o valor com a venda e o original riscado. */
+function FlowKpi({
   label,
   value,
   hint,
@@ -46,24 +49,20 @@ function Kpi({
 }) {
   const changed = simulated !== undefined && simulated !== value;
   const shown = changed ? simulated : value;
-  const negative = shown.startsWith("-");
   return (
-    <div
-      className={`rounded-lg border bg-card p-3 ${tone === "danger" ? "border-destructive/50" : tone === "warning" ? "border-warning/50" : changed ? "border-primary/60" : ""}`}
+    <Kpi
+      label={label}
+      value={shown}
+      hint={hint}
+      tone={tone ?? (changed ? "highlight" : "default")}
+      negative={shown.startsWith("-")}
     >
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p
-        className={`text-lg font-semibold tabular-nums ${negative || tone === "danger" ? "text-destructive" : ""}`}
-      >
-        {shown}
-      </p>
       {changed ? (
         <p className="text-xs text-muted-foreground">
           sem a venda: <s>{value}</s> · simulado
         </p>
       ) : null}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-    </div>
+    </Kpi>
   );
 }
 
@@ -94,23 +93,23 @@ function KpiRows({
         </p>
       ) : null}
       <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi
+        <FlowKpi
           label={`Total previsto ${monthBr(k.month.reference)}`}
           value={m(k.month.total)}
           simulated={sim ? m(sim.month.total) : undefined}
           hint="(entradas − saídas) do mês"
         />
-        <Kpi
+        <FlowKpi
           label="Entradas do mês"
           value={m(sumMoney(k.month.in_realized, k.month.in_open))}
           hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`}
         />
-        <Kpi
+        <FlowKpi
           label="Saídas do mês"
           value={m(sumMoney(k.month.out_realized, k.month.out_open))}
           hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`}
         />
-        <Kpi
+        <FlowKpi
           label="Em atraso"
           value={m(k.overdue.in)}
           hint={`${k.overdue.in_count} entrada(s) · saídas ${m(k.overdue.out)} (${k.overdue.out_count})`}
@@ -118,39 +117,39 @@ function KpiRows({
             k.overdue.in_count || k.overdue.out_count ? "danger" : undefined
           }
         />
-        <Kpi
+        <FlowKpi
           label={`Total previsto ${monthBr(k.next_month.reference)}`}
           value={m(k.next_month.total)}
           simulated={sim ? m(sim.next_month.total) : undefined}
           hint="entradas líquidas de IR − saídas"
         />
-        <Kpi
+        <FlowKpi
           label="Entradas do próximo mês (líquidas)"
           value={m(k.next_month.in_net)}
           hint={`bruto ${m(k.next_month.in_gross)}`}
         />
-        <Kpi
+        <FlowKpi
           label="Saídas do próximo mês"
           value={m(k.next_month.out)}
           hint="sem o IR (já descontado das entradas)"
         />
-        <Kpi
+        <FlowKpi
           label="Previsto não confirmado"
           value={m(k.proposed.amount)}
           hint={`${k.proposed.count} parcela(s) proposta(s)`}
           tone={k.proposed.count ? "warning" : undefined}
         />
         {k.year.dre_total != null ? (
-          <Kpi
+          <FlowKpi
             label={`Total previsto ${k.year.reference} (DRE)`}
             value={m(k.year.dre_total)}
             simulated={
               sim?.year.dre_total != null ? m(sim.year.dre_total) : undefined
             }
-            hint={`resultado da DRE jan–dez · fluxo do ano: ${m(k.year.total)}`}
+            hint={`resultado da DRE jan–dez (antes do corte, a DRE usa o lançado/importado) · fluxo do ano: ${m(k.year.total)}`}
           />
         ) : (
-          <Kpi
+          <FlowKpi
             label={`Total do ano ${k.year.reference}`}
             value={m(k.year.total)}
             hint={
@@ -160,11 +159,11 @@ function KpiRows({
             }
           />
         )}
-        <Kpi
+        <FlowKpi
           label={`A receber em ${k.year.reference} (líquido)`}
           value={m(k.year.in_open_net)}
         />
-        <Kpi
+        <FlowKpi
           label={`A pagar em ${k.year.reference}`}
           value={m(k.year.out_open)}
           hint="sem o IR"
@@ -175,7 +174,7 @@ function KpiRows({
 }
 
 type Dialog = {
-  kind: "receive" | "reschedule" | "discard" | "redate" | "settle" | "repay";
+  kind: "receive" | "reschedule" | "discard" | "redate" | "settle" | "repay" | "undo" | "unsettle";
   items: FlowItem[];
 } | null;
 
@@ -215,6 +214,7 @@ const BLOCKS: Array<{
 export function CashFlowPage() {
   const { hasPermission } = usePermissions();
   const cache = useQueryClient();
+  const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const thisYear = String(new Date().getFullYear());
   // Filtro geral (gravado na URL: recarregar ou compartilhar o link abre igual).
@@ -243,10 +243,8 @@ export function CashFlowPage() {
   );
   const [sim, setSim] = useState<SaleSimulationInput | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
-  const [feedback, setFeedback] = useState<{
-    message: string;
-    error?: boolean;
-  } | null>(null);
+  // Sucesso vai por toast; falha fica na tela (inline) até a próxima ação.
+  const [failure, setFailure] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
   const [details, setDetails] = useState(false);
   const [balances, setBalances] = useState<
@@ -272,13 +270,11 @@ export function CashFlowPage() {
         .filter((x) => !x.ok)
         .map((x) => x.message)
         .join("; ");
-      setFeedback({
-        message: `${r.done} item(ns) concluído(s).${failures ? ` Não concluídos: ${failures}` : ""}`,
-        error: r.failed > 0,
-      });
+      if (r.done) toast({ title: `${r.done} item(ns) concluído(s).`, tone: "success" });
+      setFailure(failures ? `Não concluídos: ${failures}` : null);
       await cache.invalidateQueries({ queryKey: cashFlowKeys.all });
     },
-    onError: (e) => setFeedback({ message: (e as Error).message, error: true }),
+    onError: (e) => setFailure((e as Error).message),
   });
 
   const data = board.data;
@@ -433,13 +429,10 @@ export function CashFlowPage() {
     ...new Set(list.map((i) => String(i.refs.source_key))),
   ];
   const onAction = (a: BlockAction) => {
-    setFeedback(null);
+    setFailure(null);
     if (a.kind === "confirm")
       run.mutate(() => cashFlowApi.confirm(sourceKeys(a.items)));
-    else if (a.kind === "undo")
-      run.mutate(() => cashFlowApi.undoReceipts(eventsOf(a.items)));
-    else if (a.kind === "unsettle")
-      run.mutate(() => cashFlowApi.settle(settleKeys(a.items), null));
+    // Desfazer recebimento/pagamento: sempre com confirmação.
     else
       setDialog({
         kind: a.kind as NonNullable<Dialog>["kind"],
@@ -580,12 +573,9 @@ export function CashFlowPage() {
       ))}
       <IndicatorsPanel indicators={indicators} simulating={Boolean(sim)} />
 
-      {feedback ? (
-        <p
-          role={feedback.error ? "alert" : "status"}
-          className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}
-        >
-          {feedback.message}
+      {failure ? (
+        <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">
+          {failure}
         </p>
       ) : null}
 
@@ -608,7 +598,7 @@ export function CashFlowPage() {
       </div>
       <p className="text-sm font-semibold">
         Saldo das linhas exibidas (entradas − saídas):{" "}
-        <span className={balance < 0 ? "text-destructive" : ""}>
+        <span className={`numeric ${balance < 0 ? "text-destructive-text" : ""}`}>
           {formatMoney(balance)}
         </span>
         {someHidden ? (
@@ -635,7 +625,7 @@ export function CashFlowPage() {
               ? `Marcar ${dialog.items.length} parcela(s) como recebida(s)`
               : `Pagar ${dialog.items.length} saída(s)`
           }
-          label={dialog.kind === "receive" ? "Recebido em" : "Pago em"}
+          label={dialog.kind === "receive" ? "Data de recebimento" : "Data de pagamento"}
           today={data.as_of}
           max={data.as_of}
           busy={run.isPending}
@@ -645,6 +635,32 @@ export function CashFlowPage() {
               dialog.kind === "receive"
                 ? cashFlowApi.receive(refsOf(dialog.items), date)
                 : cashFlowApi.settle(settleKeys(dialog.items), date),
+            )
+          }
+        />
+      ) : null}
+      {dialog?.kind === "undo" || dialog?.kind === "unsettle" ? (
+        <ConfirmDialog
+          open
+          onOpenChange={(o) => !o && !run.isPending && setDialog(null)}
+          title={
+            dialog.kind === "undo"
+              ? `Desfazer ${dialog.items.length} recebimento(s)?`
+              : `Desfazer ${dialog.items.length} pagamento(s)?`
+          }
+          description={
+            dialog.kind === "undo"
+              ? "O recebimento é estornado e a parcela volta a ficar em aberto. O estorno fica no histórico do recebível."
+              : "A saída volta a ficar a pagar, sem data de pagamento."
+          }
+          confirmLabel={dialog.kind === "undo" ? "Desfazer recebimento" : "Desfazer pagamento"}
+          busy={run.isPending}
+          error={failure}
+          onConfirm={() =>
+            run.mutate(() =>
+              dialog.kind === "undo"
+                ? cashFlowApi.undoReceipts(eventsOf(dialog.items))
+                : cashFlowApi.settle(settleKeys(dialog.items), null),
             )
           }
         />
@@ -763,7 +779,7 @@ function DateDialog({
               onChange={(e) => setDate(e.target.value)}
             />
             {future ? (
-              <span role="alert" className="text-xs text-destructive">
+              <span role="alert" className="text-xs text-destructive-text">
                 Data futura não é aceita.
               </span>
             ) : null}

@@ -97,8 +97,11 @@ test("ORG_ADMIN publishes explicit prices, builds a standalone budget, compares 
     "Margem alvo (%)": "15.00",
     "Fator de esforço por endereço": "1.0000",
   };
+  // campos em R$ usam o MoneyInput: rótulo "(R$)" e um input oculto com o valor da API
+  const money = new Set(["Diária técnica", "Despesas operacionais fixas", "Deslocamento fixo", "Transporte por dia", "Hospedagem por quarto-dia", "Alimentação por pessoa-dia", "Materiais", "Plaqueta por bem", "Custo administrativo", "Preço mínimo"]);
   for (const [label, value] of Object.entries(fields))
-    await dialog.getByLabel(label, { exact: true }).fill(value);
+    if (money.has(label)) await dialog.getByRole("textbox", { name: label + " (R$)", exact: true }).fill(value);
+    else await dialog.getByLabel(label, { exact: true }).fill(value);
   await dialog
     .getByLabel("Justificativa e referência de aprovação comercial")
     .fill("Aprovação exclusivamente sintética para homologação local");
@@ -157,7 +160,7 @@ test("ORG_ADMIN publishes explicit prices, builds a standalone budget, compares 
   await page.getByRole("button", { name: "Novo cenário", exact: true }).click();
   await dialog.getByLabel("Equipe ajustada", { exact: true }).fill("3");
   await dialog.getByLabel("Margem ajustada (%)").fill("20.00");
-  await dialog.getByLabel("Acréscimo operacional").fill("1.11");
+  await dialog.getByRole("textbox", { name: "Acréscimo operacional (R$)" }).fill("1.11");
   await dialog
     .getByLabel("Justificativa dos ajustes")
     .fill("Equipe ampliada e premissas sintéticas autorizadas");

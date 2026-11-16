@@ -83,7 +83,7 @@ test("ORG_ADMIN classifies accrual, adjusts, drills, exports and refreshes", asy
       preview_hash: preview.preview_hash,
     });
   await page.goto("/app/projects/" + project + "/summary");
-  await openProjectTab(page, "Financeiro", "DRE Gerencial");
+  await openProjectTab(page, "Financeiro", "DRE gerencial");
   await expect(page).toHaveURL(new RegExp("project_id=" + project));
   const nav = page.getByRole("navigation", { name: "Navegação da DRE" });
   await nav.getByRole("link", { name: "Plano de contas" }).click();

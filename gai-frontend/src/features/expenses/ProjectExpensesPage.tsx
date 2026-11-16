@@ -15,12 +15,16 @@ import {
   RotateCcw,
   XCircle,
 } from "lucide-react";
+import { Kpi } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
+import type { FinanceStatus } from "@/components/base/financeStatus";
+import { PageHeader } from "@/components/base/PageHeader";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, DrawerForm } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { useDebouncedValue } from "@/features/field-agents/useDebouncedValue";
 import { ExpenseAttachmentsPanel } from "@/features/finance/ExpenseAttachmentsPanel";
@@ -62,15 +66,14 @@ type Dialog =
   | { kind: "zip" }
   | null;
 
-function Kpi({ label, value, hint, accent }: { label: string; value: string; hint?: string; accent?: boolean }) {
-  return (
-    <div className={`rounded-lg border bg-card p-3 ${accent ? "border-warning/50" : ""}`}>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-lg font-semibold tabular-nums">{value}</p>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-    </div>
-  );
-}
+/** Situação da despesa → tom do mapa financeiro (o texto continua o da tela: "Paga", "Aprovada"…). */
+const EXPENSE_FINANCE_STATUS: Record<ExpenseStatus, FinanceStatus> = {
+  pending: "pending",
+  approved: "approved",
+  paid: "paid",
+  rejected: "cancelled",
+  cancelled: "cancelled",
+};
 
 function IconButton({ label, onClick, children, disabled }: { label: string; onClick: () => void; children: React.ReactNode; disabled?: boolean }) {
   return (
@@ -80,9 +83,10 @@ function IconButton({ label, onClick, children, disabled }: { label: string; onC
   );
 }
 
-/** Projeto › Despesas: acompanhamento do projeto (doc 06 §3.2, etapa 4). */
-export function ProjectExpensesPage({ projectId }: { projectId: number }) {
+/** Projeto › Despesas: acompanhamento do projeto (doc 06 §3.2, etapa 4). Inclui o cabeçalho com as ações. */
+export function ProjectExpensesPage({ projectId, description }: { projectId: number; description?: string }) {
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const cache = useQueryClient();
   const [filters, setFilters] = useState<ExpenseBoardFilters>({});
   const [search, setSearch] = useState("");
@@ -105,7 +109,12 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
   const finish = async (message: string, error = false) => {
     setDialog(null);
     setSelected([]);
-    setFeedback({ message, error });
+    // sucesso: aviso temporário (toast); falha ou resultado parcial: fica na tela
+    if (error) setFeedback({ message, error });
+    else {
+      setFeedback(null);
+      toast({ title: message, tone: "success" });
+    }
     await refresh();
   };
   const batchMessage = (r: BatchResult, verb: string) => {
@@ -141,13 +150,29 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
     }
   }
 
-  if (query.isLoading) return <LoadingState label="Carregando despesas" />;
-  if (query.isError) return <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} />;
-  if (!data) return null;
+  const header = (action?: React.ReactNode) => <PageHeader title="Despesas" description={description} action={action} />;
+  if (query.isLoading) return <>{header()}<LoadingState label="Carregando despesas" /></>;
+  if (query.isError) return <>{header()}<ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /></>;
+  if (!data) return header();
   const k = data.kpis;
   const canEdit = !closed;
 
   return (
+    <>
+    {header(
+      <>
+        {!closed && hasPermission("project-finance:close") ? (
+          <Button type="button" variant="ghost" onClick={() => setDialog({ kind: "close" })}><Lock size={16} /> Concluir financeiro</Button>
+        ) : null}
+        {hasPermission("expenses:import") && hasPermission("expenses:create") && canEdit ? <Button type="button" variant="secondary" onClick={() => setDialog({ kind: "import" })}><FileUp size={16} /> Importar</Button> : null}
+        <Button type="button" variant="secondary" onClick={() => void exportList("xlsx")}><Download size={16} /> Excel</Button>
+        <Button type="button" variant="secondary" onClick={() => void exportList("csv")}><Download size={16} /> CSV</Button>
+        {hasPermission("expenses:export-zip") && hasPermission("expenses:download-attachment") ? (
+          <Button type="button" variant="secondary" onClick={() => setDialog({ kind: "zip" })}><FileArchive size={16} /> ZIP</Button>
+        ) : null}
+        {hasPermission("expenses:create") && canEdit ? <Button type="button" onClick={() => setDialog({ kind: "form", item: null })}><Plus size={16} /> Nova despesa</Button> : null}
+      </>,
+    )}
     <div className="grid gap-4">
       {data.closure ? (
         <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-success/40 bg-success/10 p-3 text-sm">
@@ -172,7 +197,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         <Kpi label="Total de despesas" value={formatMoney(k.total)} hint={`${k.count} lançamento(s), sem rejeitadas e canceladas`} />
         <Kpi label="Reembolsável" value={formatMoney(k.reimbursable)} hint={`${pctBr(k.reimbursable_pct)} do total`} />
         <Kpi label="Não reembolsável" value={formatMoney(k.non_reimbursable)} hint={`${pctBr(k.non_reimbursable_pct)} do total`} />
-        <Kpi label="A reembolsar" value={formatMoney(k.to_reimburse)} hint="Reembolsáveis fora de lote faturado" accent={Number(k.to_reimburse) > 0} />
+        <Kpi label="A reembolsar" value={formatMoney(k.to_reimburse)} hint="Reembolsáveis fora de lote faturado" tone={Number(k.to_reimburse) > 0 ? "warning" : "default"} />
       </section>
       {k.unclassified_count ? (
         <p className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
@@ -181,21 +206,9 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-2">
-        {hasPermission("expenses:create") && canEdit ? <Button type="button" onClick={() => setDialog({ kind: "form", item: null })}><Plus size={16} /> Nova despesa</Button> : null}
-        {hasPermission("expenses:import") && hasPermission("expenses:create") && canEdit ? <Button type="button" variant="secondary" onClick={() => setDialog({ kind: "import" })}><FileUp size={16} /> Importar</Button> : null}
-        <Button type="button" variant="secondary" onClick={() => void exportList("xlsx")}><Download size={16} /> Excel</Button>
-        <Button type="button" variant="secondary" onClick={() => void exportList("csv")}><Download size={16} /> CSV</Button>
-        {hasPermission("expenses:export-zip") && hasPermission("expenses:download-attachment") ? (
-          <Button type="button" variant="secondary" onClick={() => setDialog({ kind: "zip" })}><FileArchive size={16} /> ZIP</Button>
-        ) : null}
-        {!closed && hasPermission("project-finance:close") ? (
-          <Button type="button" variant="ghost" onClick={() => setDialog({ kind: "close" })}><Lock size={16} /> Concluir financeiro</Button>
-        ) : null}
-      </div>
 
       <FilterPanel>
-        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar motivo, técnico, data ou código" />
+        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar motivo, inventariante, data ou código" />
         <select aria-label="Filtrar por tipo de despesa" title="Tipo de despesa" className={select} value={filters.expense_type ?? ""} onChange={(e) => setFilter("expense_type", e.target.value as ExpenseBoardFilters["expense_type"])}>
           <option value="">Tipo: todos</option>
           <option value="reimbursable">Reembolsável</option>
@@ -207,12 +220,12 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
           <option value="billed">Prestada (lote faturado)</option>
           <option value="pending">Não prestada</option>
         </select>
-        <select aria-label="Filtrar por status" className={select} value={filters.status ?? ""} onChange={(e) => setFilter("status", e.target.value as ExpenseStatus)}>
-          <option value="">Status: todos</option>
+        <select aria-label="Filtrar por situação" className={select} value={filters.status ?? ""} onChange={(e) => setFilter("status", e.target.value as ExpenseStatus)}>
+          <option value="">Situação: todas</option>
           {(Object.keys(EXPENSE_STATUS_LABEL) as ExpenseStatus[]).map((s) => <option key={s} value={s}>{EXPENSE_STATUS_LABEL[s]}</option>)}
         </select>
-        <select aria-label="Filtrar por técnico" className={select} value={filters.field_agent_id ?? ""} onChange={(e) => setFilter("field_agent_id", e.target.value)}>
-          <option value="">Técnico: todos</option>
+        <select aria-label="Filtrar por inventariante" className={select} value={filters.field_agent_id ?? ""} onChange={(e) => setFilter("field_agent_id", e.target.value)}>
+          <option value="">Inventariante: todos</option>
           <option value="none">Despesas gerais (vazio)</option>
           {data.summary.filter((s) => s.field_agent_id !== null).map((s) => <option key={s.field_agent_id} value={s.field_agent_id!}>{s.name}</option>)}
         </select>
@@ -222,7 +235,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
       </FilterPanel>
 
       {feedback ? (
-        <p role={feedback.error ? "alert" : "status"} className={`rounded-lg border p-3 text-sm ${feedback.error ? "text-destructive" : ""}`}>{feedback.message}</p>
+        <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">{feedback.message}</p>
       ) : null}
 
       <section className="premium-panel grid gap-2 p-4" aria-label="Resumo por inventariante">
@@ -245,7 +258,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                     <button type="button" className="text-primary-text hover:underline" onClick={() => setFilter("field_agent_id", s.field_agent_id === null ? "none" : String(s.field_agent_id))}>{s.name}</button>
                   </td>
                   <td className="py-2 tabular-nums">{s.entries}</td>
-                  <td className="whitespace-nowrap py-2 tabular-nums">
+                  <td className="numeric py-2">
                     {formatMoney(s.advances)}
                     {s.field_agent_id !== null && hasPermission("expense-advances:read") ? (
                       <Button type="button" variant="secondary" size="sm" className="ml-2 h-7 shrink-0 px-2 text-xs" onClick={() => setDialog({ kind: "advances", agentId: s.field_agent_id! })} aria-label={`Gerenciar adiantamentos de ${s.name}`} title="Gerenciar adiantamentos">
@@ -253,8 +266,8 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                       </Button>
                     ) : null}
                   </td>
-                  <td className="py-2 tabular-nums">{formatMoney(s.expenses)}</td>
-                  <td className={`py-2 font-semibold tabular-nums ${s.balance === null ? "text-muted-foreground" : s.balance.startsWith("-") ? "text-destructive" : "text-success"}`} title={s.balance === null ? "Despesas gerais não recebem adiantamento" : undefined}>{s.balance === null ? "—" : formatMoney(s.balance)}</td>
+                  <td className="numeric py-2">{formatMoney(s.expenses)}</td>
+                  <td className={`numeric py-2 font-semibold ${s.balance === null ? "text-muted-foreground" : s.balance.startsWith("-") ? "text-destructive" : "text-success"}`} title={s.balance === null ? "Despesas gerais não recebem adiantamento" : undefined}>{s.balance === null ? "—" : formatMoney(s.balance)}</td>
                 </tr>
               ))}
             </tbody>
@@ -271,7 +284,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
 
       <div className="flex flex-wrap items-center gap-2">
         {hasPermission("reimbursement-batches:create") && canEdit ? (
-          <Button type="button" disabled={!chosen.length} onClick={() => setDialog({ kind: "account", ids: selected })}>Prestar conta ({chosen.length})</Button>
+          <Button type="button" disabled={!chosen.length} onClick={() => setDialog({ kind: "account", ids: selected })}>Incluir em lote de reembolso ({chosen.length})</Button>
         ) : null}
         {hasPermission("expenses:update") && canEdit ? (
           <>
@@ -293,7 +306,7 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                   <input type="checkbox" aria-label="Selecionar todas as exibidas" checked={visible.length > 0 && visible.every((i) => selected.includes(i.id))}
                     onChange={(e) => setSelected(e.target.checked ? [...new Set([...selected, ...visible.map((i) => i.id)])] : selected.filter((id) => !visible.some((i) => i.id === id)))} />
                 </th>
-                {[["Cód", "Código sequencial da despesa no projeto"], ["Tipo de despesa", "Reembolsável ou não (vale o da despesa)"], ["Prestação", "Lote de reembolso ao cliente"], ["Data", ""], ["Técnico", ""], ["Motivo", ""], ["Forma", "Forma de pagamento"], ["Anexo", ""], ["Valor", ""], ["Status", ""], ["", ""]].map(([h, t], i) => (
+                {[["Cód", "Código sequencial da despesa no projeto"], ["Tipo de despesa", "Reembolsável ou não (vale o da despesa)"], ["Prestação", "Lote de reembolso ao cliente"], ["Data", ""], ["Inventariante", ""], ["Motivo", ""], ["Forma", "Forma de pagamento"], ["Anexo", ""], ["Valor", ""], ["Situação", ""], ["", ""]].map(([h, t], i) => (
                   <th key={`${h}-${i}`} scope="col" title={t || undefined} className="whitespace-nowrap border-b px-2 py-3 font-semibold">{h || <span className="sr-only">Ações</span>}</th>
                 ))}
               </tr>
@@ -339,28 +352,28 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
                       <Paperclip size={15} /> {i.attachments}
                     </Button>
                   </td>
-                  <td className="whitespace-nowrap border-b px-2 py-2 font-semibold tabular-nums">
+                  <td className="numeric border-b px-2 py-2 font-semibold">
                     {formatMoney(i.amount)}
                     {i.balance !== null ? <span className={`block text-xs font-normal ${i.balance.startsWith("-") ? "text-destructive" : "text-muted-foreground"}`} title="Depositado − valor">saldo {formatMoney(i.balance)}</span> : null}
                   </td>
-                  <td className="whitespace-nowrap border-b px-2 py-2"><StatusBadge value={i.status} /></td>
+                  <td className="whitespace-nowrap border-b px-2 py-2"><StatusBadge finance={EXPENSE_FINANCE_STATUS[i.status]} label={EXPENSE_STATUS_LABEL[i.status]} /></td>
                   <td className="whitespace-nowrap border-b px-2 py-2">
                     {canEdit && i.status === "pending" && hasPermission("expenses:update") ? <IconButton label={`Editar despesa ${i.sequence ?? i.id}`} onClick={() => setDialog({ kind: "form", item: i })}><Pencil size={15} /></IconButton> : null}
                     {i.status === "pending" && hasPermission("expenses:approve") ? <IconButton label={`Aprovar despesa ${i.sequence ?? i.id}`} onClick={() => setDialog({ kind: "action", item: i, action: "approve" })}><CheckCircle2 size={15} /></IconButton> : null}
                     {i.status === "pending" && hasPermission("expenses:reject") ? <IconButton label={`Rejeitar despesa ${i.sequence ?? i.id}`} onClick={() => setDialog({ kind: "reject", item: i })}><XCircle size={15} /></IconButton> : null}
-                    {i.status === "approved" && hasPermission("expenses:mark-as-paid") ? <IconButton label={`Marcar despesa ${i.sequence ?? i.id} como paga`} onClick={() => setDialog({ kind: "action", item: i, action: "mark-as-paid" })}><CreditCard size={15} /></IconButton> : null}
+                    {i.status === "approved" && hasPermission("expenses:mark-as-paid") ? <IconButton label={`Registrar pagamento da despesa ${i.sequence ?? i.id}`} onClick={() => setDialog({ kind: "action", item: i, action: "mark-as-paid" })}><CreditCard size={15} /></IconButton> : null}
                     {canEdit && i.status === "approved" && hasPermission("expenses:reopen") ? <IconButton label={`Reabrir despesa ${i.sequence ?? i.id} para edição`} onClick={() => setDialog({ kind: "reopen", item: i })}><RotateCcw size={15} /></IconButton> : null}
                   </td>
                 </tr>
               ))}
-              {!visible.length ? <tr><td colSpan={12} className="px-3 py-6 text-center text-muted-foreground">Nenhuma despesa com esses filtros.</td></tr> : null}
+              {!visible.length ? <tr><td colSpan={12} className="px-3 py-6 text-center text-muted-foreground">Nenhuma despesa com estes filtros.</td></tr> : null}
             </tbody>
             <tfoot>
               <tr className="font-semibold">
                 <td colSpan={9} className="px-3 py-3">
                   Total filtrado ({data.totals.count}, sem rejeitadas e canceladas) · Sem reembolso do cliente: {formatMoney(data.totals.non_reimbursable_amount)}
                 </td>
-                <td className="whitespace-nowrap px-2 py-3 tabular-nums">{formatMoney(data.totals.amount)}</td>
+                <td className="numeric px-2 py-3">{formatMoney(data.totals.amount)}</td>
                 <td colSpan={2} />
               </tr>
             </tfoot>
@@ -410,6 +423,8 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         onOpenChange={(o) => !o && setDialog(null)}
         title="Alterar tipo de despesa"
         description={dialog?.kind === "type" ? `Marcar ${dialog.ids.length} despesa(s) como ${EXPENSE_TYPE_LABEL[dialog.type].toLowerCase()}? Isso muda "A reembolsar"; despesas em lote faturado não mudam.` : ""}
+        variant="primary"
+        confirmLabel="Alterar tipo"
         busy={mutate.isPending}
         onConfirm={() => dialog?.kind === "type" && mutate.mutate(async () => batchMessage(await expensesApi.changeType(projectId, dialog.ids, dialog.type), "com o tipo alterado"))}
       />
@@ -418,14 +433,17 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
         onOpenChange={(o) => !o && setDialog(null)}
         title="Excluir despesas"
         description={dialog?.kind === "delete" ? `Excluir ${dialog.ids.length} despesa(s)? Pagas, em lote faturado ou em competência fechada da DRE não são excluídas.` : ""}
+        confirmLabel="Excluir"
         busy={mutate.isPending}
         onConfirm={() => dialog?.kind === "delete" && mutate.mutate(async () => batchMessage(await expensesApi.remove(projectId, dialog.ids), "excluída(s)"))}
       />
       <ConfirmDialog
         open={dialog?.kind === "action"}
         onOpenChange={(o) => !o && setDialog(null)}
-        title={dialog?.kind === "action" ? { approve: "Aprovar despesa", "mark-as-paid": "Marcar como paga", cancel: "Cancelar despesa" }[dialog.action] : ""}
+        title={dialog?.kind === "action" ? { approve: "Aprovar despesa", "mark-as-paid": "Registrar pagamento", cancel: "Cancelar despesa" }[dialog.action] : ""}
         description={dialog?.kind === "action" ? `Despesa ${dialog.item.sequence ?? dialog.item.id} · ${dialog.item.field_agent_name} · ${formatMoney(dialog.item.amount)}. Confirmar?` : ""}
+        variant={dialog?.kind === "action" && dialog.action === "cancel" ? "danger" : "primary"}
+        confirmLabel={dialog?.kind === "action" ? { approve: "Aprovar", "mark-as-paid": "Pagar", cancel: "Cancelar despesa" }[dialog.action] : "Confirmar"}
         busy={mutate.isPending}
         onConfirm={() => dialog?.kind === "action" && mutate.mutate(async () => { await expensesApi.action(projectId, dialog.item.id, dialog.action); return "Despesa atualizada."; })}
       />
@@ -446,5 +464,6 @@ export function ProjectExpensesPage({ projectId }: { projectId: number }) {
           onClose={() => setDialog(null)} onConfirm={(reason) => mutate.mutate(async () => { await expensesApi.reopenFinance(projectId, reason); return "Financeiro do projeto reaberto."; })} />
       ) : null}
     </div>
+    </>
   );
 }

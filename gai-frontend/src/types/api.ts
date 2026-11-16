@@ -70,6 +70,8 @@ export type CurrentUser = {
   email: string;
   status: UserStatus;
   organization_id?: number | null;
+  /** Nome de exibição da organização (nome fantasia ou razão social); null sem organização. */
+  organization_name?: string | null;
   role_assignments: RoleAssignment[];
   /** Omitted only by older API versions. An empty array means no grants. */
   permissions?: EffectivePermission[];

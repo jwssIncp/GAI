@@ -3,16 +3,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   CheckCircle2,
+  LayoutDashboard,
+  ShieldOff,
   KeyRound,
   Mail,
   Sparkles,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { authApi } from "@/api/endpoints";
 import { EmptyState } from "@/components/base/States";
+import { PageContainer } from "@/components/base/PageContainer";
+import { PageHeader } from "@/components/base/PageHeader";
 import { FormField } from "@/components/base/FormField";
 import { Button } from "@/components/ui/button";
 import { IconInput } from "@/components/ui/icon-input";
@@ -173,12 +177,42 @@ export function SessionExpiredPage() {
     />
   );
 }
+const accessDeniedText = "Você não tem permissão para acessar este recurso.";
+
+/**
+ * Endereço público antigo (/access-denied): com sessão, leva ao acesso negado dentro
+ * do layout (menu e topo); sem sessão, oferece o login.
+ */
 export function AccessDeniedPage() {
+  const { user } = useAuth();
+  if (user) return <Navigate to="/app/access-denied" replace />;
+  return <Message title="Acesso negado" text={accessDeniedText} />;
+}
+
+/** Acesso negado dentro do layout do aplicativo: o menu continua disponível. */
+export function AccessDeniedInAppPage() {
   return (
-    <Message
-      title="Acesso negado"
-      text="Você não tem permissão para acessar este recurso."
-    />
+    <PageContainer>
+      <PageHeader
+        eyebrow={null}
+        title="Acesso negado"
+        description={`${accessDeniedText} Se precisar dele, peça a um administrador da sua organização.`}
+      />
+      <section className="premium-panel grid justify-items-start gap-4 p-6">
+        <span className="grid size-12 place-items-center rounded-2xl border border-border/70 bg-muted/60 text-muted-foreground" aria-hidden="true">
+          <ShieldOff size={22} />
+        </span>
+        <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+          Use o menu lateral para abrir as telas liberadas para o seu perfil.
+        </p>
+        <Link
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-hover"
+          to="/app/dashboard"
+        >
+          <LayoutDashboard size={16} aria-hidden="true" /> Voltar para a Visão geral
+        </Link>
+      </section>
+    </PageContainer>
   );
 }
 export function AccountLockedPage() {

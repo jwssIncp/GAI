@@ -100,7 +100,7 @@ describe("Fluxo de caixa: indicadores", () => {
     const form = await screen.findByRole("form", { name: "Simular venda" });
     await userEvent.click(within(form).getByRole("button", { name: "Simular" }));
     expect(await within(form).findByRole("alert")).toHaveTextContent("Informe o valor da venda");
-    await userEvent.type(within(form).getByLabelText("Valor da venda"), "10.000,00");
+    await userEvent.type(within(form).getByRole("textbox", { name: "Valor da venda (R$)" }), "10.000,00");
     await userEvent.click(within(form).getByLabelText("Despesas por conta da empresa"));
     await userEvent.click(within(form).getByRole("button", { name: "Simular" }));
     await waitFor(() =>
@@ -134,7 +134,7 @@ describe("Fluxo de caixa: indicadores", () => {
     });
     mount();
     const form = await screen.findByRole("form", { name: "Simular venda" });
-    await userEvent.type(within(form).getByLabelText("Valor da venda"), "1000");
+    await userEvent.type(within(form).getByRole("textbox", { name: "Valor da venda (R$)" }), "1000");
     await userEvent.click(within(form).getByRole("button", { name: "Simular" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Sem parâmetros financeiros vigentes");
     await userEvent.click(screen.getByRole("button", { name: "Limpar simulação" }));

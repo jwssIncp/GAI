@@ -3,14 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { Plus, Trash2 } from "lucide-react";
+import { Kpi } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { InlineEdit } from "@/components/base/InlineEdit";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
+import { StatusBadge } from "@/components/base/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
+import { FinanceHeaderActions } from "@/features/receivables/FinanceLayout";
 import { formatMoney } from "@/utils/format";
 import {
   assetTagsApi,
@@ -27,15 +32,6 @@ import {
 const select = "h-10 max-w-[14rem] rounded-md border bg-background px-3 text-sm";
 const TYPE_LABEL = { reimbursable: "Reembolsável", non_reimbursable: "Não reembolsável" } as const;
 
-function Kpi({ label, value, negative, note }: { label: string; value: string; negative?: boolean; note?: string }) {
-  return (
-    <div className="rounded-lg border bg-card p-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={`text-lg font-semibold tabular-nums ${negative ? "text-destructive" : ""}`}>{value}</p>
-      {note ? <p className="text-xs text-warning">{note}</p> : null}
-    </div>
-  );
-}
 
 const qty = (n: number) => n.toLocaleString("pt-BR");
 const intParse = (typed: string) => (/^\d+$/.test(typed.trim()) ? String(Number(typed)) : typed.trim() === "" ? "" : null);
@@ -44,6 +40,7 @@ const intParse = (typed: string) => (/^\d+$/.test(typed.trim()) ? String(Number(
 export function AssetTagsPage() {
   const { hasPermission } = usePermissions();
   const canEdit = hasPermission("asset-tag-orders:edit");
+  const { toast } = useToast();
   const cache = useQueryClient();
   const [params] = useSearchParams();
   const [filters, setFilters] = useState<AssetTagFilters>(() => {
@@ -57,6 +54,7 @@ export function AssetTagsPage() {
     mutationFn: (id: number) => assetTagsApi.remove(id),
     onSuccess: async () => {
       setRemoving(null);
+      toast({ title: "Pedido de placas excluído.", tone: "success" });
       await cache.invalidateQueries({ queryKey: assetTagsKeys.all });
     },
   });
@@ -67,15 +65,23 @@ export function AssetTagsPage() {
   const setFilter = <K extends keyof AssetTagFilters>(key: K, value: string) =>
     setFilters((f) => ({ ...f, [key]: value === "" ? undefined : key === "project_id" ? Number(value) : value }));
 
+  // ação primária no cabeçalho do módulo (à direita do título)
+  const actions = canEdit ? (
+    <FinanceHeaderActions>
+      <Button type="button" onClick={() => setCreating(true)}><Plus size={16} /> Novo pedido</Button>
+    </FinanceHeaderActions>
+  ) : null;
   if (query.isLoading) return <LoadingState label="Carregando placas" />;
   if (query.isError) return <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} />;
   const data = query.data!;
   const k = data.kpis;
   const tax = data.parameters.tag_tax_pct;
   const cell = "whitespace-nowrap border-b px-2 py-2";
+  const filtered = Object.values(filters).some((v) => v !== undefined && v !== "");
 
   return (
     <div className="grid gap-4">
+      {actions}
       <p className="max-w-3xl text-sm text-muted-foreground">
         Quantidade = sequência final − inicial + 1 (quando informada).
         Valor líquido = valor total − {tax ? `${tax.replace(".", ",")}%` : "% de impostos dos parâmetros"} de impostos; lucro = líquido − custo.
@@ -124,7 +130,6 @@ export function AssetTagsPage() {
         </select>
         <input aria-label="Filtrar por nº da proposta" placeholder="Nº proposta" className="h-10 w-36 rounded-md border bg-background px-3 text-sm" value={filters.proposal ?? ""} onChange={(e) => setFilter("proposal", e.target.value)} />
         <Button type="button" variant="ghost" onClick={() => setFilters({})}>Limpar</Button>
-        {canEdit ? <Button type="button" onClick={() => setCreating(true)}><Plus size={16} /> Novo pedido</Button> : null}
       </FilterPanel>
 
       <div className="premium-panel">
@@ -163,7 +168,9 @@ export function AssetTagsPage() {
                   <td className={`${cell} tabular-nums`}><InlineEdit label="Custo unitário" kind="money" value={r.unit_cost} format={unitBr} parse={normalizeUnit} disabled={!canEdit} onSave={(v) => save(r.id, { unit_cost: v })} /></td>
                   <td className={cell}>
                     <InlineEdit label="Pagamento ao fornecedor" kind="select" value={r.supplier_payment_status} options={[{ value: "pending", label: "Pendente" }, { value: "paid", label: "Pago" }]} disabled={!canEdit} onSave={(v) => save(r.id, { supplier_paid: v === "paid" })}
-                      display={<span className={r.supplier_payment_status === "paid" ? "text-success" : "text-warning"}>{r.supplier_payment_status === "paid" ? "Pago" : "Pendente"}</span>} />
+                      display={r.supplier_payment_status === "paid"
+                        ? <StatusBadge finance="paid" title="Fornecedor pago" />
+                        : <StatusBadge finance="pending" title="Pagamento ao fornecedor pendente" />} />
                   </td>
                   <td className={cell}><InlineEdit label="Previsão de pagamento" kind="date" value={r.supplier_expected_payment_on ?? ""} format={civilBr} disabled={!canEdit} onSave={(v) => save(r.id, { supplier_expected_payment_on: v || null })} /></td>
                   <td className={cell}><InlineEdit label="Data de pagamento" kind="date" value={r.supplier_paid_on ?? ""} format={civilBr} disabled={!canEdit} onSave={(v) => save(r.id, { supplier_paid_on: v || null })} /></td>
@@ -188,10 +195,10 @@ export function AssetTagsPage() {
                       onSave={(v) => save(r.id, { expense_type_override: (v || null) as AssetTagInput["expense_type_override"] })}
                     />
                   </td>
-                  <td className={`${cell} tabular-nums`}>{formatMoney(r.cost_total)}</td>
-                  <td className={`${cell} tabular-nums`}>{formatMoney(r.value_total)}</td>
-                  <td className={`${cell} tabular-nums`} title={r.net_value === null ? `Sem % de impostos vigente em ${civilBr(r.ordered_on)}` : undefined}>{r.net_value === null ? "—" : formatMoney(r.net_value)}</td>
-                  <td className={`${cell} font-semibold tabular-nums ${r.net_profit?.startsWith("-") ? "text-destructive" : ""}`}>{r.net_profit === null ? "—" : formatMoney(r.net_profit)}</td>
+                  <td className={`${cell} numeric text-right`}>{formatMoney(r.cost_total)}</td>
+                  <td className={`${cell} numeric text-right`}>{formatMoney(r.value_total)}</td>
+                  <td className={`${cell} numeric text-right`} title={r.net_value === null ? `Sem % de impostos vigente em ${civilBr(r.ordered_on)}` : undefined}>{r.net_value === null ? "—" : formatMoney(r.net_value)}</td>
+                  <td className={`${cell} numeric text-right font-semibold ${r.net_profit?.startsWith("-") ? "text-destructive" : ""}`}>{r.net_profit === null ? "—" : formatMoney(r.net_profit)}</td>
                   <td className={cell}>
                     {canEdit ? (
                       <Button type="button" variant="ghost" className="size-8" aria-label={`Excluir pedido ${r.proposal_number ?? r.id}`} title="Excluir" onClick={() => setRemoving(r)}><Trash2 size={15} /></Button>
@@ -199,7 +206,7 @@ export function AssetTagsPage() {
                   </td>
                 </tr>
               ))}
-              {!data.items.length ? <tr><td colSpan={22} className="px-3 py-6 text-center text-muted-foreground">Nenhum pedido de placas.</td></tr> : null}
+              {!data.items.length ? <tr><td colSpan={22} className="px-3 py-6 text-center text-muted-foreground">{filtered ? "Nenhum pedido de placas com estes filtros." : "Nenhum pedido de placas."}</td></tr> : null}
             </tbody>
             <tfoot>
               <tr className="font-semibold">
@@ -207,17 +214,17 @@ export function AssetTagsPage() {
                 <td colSpan={2} />
                 <td className="px-2 py-3 tabular-nums">{qty(data.totals.quantity)}</td>
                 <td colSpan={13} />
-                <td className="px-2 py-3 tabular-nums">{formatMoney(data.totals.cost_total)}</td>
-                <td className="px-2 py-3 tabular-nums">{formatMoney(data.totals.value_total)}</td>
-                <td className="px-2 py-3 tabular-nums" title={data.totals.missing_tax_count ? `Sem ${data.totals.missing_tax_count} pedido(s) sem % de impostos` : undefined}>{formatMoney(data.totals.net_value)}{data.totals.missing_tax_count ? "*" : ""}</td>
-                <td className={`px-2 py-3 tabular-nums ${data.totals.net_profit.startsWith("-") ? "text-destructive" : ""}`}>{formatMoney(data.totals.net_profit)}{data.totals.missing_tax_count ? "*" : ""}</td>
+                <td className="numeric px-2 py-3 text-right">{formatMoney(data.totals.cost_total)}</td>
+                <td className="numeric px-2 py-3 text-right">{formatMoney(data.totals.value_total)}</td>
+                <td className="numeric px-2 py-3 text-right" title={data.totals.missing_tax_count ? `Sem ${data.totals.missing_tax_count} pedido(s) sem % de impostos` : undefined}>{formatMoney(data.totals.net_value)}{data.totals.missing_tax_count ? "*" : ""}</td>
+                <td className={`numeric px-2 py-3 text-right ${data.totals.net_profit.startsWith("-") ? "text-destructive" : ""}`}>{formatMoney(data.totals.net_profit)}{data.totals.missing_tax_count ? "*" : ""}</td>
                 <td />
               </tr>
             </tfoot>
           </table>
         </div>
       </div>
-      {creating ? <NewOrderDialog data={data} projectId={filters.project_id} onClose={() => setCreating(false)} onSaved={async () => { setCreating(false); await cache.invalidateQueries({ queryKey: assetTagsKeys.all }); }} /> : null}
+      {creating ? <NewOrderDialog data={data} projectId={filters.project_id} onClose={() => setCreating(false)} onSaved={async () => { setCreating(false); toast({ title: "Pedido de placas lançado.", tone: "success" }); await cache.invalidateQueries({ queryKey: assetTagsKeys.all }); }} /> : null}
       <ConfirmDialog
         open={Boolean(removing)}
         onOpenChange={(o) => {
@@ -227,6 +234,7 @@ export function AssetTagsPage() {
         }}
         title="Excluir pedido de placas"
         description={removing ? `Excluir o pedido ${removing.proposal_number ?? `#${removing.id}`} (${qty(removing.quantity)} placas, ${removing.project_name})?` : ""}
+        confirmLabel="Excluir"
         busy={remove.isPending}
         error={remove.isError ? (remove.error as Error).message : null}
         onConfirm={() => removing && remove.mutate(removing.id)}
@@ -300,13 +308,13 @@ function NewOrderDialog({ data, projectId, onClose, onSaved }: { data: AssetTagL
           {bySequence ? <span className="text-xs text-muted-foreground">Pela sequência: fim − início + 1.</span> : null}
         </FormField>
         <FormField label="Fornecedor"><Input aria-label="Fornecedor" value={form.supplier_name} onChange={(e) => set("supplier_name", e.target.value)} /></FormField>
-        <FormField label="Custo unitário (R$)"><Input inputMode="decimal" aria-label="Custo unitário (R$)" value={form.unit_cost} onChange={(e) => set("unit_cost", e.target.value)} /></FormField>
-        <FormField label="Valor unitário ao cliente (R$)"><Input inputMode="decimal" aria-label="Valor unitário ao cliente (R$)" value={form.unit_price} onChange={(e) => set("unit_price", e.target.value)} /></FormField>
+        <FormField label="Custo unitário (R$)"><MoneyInput decimals={4} aria-label="Custo unitário (R$)" value={form.unit_cost} onValueChange={(v) => set("unit_cost", v)} /></FormField>
+        <FormField label="Valor unitário ao cliente (R$)"><MoneyInput decimals={4} aria-label="Valor unitário ao cliente (R$)" value={form.unit_price} onValueChange={(v) => set("unit_price", v)} /></FormField>
         <FormField label="Previsão de pagamento"><Input type="date" aria-label="Previsão de pagamento" value={form.supplier_expected_payment_on} onChange={(e) => set("supplier_expected_payment_on", e.target.value)} /></FormField>
         <FormField label="Previsão de recebimento"><Input type="date" aria-label="Previsão de recebimento" value={form.client_expected_receipt_on} onChange={(e) => set("client_expected_receipt_on", e.target.value)} /></FormField>
-        {error ? <p role="alert" className="text-sm text-destructive sm:col-span-2">{error}</p> : null}
+        {error ? <p role="alert" className="text-sm text-destructive-text sm:col-span-2">{error}</p> : null}
         <div className="flex justify-end gap-2 sm:col-span-2">
-          <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button type="button" variant="secondary" onClick={onClose}>Voltar</Button>
           <Button type="submit" loading={create.isPending}>Lançar pedido</Button>
         </div>
       </form>

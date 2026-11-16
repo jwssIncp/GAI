@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ToastProvider } from "@/components/ui/toast";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { DreMonthlyPage } from "./DreMonthlyPage";
 import { parseSignedMoney, type DreCell, type DreMonthlyView } from "./dreMonthlyApi";
@@ -30,7 +31,9 @@ function mount(permissions = all) {
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>
       <AuthContext.Provider value={auth}>
         <MemoryRouter>
-          <DreMonthlyPage />
+          <ToastProvider>
+            <DreMonthlyPage />
+          </ToastProvider>
         </MemoryRouter>
       </AuthContext.Provider>
     </QueryClientProvider>,
@@ -87,9 +90,7 @@ describe("DRE mensal", () => {
     Object.values(mocks).forEach((m) => m.mockReset());
     Object.values(closing).forEach((m) => m.mockReset());
     closing.review.mockResolvedValue([]);
-    mocks.view.mockResolvedValue(view());
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-  });
+    mocks.view.mockResolvedValue(view());  });
 
   it("mostra a grade: lançado, fluxo, estimativa em itálico (não gravada), mês fechado e avisos", async () => {
     mount();
@@ -126,6 +127,10 @@ describe("DRE mensal", () => {
     await waitFor(() => expect(mocks.saveLayout).toHaveBeenCalledWith(2, { hidden: [5], summary: [1], post_operational: [9] }, "Ocultar linha"));
     const food = within(table).getByText(/3\.04 Alimentação/).closest("tr")!;
     await userEvent.click(within(food).getByRole("button", { name: "Excluir" }));
+    // confirmação do sistema (não o confirm nativo do navegador)
+    const dialog = within(await screen.findByRole("dialog", { name: "Excluir linha da DRE" }));
+    expect(mocks.setAccountActive).not.toHaveBeenCalled();
+    await userEvent.click(dialog.getByRole("button", { name: "Excluir linha" }));
     await waitFor(() => expect(mocks.setAccountActive).toHaveBeenCalledWith(7, 3, "Alimentação", false, "Excluir linha da DRE"));
     // conta com papel na projeção não tem "Excluir"
     expect(within(within(table).getByText(/4\.04 Serviços de terceiros/).closest("tr")!).queryByRole("button", { name: "Excluir" })).toBeNull();
@@ -147,7 +152,7 @@ describe("DRE mensal", () => {
     mount();
     const table = await screen.findByRole("table");
     await userEvent.click(within(table).getByTitle(/Estimativa \(não gravada\)/));
-    const input = await screen.findByLabelText("Valor lançado");
+    const input = await screen.findByRole("textbox", { name: "Valor lançado (R$)" });
     expect(input).toHaveValue(""); // a estimativa não vira valor lançado
     expect(input).toHaveAttribute("placeholder", "estimativa 6000,00");
     await userEvent.type(input, "6.200,00");
@@ -156,6 +161,14 @@ describe("DRE mensal", () => {
     await userEvent.type(screen.getByLabelText("Motivo"), "Reajuste de novembro");
     await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
     await waitFor(() => expect(mocks.setCell).toHaveBeenCalledWith(5, "2026-11", "6200.00", "Reajuste de novembro"));
+    // negativo colado no padrão pt-BR
+    await userEvent.click(within(table).getByTitle(/Estimativa \(não gravada\)/));
+    const again = await screen.findByRole("textbox", { name: "Valor lançado (R$)" });
+    await userEvent.click(again);
+    await userEvent.paste("-50.000,00");
+    await userEvent.type(screen.getByLabelText("Motivo"), "Estorno de novembro");
+    await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(mocks.setCell).toHaveBeenLastCalledWith(5, "2026-11", "-50000.00", "Estorno de novembro"));
   });
 
   it("importação: pré-visualiza, mostra o que vai gravar e confirma com motivo", async () => {

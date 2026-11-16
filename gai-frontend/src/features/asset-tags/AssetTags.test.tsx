@@ -84,7 +84,7 @@ describe("Placas de patrimônio", () => {
     mount();
     await userEvent.click(await screen.findByRole("button", { name: "Excluir pedido P-1" }));
     const dialog = await screen.findByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Confirmar" }));
+    await userEvent.click(within(dialog).getByRole("button", { name: "Excluir" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("Não é possível excluir o pedido de placas: a competência 10/2026 está fechada na DRE. Reabra a competência 10/2026 na DRE (exige permissão e justificativa) e lance novamente.");
   });
 
@@ -137,7 +137,7 @@ describe("Placas de patrimônio", () => {
     await u.type(input, "0,345{Enter}");
     const dialog = within(await screen.findByRole("dialog"));
     expect(dialog.getByText(/De/).textContent).toMatch(/De R\$ 0,85 para R\$ 0,345\?/);
-    await u.click(dialog.getByRole("button", { name: "Cancelar" }));
+    await u.click(dialog.getByRole("button", { name: "Voltar" }));
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
@@ -152,11 +152,27 @@ describe("Placas de patrimônio", () => {
     await u.type(dialog.getByLabelText("Sequência final"), "500");
     expect(dialog.getByLabelText("Quantidade")).toHaveValue("500");
     expect(dialog.getByLabelText("Quantidade")).toBeDisabled();
-    await u.type(dialog.getByLabelText("Custo unitário (R$)"), "0,90");
-    await u.type(dialog.getByLabelText("Valor unitário ao cliente (R$)"), "2,10");
+    await u.type(dialog.getByRole("textbox", { name: "Custo unitário (R$)" }), "0,90");
+    await u.type(dialog.getByRole("textbox", { name: "Valor unitário ao cliente (R$)" }), "2,10");
     await u.click(dialog.getByRole("button", { name: "Lançar pedido" }));
     await waitFor(() =>
-      expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ project_id: 10, sequence_start: 1, sequence_end: 500, unit_cost: "0.90", unit_price: "2.10", supplier_name: "Planner" })),
+      expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ project_id: 10, sequence_start: 1, sequence_end: 500, unit_cost: "0.9000", unit_price: "2.1000", supplier_name: "Planner" })),
+    );
+  });
+
+  it("novo pedido: valores colados no padrão brasileiro vão à API com ponto decimal (até 4 casas)", async () => {
+    const u = userEvent.setup();
+    mount(undefined, "/app/finance/asset-tags?project_id=10");
+    await u.click(await screen.findByRole("button", { name: /Novo pedido/ }));
+    const dialog = within(screen.getByRole("dialog"));
+    await u.type(dialog.getByLabelText("Quantidade"), "10");
+    await u.click(dialog.getByRole("textbox", { name: "Custo unitário (R$)" }));
+    await u.paste("50.000,00");
+    await u.click(dialog.getByRole("textbox", { name: "Valor unitário ao cliente (R$)" }));
+    await u.paste("1.234,5678");
+    await u.click(dialog.getByRole("button", { name: "Lançar pedido" }));
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ quantity: 10, unit_cost: "50000.0000", unit_price: "1234.5678" })),
     );
   });
 

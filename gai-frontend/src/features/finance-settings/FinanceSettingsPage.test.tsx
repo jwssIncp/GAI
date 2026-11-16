@@ -173,11 +173,34 @@ describe("Parâmetros financeiros", () => {
     expect(within(current).getAllByText("Média dos últimos 3 meses")).toHaveLength(2);
     await userEvent.click(screen.getByRole("button", { name: "Nova versão" }));
     const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
-    const amount = within(form).getByLabelText("Equipamentos: valor fixo (R$/mês)");
-    expect(amount).toHaveValue("1200.00");
+    const amount = within(form).getByRole("textbox", { name: "Equipamentos: valor fixo (R$/mês)" });
+    expect(amount).toHaveValue("1.200,00");
     expect(amount).toBeRequired();
     await userEvent.selectOptions(within(form).getByLabelText("Back-office"), "fixed");
-    expect(within(form).getByLabelText("Back-office: valor fixo (R$/mês)")).toBeRequired();
+    expect(within(form).getByRole("textbox", { name: "Back-office: valor fixo (R$/mês)" })).toBeRequired();
+  });
+
+  it("valores em R$: colar \"50.000,00\" envia \"50000.00\" (custo fixo e valor fixo por mês)", async () => {
+    mocks.get.mockResolvedValue({ data: { ...empty, current: version, versions: [version] } });
+    mocks.post.mockResolvedValue({ data: version });
+    renderPage(user(["finance-settings:read", "finance-settings:update"]));
+    await userEvent.click(await screen.findByRole("button", { name: "Nova versão" }));
+    const form = await screen.findByRole("form", { name: "Nova versão dos parâmetros financeiros" });
+    const operation = within(form).getByRole("textbox", { name: "Custo fixo da operação (R$)" });
+    await userEvent.clear(operation);
+    await userEvent.click(operation);
+    await userEvent.paste("50.000,00");
+    await userEvent.selectOptions(within(form).getByLabelText("Equipamentos"), "fixed");
+    const fixed = within(form).getByRole("textbox", { name: "Equipamentos: valor fixo (R$/mês)" });
+    await userEvent.clear(fixed);
+    await userEvent.click(fixed);
+    await userEvent.paste("1.234,5");
+    await userEvent.type(within(form).getByLabelText("Justificativa"), "Custos novos");
+    await userEvent.click(within(form).getByRole("button", { name: "Salvar versão" }));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledTimes(1));
+    const payload = mocks.post.mock.calls[0][1];
+    expect(payload.values.fixed_cost_operation).toBe("50000.00");
+    expect(payload.values.fixed_cost_item_amounts.equipment).toBe("1234.50");
   });
 
   it("versão nova herda o corte da anterior: só outro IR não muda o corte", async () => {

@@ -26,6 +26,7 @@ export function ProtectedRoute({ permissions }: { permissions?: string[] }) {
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (user.must_change_password && location.pathname !== "/app/change-password")
     return <Navigate to="/app/change-password" replace />;
-  if (!canAccess(permissions)) return <Navigate to="/access-denied" replace />;
+  // Com sessão, o acesso negado abre dentro do layout (menu e topo continuam disponíveis).
+  if (!canAccess(permissions)) return <Navigate to="/app/access-denied" replace />;
   return <Outlet />;
 }

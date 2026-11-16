@@ -707,7 +707,7 @@ test('rota protegida redireciona para login', async ({ page }) => {
 
 test('acesso negado', async ({ page }) => {
   await page.goto('/access-denied');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('listagem paginada', async ({ page }) => {
@@ -730,7 +730,7 @@ test('bloqueia inventariantes sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/field-agents');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre formulario e valida campos obrigatorios de inventariante', async ({ page }) => {
@@ -772,7 +772,7 @@ test('bloqueia itens sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/inventory-items');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre formulario e valida campos obrigatorios de item', async ({ page }) => {
@@ -848,7 +848,7 @@ test('bloqueia base contabil sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/accounting-items');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre modal e valida arquivo invalido da base contabil', async ({ page }) => {
@@ -890,7 +890,7 @@ test('bloqueia pendencias sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/pending-issues');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre nova pendencia e valida obrigatorios', async ({ page }) => {
@@ -971,7 +971,7 @@ test('bloqueia financeiro sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/finance');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('valida novo pagamento no financeiro', async ({ page }) => {
@@ -1056,14 +1056,14 @@ test('bloqueia workspace sem permissao de projeto', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/summary');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('bloqueia exportacoes sem permissao de projeto', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/export-jobs');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre exportacoes pelo resumo do projeto', async ({ page }) => {
@@ -1086,7 +1086,7 @@ test('bloqueia importacoes sem permissao', async ({ page }) => {
   await mockApi(page, limitedUser);
   await authenticateAs(page, limitedUser);
   await page.goto('/app/projects/10/import-sessions');
-  await expect(page.getByText('Acesso negado')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesso negado' })).toBeVisible();
 });
 
 test('abre nova importacao e valida tipo obrigatorio', async ({ page }) => {

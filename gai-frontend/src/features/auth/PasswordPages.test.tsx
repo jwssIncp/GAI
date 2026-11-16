@@ -1,21 +1,59 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { beforeEach, expect, it, vi } from "vitest";
-import { ForgotPasswordPage, ResetPasswordPage } from "./PasswordPages";
+import { AccessDeniedInAppPage, AccessDeniedPage, ForgotPasswordPage, ResetPasswordPage } from "./PasswordPages";
 const mocks = vi.hoisted(() => ({
   request: vi.fn(),
   confirm: vi.fn(),
   logout: vi.fn(),
+  user: null as null | { id: number },
 }));
-vi.mock("./AuthContext", () => ({ useAuth: () => ({ logout: mocks.logout }) }));
+vi.mock("./AuthContext", () => ({ useAuth: () => ({ logout: mocks.logout, user: mocks.user }) }));
 vi.mock("@/api/endpoints", () => ({
   authApi: {
     requestPasswordReset: mocks.request,
     confirmPasswordReset: mocks.confirm,
   },
 }));
-beforeEach(() => vi.resetAllMocks());
+beforeEach(() => {
+  vi.resetAllMocks();
+  mocks.user = null;
+});
+function Where() {
+  return <p data-testid="location">{useLocation().pathname}</p>;
+}
+it("acesso negado sem sessão oferece o login", () => {
+  render(
+    <MemoryRouter>
+      <AccessDeniedPage />
+    </MemoryRouter>,
+  );
+  expect(screen.getByText("Acesso negado")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Ir para login" })).toHaveAttribute("href", "/login");
+});
+it("acesso negado com sessão abre dentro do layout (não oferece login)", () => {
+  mocks.user = { id: 1 };
+  render(
+    <MemoryRouter initialEntries={["/access-denied"]}>
+      <Routes>
+        <Route path="/access-denied" element={<AccessDeniedPage />} />
+        <Route path="*" element={<Where />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+  expect(screen.getByTestId("location")).toHaveTextContent("/app/access-denied");
+});
+it("acesso negado no layout: título e volta para a Visão geral", () => {
+  render(
+    <MemoryRouter initialEntries={["/app/access-denied"]}>
+      <AccessDeniedInAppPage />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole("heading", { level: 1, name: "Acesso negado" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Voltar para a Visão geral" })).toHaveAttribute("href", "/app/dashboard");
+  expect(screen.queryByRole("link", { name: "Ir para login" })).not.toBeInTheDocument();
+});
 it("shows a recovery API error and allows retry without success feedback", async () => {
   mocks.request
     .mockRejectedValueOnce(new Error("Serviço temporariamente indisponível"))

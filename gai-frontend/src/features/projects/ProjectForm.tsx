@@ -495,7 +495,7 @@ export function ProjectForm({
                 />
                 <OperationalCard
                   title="Equipe de campo"
-                  text="Vincule agentes no resumo do projeto e distribua atividades na Coordenação de Campo. Os responsáveis deste cadastro não recebem permissões adicionais."
+                  text="Vincule agentes no resumo do projeto e distribua atividades na Coordenação de campo. Os responsáveis deste cadastro não recebem permissões adicionais."
                   detail="Equipe pode ser definida depois"
                 />
                 <OperationalCard

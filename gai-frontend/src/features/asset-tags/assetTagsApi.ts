@@ -1,3 +1,4 @@
+import { parseMoneyInput } from "@/components/base/moneyInputFormat";
 import { formatCivilDate } from "@/utils/format";
 import { api } from "@/api/http";
 
@@ -84,13 +85,13 @@ export const assetTagsKeys = {
   list: (filters: AssetTagFilters) => ["asset-tags", filters] as const,
 };
 
-/** "0,345" ou "1.234,5" → "0.345" / "1234.5" (até 4 casas); vazio ou inválido → null. */
+/**
+ * "0,345" ou "1.234,5" → "0.3450" / "1234.5000" (até 4 casas), com a mesma
+ * leitura do MoneyInput ("1.234" = milhar); vazio ou inválido → null.
+ */
 export function normalizeUnit(value: string): string | null {
-  const raw = value.trim().replace(/\s|R\$/g, "");
-  if (!raw) return null;
-  const plain = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
-  if (!/^\d{1,11}(\.\d{1,4})?$/.test(plain)) return null;
-  return plain;
+  const api = parseMoneyInput(value, false, 4);
+  return api && /^\d{1,11}\./.test(api) ? api : null;
 }
 
 /** "0.3450" → "R$ 0,345" (sem zeros à direita além dos centavos). */
