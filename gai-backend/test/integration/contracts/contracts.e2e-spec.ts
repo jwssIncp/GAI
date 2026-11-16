@@ -136,6 +136,9 @@ describe('Contracts and commercial overview through HTTP and real SQL', () => {
     expect(detail.versions).toHaveLength(2);
     expect(detail.versions[1].data.current_value).toBe('100.10');
     expect(detail.amendments[0].valueDelta).toBe('0.20');
+    // Nome do responsável junto do ID, em versões e aditivos.
+    expect(detail.versions[0].actor_name).toEqual(expect.any(String));
+    expect(detail.amendments[0].actor_name).toEqual(expect.any(String));
     expect(detail.amendments[0].actorId).toBeTruthy();
     expect(detail.data.ends_on).toBe('2029-12-31');
     expect(detail.data.current_ends_on).toBe('2030-12-31');
@@ -208,6 +211,11 @@ describe('Contracts and commercial overview through HTTP and real SQL', () => {
     expect(result.annual).toEqual([]);
     expect(result.estimated_assets).toBeNull();
     expect(result.totals[0].unknown_recurring_count).toBe(1);
+    // Grupos com chave estável: empresa pelo ID; segmento pelo próprio valor.
+    expect(result.companies).toEqual([
+      expect.objectContaining({ key: '1', company_id: 1, count: 1 }),
+    ]);
+    expect(result.segments[0]).toMatchObject({ key: segment, label: segment });
     await call('patch', f.base + `/${c.id}`, {
       ...d,
       status: 'active',

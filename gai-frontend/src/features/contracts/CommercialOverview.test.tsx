@@ -98,6 +98,32 @@ describe("Commercial data in the existing overview", () => {
     expect(screen.getAllByText("R$ 100,30").length).toBeGreaterThan(1);
     expect(screen.getByText("Valor vigente · BRL")).toBeInTheDocument();
   });
+  it("empresas com o mesmo nome aparecem separadas (chave pelo ID da empresa)", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const group = (key: string, company_id: number, count: number) => ({
+      key,
+      company_id,
+      label: "Acme Ltda",
+      count,
+      totals: [],
+    });
+    get.mockResolvedValue({
+      data: {
+        ...empty,
+        count: 3,
+        companies: [group("4", 4, 1), group("9", 9, 2)],
+      },
+    });
+    mount();
+    const table = await screen.findByRole("table", {
+      name: "Distribuição por empresa",
+    });
+    expect(table.querySelectorAll("tbody tr")).toHaveLength(2);
+    expect(
+      errors.mock.calls.some((c) => String(c[0]).includes("same key")),
+    ).toBe(false);
+    errors.mockRestore();
+  });
   it("shows a request failure without presenting monetary cards as zero", async () => {
     get.mockRejectedValue(new Error("Sem autorização comercial"));
     mount();
