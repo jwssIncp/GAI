@@ -30,7 +30,8 @@ type Denial =
   | 'expired'
   | 'locked'
   | 'session_revoked'
-  | 'field_agent_ineligible';
+  | 'field_agent_ineligible'
+  | 'temporary_password_expired';
 
 const DENIALS: Record<Denial, [HttpStatus, string, string]> = {
   invalid: [401, 'INVALID_REFRESH_TOKEN', 'Sessão inválida. Faça login.'],
@@ -55,6 +56,13 @@ const DENIALS: Record<Denial, [HttpStatus, string, string]> = {
     403,
     'MOBILE_ACCESS_DENIED',
     'Esta conta não possui acesso operacional ao aplicativo.',
+  ],
+  // Mesmo código do login: o refresh token já prova a identidade, então dizer
+  // o motivo não dá pista a quem não tem a senha, e o app orienta a pessoa.
+  temporary_password_expired: [
+    403,
+    'TEMPORARY_PASSWORD_EXPIRED',
+    'A senha temporária expirou. Peça ao administrador uma nova senha temporária.',
   ],
 };
 
@@ -187,13 +195,16 @@ export class MobileSessionService {
         (user.authVersion ?? 0) !== row.authVersion ||
         user.organizationId !== row.organizationId ||
         organization?.status !== OrganizationStatus.ACTIVE ||
-        (user.mustChangePassword &&
-          user.temporaryPasswordExpiresAt &&
-          user.temporaryPasswordExpiresAt <= now) ||
         !previous ||
         previous.revokedAt
       )
         return deny('session_revoked', 'access_revoked');
+      if (
+        user.mustChangePassword &&
+        user.temporaryPasswordExpiresAt &&
+        user.temporaryPasswordExpiresAt <= now
+      )
+        return deny('temporary_password_expired', 'temporary_password_expired');
       if (!(await this.isFieldEligible(manager, user)))
         return deny('field_agent_ineligible', 'field_agent_ineligible');
 

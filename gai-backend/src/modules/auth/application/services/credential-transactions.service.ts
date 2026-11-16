@@ -3,6 +3,7 @@ import { identityTransaction } from '../../infrastructure/persistence/identity-t
 import {
   BadRequestException,
   HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -44,6 +45,21 @@ export async function lockUser(
   if (manager.connection.options.type !== 'sqlite')
     query.setLock('pessimistic_write');
   return query.getOne();
+}
+
+/**
+ * Senha correta, mas temporária e vencida (login web e app, e refresh do app).
+ * 403: a identidade foi provada; o acesso é que depende de nova senha.
+ */
+export function temporaryPasswordExpired(): HttpException {
+  return new HttpException(
+    {
+      code: 'TEMPORARY_PASSWORD_EXPIRED',
+      message:
+        'A senha temporária expirou. Peça ao administrador uma nova senha temporária.',
+    },
+    HttpStatus.FORBIDDEN,
+  );
 }
 
 @Injectable()
@@ -130,12 +146,6 @@ export class CredentialTransactionsService {
       if (!user) return fail();
       if (![UserStatus.ACTIVE, UserStatus.LOCKED].includes(user.status))
         return fail();
-      if (
-        user.mustChangePassword &&
-        user.temporaryPasswordExpiresAt &&
-        user.temporaryPasswordExpiresAt <= now
-      )
-        return fail();
       try {
         await this.assertEligible(manager, user);
       } catch (error) {
@@ -165,6 +175,14 @@ export class CredentialTransactionsService {
         await users.save(user);
         return fail(user.status === UserStatus.LOCKED ? 423 : 401);
       }
+      // Só depois de a senha conferir: sem a senha, a expiração não é revelada
+      // (o 401 genérico continua). Nenhuma sessão é aberta.
+      if (
+        user.mustChangePassword &&
+        user.temporaryPasswordExpiresAt &&
+        user.temporaryPasswordExpiresAt <= now
+      )
+        return fail(403, 'temporary_password_expired');
       user.failedLoginAttempts = 0;
       user.lockedUntil = null;
       user.lastLoginAt = now;
@@ -198,7 +216,8 @@ export class CredentialTransactionsService {
       });
       return { user, session, extra } as const;
     });
-    if ('failure' in outcome)
+    if ('failure' in outcome) {
+      if (outcome.failure === 403) throw temporaryPasswordExpired();
       throw new HttpException(
         {
           code: outcome.failure === 423 ? 'ACCOUNT_LOCKED' : 'UNAUTHORIZED',
@@ -209,6 +228,7 @@ export class CredentialTransactionsService {
         },
         outcome.failure,
       );
+    }
     return outcome;
   }
 
@@ -217,13 +237,17 @@ export class CredentialTransactionsService {
     user: UserEntity,
     hash: string,
     mustChange = false,
+    /** Omitido: validade padrão (auth.temporaryPasswordTtlHours). null: sem expiração. */
+    temporaryTtlHours?: number | null,
   ): Promise<void> {
     await rotateCredential(
       manager,
       user,
       hash,
       mustChange,
-      this.config.get<number>('auth.temporaryPasswordTtlHours', 24),
+      temporaryTtlHours === undefined
+        ? this.config.get<number>('auth.temporaryPasswordTtlHours', 24)
+        : temporaryTtlHours,
     );
   }
 
@@ -349,6 +373,9 @@ export class CredentialTransactionsService {
       const user = found ? await lockUser(manager, found.id) : null;
       if (
         !user ||
+        // Conta de inventariante sem e-mail nunca recebe nada (a resposta
+        // pública continua a mesma).
+        !user.email ||
         ![UserStatus.ACTIVE, UserStatus.LOCKED].includes(user.status)
       )
         return null;

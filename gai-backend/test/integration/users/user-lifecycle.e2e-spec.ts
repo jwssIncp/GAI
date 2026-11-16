@@ -215,7 +215,13 @@ describe('User lifecycle: registration, credentials and tenant security', () => 
     await db.getRepository(UserEntity).update(target.body.id, {
       temporaryPasswordExpiresAt: new Date(Date.now() - 1000),
     });
-    await login(target.body.login).expect(401);
+    // Senha correta: a expiração é revelada (403). Senha errada: 401 genérico.
+    await login(target.body.login)
+      .expect(403)
+      .expect((r) => expect(r.body.code).toBe('TEMPORARY_PASSWORD_EXPIRED'));
+    await login(target.body.login, 'SINTETICO senha errada 123')
+      .expect(401)
+      .expect((r) => expect(r.body.code).toBe('UNAUTHORIZED'));
     await me(initial.body.access_token).expect(401);
     await api()
       .post(`/api/v1/users/${target.body.id}/password-reset`)
