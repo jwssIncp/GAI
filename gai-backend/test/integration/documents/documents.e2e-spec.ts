@@ -318,6 +318,25 @@ describe('Professional documents, real HTTP and private files', () => {
     ).body;
     expect(memory.id).not.toBe(meta.id);
     expect(memory.include_memory).toBe(true);
+    // Formatos pt-BR no arquivo gerado de verdade (moeda, percentual, fator, milhar).
+    const withMemory = strFromU8(
+      unzipSync(
+        (
+          await ds.manager
+            .getRepository(DocumentArtifact)
+            .createQueryBuilder('a')
+            .addSelect('a.bytes')
+            .where('a.id=:id', { id: memory.id })
+            .getOneOrFail()
+        ).bytes,
+      )['word/document.xml'],
+    );
+    expect(withMemory).toMatch(/Preço total: R\$ \d{1,3}(\.\d{3})*,\d{2}/);
+    expect(withMemory).toContain('R$ 100,10');
+    expect(withMemory).toContain('Comissão: 5,00%');
+    expect(withMemory).toContain('fator de esforço por endereço 1,0000');
+    expect(withMemory).toContain('1.000 bens');
+    expect(withMemory).not.toMatch(/BRL |\d\.\d{2}%|\b1\.0000\b/);
     await api(
       'post',
       endpoint.replace(
