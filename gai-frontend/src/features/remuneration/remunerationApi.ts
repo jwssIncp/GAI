@@ -182,9 +182,6 @@ export function computeRemuneration(input: {
   return { dailyTotal: fromCents(daily), total: fromCents(total), final: fromCents(final), negative: final < 0n };
 }
 
-/** Exibição com vírgula decimal. */
-export const decimalBr = (value: string) => value.replace(".", ",");
-
 /** "1415.00" → "1.415,00" (milhar com ponto, decimal com vírgula), para campos de valor. */
 export function moneyBr(value: string): string {
   if (!value) return "";

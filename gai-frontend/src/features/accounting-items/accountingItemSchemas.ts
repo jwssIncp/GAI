@@ -8,7 +8,6 @@ const optionalMoney = z
   .pipe(z.string().regex(/^\d{1,13}(\.\d{1,2})?$/, 'Valor deve seguir o formato 9999999999999.99').optional());
 
 export const accountingItemStatuses = ['pending', 'matched', 'divergent', 'not_found', 'ignored', 'inactive'] as const;
-export const accountingImportStatuses = ['pending', 'processing', 'finished', 'failed', 'cancelled'] as const;
 
 export const accountingItemFormSchema = z.object({
   serial_number: z.string().trim().max(100).optional(),
