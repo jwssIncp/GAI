@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
 import { FormField } from "@/components/base/FormField";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog, ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast-context";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { moneyBr, normalizeMoney } from "@/features/remuneration/remunerationApi";
 import { formatMoney } from "@/utils/format";
 import {
   EXPENSE_TYPE_LABEL,
@@ -72,7 +73,7 @@ export function ReasonDialog({
   );
 }
 
-/** Adiantamentos de um técnico no projeto: lista, adicionar, editar e excluir (com confirmação). */
+/** Adiantamentos de um inventariante no projeto: lista, adicionar, editar e excluir (com confirmação). */
 export function AdvancesDialog({
   projectId,
   board,
@@ -87,13 +88,14 @@ export function AdvancesDialog({
   onChanged: () => void;
 }) {
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const cache = useQueryClient();
   const query = useQuery({ queryKey: expensesKeys.advances(projectId), queryFn: () => expensesApi.advances(projectId) });
   const name = board.agents.find((a) => a.id === agentId)?.name ?? board.summary.find((s) => s.field_agent_id === agentId)?.name ?? "";
   const [editing, setEditing] = useState<ExpenseAdvance | "new" | null>(null);
   const [removing, setRemoving] = useState<ExpenseAdvance | null>(null);
   const [date, setDate] = useState(board.today);
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(""); // formato da API ("1234.56")
   const [notes, setNotes] = useState("");
   const [depositor, setDepositor] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -106,12 +108,13 @@ export function AdvancesDialog({
       expensesApi.saveAdvance(projectId, editing && editing !== "new" ? editing.id : null, {
         field_agent_id: agentId,
         advanced_on: date,
-        amount: normalizeMoney(amount) ?? "",
+        amount,
         notes: notes.trim() || null,
         deposited_by_name: depositor.trim() || null,
       }),
     onSuccess: async () => {
       setEditing(null);
+      toast({ title: "Adiantamento salvo.", tone: "success" });
       await refresh();
     },
     onError: (e) => setError((e as Error).message),
@@ -120,6 +123,7 @@ export function AdvancesDialog({
     mutationFn: (id: number) => expensesApi.removeAdvance(projectId, id),
     onSuccess: async () => {
       setRemoving(null);
+      toast({ title: "Adiantamento excluído.", tone: "success" });
       await refresh();
     },
   });
@@ -127,12 +131,12 @@ export function AdvancesDialog({
     setError(null);
     setEditing(advance);
     setDate(advance === "new" ? board.today : advance.advanced_on);
-    setAmount(advance === "new" ? "" : moneyBr(advance.amount));
+    setAmount(advance === "new" ? "" : advance.amount);
     setNotes(advance === "new" ? "" : (advance.notes ?? ""));
     setDepositor(advance === "new" ? "" : (advance.deposited_by_name ?? ""));
   };
   const rows = (query.data ?? []).filter((a) => a.field_agent_id === agentId);
-  const value = normalizeMoney(amount);
+  const value = amount || null;
 
   return (
     <ModalForm open onOpenChange={(o) => !o && onClose()} title={`Adiantamentos de ${name}`}>
@@ -146,7 +150,7 @@ export function AdvancesDialog({
               {rows.length ? rows.map((a) => (
                 <tr key={a.id} className="border-t">
                   <td className="py-2">{civilBr(a.advanced_on)}</td>
-                  <td className="py-2 tabular-nums">{formatMoney(a.amount)}</td>
+                  <td className="numeric py-2">{formatMoney(a.amount)}</td>
                   <td className="py-2">{a.deposited_by_name ?? "—"}</td>
                   <td className="py-2">{a.notes ?? "—"}</td>
                   <td className="py-2 text-right">
@@ -172,7 +176,7 @@ export function AdvancesDialog({
             }}
           >
             <FormField label="Data do depósito"><Input type="date" aria-label="Data do depósito" value={date} onChange={(e) => setDate(e.target.value)} /></FormField>
-            <FormField label="Valor depositado (R$)"><Input aria-label="Valor do adiantamento (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></FormField>
+            <FormField label="Valor depositado (R$)"><MoneyInput aria-label="Valor do adiantamento (R$)" value={amount} onValueChange={setAmount} /></FormField>
             <FormField label="Responsável pelo depósito"><Input aria-label="Responsável pelo depósito" value={depositor} onChange={(e) => setDepositor(e.target.value)} /></FormField>
             <FormField label="Observação"><Input aria-label="Observação do adiantamento" value={notes} onChange={(e) => setNotes(e.target.value)} /></FormField>
             {error ? <p role="alert" className="text-sm text-destructive sm:col-span-2">{error}</p> : null}
@@ -189,14 +193,17 @@ export function AdvancesDialog({
         open={Boolean(removing)}
         onOpenChange={(o) => !o && setRemoving(null)}
         title="Excluir adiantamento"
-        description={`Excluir o adiantamento de ${removing ? formatMoney(removing.amount) : ""} em ${civilBr(removing?.advanced_on)}? O saldo do técnico será recalculado.`}
+        description={`Excluir o adiantamento de ${removing ? formatMoney(removing.amount) : ""} em ${civilBr(removing?.advanced_on)}? O saldo do inventariante será recalculado.`}
+        confirmLabel="Excluir"
+        busy={remove.isPending}
+        error={remove.isError ? (remove.error as Error).message : null}
         onConfirm={() => removing && remove.mutate(removing.id)}
       />
     </ModalForm>
   );
 }
 
-/** "Prestar conta": incluir as despesas reembolsáveis selecionadas num lote de reembolso ao cliente. */
+/** "Incluir em lote de reembolso": as despesas reembolsáveis selecionadas entram num lote de reembolso ao cliente. */
 export function AccountDialog({
   projectId,
   board,
@@ -225,7 +232,7 @@ export function AccountDialog({
     },
   });
   return (
-    <ModalForm open onOpenChange={(o) => !o && onClose()} title="Prestar conta (lote de reembolso)">
+    <ModalForm open onOpenChange={(o) => !o && onClose()} title="Incluir em lote de reembolso">
       <div className="grid gap-4">
         <p className="text-sm text-muted-foreground">
           {eligible.length} de {chosen.length} selecionada(s) são reembolsáveis ({formatMoney(eligible.reduce((s, i) => s + Number(i.amount), 0))}).
@@ -253,15 +260,17 @@ export function AccountDialog({
 /** Lotes de reembolso do projeto: faturar, reabrir e cancelar, cada um com confirmação. */
 export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: number; onChanged: () => void; onFilter: (batchId: number) => void }) {
   const { hasPermission } = usePermissions();
+  const { toast } = useToast();
   const cache = useQueryClient();
   const query = useQuery({ queryKey: expensesKeys.batches(projectId), queryFn: () => expensesApi.batches(projectId) });
   const [pending, setPending] = useState<{ batch: ReimbursementBatch; action: "bill" | "reopen" | "cancel" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const run = useMutation({
     mutationFn: (p: NonNullable<typeof pending>) => expensesApi.batchAction(projectId, p.batch.id, p.action),
-    onSuccess: async () => {
+    onSuccess: async (_r, p) => {
       setPending(null);
       setError(null);
+      toast({ title: `Lote ${p.batch.number} ${{ bill: "faturado", reopen: "reaberto", cancel: "cancelado" }[p.action]}.`, tone: "success" });
       await cache.invalidateQueries({ queryKey: expensesKeys.batches(projectId) });
       onChanged();
     },
@@ -306,7 +315,7 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
                 <td className="py-2">{civilBr(b.batch_date)}</td>
                 <td className="py-2">{b.status_label}</td>
                 <td className="py-2 tabular-nums">{b.count}</td>
-                <td className="py-2 tabular-nums">{formatMoney(b.amount)}</td>
+                <td className="numeric py-2">{formatMoney(b.amount)}</td>
                 <td className="py-2 text-right">
                   {b.status === "open" && hasPermission("reimbursement-batches:close") ? <Button type="button" variant="secondary" onClick={() => setPending({ batch: b, action: "bill" })}>Faturar</Button> : null}
                   {b.status === "billed" && hasPermission("reimbursement-batches:reopen") ? <Button type="button" variant="ghost" onClick={() => setPending({ batch: b, action: "reopen" })}>Reabrir</Button> : null}
@@ -322,6 +331,9 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
         onOpenChange={(o) => !o && setPending(null)}
         title={pending ? `${verb[pending.action]} o lote ${pending.batch.number}` : ""}
         description={pending ? `${text[pending.action]} Confirmar?` : ""}
+        variant={pending?.action === "cancel" ? "danger" : "primary"}
+        confirmLabel={pending ? (pending.action === "cancel" ? "Cancelar lote" : verb[pending.action]) : "Confirmar"}
+        busy={run.isPending}
         onConfirm={() => pending && run.mutate(pending)}
       />
     </section>
@@ -330,7 +342,7 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
 
 const FIELD_LABEL: Record<string, string> = {
   expense_date: "Data",
-  field_agent: "Técnico",
+  field_agent: "Inventariante",
   reason_code: "Motivo",
   description: "Observação",
   expense_type: "Tipo de despesa",
@@ -356,7 +368,7 @@ export function ImportDialog({ projectId, onClose, onDone }: { projectId: number
     <ModalForm open onOpenChange={(o) => !o && onClose()} title="Importar despesas (Excel ou CSV)">
       <div className="grid gap-4">
         <p className="text-sm text-muted-foreground">
-          Cabeçalhos reconhecidos (com ou sem acento): Data, Técnico, Motivo, Observação, Tipo de despesa (Reembolsável / Não
+          Cabeçalhos reconhecidos (com ou sem acento): Data, Inventariante (ou Técnico), Motivo, Observação, Tipo de despesa (Reembolsável / Não
           reembolsável), Valor ou Total, Depositado ou Adiantamento, Forma de pagamento (À vista / A prazo / Faturado), Parcelas
           e Data de pagamento. Valores no padrão brasileiro (1.234,56). Tipo vazio usa o padrão do contrato.
         </p>
@@ -381,7 +393,7 @@ export function ImportDialog({ projectId, onClose, onDone }: { projectId: number
             <div className="max-h-72 overflow-auto rounded border">
               <table className="w-full text-xs" aria-label="Pré-visualização da importação">
                 <thead className="sticky top-0 bg-muted">
-                  <tr><th className="p-1 text-left">Linha</th><th className="p-1 text-left">Data</th><th className="p-1 text-left">Técnico</th><th className="p-1 text-left">Motivo</th><th className="p-1 text-left">Tipo</th><th className="p-1 text-left">Forma</th><th className="p-1 text-left">Valor</th><th className="p-1 text-left">Situação</th></tr>
+                  <tr><th className="p-1 text-left">Linha</th><th className="p-1 text-left">Data</th><th className="p-1 text-left">Inventariante</th><th className="p-1 text-left">Motivo</th><th className="p-1 text-left">Tipo</th><th className="p-1 text-left">Forma</th><th className="p-1 text-left">Valor</th><th className="p-1 text-left">Situação</th></tr>
                 </thead>
                 <tbody>
                   {preview.rows.map((r) => (
@@ -392,7 +404,7 @@ export function ImportDialog({ projectId, onClose, onDone }: { projectId: number
                       <td className="p-1">{r.values.reason_code ?? "—"}</td>
                       <td className="p-1">{r.values.expense_type ? EXPENSE_TYPE_LABEL[r.values.expense_type] : "padrão"}</td>
                       <td className="p-1">{r.values.payment_method ? `${PAYMENT_METHOD_LABEL[r.values.payment_method]}${r.values.installment_count ? ` ${r.values.installment_count}x` : ""}` : "—"}</td>
-                      <td className="p-1 tabular-nums">{r.values.amount ? formatMoney(r.values.amount) : "—"}</td>
+                      <td className="numeric p-1">{r.values.amount ? formatMoney(r.values.amount) : "—"}</td>
                       <td className="p-1">{r.errors.length ? <span className="text-destructive">{r.errors.join(" ")}</span> : "OK"}</td>
                     </tr>
                   ))}

@@ -4,7 +4,7 @@ import { FormField } from "@/components/base/FormField";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { moneyBr, normalizeMoney } from "@/features/remuneration/remunerationApi";
+import { MoneyInput } from "@/components/base/MoneyInput";
 import { formatMoney } from "@/utils/format";
 import {
   EXPENSE_TYPE_LABEL,
@@ -23,7 +23,7 @@ type Line = { due_date: string; amount: string };
 const select = "h-10 w-full rounded-md border bg-background px-3 text-sm";
 
 /**
- * Nova despesa / editar (doc 06 §3.3): data, técnico (só vinculados), motivo da lista,
+ * Nova despesa / editar (doc 06 §3.3): data, inventariante (só vinculados), motivo da lista,
  * tipo (padrão do contrato), observação, valor, depositado e forma de pagamento.
  * A prazo: parcelas iguais (D-E) ou grade editada, sempre somando o valor.
  */
@@ -46,24 +46,25 @@ export function ExpenseFormDialog({
   const [reason, setReason] = useState(initial?.reason_code ?? "");
   const [type, setType] = useState<ExpenseType | "">(initial ? (initial.expense_type ?? "") : (board.default_expense_type ?? ""));
   const [notes, setNotes] = useState(initial ? (initial.reason_code && initial.description === initial.reason_code ? "" : initial.description) : "");
-  const [amount, setAmount] = useState(initial ? moneyBr(initial.amount) : "");
-  const [deposited, setDeposited] = useState(initial?.deposited_amount ? moneyBr(initial.deposited_amount) : "");
+  // valores no formato da API ("1234.56"); o MoneyInput mostra "1.234,56"
+  const [amount, setAmount] = useState(initial?.amount ?? "");
+  const [deposited, setDeposited] = useState(initial?.deposited_amount ?? "");
   const [method, setMethod] = useState<ExpensePaymentMethod>(initial?.payment_method ?? "cash");
   const [invoiced, setInvoiced] = useState(initial?.invoiced_payment_date ?? "");
   const [count, setCount] = useState(String(initial?.installments.length || 2));
   const [equal, setEqual] = useState(!initial?.installments.length);
   const [grid, setGrid] = useState<Line[]>(
-    initial?.installments.map((l) => ({ due_date: l.due_date, amount: moneyBr(l.amount) })) ?? [],
+    initial?.installments.map((l) => ({ due_date: l.due_date, amount: l.amount })) ?? [],
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const value = normalizeMoney(amount);
+  const value = amount || null;
   const plan = useMemo(
     () => (method === "installments" && value && equal ? equalInstallments(value, Number(count), date) : []),
     [method, value, equal, count, date],
   );
-  const lines: Line[] = equal ? plan.map((l) => ({ due_date: l.due_date, amount: moneyBr(l.amount) })) : grid;
-  const gridSum = lines.reduce((s, l) => s + Math.round(Number(normalizeMoney(l.amount) ?? "0") * 100), 0);
+  const lines: Line[] = equal ? plan.map((l) => ({ due_date: l.due_date, amount: l.amount })) : grid;
+  const gridSum = lines.reduce((s, l) => s + Math.round(Number(l.amount || "0") * 100), 0);
   const agents = board.agents.filter((a) => a.linked || a.id === initial?.field_agent_id);
 
   const save = useMutation({
@@ -77,8 +78,7 @@ export function ExpenseFormDialog({
     if (!date) e.date = "Informe a data.";
     if (!reason) e.reason = "Escolha o motivo.";
     if (!value || Number(value) <= 0) e.amount = "Informe um valor maior que zero.";
-    const dep = deposited.trim() ? normalizeMoney(deposited) : null;
-    if (deposited.trim() && dep === null) e.deposited = "Valor depositado inválido.";
+    const dep = deposited || null;
     if (method === "invoiced" && !invoiced) e.invoiced = "Informe a data de pagamento da fatura.";
     if (method === "installments") {
       if (!lines.length) e.installments = "Informe as parcelas.";
@@ -100,7 +100,7 @@ export function ExpenseFormDialog({
       ...(method === "installments"
         ? {
             installment_count: lines.length,
-            installments: lines.map((l) => ({ due_date: l.due_date, amount: normalizeMoney(l.amount) ?? "0.00" })),
+            installments: lines.map((l) => ({ due_date: l.due_date, amount: l.amount || "0.00" })),
           }
         : {}),
     });
@@ -119,9 +119,9 @@ export function ExpenseFormDialog({
           <FormField label="Data da despesa" error={errors.date}>
             <Input type="date" aria-label="Data da despesa" value={date} onChange={(e) => setDate(e.target.value)} />
           </FormField>
-          <FormField label="Técnico">
-            <select aria-label="Técnico" className={select} value={agent} onChange={(e) => setAgent(e.target.value)}>
-              <option value="">Despesas gerais (sem técnico)</option>
+          <FormField label="Inventariante">
+            <select aria-label="Inventariante" className={select} value={agent} onChange={(e) => setAgent(e.target.value)}>
+              <option value="">Despesas gerais (sem inventariante)</option>
               {agents.map((a) => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
@@ -151,19 +151,10 @@ export function ExpenseFormDialog({
             ) : null}
           </FormField>
           <FormField label="Valor da despesa (R$)" error={errors.amount}>
-            <Input aria-label="Valor da despesa (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => value && setAmount(moneyBr(value))} />
+            <MoneyInput aria-label="Valor da despesa (R$)" value={amount} onValueChange={setAmount} />
           </FormField>
           <FormField label="Valor depositado (R$)" error={errors.deposited}>
-            <Input
-              aria-label="Valor depositado (R$)"
-              inputMode="decimal"
-              value={deposited}
-              onChange={(e) => setDeposited(e.target.value)}
-              onBlur={() => {
-                const v = normalizeMoney(deposited);
-                if (deposited.trim() && v) setDeposited(moneyBr(v));
-              }}
-            />
+            <MoneyInput aria-label="Valor depositado (R$)" value={deposited} onValueChange={setDeposited} />
           </FormField>
         </div>
         <FormField label="Observação">
@@ -227,8 +218,8 @@ export function ExpenseFormDialog({
                             onChange={(e) => setGrid((g) => g.map((x, k) => (k === i ? { ...x, due_date: e.target.value } : x)))} />
                         </td>
                         <td className="py-1">
-                          <Input aria-label={`Valor da parcela ${i + 1}`} inputMode="decimal" value={l.amount} disabled={equal}
-                            onChange={(e) => setGrid((g) => g.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} />
+                          <MoneyInput aria-label={`Valor da parcela ${i + 1} (R$)`} value={l.amount} disabled={equal}
+                            onValueChange={(v) => setGrid((g) => g.map((x, k) => (k === i ? { ...x, amount: v } : x)))} />
                         </td>
                       </tr>
                     ))}

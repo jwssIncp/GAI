@@ -5,6 +5,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
 import { StatusBadge } from '@/components/base/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog, ModalForm } from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/toast-context';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { formatDateTime } from '@/utils/format';
 import { useExpenseAttachmentDownloadUrl, useExpenseAttachments, useRemoveExpenseAttachment, useUploadExpenseAttachment } from './financeQueries';
@@ -33,6 +34,8 @@ export function ExpenseAttachmentsPanel({
   maxBytes?: number;
   maxFiles?: number;
 }) {
+  const { toast } = useToast();
+  /** Só falhas ficam na tela; sucesso vai para o toast. */
   const [feedback, setFeedback] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [downloadLink, setDownloadLink] = useState<{ url: string; attachment: ExpenseAttachment } | null>(null);
@@ -65,7 +68,7 @@ export function ExpenseAttachmentsPanel({
     setProgress(0);
     try {
       await upload.mutateAsync(file);
-      setFeedback('Comprovante enviado com sucesso.');
+      toast({ title: 'Comprovante enviado com sucesso.', tone: 'success' });
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Não foi possível enviar o comprovante.');
     } finally {
@@ -85,8 +88,13 @@ export function ExpenseAttachmentsPanel({
 
   async function confirmRemove() {
     if (!removing) return;
-    await remove.mutateAsync(removing.id);
-    setRemoving(null);
+    try {
+      await remove.mutateAsync(removing.id);
+      setRemoving(null);
+      toast({ title: 'Comprovante removido.', tone: 'success' });
+    } catch {
+      // a mensagem aparece no próprio diálogo (remove.error)
+    }
   }
 
   return (
@@ -106,7 +114,7 @@ export function ExpenseAttachmentsPanel({
           </label>
         </PermissionGate>
       </div>
-      {feedback ? <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">{feedback}</p> : null}
+      {feedback ? <p role="alert" className="rounded-md border border-destructive/30 px-3 py-2 text-sm text-destructive-text">{feedback}</p> : null}
       {progress !== null ? (
         <div>
           <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -138,7 +146,7 @@ export function ExpenseAttachmentsPanel({
                   </Button>
                 </PermissionGate>
                 <PermissionGate permissions={['expenses:upload-attachment']}>
-                  <Button type="button" variant="ghost" aria-label={`Remover ${attachment.original_name}`} disabled={remove.isPending || attachment.status === 'removed'} onClick={() => setRemoving(attachment)}>
+                  <Button type="button" variant="ghost" aria-label={`Remover ${attachment.original_name}`} disabled={remove.isPending || attachment.status === 'removed'} onClick={() => { remove.reset(); setRemoving(attachment); }}>
                     <Trash2 size={16} />
                   </Button>
                 </PermissionGate>
@@ -164,6 +172,9 @@ export function ExpenseAttachmentsPanel({
         onOpenChange={(open) => !open && setRemoving(null)}
         title="Remover comprovante"
         description={`Remover o comprovante ${removing?.original_name ?? ''}?`}
+        confirmLabel="Remover"
+        busy={remove.isPending}
+        error={remove.isError ? (remove.error as Error).message : null}
         onConfirm={confirmRemove}
       />
     </section>
