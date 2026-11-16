@@ -1175,7 +1175,7 @@ test('anexa evidencia, cria reinventario e retoma nova rodada apos refresh', asy
   await expect(page.getByText('Evidência enviada e confirmada com sucesso.')).toBeVisible();
   await page.getByRole('button', { name: 'Fechar' }).click();
 
-  await page.getByRole('button', { name: 'Solicitar reinventario' }).click();
+  await page.getByRole('button', { name: 'Solicitar reinventário' }).click();
   await page.getByLabel('Item divergente').fill('12');
   await page.getByLabel('Motivo').fill('Nova conferência');
   await page.getByRole('button', { name: 'Criar nova rodada' }).click();

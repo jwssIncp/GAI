@@ -160,7 +160,7 @@ export function ExpenseAttachmentsPanel({
       <ModalForm open={Boolean(downloadLink)} onOpenChange={(open) => !open && setDownloadLink(null)} title={downloadLink?.attachment.original_name ?? 'Comprovante'}>
         {downloadLink ? (
           <div className="grid gap-3">
-            <p className="text-sm text-muted-foreground">Acesso temporário gerado pelo backend.</p>
+            <p className="text-sm text-muted-foreground">Link de acesso temporário.</p>
             <a className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90" href={downloadLink.url} target="_blank" rel="noreferrer">
               Abrir comprovante
             </a>
