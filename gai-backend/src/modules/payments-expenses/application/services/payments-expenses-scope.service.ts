@@ -27,14 +27,14 @@ export class PaymentsExpensesScopeService {
       return;
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
   assertProjectAllowsMutation(project: Project): void {
     if (project.blocksOperationalMutation())
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
   }
   cleanText(value: string | null | undefined): string | null | undefined {
@@ -48,7 +48,7 @@ export class PaymentsExpensesScopeService {
     if (!isCivilDate(value))
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Invalid civil date; use YYYY-MM-DD',
+        message: 'Data inválida; use AAAA-MM-DD.',
       });
     return new Date(`${value}T00:00:00.000Z`);
   }

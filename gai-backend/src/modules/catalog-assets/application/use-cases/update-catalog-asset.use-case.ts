@@ -38,7 +38,7 @@ export class UpdateCatalogAssetUseCase {
     if (!catalogAsset) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Catalog asset not found',
+        message: 'Item do catálogo não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, catalogAsset.organizationId);
@@ -48,7 +48,7 @@ export class UpdateCatalogAssetUseCase {
         ? this.scope.cleanText(dto.description)
         : undefined;
     if (description === null) {
-      throw this.validation(new Error('description is required'));
+      throw this.validation(new Error('A descrição é obrigatória.'));
     }
     const descriptionNormalized =
       description !== undefined
@@ -117,7 +117,8 @@ export class UpdateCatalogAssetUseCase {
     if (existing) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Catalog asset description already exists in organization',
+        message:
+          'Já existe um item do catálogo com esta descrição na organização.',
       });
     }
   }
@@ -125,7 +126,8 @@ export class UpdateCatalogAssetUseCase {
   private validation(error: unknown): BadRequestException {
     return new BadRequestException({
       code: 'VALIDATION_ERROR',
-      message: error instanceof Error ? error.message : 'Invalid catalog asset',
+      message:
+        error instanceof Error ? error.message : 'Item do catálogo inválido.',
     });
   }
 }

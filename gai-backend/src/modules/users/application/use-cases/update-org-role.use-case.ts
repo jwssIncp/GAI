@@ -47,7 +47,7 @@ export class UpdateOrgRoleUseCase {
     if (!role) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Org role not found',
+        message: 'Perfil não encontrado.',
       });
     }
 
@@ -62,7 +62,7 @@ export class UpdateOrgRoleUseCase {
       if (existing && existing.id !== role.id) {
         throw new ConflictException({
           code: 'CONFLICT',
-          message: 'Org role name already exists in this organization',
+          message: 'Já existe um perfil com este nome nesta organização.',
         });
       }
       changes.name = { before: role.name, after: dto.name.trim() };
@@ -137,7 +137,7 @@ export class UpdateOrgRoleUseCase {
     if (found.length !== requestedIds.length) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'One or more permissions not found',
+        message: 'Uma ou mais permissões não foram encontradas.',
       });
     }
 
@@ -147,7 +147,8 @@ export class UpdateOrgRoleUseCase {
     if (invalid) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Org roles can only include ORGANIZATION-scoped permissions',
+        message:
+          'Perfis da organização só podem ter permissões do escopo da organização.',
       });
     }
   }

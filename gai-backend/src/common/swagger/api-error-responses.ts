@@ -8,7 +8,7 @@ export function ApiUnauthorizedResponse() {
     status: 401,
     description: 'Token ausente, expirado ou sessão inválida',
     type: ErrorResponseDto,
-    example: { code: ErrorCode.UNAUTHORIZED, message: 'Unauthorized' },
+    example: { code: ErrorCode.UNAUTHORIZED, message: 'Não autenticado.' },
   });
 }
 
@@ -17,7 +17,10 @@ export function ApiForbiddenResponse() {
     status: 403,
     description: 'Autenticado, mas sem permissao efetiva ou escopo suficiente',
     type: ErrorResponseDto,
-    example: { code: ErrorCode.FORBIDDEN, message: 'Forbidden resource' },
+    example: {
+      code: ErrorCode.FORBIDDEN,
+      message: 'Você não tem permissão para esta ação.',
+    },
   });
 }
 
@@ -26,7 +29,10 @@ export function ApiNotFoundResponse(description = 'Recurso não encontrado') {
     status: 404,
     description,
     type: ErrorResponseDto,
-    example: { code: ErrorCode.NOT_FOUND, message: 'Organization not found' },
+    example: {
+      code: ErrorCode.NOT_FOUND,
+      message: 'Organização não encontrada.',
+    },
   });
 }
 
@@ -37,8 +43,10 @@ export function ApiValidationErrorResponse() {
     type: ErrorResponseDto,
     example: {
       code: ErrorCode.VALIDATION_ERROR,
-      message: 'Validation failed',
-      details: [{ field: 'cnpj', message: 'Invalid CNPJ check digits' }],
+      message: 'Dados inválidos.',
+      details: [
+        { field: 'cnpj', message: 'CNPJ com dígitos verificadores inválidos.' },
+      ],
     },
   });
 }
@@ -67,7 +75,8 @@ export function ApiAccountLockedResponse() {
     type: ErrorResponseDto,
     example: {
       code: ErrorCode.ACCOUNT_LOCKED,
-      message: 'Account temporarily locked due to failed login attempts',
+      message:
+        'Conta bloqueada temporariamente após tentativas de acesso sem sucesso.',
     },
   });
 }

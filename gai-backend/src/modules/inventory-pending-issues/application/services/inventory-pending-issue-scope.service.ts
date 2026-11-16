@@ -22,7 +22,7 @@ export class InventoryPendingIssueScopeService {
     if (actor.organizationId === organizationId) return;
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -30,7 +30,7 @@ export class InventoryPendingIssueScopeService {
     if (project.blocksOperationalMutation()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
   }

@@ -60,7 +60,7 @@ export class InventoryItemImage {
     fields: { checksum?: string | null; sizeBytes?: number | null },
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== InventoryItemImageStatus.PENDING_UPLOAD) {
-      throw new Error('Only pending upload images can be confirmed');
+      throw new Error('Só imagens com envio pendente podem ser confirmadas.');
     }
     const changes: Record<string, { before: unknown; after: unknown }> = {
       status: {
@@ -94,7 +94,7 @@ export class InventoryItemImage {
     now: Date,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === InventoryItemImageStatus.REMOVED) {
-      throw new Error('Inventory item image is already removed');
+      throw new Error('A imagem do item já foi removida.');
     }
     const beforeStatus = this.props.status;
     const beforeDeletedAt = this.props.deletedAt;
@@ -113,13 +113,13 @@ export class InventoryItemImage {
 
   private assertRequired(value: string, field: string): void {
     if (value.trim().length === 0) {
-      throw new Error(`${field} is required`);
+      throw new Error(`${field}: campo obrigatório.`);
     }
   }
 
   private assertPositiveInteger(value: number, field: string): void {
     if (!Number.isInteger(value) || value < 1) {
-      throw new Error(`${field} must be a positive integer`);
+      throw new Error(`${field}: deve ser um número inteiro positivo.`);
     }
   }
 }

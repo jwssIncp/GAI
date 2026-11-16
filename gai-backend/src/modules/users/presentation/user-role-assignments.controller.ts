@@ -117,7 +117,7 @@ export class UserRoleAssignmentsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Último PLATFORM_ADMIN',
-    'Cannot revoke the last active PLATFORM_ADMIN assignment',
+    'Não é possível remover o último administrador da plataforma ativo.',
   )
   async revoke(
     @Param('userId', ParseIntPipe) userId: number,

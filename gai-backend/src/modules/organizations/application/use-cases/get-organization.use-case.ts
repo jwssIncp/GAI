@@ -17,7 +17,7 @@ export class GetOrganizationUseCase {
     if (!organization) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Organization not found',
+        message: 'Organização não encontrada.',
       });
     }
     return OrganizationResponseDto.fromDomain(organization);

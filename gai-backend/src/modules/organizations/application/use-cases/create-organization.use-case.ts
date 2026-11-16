@@ -30,7 +30,7 @@ export class CreateOrganizationUseCase {
     if (existing) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Organization with this CNPJ already exists',
+        message: 'Já existe uma organização com este CNPJ.',
       });
     }
 

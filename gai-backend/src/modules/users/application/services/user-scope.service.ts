@@ -19,7 +19,7 @@ export class UserScopeService {
     if (!this.isAdmin(actor)) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }
@@ -41,7 +41,7 @@ export class UserScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }
@@ -62,7 +62,7 @@ export class UserScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
 
@@ -89,7 +89,7 @@ export class UserScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }
@@ -111,7 +111,7 @@ export class UserScopeService {
 
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -125,7 +125,7 @@ export class UserScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }
@@ -198,7 +198,7 @@ export class UserScopeService {
   private forbidden(): ForbiddenException {
     return new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 }

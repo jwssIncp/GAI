@@ -45,7 +45,7 @@ describe('FieldAgent domain', () => {
   it('rejects short names', () => {
     expect(
       () => new FieldAgent({ ...makeFieldAgent().toProps(), name: 'A' }),
-    ).toThrow('name must have at least 2 characters');
+    ).toThrow('O nome deve ter pelo menos 2 caracteres.');
   });
 
   it('deactivates without deleting project history', () => {
@@ -75,7 +75,7 @@ describe('ProjectFieldAgent domain', () => {
           startDate: new Date('2026-07-10T00:00:00.000Z'),
           endDate: new Date('2026-07-09T00:00:00.000Z'),
         }),
-    ).toThrow('end_date cannot be earlier than start_date');
+    ).toThrow('A data de término não pode ser anterior à data de início.');
   });
 
   it('removes assignment by finishing it', () => {

@@ -12,7 +12,7 @@ export const CIVIL_DATE_TRANSFORMER: ValueTransformer = {
         ? value.toISOString().slice(0, 10)
         : value;
     if (!isCivilDate(day))
-      throw new BadRequestException('Invalid civil date column value');
+      throw new BadRequestException('Data inválida no banco de dados.');
     return day;
   },
   // Do not reinterpret or rewrite existing civil values on read.

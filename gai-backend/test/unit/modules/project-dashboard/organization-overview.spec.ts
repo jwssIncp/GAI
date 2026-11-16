@@ -187,7 +187,9 @@ describe('Organization overview isolation and exports', () => {
     ]) {
       await expect(
         service.exportRows({}, { ...actor, systemRoles }),
-      ).rejects.toThrow('Organization administrator required');
+      ).rejects.toThrow(
+        'Ação permitida apenas para administradores da organização.',
+      );
     }
     await expect(
       service.exportRows({}, { ...actor, organizationId: null }),

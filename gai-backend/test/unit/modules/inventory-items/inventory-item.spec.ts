@@ -42,7 +42,7 @@ describe('InventoryItem domain', () => {
           ...makeItem().toProps(),
           usedValue: '12.345',
         }),
-    ).toThrow('monetary values must be decimal strings');
+    ).toThrow('Os valores em R$ devem ser números decimais.');
   });
 
   it('updates fields and records changes', () => {

@@ -75,7 +75,10 @@ export class CatalogAssetsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
-  @ApiConflictResponse('Conflito', 'Catalog asset description already exists')
+  @ApiConflictResponse(
+    'Conflito',
+    'Já existe um item do catálogo com esta descrição.',
+  )
   async create(
     @Body() dto: CreateCatalogAssetDto,
     @Req() req: AuthenticatedRequest,
@@ -121,7 +124,10 @@ export class CatalogAssetsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
-  @ApiConflictResponse('Conflito', 'Catalog asset description already exists')
+  @ApiConflictResponse(
+    'Conflito',
+    'Já existe um item do catálogo com esta descrição.',
+  )
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCatalogAssetDto,

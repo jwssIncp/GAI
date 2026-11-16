@@ -37,7 +37,7 @@ export class ListInventoryItemImagesUseCase {
     if (!item) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory item not found',
+        message: 'Item de inventário não encontrado.',
       });
     }
     this.scope.assertItemBelongsToProject(item, projectId);

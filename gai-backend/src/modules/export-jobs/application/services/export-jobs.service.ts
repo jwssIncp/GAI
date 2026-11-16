@@ -243,7 +243,7 @@ export class ExportJobsService {
     if (!updated) {
       throw new ConflictException({
         code: 'EXPORT_JOB_CONCURRENT_MODIFICATION',
-        message: 'Export job status changed while it was being cancelled',
+        message: 'A situação da exportação mudou durante o cancelamento.',
         details: { action: 'cancel', export_job_id: job.id },
       });
     }
@@ -294,7 +294,7 @@ export class ExportJobsService {
       if (activeRetry) {
         throw new ConflictException({
           code: 'EXPORT_JOB_ACTIVE_RETRY_EXISTS',
-          message: 'An active retry already exists for this export job',
+          message: 'Já existe uma nova tentativa ativa para esta exportação.',
           details: {
             retry_job_id: activeRetry.id,
             status: activeRetry.status,
@@ -412,7 +412,7 @@ export class ExportJobsService {
     if (!job.fileContent) {
       throw new ConflictException({
         code: 'EXPORT_FILE_NOT_READY',
-        message: 'Export file content is not available',
+        message: 'O conteúdo do arquivo exportado não está disponível.',
         details: { status: summary.status, export_job_id: summary.id },
       });
     }
@@ -447,7 +447,7 @@ export class ExportJobsService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions for export content',
+        message: 'Você não tem permissão para baixar esta exportação.',
       });
     }
   }
@@ -460,7 +460,7 @@ export class ExportJobsService {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.projectScope.assertCanAccessProject(actor, project.organizationId);
@@ -478,7 +478,7 @@ export class ExportJobsService {
     if (!job) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Export job not found',
+        message: 'Exportação não encontrada.',
       });
     }
     return job;
@@ -491,7 +491,7 @@ export class ExportJobsService {
     if (current.status === ExportJobStatus.EXPIRED) {
       throw new GoneException({
         code: 'EXPORT_JOB_EXPIRED',
-        message: 'Export file has expired',
+        message: 'O arquivo exportado expirou.',
       });
     }
     if (
@@ -504,7 +504,7 @@ export class ExportJobsService {
     ) {
       throw new ConflictException({
         code: 'EXPORT_FILE_NOT_READY',
-        message: 'Export file is not available for download',
+        message: 'O arquivo exportado não está disponível para download.',
         details: { status: current.status, export_job_id: current.id },
       });
     }
@@ -575,7 +575,7 @@ export class ExportJobsService {
   ): ConflictException {
     return new ConflictException({
       code: 'EXPORT_JOB_STATUS_TRANSITION_NOT_ALLOWED',
-      message: `Export job cannot ${action} from status ${status}`,
+      message: `A exportação não pode ser ${action === 'cancel' ? 'cancelada' : 'reprocessada'} na situação atual (${status}).`,
       details: {
         action,
         current_status: status,

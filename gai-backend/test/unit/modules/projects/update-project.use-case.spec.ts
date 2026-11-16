@@ -55,7 +55,7 @@ describe('UpdateProjectUseCase', () => {
       response: {
         code: 'PROJECT_CONCURRENT_MODIFICATION',
         message:
-          'Project was modified by another operation. Reload it and try again.',
+          'O projeto foi alterado por outra operação. Recarregue a página e tente de novo.',
         details: {
           current_status: ProjectStatus.FINISHED,
           current_updated_at: '2026-07-13T12:01:00.000Z',

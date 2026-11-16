@@ -147,7 +147,7 @@ export class Project {
     updatedById: number | null;
   }): Record<string, { before: unknown; after: unknown }> {
     if (this.blocksOperationalMutation()) {
-      throw new Error('Project status blocks this operation');
+      throw new Error('A situação do projeto não permite esta operação.');
     }
 
     const nextStartDate =
@@ -284,7 +284,7 @@ export class Project {
   ): Record<string, { before: unknown; after: unknown }> {
     const before = this.props.status;
     if (before === status) {
-      throw new Error('Project status blocks this operation');
+      throw new Error('A situação do projeto não permite esta operação.');
     }
     this.props.status = status;
     this.props.updatedById = actorId;
@@ -293,7 +293,9 @@ export class Project {
 
   private assertDateRange(startDate: Date | null, endDate: Date | null): void {
     if (startDate && endDate && endDate.getTime() < startDate.getTime()) {
-      throw new Error('end_date cannot be earlier than start_date');
+      throw new Error(
+        'A data de término não pode ser anterior à data de início.',
+      );
     }
   }
 

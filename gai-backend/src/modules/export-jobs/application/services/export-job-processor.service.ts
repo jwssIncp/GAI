@@ -99,7 +99,7 @@ export class ExportJobProcessorService
       const content = await this.workbookBuilder.build(job);
       if (content.length > this.maxFileSizeBytes()) {
         throw new Error(
-          'Generated export exceeds the configured file size limit',
+          'O arquivo gerado excede o tamanho máximo configurado.',
         );
       }
       await this.finishJob(job, content);
@@ -239,7 +239,9 @@ export class ExportJobProcessorService
         ? 'EXPORT_ROW_LIMIT_EXCEEDED'
         : 'EXPORT_GENERATION_FAILED';
     const message = (
-      error instanceof Error ? error.message : 'Unknown export generation error'
+      error instanceof Error
+        ? error.message
+        : 'Erro desconhecido ao gerar a exportação.'
     ).slice(0, 2000);
 
     await this.dataSource.transaction(async (manager) => {

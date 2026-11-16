@@ -67,13 +67,13 @@ export class InventoryAccountingItemsService {
     if (!file?.buffer) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'XLSX file is required',
+        message: 'Envie um arquivo XLSX.',
       });
     }
     if (!file.originalname.toLowerCase().endsWith('.xlsx')) {
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
-        message: 'Only XLSX files are supported',
+        message: 'Só arquivos XLSX são aceitos.',
       });
     }
 
@@ -207,7 +207,7 @@ export class InventoryAccountingItemsService {
     if (!item || item.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory accounting item not found',
+        message: 'Item contábil não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, item.organizationId);
@@ -224,7 +224,7 @@ export class InventoryAccountingItemsService {
     if (!item || item.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory accounting item not found',
+        message: 'Item contábil não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, item.organizationId);
@@ -274,7 +274,7 @@ export class InventoryAccountingItemsService {
     if (!item || item.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Inventory accounting item not found',
+        message: 'Item contábil não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, item.organizationId);
@@ -291,7 +291,7 @@ export class InventoryAccountingItemsService {
         message:
           error instanceof Error
             ? error.message
-            : 'Status blocks this operation',
+            : 'A situação não permite esta operação.',
       });
     }
     const saved = await this.repository.saveWithAudit(item, {
@@ -342,7 +342,7 @@ export class InventoryAccountingItemsService {
     if (!batch || batch.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Accounting import batch not found',
+        message: 'Lote de importação contábil não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, batch.organizationId);
@@ -367,7 +367,7 @@ export class InventoryAccountingItemsService {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);

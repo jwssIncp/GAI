@@ -36,7 +36,7 @@ export class ImportSessionScopeService {
     }
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -44,7 +44,7 @@ export class ImportSessionScopeService {
     if (!project.blocksOperationalMutation()) return;
     throw new ConflictException({
       code: 'CONFLICT',
-      message: 'Project status blocks this operation',
+      message: 'A situação do projeto não permite esta operação.',
     });
   }
 

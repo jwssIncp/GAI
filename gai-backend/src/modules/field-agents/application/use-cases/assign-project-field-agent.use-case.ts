@@ -56,7 +56,7 @@ export class AssignProjectFieldAgentUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
@@ -66,19 +66,20 @@ export class AssignProjectFieldAgentUseCase {
     if (!fieldAgent) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Field agent not found',
+        message: 'Inventariante não encontrado.',
       });
     }
     if (fieldAgent.organizationId !== project.organizationId) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Field agent and project must belong to the same organization',
+        message:
+          'O inventariante e o projeto precisam ser da mesma organização.',
       });
     }
     if (!fieldAgent.isActive()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only active field agents can be assigned to projects',
+        message: 'Só inventariantes ativos podem ser vinculados a projetos.',
       });
     }
     if (
@@ -166,7 +167,9 @@ export class AssignProjectFieldAgentUseCase {
     return new BadRequestException({
       code: 'VALIDATION_ERROR',
       message:
-        error instanceof Error ? error.message : 'Invalid project field agent',
+        error instanceof Error
+          ? error.message
+          : 'Vínculo de inventariante com o projeto inválido.',
     });
   }
 }

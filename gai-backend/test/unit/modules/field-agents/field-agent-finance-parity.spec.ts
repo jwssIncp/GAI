@@ -147,13 +147,13 @@ describe('Inventariantes: exclusão em lote', () => {
       .mockRejectedValueOnce(
         new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Field agent not found',
+          message: 'Inventariante não encontrado.',
         }),
       )
       .mockRejectedValueOnce(
         new ConflictException({
           code: 'CONFLICT',
-          message: 'Field agent is already deleted',
+          message: 'O inventariante já foi excluído.',
         }),
       );
     const result = await service(execute).batchDelete([1, 2, 3, 1], actor);
@@ -163,8 +163,8 @@ describe('Inventariantes: exclusão em lote', () => {
       failed: 2,
       results: [
         { id: 1, deleted: true },
-        { id: 2, deleted: false, message: 'Field agent not found' },
-        { id: 3, deleted: false, message: 'Field agent is already deleted' },
+        { id: 2, deleted: false, message: 'Inventariante não encontrado.' },
+        { id: 3, deleted: false, message: 'O inventariante já foi excluído.' },
       ],
     });
   });

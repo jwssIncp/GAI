@@ -31,7 +31,7 @@ export class DeleteFieldAgentUseCase {
     if (!fieldAgent) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Field agent not found',
+        message: 'Inventariante não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, fieldAgent.organizationId);
@@ -44,7 +44,7 @@ export class DeleteFieldAgentUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Field agent cannot be deleted',
+            : 'Não é possível excluir o inventariante.',
       });
     }
     await this.repository.saveFieldAgentWithAudit(fieldAgent, {

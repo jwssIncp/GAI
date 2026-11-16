@@ -45,7 +45,7 @@ export class CompanyScopeService {
     }
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -59,7 +59,7 @@ export class CompanyScopeService {
     if (actor.organizationId === null) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
     if (
@@ -68,7 +68,7 @@ export class CompanyScopeService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
     return actor.organizationId;
@@ -84,7 +84,7 @@ export class CompanyScopeService {
     if (actor.organizationId !== organizationId) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Insufficient permissions',
+        message: 'Você não tem permissão para esta ação.',
       });
     }
   }

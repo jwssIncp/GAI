@@ -37,7 +37,7 @@ export class DeactivateOrgRoleUseCase {
     if (!role) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Org role not found',
+        message: 'Perfil não encontrado.',
       });
     }
 
@@ -49,7 +49,7 @@ export class DeactivateOrgRoleUseCase {
     if (activeUsers > 0) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Org role is assigned to active users',
+        message: 'O perfil está atribuído a usuários ativos.',
       });
     }
 

@@ -53,7 +53,7 @@ export class OrganizationOverviewService {
     ) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
-        message: 'Organization administrator required',
+        message: 'Ação permitida apenas para administradores da organização.',
       });
     }
     const organizationId = this.scope.resolveOrganizationFilter(actor);

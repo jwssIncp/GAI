@@ -78,7 +78,7 @@ export class ProjectsController {
   @ApiForbiddenResponse()
   @ApiConflictResponse(
     'Organization inativa',
-    'Project cannot be created for inactive organization',
+    'Não é possível criar projeto em organização inativa.',
   )
   async create(
     @Body() dto: CreateProjectDto,
@@ -167,7 +167,7 @@ export class ProjectsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Mutacao bloqueada',
-    'Project status blocks this operation',
+    'A situação do projeto não permite esta operação.',
   )
   async update(
     @Param('id', ParseIntPipe) id: number,

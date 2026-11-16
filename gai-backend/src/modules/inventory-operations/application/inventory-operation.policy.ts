@@ -19,7 +19,7 @@ export class InventoryOperationPolicy {
     if (status !== InventorySessionStatus.DRAFT)
       throw new ConflictException({
         code: 'INVENTORY_SESSION_STATUS_INVALID',
-        message: 'Only draft sessions can be started',
+        message: 'Só sessões em rascunho podem ser iniciadas.',
       });
   }
 
@@ -30,12 +30,13 @@ export class InventoryOperationPolicy {
     if (status !== InventorySessionStatus.ACTIVE)
       throw new ConflictException({
         code: 'INVENTORY_SESSION_STATUS_INVALID',
-        message: 'Only active sessions can be finished',
+        message: 'Só sessões ativas podem ser finalizadas.',
       });
     if (activeRoundCount > 0)
       throw new ConflictException({
         code: 'INVENTORY_SESSION_HAS_ACTIVE_ROUNDS',
-        message: 'All active rounds must be finished before the session',
+        message:
+          'Finalize todas as rodadas ativas antes de finalizar a sessão.',
       });
   }
 
@@ -47,7 +48,7 @@ export class InventoryOperationPolicy {
     )
       throw new ConflictException({
         code: 'INVENTORY_SESSION_STATUS_INVALID',
-        message: 'Only draft or active sessions can be cancelled',
+        message: 'Só sessões em rascunho ou ativas podem ser canceladas.',
       });
   }
 
@@ -64,12 +65,12 @@ export class InventoryOperationPolicy {
     )
       throw new ConflictException({
         code: 'INVENTORY_ROUND_NOT_ACTIVE',
-        message: 'Session and round must be active',
+        message: 'A sessão e a rodada precisam estar ativas.',
       });
     if (kind === InventoryRoundKind.REINVENTORY && targetItemId !== itemId)
       throw new ConflictException({
         code: 'REINVENTORY_ITEM_MISMATCH',
-        message: 'Reinventory round is restricted to its target item',
+        message: 'A rodada de reinventário vale só para o item de destino.',
       });
   }
 }

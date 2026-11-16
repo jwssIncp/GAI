@@ -20,16 +20,16 @@ export interface CatalogAssetProps {
 export class CatalogAsset {
   constructor(private readonly props: CatalogAssetProps) {
     if (props.description.trim().length === 0) {
-      throw new Error('description is required');
+      throw new Error('A descrição é obrigatória.');
     }
     if (props.description.length > 255) {
-      throw new Error('description must have at most 255 characters');
+      throw new Error('A descrição deve ter no máximo 255 caracteres.');
     }
     if (props.descriptionNormalized.trim().length === 0) {
-      throw new Error('description_normalized is required');
+      throw new Error('A descrição é obrigatória.');
     }
     if (props.category !== null && props.category.length > 100) {
-      throw new Error('category must have at most 100 characters');
+      throw new Error('A categoria deve ter no máximo 100 caracteres.');
     }
   }
 
@@ -92,7 +92,7 @@ export class CatalogAsset {
 
     this.applyChange(changes, 'description', fields.description, (value) => {
       if (value.trim().length === 0) {
-        throw new Error('description is required');
+        throw new Error('A descrição é obrigatória.');
       }
       this.props.description = value;
     });
@@ -102,7 +102,7 @@ export class CatalogAsset {
       fields.descriptionNormalized,
       (value) => {
         if (value.trim().length === 0) {
-          throw new Error('description_normalized is required');
+          throw new Error('A descrição é obrigatória.');
         }
         this.props.descriptionNormalized = value;
       },
@@ -126,7 +126,7 @@ export class CatalogAsset {
     now = new Date(),
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status === CatalogAssetStatus.INACTIVE) {
-      throw new Error('Catalog asset is already inactive');
+      throw new Error('O item do catálogo já está inativo.');
     }
     const beforeStatus = this.props.status;
     const beforeDeletedAt = this.props.deletedAt;
@@ -143,7 +143,7 @@ export class CatalogAsset {
     actorId: number | null,
   ): Record<string, { before: unknown; after: unknown }> {
     if (this.props.status !== CatalogAssetStatus.INACTIVE) {
-      throw new Error('Only inactive catalog assets can be reactivated');
+      throw new Error('Só itens do catálogo inativos podem ser reativados.');
     }
     const beforeStatus = this.props.status;
     const beforeDeletedAt = this.props.deletedAt;

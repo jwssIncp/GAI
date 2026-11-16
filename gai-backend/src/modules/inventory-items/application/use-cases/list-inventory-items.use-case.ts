@@ -45,7 +45,7 @@ export class ListInventoryItemsUseCase {
       if (!project) {
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Project not found',
+          message: 'Projeto não encontrado.',
         });
       }
       this.scope.assertCanAccessOrganization(actor, project.organizationId);

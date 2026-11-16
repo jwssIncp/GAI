@@ -185,7 +185,7 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
     await page.goto(`/app/projects/${foreign}/${suffix}`);
     expect((await denied).status()).toBe(403);
     await expect(
-      page.getByText("Insufficient permissions", { exact: true }).first(),
+      page.getByText("Você não tem permissão para esta ação.", { exact: true }).first(),
     ).toBeVisible();
     if (process.env.GAI_NAV_FOREIGN_NAME)
       await expect(

@@ -303,7 +303,7 @@ export class FieldAgentsController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Conflito de escopo',
-    'Invalid organization or user scope',
+    'Organização ou usuário fora do escopo permitido.',
   )
   async create(
     @Body() dto: CreateFieldAgentDto,
@@ -365,7 +365,10 @@ export class FieldAgentsController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
-  @ApiConflictResponse('Conflito de escopo', 'Invalid user scope')
+  @ApiConflictResponse(
+    'Conflito de escopo',
+    'Usuário fora do escopo permitido.',
+  )
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateFieldAgentDto,

@@ -47,7 +47,7 @@ export class RemoveProjectFieldAgentUseCase {
     if (!project) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project not found',
+        message: 'Projeto não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, project.organizationId);
@@ -57,7 +57,7 @@ export class RemoveProjectFieldAgentUseCase {
     if (!assignment || assignment.projectId !== projectId) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Project field agent not found',
+        message: 'Vínculo do inventariante com o projeto não encontrado.',
       });
     }
 
@@ -70,7 +70,7 @@ export class RemoveProjectFieldAgentUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Project field agent status blocks this operation',
+            : 'A situação do vínculo do inventariante não permite esta operação.',
       });
     }
 

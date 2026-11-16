@@ -47,7 +47,7 @@ export class CreateInventoryItemImageDownloadUrlUseCase {
     if (image.status !== InventoryItemImageStatus.UPLOADED) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only uploaded images can be downloaded',
+        message: 'Só imagens já enviadas podem ser baixadas.',
       });
     }
 

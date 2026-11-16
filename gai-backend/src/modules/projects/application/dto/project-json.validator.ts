@@ -62,7 +62,7 @@ export function IsProjectJson(options?: ValidationOptions): PropertyDecorator {
       propertyName: String(propertyName),
       options: {
         message:
-          'Invalid project JSON: protected keys, excessive size/depth or unsupported values',
+          'Dados extras do projeto inválidos: chaves protegidas, tamanho ou profundidade excessivos ou valores não suportados.',
         ...options,
       },
       validator: { validate: isProjectJson },

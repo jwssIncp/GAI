@@ -104,7 +104,7 @@ export class OrgRolesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Nome duplicado',
-    'Org role name already exists in this organization',
+    'Já existe um perfil com este nome nesta organização.',
   )
   async create(
     @Param('organizationId', ParseIntPipe) organizationId: number,
@@ -143,7 +143,7 @@ export class OrgRolesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Nome duplicado',
-    'Org role name already exists in this organization',
+    'Já existe um perfil com este nome nesta organização.',
   )
   async update(
     @Param('organizationId', ParseIntPipe) organizationId: number,
@@ -171,7 +171,7 @@ export class OrgRolesController {
   @ApiNotFoundResponse()
   @ApiConflictResponse(
     'Papel atribuído a usuários ativos',
-    'Org role is assigned to active users',
+    'O perfil está atribuído a usuários ativos.',
   )
   async deactivate(
     @Param('organizationId', ParseIntPipe) organizationId: number,

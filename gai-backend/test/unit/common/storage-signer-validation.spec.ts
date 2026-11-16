@@ -176,7 +176,7 @@ describe('S3 SigV4 adapter (SDK network mocked)', () => {
     ).rejects.toMatchObject({
       response: {
         code: 'STORAGE_UNAVAILABLE',
-        message: 'Storage operation could not be completed',
+        message: 'Não foi possível concluir a operação no armazenamento.',
       },
       status: 503,
     });

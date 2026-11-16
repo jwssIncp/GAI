@@ -38,7 +38,7 @@ export class AccessProfilesService {
       if (!organization)
         throw new NotFoundException({
           code: 'NOT_FOUND',
-          message: 'Active organization not found',
+          message: 'Organização ativa não encontrada.',
         });
     }
     const roles = await this.db.getRepository(RoleEntity).find({
@@ -140,7 +140,7 @@ export class AccessProfilesService {
     if (!user)
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'User not found',
+        message: 'Usuário não encontrado.',
       });
     this.scope.assertPlatformOnlyAssignment(actor, user.organizationId);
     this.scope.assertCanFilterByOrganization(

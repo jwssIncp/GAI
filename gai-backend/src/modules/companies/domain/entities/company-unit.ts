@@ -12,7 +12,7 @@ export interface CompanyUnitProps {
 export class CompanyUnit {
   constructor(private readonly props: CompanyUnitProps) {
     if (props.name.trim().length < 2) {
-      throw new Error('name must have at least 2 characters');
+      throw new Error('O nome deve ter pelo menos 2 caracteres.');
     }
   }
 

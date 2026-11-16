@@ -48,7 +48,7 @@ export class ConfirmInventoryItemImageUploadUseCase {
     if (!project) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
     this.scope.assertProjectAllowsMutation(project);
@@ -63,7 +63,7 @@ export class ConfirmInventoryItemImageUploadUseCase {
     if (image.status !== InventoryItemImageStatus.PENDING_UPLOAD)
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Only pending upload images can be confirmed',
+        message: 'Só imagens com envio pendente podem ser confirmadas.',
       });
     const props = image.toProps();
     const verified = await this.storage.verifyUpload({
@@ -88,7 +88,7 @@ export class ConfirmInventoryItemImageUploadUseCase {
         message:
           error instanceof Error
             ? error.message
-            : 'Inventory item image upload cannot be confirmed',
+            : 'Não foi possível confirmar o envio da imagem.',
       });
     }
 

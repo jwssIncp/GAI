@@ -27,7 +27,7 @@ export class InventoryAccountingItemScopeService {
     }
     throw new ForbiddenException({
       code: 'FORBIDDEN',
-      message: 'Insufficient permissions',
+      message: 'Você não tem permissão para esta ação.',
     });
   }
 
@@ -35,7 +35,7 @@ export class InventoryAccountingItemScopeService {
     if (project.blocksOperationalMutation()) {
       throw new ConflictException({
         code: 'CONFLICT',
-        message: 'Project status blocks this operation',
+        message: 'A situação do projeto não permite esta operação.',
       });
     }
   }

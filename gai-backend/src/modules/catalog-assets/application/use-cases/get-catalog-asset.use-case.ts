@@ -25,7 +25,7 @@ export class GetCatalogAssetUseCase {
     if (!catalogAsset) {
       throw new NotFoundException({
         code: 'NOT_FOUND',
-        message: 'Catalog asset not found',
+        message: 'Item do catálogo não encontrado.',
       });
     }
     this.scope.assertCanAccessOrganization(actor, catalogAsset.organizationId);

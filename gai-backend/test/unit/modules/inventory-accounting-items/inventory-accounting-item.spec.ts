@@ -64,7 +64,7 @@ describe('InventoryAccountingItem domain', () => {
           ...makeItem().toProps(),
           acquisitionValue: '12.345',
         }),
-    ).toThrow('acquisition_value must be a decimal string');
+    ).toThrow('O valor de aquisição deve ser um número decimal.');
   });
 
   it('updates fields and records changes', () => {

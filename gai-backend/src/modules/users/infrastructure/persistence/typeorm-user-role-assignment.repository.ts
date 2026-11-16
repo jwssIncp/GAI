@@ -87,7 +87,7 @@ export class TypeOrmUserRoleAssignmentRepository implements UserRoleAssignmentRe
       ) {
         throw new BadRequestException({
           code: 'VALIDATION_ERROR',
-          message: 'Invalid or inactive role',
+          message: 'Perfil inválido ou inativo.',
         });
       }
       const existing = await assignmentRepo.findOne({
@@ -305,7 +305,7 @@ export async function replaceUserRoles(
   if (roles.length !== roleIds.length || roles.some((role) => !role.isActive)) {
     throw new BadRequestException({
       code: 'VALIDATION_ERROR',
-      message: 'Invalid or inactive role',
+      message: 'Perfil inválido ou inativo.',
     });
   }
   for (const role of roles)

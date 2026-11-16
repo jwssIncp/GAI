@@ -44,7 +44,7 @@ describe('InventoryItemImage', () => {
     const image = makeImage({ status: InventoryItemImageStatus.UPLOADED });
 
     expect(() => image.confirmUpload(7, {})).toThrow(
-      'Only pending upload images can be confirmed',
+      'Só imagens com envio pendente podem ser confirmadas.',
     );
   });
 
