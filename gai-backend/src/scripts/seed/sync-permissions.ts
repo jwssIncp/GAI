@@ -7,9 +7,13 @@ config();
 
 async function syncPermissions(): Promise<void> {
   await dataSource.initialize();
-  await seedPermissions(dataSource);
+  const created = await seedPermissions(dataSource);
   await dataSource.destroy();
-  console.log('Permission catalog synced');
+  console.log(
+    created.length
+      ? `Catálogo de permissões: ${created.length} chave(s) criada(s): ${created.join(', ')}`
+      : 'Catálogo de permissões: nada a criar (já sincronizado)',
+  );
 }
 
 syncPermissions().catch((error) => {
