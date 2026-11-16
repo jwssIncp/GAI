@@ -21,8 +21,8 @@ export class CurrentUserDto {
   @ApiProperty({ example: 'platform.admin' })
   login!: string;
 
-  @ApiProperty({ format: 'email', example: 'admin@gai.local' })
-  email!: string;
+  @ApiProperty({ format: 'email', example: 'admin@gai.local', nullable: true })
+  email!: string | null;
 
   @ApiProperty({ enum: UserStatus })
   status!: UserStatus;
@@ -48,7 +48,7 @@ export class CurrentUserDto {
     fullName?: string | null;
     mustChangePassword?: boolean;
     login: string;
-    email: string;
+    email: string | null;
     status: UserStatus;
     organizationId: number | null;
     organizationName?: string | null;

@@ -53,8 +53,11 @@ export class UserResponseDto {
   @ApiProperty()
   login!: string;
 
-  @ApiProperty()
-  email!: string;
+  @ApiProperty({
+    nullable: true,
+    description: 'Nulo só em conta de inventariante criada sem e-mail.',
+  })
+  email!: string | null;
 
   @ApiProperty({ enum: UserStatus })
   status!: UserStatus;

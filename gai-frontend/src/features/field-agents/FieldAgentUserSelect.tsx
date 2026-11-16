@@ -1,3 +1,4 @@
+import { emailLabel } from "@/features/users/userFields";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fieldAgentsApi } from "@/api/endpoints";
@@ -58,7 +59,7 @@ export function FieldAgentUserSelect({
         ) : null}
         {query.data?.items.map((user) => (
           <option key={user.id} value={user.id}>
-            {user.full_name || user.login} · {user.email} ·{" "}
+            {user.full_name || user.login} · {emailLabel(user.email)} ·{" "}
             {userStatusLabels[user.status]}
           </option>
         ))}

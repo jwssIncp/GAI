@@ -47,6 +47,18 @@ mysqlSuite('Migration das descrições de permissões (pt-BR)', () => {
       await db.query('SELECT id, `key` FROM roles ORDER BY id'),
     ]);
 
+  // Reverte até esta migration sair da lista (as posteriores saem antes;
+  // runMigrations as reaplica).
+  const undoThrough = async () => {
+    for (;;) {
+      const executed: Array<{ name: string }> = await db.query(
+        'SELECT name FROM migrations',
+      );
+      if (!executed.some((m) => m.name === MIGRATION)) return;
+      await db.undoLastMigration();
+    }
+  };
+
   beforeAll(async () => {
     admin = new DataSource(base);
     await admin.initialize();
@@ -77,7 +89,7 @@ mysqlSuite('Migration das descrições de permissões (pt-BR)', () => {
   }, 300_000);
 
   it('revert volta ao texto antigo; num banco como o de produção só troca textos antigos conhecidos', async () => {
-    await db.undoLastMigration();
+    await undoThrough();
     const reverted = await descriptions();
     for (const [key, text] of reverted)
       if (byKey.has(key)) expect(text).toBe(byKey.get(key)![3]);
@@ -121,7 +133,7 @@ mysqlSuite('Migration das descrições de permissões (pt-BR)', () => {
     expect(await descriptions()).toEqual(after);
 
     // Revert de novo: volta ao texto antigo e preserva a edição manual.
-    await db.undoLastMigration();
+    await undoThrough();
     const undone = await descriptions();
     for (const [key, , , restore] of PERMISSION_DESCRIPTIONS_PT_BR)
       if (key !== manualKey) expect(undone.get(key)).toBe(restore);

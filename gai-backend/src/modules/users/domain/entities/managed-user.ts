@@ -4,7 +4,7 @@ export interface ManagedUserProps {
   id: number;
   organizationId: number | null;
   login: string;
-  email: string;
+  email: string | null;
   passwordHash: string;
   status: UserStatus;
   createdAt: Date;
@@ -54,7 +54,7 @@ export class ManagedUser {
     return this.props.login;
   }
 
-  get email(): string {
+  get email(): string | null {
     return this.props.email;
   }
 

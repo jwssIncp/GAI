@@ -15,3 +15,5 @@ export const validatePassword = (value: string) =>
     [...value].length <= 128 &&
     Boolean(value.trim())) ||
   "Informe uma senha com 8 a 128 caracteres.";
+/** Conta de inventariante pode não ter e-mail (acesso por senha temporária). */
+export const emailLabel = (email?: string | null) => email || "Sem e-mail";
