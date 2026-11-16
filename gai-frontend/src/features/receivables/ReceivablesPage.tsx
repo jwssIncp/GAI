@@ -59,7 +59,7 @@ export function ReceivablesPage() {
                 {
                   header: "Cliente / Projeto",
                   cell: (r) =>
-                    `#${r.companyId} / ${r.projectId ?? "Sem projeto"}`,
+                    `${r.company_name ?? "Cliente não encontrado"} / ${r.project_name ?? "Sem projeto"}`,
                 },
                 {
                   header: "Original",

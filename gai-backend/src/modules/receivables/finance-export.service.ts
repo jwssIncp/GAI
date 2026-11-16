@@ -132,6 +132,26 @@ export class FinanceExportService {
           view: dto.kind === 'statement' ? dto.filters.view : dto.kind,
         };
         const report = await this.cash.from(m, f, actor);
+        // Cliente, projeto e contrato pelo nome (código do projeto entre parênteses).
+        const uniq = (v: Array<number | null | undefined>) => [
+          ...new Set(
+            v
+              .filter((x): x is number => x !== null && x !== undefined)
+              .map(Number),
+          ),
+        ];
+        const names = await this.r.referenceNames(m, org, {
+          companies: uniq(report.movements.map((r) => r.company_id)),
+          projects: uniq(report.movements.map((r) => r.project_id)),
+          contracts: uniq(report.movements.map((r) => r.contract_id)),
+        });
+        const nameOf = (
+          map: Map<number, string>,
+          id: number | null | undefined,
+        ) =>
+          id === null || id === undefined
+            ? null
+            : (map.get(Number(id)) ?? null);
         sheets.push({
           name: 'Movimentos',
           headers: [
@@ -155,9 +175,9 @@ export class FinanceExportService {
             r.source_id,
             r.receivable_id,
             r.installment_id,
-            r.company_id,
-            r.project_id,
-            r.contract_id,
+            nameOf(names.company, r.company_id),
+            nameOf(names.project, r.project_id),
+            nameOf(names.contract, r.contract_id),
             r.currency,
             label(DIRECTION, r.direction),
             label(VIEW, r.view),
@@ -242,9 +262,9 @@ export class FinanceExportService {
             ],
             rows: data.items.map((r) => [
               r.id,
-              r.companyId,
-              r.projectId,
-              r.contractId,
+              r.company_name,
+              r.project_name,
+              r.contract_number,
               r.data.description,
               r.currency,
               r.amount,
@@ -352,7 +372,7 @@ export class FinanceExportService {
                   text(e.details.method),
                   text(e.details.reference),
                   text(e.details.reason),
-                  e.actorId,
+                  (e as { actor_name?: string | null }).actor_name ?? null,
                   e.recordedAt.toISOString(),
                 ]),
             ),

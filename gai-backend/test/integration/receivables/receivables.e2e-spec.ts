@@ -716,6 +716,22 @@ describe('Receivables HTTP with disposable MySQL', () => {
       Campo: 'Exportação',
       Valor: 'Recebíveis',
     });
+    // Cliente pelo nome na planilha e na API (lista e detalhe), autor do evento pelo nome
+    const company = (await get('/companies/1').expect(200)).body as {
+      name: string;
+    };
+    expect(rows.every((r) => r['Cliente'] === company.name)).toBe(true);
+    const listed = (await get('/finance/receivables').expect(200)).body
+      .items as Array<{ id: number; company_name: string | null }>;
+    expect(listed.every((r) => r.company_name === company.name)).toBe(true);
+    const detail = (
+      await get(`/finance/receivables/${listed[0].id}`).expect(200)
+    ).body as {
+      company_name: string;
+      events: Array<{ actor_name: string | null }>;
+    };
+    expect(detail.company_name).toBe(company.name);
+    expect(detail.events[0].actor_name).toEqual(expect.any(String));
     await get(`/finance/exports/${e.id}`, user).expect(403);
     const p = await ds
       .getRepository(PermissionEntity)

@@ -1,3 +1,7 @@
+import { money } from "@/features/receivables/financeApi";
+import type { EntitySource } from "@/components/base/EntityCombobox";
+import { clientFilter } from "@/components/base/entitySources";
+import { formatCivilDate } from "@/utils/format";
 import { api } from "@/api/http";
 export { money, cls, percent } from "@/features/receivables/financeApi";
 export const groups: Record<string, string> = {
@@ -41,6 +45,33 @@ export type Source = {
   entry_id?: number | null;
   recognition_status?: string;
 };
+/**
+ * Origens candidatas à classificação manual (recebível, despesa ou diária), pelo
+ * nome/descrição — o endpoint não busca por texto nem filtra por tipo: filtra
+ * no cliente, na página carregada (até 100 por página).
+ */
+export const dreSourceOptions: EntitySource<{ kind: string; project_id?: number | null }> = {
+  key: "dre-sources",
+  search: async ({ search, page, context }) => {
+    const r = (
+      await api.get<{ items: Source[]; total: number }>(base + "/sources", {
+        params: { page, page_size: 100, project_id: context.project_id ?? undefined },
+      })
+    ).data;
+    const items = r.items
+      .filter((s) => s.kind === context.kind && s.id !== null)
+      .map((s) => ({
+        id: s.id!,
+        label: s.description,
+        description: [s.amount ? money(s.amount, s.currency ?? "BRL") : null, s.hint_date ? formatCivilDate(s.hint_date) : null]
+          .filter(Boolean)
+          .join(" · "),
+      }));
+    const filtered = clientFilter(items, search, 1);
+    return { items: filtered.items, hasMore: page * 100 < r.total };
+  },
+};
+
 export type Allocation = {
   month: string;
   amount: string;
@@ -76,6 +107,8 @@ export type Entry = {
     hash: string;
     reason: string;
     actorId: number;
+    /** Nome do autor da versão (resolvido pela API). */
+    actor_name?: string | null;
     recordedAt: string;
   }[];
 };

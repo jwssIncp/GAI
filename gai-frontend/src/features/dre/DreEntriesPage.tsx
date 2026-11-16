@@ -1,3 +1,5 @@
+import { EntityCombobox } from "@/components/base/EntityCombobox";
+import { projectSource } from "@/components/base/entitySources";
 import { formatDateTime, formatMonth, localMonth } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
@@ -24,6 +26,7 @@ import {
   type Account,
   type Entry,
   type Source,
+  dreSourceOptions,
 } from "./dreApi";
 const statusLabels: Record<string, string> = {
   draft: "Rascunho",
@@ -42,6 +45,7 @@ export function DreEntryForm({
   accounts: Account[];
   onSave: (d: object) => Promise<void>;
 }) {
+  const [formProject, setFormProject] = useState<number | null>(initial?.projectId ?? null);
   const src = initial?.data.source ?? source,
     [kind, setKind] = useState(src?.kind ?? "manual"),
     [key] = useState(crypto.randomUUID()),
@@ -116,31 +120,37 @@ export function DreEntryForm({
           <option value="payment">Pagamento de inventariante</option>
         </select>
       </label>
-      {kind !== "manual" && (
-        <label className="grid gap-1 text-sm">
-          ID da origem
-          <input
-            name="source_id"
-            className={cls}
-            type="number"
-            min={1}
-            defaultValue={src?.id ?? ""}
-            readOnly={!!initial || !!source}
-            required
-          />
-        </label>
-      )}
       <label className="grid gap-1 text-sm">
-        Projeto (ID, opcional)
-        <input
+        Projeto (opcional)
+        <EntityCombobox
+          aria-label="Projeto"
           name="project_id"
-          className={cls}
-          type="number"
-          min={1}
-          defaultValue={initial?.projectId ?? src?.project_id ?? ""}
-          readOnly={!!initial || !!source}
+          source={projectSource}
+          defaultValue={initial?.projectId ?? src?.project_id ?? null}
+          onChange={(id) => setFormProject(id)}
+          disabled={!!initial || !!source}
         />
       </label>
+      {kind !== "manual" && (
+        <label className="grid gap-1 text-sm">
+          Origem a classificar
+          {initial || source ? (
+            <>
+              <input type="hidden" name="source_id" value={src?.id ?? ""} />
+              <span className="rounded-md border bg-muted px-3 py-2">{src?.description ?? "Origem selecionada"}</span>
+            </>
+          ) : (
+            <EntityCombobox
+              key={kind}
+              aria-label="Origem a classificar"
+              name="source_id"
+              source={dreSourceOptions}
+              context={{ kind, project_id: formProject }}
+              required
+            />
+          )}
+        </label>
+      )}
       <label className="grid gap-1 text-sm">
         Chave do fato econômico
         <input
@@ -354,14 +364,13 @@ export function DreEntriesPage() {
           setP(next);
         }}
       >
-        <label className="text-sm">
-          Projeto (ID)
-          <input
-            className={cls}
+        <label className="grid gap-1 text-sm sm:min-w-72">
+          Projeto
+          <EntityCombobox
+            aria-label="Projeto"
             name="project"
-            type="number"
-            min={1}
-            defaultValue={p.get("project_id") ?? ""}
+            source={projectSource}
+            defaultValue={Number(p.get("project_id")) > 0 ? Number(p.get("project_id")) : null}
           />
         </label>
         <Button type="submit">Filtrar projeto</Button>
@@ -593,7 +602,7 @@ export function DreEntryDetailPage() {
           {
             header: "Auditoria",
             cell: (v) =>
-              `Usuário #${v.actorId} · ${formatDateTime(String(v.recordedAt))}`,
+              `${v.actor_name ?? "Usuário removido"} · ${formatDateTime(String(v.recordedAt))}`,
           },
         ]}
       />

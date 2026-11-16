@@ -17,6 +17,23 @@ vi.mock("./cashFlowBoardApi", async (original) => ({
     get: vi.fn(async () => ({ configured: false, as_of: "2026-11-14", reference: { month: "2026-11", year: "2026" } })),
   },
 }));
+// Seletores com busca pelo nome (EntityCombobox): clientes e projetos simulados.
+const companies = [{ id: 1, name: "Cliente Um", corporate_name: "Cliente Um Ltda", document: null }];
+const projects = [{ id: 25, name: "Projeto Vinte e Cinco", code: "P-25", company_name: "Cliente Um" }];
+vi.mock("@/api/http", () => ({
+  api: {
+    get: vi.fn(async (url: string) => {
+      const byId = /^\/(companies|projects)\/(\d+)$/.exec(url);
+      if (byId) {
+        const list = byId[1] === "companies" ? companies : projects;
+        return { data: list.find((x) => x.id === Number(byId[2])) };
+      }
+      if (url === "/companies") return { data: { items: companies, total_pages: 1 } };
+      if (url === "/projects") return { data: { items: projects, total_pages: 1 } };
+      throw new Error("GET não simulado: " + url);
+    }),
+  },
+}));
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: () => ({ user: { id: 2, organization_id: 1 } }),
 }));
@@ -45,6 +62,14 @@ vi.mock("./financeApi", async (original) => ({
     edit: vi.fn(),
   },
 }));
+/** Escolhe o cliente pelo nome no seletor com busca (o ID vai no campo oculto). */
+async function chooseClient() {
+  const box = await screen.findByRole("combobox", { name: "Cliente" });
+  fireEvent.focus(box);
+  fireEvent.change(box, { target: { value: "Cliente" } });
+  fireEvent.mouseDown(await screen.findByRole("option", { name: /^Cliente Um/ }));
+  expect(box).toHaveValue("Cliente Um");
+}
 const row: Receivable = {
   id: 7,
   organizationId: 1,
@@ -170,6 +195,42 @@ describe("Financial navigation through real nested routes", () => {
       screen.getByRole("button", { name: "Histórico" }),
     ).toBeInTheDocument();
   });
+  it("detalhe e lista mostram cliente, projeto, origem e autor pelo nome (nunca #id)", async () => {
+    const named = {
+      ...row,
+      company_name: "Cliente Um",
+      project_name: "Projeto Vinte e Cinco (P-25)",
+      contract_number: "CT-9",
+      sourceKey: "contract:4",
+      events: [
+        { id: 1, operation: "create", amount: null, effectiveOn: null, installmentId: null, reversesId: null, actorId: 2, actor_name: "Ana Financeiro", recordedAt: "2026-11-10T13:00:00.000Z", details: {} },
+      ],
+    } as unknown as Receivable;
+    vi.mocked(financeApi.detail).mockResolvedValue(named);
+    mount("/app/finance/receivables/7?tab=details");
+    expect(await screen.findByText(/Cliente: Cliente Um · Projeto: Projeto Vinte e Cinco \(P-25\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Origem: Contrato CT-9/)).toBeInTheDocument();
+    expect(screen.queryByText(/Cliente #1/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Histórico" }));
+    expect(await screen.findByText(/Ana Financeiro ·/)).toBeInTheDocument();
+    expect(screen.queryByText(/Usuário #2/)).not.toBeInTheDocument();
+  });
+
+  it("filtros: cliente e projeto pelo nome; contrato só depois do projeto; o ID vai para a URL", async () => {
+    vi.mocked(financeApi.list).mockResolvedValue({ items: [], total: 0, page: 1, page_size: 20 } as never);
+    mount("/app/finance/receivables");
+    const contract = await screen.findByRole("combobox", { name: "Contrato" });
+    expect(contract).toBeDisabled();
+    expect(contract).toHaveAttribute("placeholder", "Escolha o projeto primeiro");
+    const project = screen.getByRole("combobox", { name: "Projeto" });
+    fireEvent.focus(project);
+    fireEvent.change(project, { target: { value: "Vinte" } });
+    fireEvent.mouseDown(await screen.findByRole("option", { name: /^Projeto Vinte e Cinco \(P-25\)/ }));
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Contrato" })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar filtros" }));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("project_id=25"));
+  });
+
   it("requires a server preview and explicit confirmation before creating", async () => {
     vi.mocked(financeApi.preview).mockResolvedValue({
       preview_hash: "a".repeat(64),
@@ -187,8 +248,8 @@ describe("Financial navigation through real nested routes", () => {
     });
     vi.mocked(financeApi.create).mockResolvedValue(row);
     mount("/app/finance/receivables/new");
+    await chooseClient();
     for (const [label, value] of [
-      ["Cliente (ID)", "1"],
       ["Descrição", "SINTETICO navegação"],
       ["Valor total (decimal)", "10.01"],
       ["Justificativa", "Teste sintético"],
@@ -215,8 +276,8 @@ describe("Financial navigation through real nested routes", () => {
       plan: { rows: [] },
     });
     mount("/app/finance/receivables/new");
+    await chooseClient();
     for (const [label, value] of [
-      ["Cliente (ID)", "1"],
       ["Descrição", "SINTETICO datas"],
       ["Valor total (decimal)", "10.00"],
       ["Justificativa", "Teste sintético"],
