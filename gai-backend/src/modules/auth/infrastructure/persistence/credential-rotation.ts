@@ -10,7 +10,8 @@ export async function rotateCredential(
   user: UserEntity,
   hash: string,
   mustChange: boolean,
-  temporaryTtlHours: number,
+  /** null: senha temporária sem expiração (inventariante, conforme configuração). */
+  temporaryTtlHours: number | null,
 ): Promise<void> {
   const now = new Date();
   user.passwordHash = hash;
@@ -19,9 +20,10 @@ export async function rotateCredential(
   user.mustChangePassword = mustChange;
   user.failedLoginAttempts = 0;
   user.lockedUntil = null;
-  user.temporaryPasswordExpiresAt = mustChange
-    ? new Date(now.getTime() + temporaryTtlHours * 3600000)
-    : null;
+  user.temporaryPasswordExpiresAt =
+    mustChange && temporaryTtlHours !== null
+      ? new Date(now.getTime() + temporaryTtlHours * 3600000)
+      : null;
   if (user.status === UserStatus.LOCKED) user.status = UserStatus.ACTIVE;
   await manager.getRepository(UserEntity).save(user);
   await manager

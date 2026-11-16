@@ -1,4 +1,8 @@
 import {
+  type FieldAgentAccessStatus,
+  loadFieldAgentAccess,
+} from './field-agent-access';
+import {
   BadRequestException,
   ConflictException,
   Inject,
@@ -48,6 +52,14 @@ export interface FieldAgentExportRow {
   Status: string;
   'Acesso ao app': string;
 }
+
+const ACCESS_LABELS: Record<FieldAgentAccessStatus, string> = {
+  NONE: 'Sem acesso',
+  INVITATION_PENDING: 'Convite pendente',
+  AWAITING_FIRST_ACCESS: 'Aguardando 1º acesso',
+  ACTIVE: 'Ativo',
+  REVOKED: 'Revogado',
+};
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'Ativo',
@@ -135,6 +147,10 @@ export class FieldAgentRecordsService {
           code: 'EXPORT_TOO_LARGE',
           message: `A exportação está limitada a ${EXPORT_LIMIT} inventariantes. Use os filtros.`,
         });
+      const access = await loadFieldAgentAccess(
+        this.db.manager,
+        items.map((agent) => agent.userId),
+      );
       for (const agent of items)
         rows.push({
           Nome: agent.name,
@@ -143,7 +159,11 @@ export class FieldAgentRecordsService {
           UF: agent.state ?? '',
           'CPF/CNPJ': agent.document ?? '',
           Status: STATUS_LABELS[agent.status] ?? agent.status,
-          'Acesso ao app': agent.userId ? 'Sim' : 'Não',
+          'Acesso ao app':
+            ACCESS_LABELS[
+              (agent.userId && access.get(Number(agent.userId))?.status) ||
+                'NONE'
+            ],
         });
       if (page * EXPORT_PAGE >= total) break;
     }

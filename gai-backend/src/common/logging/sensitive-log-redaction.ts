@@ -34,6 +34,8 @@ const SENSITIVE_FIELD_NAMES = [
   'api_key',
   'apiKey',
   'secret',
+  'temporary_password',
+  'temporaryPassword',
 ] as const;
 
 function buildSensitiveLogPaths(): string[] {

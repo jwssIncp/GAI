@@ -74,6 +74,11 @@ export class UserLifecycleService {
     dto: CreateUserDto,
     actor: ActorContext,
     onCreated?: (manager: EntityManager, user: UserEntity) => Promise<void>,
+    /**
+     * Só para a conta de inventariante (field-agents): e-mail opcional e
+     * validade própria da senha temporária (null = sem expiração).
+     */
+    fieldAccount?: { temporaryPasswordTtlHours: number | null },
   ) {
     this.scope.assertCanManageUsers(actor);
     const organizationId = this.scope.resolveOrganizationIdForCreate(
@@ -89,6 +94,16 @@ export class UserLifecycleService {
         message: 'Selecione uma organização do seu escopo.',
       });
     const invited = dto.activation_method === 'INVITATION';
+    if (!dto.email && (invited || !fieldAccount))
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message: invited
+          ? 'Informe um e-mail para enviar o convite.'
+          : 'Informe o e-mail.',
+      });
+    const ttlHours = fieldAccount
+      ? fieldAccount.temporaryPasswordTtlHours
+      : this.options().temporary_password_ttl_hours;
     if (invited && dto.password !== undefined)
       throw new BadRequestException({
         code: 'VALIDATION_ERROR',
@@ -108,19 +123,17 @@ export class UserLifecycleService {
         const saved = await manager.getRepository(UserEntity).save({
           fullName: dto.full_name,
           login: dto.login,
-          email: dto.email,
+          email: dto.email || null,
           phone: dto.phone || null,
           jobTitle: dto.job_title || null,
           organizationId,
           passwordHash,
           status: invited ? UserStatus.PENDING_ACTIVATION : UserStatus.ACTIVE,
           mustChangePassword: !invited,
-          temporaryPasswordExpiresAt: invited
-            ? null
-            : new Date(
-                Date.now() +
-                  this.options().temporary_password_ttl_hours * 3600000,
-              ),
+          temporaryPasswordExpiresAt:
+            invited || ttlHours === null
+              ? null
+              : new Date(Date.now() + ttlHours * 3600000),
           authVersion: 0,
           passwordChangedAt: new Date(),
           failedLoginAttempts: 0,
@@ -351,6 +364,12 @@ export class UserLifecycleService {
             code: 'CONFLICT',
             message: 'A conta não está pendente de ativação.',
           });
+        if (!user.email)
+          throw new ConflictException({
+            code: 'EMAIL_REQUIRED',
+            message:
+              'A conta não tem e-mail cadastrado. Informe um e-mail ou use a senha temporária.',
+          });
         await this.credentials.assertEligible(manager, user, true);
         return {
           user,
@@ -367,6 +386,7 @@ export class UserLifecycleService {
       ? 'SENT'
       : 'DEVELOPMENT';
     try {
+      if (!user.email) throw new Error('missing recipient');
       await this.credentials.sendInvitation(user.email, token);
     } catch {
       result = 'FAILED';
