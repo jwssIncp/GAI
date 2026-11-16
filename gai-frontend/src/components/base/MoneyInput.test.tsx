@@ -19,6 +19,13 @@ describe("MoneyInput (valor em R$, padrão pt-BR)", () => {
     expect(parseMoneyInput("-10,50")).toBeNull();
     expect(parseMoneyInput("-10,50", true)).toBe("-10.50");
     expect(formatMoneyInput("50000.00")).toBe("50.000,00");
+    // placas: até 4 casas
+    expect(parseMoneyInput("1.234,5678", false, 4)).toBe("1234.5678");
+    expect(parseMoneyInput("2,5", false, 4)).toBe("2.5000");
+    expect(parseMoneyInput("1.234", false, 4)).toBe("1234.0000");
+    expect(parseMoneyInput("1,23456", false, 4)).toBeNull();
+    expect(formatMoneyInput("1234.5678", 4)).toBe("1.234,5678");
+    expect(formatMoneyInput("2.5000", 4)).toBe("2,50");
   });
 
   for (const pasted of ["50.000,00", "50000,00", "50000.00"]) {

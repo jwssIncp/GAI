@@ -13,6 +13,8 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue
   name?: string;
   /** Aceita negativo (ajustes da DRE). */
   negative?: boolean;
+  /** Casas decimais aceitas e enviadas (padrão 2; placas usam 4). */
+  decimals?: number;
 };
 
 /**
@@ -21,24 +23,24 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue
  * O rótulo do campo deve dizer "(R$)".
  */
 export const MoneyInput = forwardRef<HTMLInputElement, Props>(function MoneyInput(
-  { value, defaultValue, onValueChange, name, negative = false, className, onBlur, required, ...rest },
+  { value, defaultValue, onValueChange, name, negative = false, decimals = 2, className, onBlur, required, ...rest },
   ref,
 ) {
   const controlled = value !== undefined;
-  const [text, setText] = useState(() => formatMoneyInput(controlled ? value : defaultValue));
-  const [api, setApi] = useState(() => parseMoneyInput(formatMoneyInput(controlled ? value : defaultValue), negative) ?? "");
+  const [text, setText] = useState(() => formatMoneyInput(controlled ? value : defaultValue, decimals));
+  const [api, setApi] = useState(() => parseMoneyInput(formatMoneyInput(controlled ? value : defaultValue, decimals), negative, decimals) ?? "");
   const [inner, setInner] = useState<HTMLInputElement | null>(null);
   // valor controlado mudou por fora: reflete no campo
   useEffect(() => {
     if (!controlled) return;
-    const next = value === null || value === "" ? "" : (parseMoneyInput(String(value).replace(".", ","), negative) ?? "");
+    const next = value === null || value === "" ? "" : (parseMoneyInput(String(value).replace(".", ","), negative, decimals) ?? "");
     if (next !== api) {
       setApi(next);
-      setText(formatMoneyInput(next));
+      setText(formatMoneyInput(next, decimals));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
-  const invalid = text !== "" && parseMoneyInput(text, negative) === null;
+  const invalid = text !== "" && parseMoneyInput(text, negative, decimals) === null;
   useEffect(() => {
     inner?.setCustomValidity(invalid ? "Valor inválido. Use o formato 50.000,00." : "");
   }, [inner, invalid]);
@@ -65,14 +67,14 @@ export const MoneyInput = forwardRef<HTMLInputElement, Props>(function MoneyInpu
         value={text}
         onChange={(e) => {
           setText(e.target.value);
-          const parsed = parseMoneyInput(e.target.value, negative) ?? "";
+          const parsed = parseMoneyInput(e.target.value, negative, decimals) ?? "";
           setApi(parsed);
           onValueChange?.(parsed);
         }}
         onBlur={(e) => {
           // ao sair, mostra no padrão "50.000,00"
-          const parsed = parseMoneyInput(text, negative);
-          if (parsed !== null) setText(formatMoneyInput(parsed));
+          const parsed = parseMoneyInput(text, negative, decimals);
+          if (parsed !== null) setText(formatMoneyInput(parsed, decimals));
           onBlur?.(e);
         }}
       />
