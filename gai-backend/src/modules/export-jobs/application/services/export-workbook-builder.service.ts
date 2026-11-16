@@ -1,3 +1,4 @@
+import { applyFormats, type CellFormat } from './export-cell-format';
 import { Injectable } from '@nestjs/common';
 import {
   ValuationBatchRow,
@@ -53,7 +54,13 @@ export class ExportWorkbookBuilderService {
           for (const sheet of source.financePayload.sheets) {
             if (sheet.rows.length > this.maxRows())
               throw new ExportRowLimitExceededError(this.maxRows());
-            this.addSheet(workbook, sheet.name, sheet.headers, sheet.rows);
+            this.addSheet(
+              workbook,
+              sheet.name,
+              sheet.headers,
+              sheet.rows,
+              sheet.formats,
+            );
           }
           break;
         }
@@ -82,19 +89,19 @@ export class ExportWorkbookBuilderService {
             throw new ExportRowLimitExceededError(this.maxRows());
           this.addSheet(
             workbook,
-            'Avaliacoes em lote',
+            'Avaliações em lote',
             [
-              'Operacao ID',
+              'Operação ID',
               'Item ID',
               'Placa antiga',
               'Placa nova',
-              'Descricao',
+              'Descrição',
               'Fonte',
               'Data',
               'Valor novo',
               'Valor usado',
-              'Observacoes',
-              'Avaliacao ID',
+              'Observações',
+              'Avaliação ID',
               'Resultado',
             ],
             rows.map((row) => [
@@ -201,15 +208,15 @@ export class ExportWorkbookBuilderService {
       'Projeto',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Empresa ID',
         'Nome',
-        'Descricao',
+        'Descrição',
         'Status',
         'Data inicial',
         'Data final',
         'Finalizado em',
-        'Configuracoes',
+        'Configurações',
         'Metadados',
         'Criado por ID',
         'Atualizado por ID',
@@ -254,22 +261,22 @@ export class ExportWorkbookBuilderService {
       'Itens inventariados',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Projeto ID',
         'Item externo ID',
         'Sequencia',
         'Placa antiga',
         'Placa nova',
         'Unidade',
-        'Endereco',
-        'Localizacao',
-        'Descricao',
+        'Endereço',
+        'Localização',
+        'Descrição',
         'Marca',
         'Modelo',
-        'Numero de serie',
+        'Número de série',
         'Capacidade',
         'Ano',
-        'Observacoes',
+        'Observações',
         'Origem',
         'Valor usado',
         'Valor novo',
@@ -319,28 +326,28 @@ export class ExportWorkbookBuilderService {
   ): void {
     this.addSheet(
       workbook,
-      'Base contabil',
+      'Base contábil',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Projeto ID',
         'Placa',
-        'Descricao',
-        'Descricao conta contabil',
-        'Localizacao',
-        'Data de aquisicao',
-        'Valor de aquisicao',
-        'Codigo base',
+        'Descrição',
+        'Descrição conta contábil',
+        'Localização',
+        'Data de aquisição',
+        'Valor de aquisição',
+        'Código base',
         'Status',
-        'Codigo investidor',
+        'Código investidor',
         'Nota 1',
         'Nota 2',
-        'Nova placa inventario',
-        'Descricao inventario',
-        'Localizacao inventario',
+        'Nova placa inventário',
+        'Descrição inventário',
+        'Localização inventário',
         'Metadados',
         'Importado por ID',
-        'Lote de importacao ID',
+        'Lote de importação ID',
         'Criado em',
         'Atualizado em',
         'Excluido em',
@@ -379,21 +386,21 @@ export class ExportWorkbookBuilderService {
   ): void {
     this.addSheet(
       workbook,
-      'Pendencias',
+      'Pendências',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Projeto ID',
-        'Item inventario ID',
-        'Item contabil ID',
+        'Item inventário ID',
+        'Item contábil ID',
         'Tipo',
         'Status',
         'Severidade',
         'Titulo',
-        'Descricao',
+        'Descrição',
         'Valor anterior',
         'Valor novo',
-        'Notas de resolucao',
+        'Notas de resolução',
         'Resolvido por ID',
         'Resolvido em',
         'Ignorado por ID',
@@ -442,7 +449,7 @@ export class ExportWorkbookBuilderService {
       'Pagamentos',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Projeto ID',
         'Inventariante ID',
         'UF',
@@ -456,7 +463,7 @@ export class ExportWorkbookBuilderService {
         'Desconto',
         'Valor final',
         'Status',
-        'Observacoes',
+        'Observações',
         'Aprovado por ID',
         'Aprovado em',
         'Pago por ID',
@@ -508,10 +515,10 @@ export class ExportWorkbookBuilderService {
       'Despesas',
       [
         'ID',
-        'Organizacao ID',
+        'Organização ID',
         'Projeto ID',
         'Inventariante ID',
-        'Descricao',
+        'Descrição',
         'Motivo',
         'Data despesa',
         'Valor',
@@ -560,11 +567,26 @@ export class ExportWorkbookBuilderService {
     name: string,
     headers: string[],
     rows: CellValue[][],
+    formats?: Array<CellFormat | null>,
   ): void {
+    const NUMERIC: Array<CellFormat | null | undefined> = [
+      'money',
+      'number',
+      'percent',
+    ];
+    // Coluna numérica: texto numérico vira número (assim "-123.45" não ganha o
+    // apóstrofo do saneador anti-fórmula e o Excel soma a coluna).
     const sanitizedRows = rows.map((row) =>
-      row.map((value) => this.cell(value)),
+      row.map((value, index) =>
+        NUMERIC.includes(formats?.[index]) &&
+        typeof value === 'string' &&
+        /^-?\d+(\.\d+)?$/.test(value)
+          ? Number(value)
+          : this.cell(value),
+      ),
     );
     const sheet = XLSX.utils.aoa_to_sheet([headers, ...sanitizedRows]);
+    applyFormats(sheet, sanitizedRows.length, formats);
     sheet['!cols'] = headers.map((header, index) => ({
       wch: Math.min(
         60,

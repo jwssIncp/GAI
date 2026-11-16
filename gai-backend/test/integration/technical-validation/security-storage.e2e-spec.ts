@@ -582,7 +582,7 @@ describe('Technical validation: negative authorization, contracts and storage', 
     expect(JSON.stringify(rows)).toContain('Synthetic taxi');
     expect(rows).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ Descricao: 'Synthetic taxi', Valor: 100 }),
+        expect.objectContaining({ Descrição: 'Synthetic taxi', Valor: 100 }),
       ]),
     );
   });

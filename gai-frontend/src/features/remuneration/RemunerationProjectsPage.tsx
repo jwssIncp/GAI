@@ -1,3 +1,4 @@
+import { formatMoney, formatPercent } from "@/utils/format";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -5,10 +6,9 @@ import { FilterPanel } from "@/components/base/FilterPanel";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { useDebouncedValue } from "@/features/field-agents/useDebouncedValue";
-import { formatMoney } from "@/utils/format";
 import { remunerationApi, remunerationKeys, type RemunerationProjectRow } from "./remunerationApi";
 
-const pct = (value: string | null) => (value === null ? "—" : `${value.replace(".", ",")}%`);
+const pct = (value: string | null) => formatPercent(value);
 
 function Percent({ value, alert, limit }: { value: string | null; alert: boolean; limit: string | null }) {
   return (

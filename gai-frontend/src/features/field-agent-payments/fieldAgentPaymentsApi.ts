@@ -1,3 +1,4 @@
+import { formatCivilDate, formatMonth } from "@/utils/format";
 import { api } from "@/api/http";
 
 export type PaymentStatusFilter = "open" | "pending" | "approved" | "paid" | "cancelled";
@@ -88,8 +89,5 @@ export const fieldAgentPaymentsKeys = {
   list: (filters: ConsolidatedFilters) => ["field-agent-payments", filters] as const,
 };
 
-export const civilBr = (value: string | null) => (value ? value.split("-").reverse().join("/") : "");
-export const monthBr = (value: string) => {
-  const [y, m] = value.split("-");
-  return `${m}/${y}`;
-};
+export const civilBr = formatCivilDate;
+export const monthBr = formatMonth;

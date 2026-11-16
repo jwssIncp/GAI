@@ -1,4 +1,4 @@
-import { localToday } from "@/utils/format";
+import { formatPercent, localToday } from "@/utils/format";
 import { api } from "@/api/http";
 export type Filters = Record<string, string>;
 export type Payment = {
@@ -191,8 +191,7 @@ export function money(value: string, currency: string) {
 }
 /** Percentual pt-BR ("12.5" → "12,50%"); nulo/indefinido → "—". */
 export function percent(value: string | null | undefined) {
-  if (value === null || value === undefined) return "—";
-  return `${Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  return formatPercent(value);
 }
 /** Hoje no fuso do usuário (não em UTC: depois das 21h seria amanhã). */
 export const today = () => localToday();

@@ -1,4 +1,4 @@
-import { localMonth } from "@/utils/format";
+import { formatDateTime, formatMonth, localMonth } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -585,7 +585,7 @@ export function DreEntryDetailPage() {
               v.data.allocations
                 .map(
                   (a) =>
-                    `${a.month}: ${a.account?.name ?? "Não classificado"} ${money(a.amount, v.data.currency)}`,
+                    `${formatMonth(a.month)}: ${a.account?.name ?? "Não classificado"} ${money(a.amount, v.data.currency)}`,
                 )
                 .join(" · "),
           },
@@ -593,7 +593,7 @@ export function DreEntryDetailPage() {
           {
             header: "Auditoria",
             cell: (v) =>
-              `Usuário #${v.actorId} · ${new Date(v.recordedAt).toLocaleString("pt-BR")}`,
+              `Usuário #${v.actorId} · ${formatDateTime(String(v.recordedAt))}`,
           },
         ]}
       />

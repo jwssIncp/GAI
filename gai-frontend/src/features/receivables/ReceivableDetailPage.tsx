@@ -1,3 +1,4 @@
+import { formatCivilDate, formatDateTime } from "@/utils/format";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -148,7 +149,7 @@ export function ReceivableDetailPage() {
           getKey={(i) => i.id}
           columns={[
             { header: "Parcela", cell: (i) => i.position },
-            { header: "Vencimento", cell: (i) => i.dueOn },
+            { header: "Vencimento", cell: (i) => formatCivilDate(i.dueOn) },
             { header: "Original", cell: (i) => money(i.amount, r.currency) },
             { header: "Recebido", cell: (i) => money(i.received, r.currency) },
             { header: "Saldo", cell: (i) => money(i.open, r.currency) },
@@ -168,7 +169,7 @@ export function ReceivableDetailPage() {
               header: "Evento",
               cell: (e) => `#${e.id} ${operations[e.operation] ?? e.operation}`,
             },
-            { header: "Data efetiva", cell: (e) => e.effectiveOn ?? "—" },
+            { header: "Data efetiva", cell: (e) => formatCivilDate(e.effectiveOn) || "—" },
             {
               header: "Valor",
               cell: (e) => (e.amount ? money(e.amount, r.currency) : "—"),
@@ -186,7 +187,7 @@ export function ReceivableDetailPage() {
             {
               header: "Auditoria",
               cell: (e) =>
-                `Usuário #${e.actorId} · ${new Date(e.recordedAt).toLocaleString("pt-BR")}`,
+                `Usuário #${e.actorId} · ${formatDateTime(String(e.recordedAt))}`,
             },
             {
               header: "Ação",
@@ -211,7 +212,7 @@ export function ReceivableDetailPage() {
             Cliente #{r.companyId} · Projeto {r.projectId ?? "não vinculado"}
           </p>
           <p>
-            Origem: {r.sourceKey ?? "manual"} · Emissão: {r.data.issued_on}
+            Origem: {r.sourceKey ?? "manual"} · Emissão: {formatCivilDate(r.data.issued_on)}
           </p>
           <p>Documento: {r.data.document || "não informado"}</p>
           <p>Observações: {r.data.notes || "não informadas"}</p>
@@ -289,7 +290,7 @@ export function ReceivableDetailPage() {
                     .filter((i) => i.status !== "paid")
                     .map((i) => (
                       <option value={i.id} key={i.id}>
-                        Parcela {i.position} · {i.dueOn} · Saldo{" "}
+                        Parcela {i.position} · {formatCivilDate(i.dueOn)} · Saldo{" "}
                         {money(i.open, r.currency)}
                       </option>
                     ))}

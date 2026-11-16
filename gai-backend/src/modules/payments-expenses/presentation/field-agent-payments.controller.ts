@@ -1,3 +1,4 @@
+import { applyFormats } from '../../export-jobs/application/services/export-cell-format';
 import {
   Body,
   Controller,
@@ -87,25 +88,45 @@ export class FieldAgentPaymentsController {
       Final: n(r.final_amount),
     }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.json_to_sheet(rows),
-      'Pagamentos',
+    // Datas como data e valores como R$ (padrão da tela), não texto cru.
+    const payments = XLSX.utils.json_to_sheet(rows);
+    applyFormats(payments, rows.length, [
+      null,
+      null,
+      null,
+      null,
+      null,
+      'date',
+      'date',
+      'date',
+      'date',
+      'number',
+      'money',
+      'money',
+      'money',
+      'money',
+      'money',
+    ]);
+    XLSX.utils.book_append_sheet(workbook, payments, 'Pagamentos');
+    const summary = XLSX.utils.json_to_sheet(
+      data.summary.rows.map((a) => ({
+        Inventariante: safeSpreadsheetText(a.name),
+        Lançamentos: a.entries,
+        Dias: a.days,
+        Final: n(a.final),
+        Pago: n(a.paid),
+        'Em aberto': n(a.open),
+      })),
     );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.json_to_sheet(
-        data.summary.rows.map((a) => ({
-          Inventariante: safeSpreadsheetText(a.name),
-          Lançamentos: a.entries,
-          Dias: a.days,
-          Final: n(a.final),
-          Pago: n(a.paid),
-          'Em aberto': n(a.open),
-        })),
-      ),
-      'Resumo por inventariante',
-    );
+    applyFormats(summary, data.summary.rows.length, [
+      null,
+      'number',
+      'number',
+      'money',
+      'money',
+      'money',
+    ]);
+    XLSX.utils.book_append_sheet(workbook, summary, 'Resumo por inventariante');
     res.setHeader(
       'Content-Disposition',
       'attachment; filename="pagamento-inventariantes.xlsx"',

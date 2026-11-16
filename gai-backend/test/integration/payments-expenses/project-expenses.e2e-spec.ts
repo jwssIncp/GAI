@@ -451,6 +451,217 @@ describe('Despesas do projeto (e2e, etapa 4)', () => {
     expect(rows.filter((r) => r[2] === 'Ana Campo')).toHaveLength(2);
   });
 
+  /**
+   * Ida e volta: o CSV exportado (separador ";" e vírgula decimal) é importado
+   * de novo, sem erro e com os mesmos valores; no Excel, as datas (despesa,
+   * faturamento e lote) são datas reais, no mesmo dia da tela.
+   */
+  it('CSV de ida e volta (";" e vírgula decimal) e datas do Excel sem deslocamento de fuso', async () => {
+    const make = async (name: string) => {
+      const id = (
+        await api('post', '/projects')
+          .send({ organization_id: 1, company_id: 1, name })
+          .expect(201)
+      ).body.id as number;
+      const agent = (
+        await api('post', '/field-agents')
+          .send({ name: `Carla ${name}` })
+          .expect(201)
+      ).body.id as number;
+      await api('post', `/projects/${id}/field-agents`)
+        .send({ field_agent_id: agent, role: 'collector' })
+        .expect(201);
+      return { id, agent };
+    };
+    const origin = await make('Ida');
+    const target = await make('Ida'); // mesmo nome de inventariante no destino
+    const post = (body: Record<string, unknown>) =>
+      api('post', `/projects/${origin.id}/expenses`)
+        .send({
+          field_agent_id: origin.agent,
+          reason_code: 'Transporte',
+          ...body,
+        })
+        .expect(201);
+    await post({
+      description: 'Ida e volta à vista',
+      expense_date: '2026-03-10',
+      amount: '1234.56',
+      deposited_amount: '1000.50',
+      expense_type: 'reimbursable',
+      payment_method: 'cash',
+    });
+    await post({
+      description: 'Ida e volta faturada',
+      expense_date: '2026-04-01',
+      amount: '99.90',
+      expense_type: 'non_reimbursable',
+      payment_method: 'invoiced',
+      invoiced_payment_date: '2026-04-15',
+    });
+    await post({
+      description: 'Ida e volta parcelada',
+      expense_date: '2026-05-31',
+      amount: '300.00',
+      expense_type: 'reimbursable',
+      payment_method: 'installments',
+      installment_count: 3,
+    });
+    const items = (
+      await api('get', `/projects/${origin.id}/expense-board`).expect(200)
+    ).body.items as Array<{ id: number; expense_type: string }>;
+    await api('post', `/projects/${origin.id}/reimbursement-batches`)
+      .send({
+        ids: items
+          .filter((i) => i.expense_type === 'reimbursable')
+          .map((i) => i.id),
+        batch_date: '2026-06-30',
+      })
+      .expect(200);
+
+    // CSV: ";" entre campos e vírgula decimal
+    const csv = (
+      await api(
+        'get',
+        `/projects/${origin.id}/expense-board/export?format=csv`,
+      ).expect(200)
+    ).text;
+    const lines = csv
+      .replace(/^\uFEFF/, '')
+      .trim()
+      .split('\r\n');
+    expect(lines[0].startsWith('"Cód";"Data";"Inventariante"')).toBe(true);
+    expect(csv).toContain('"1234,56"');
+    expect(csv).toContain('"1000,50"');
+    expect(csv).not.toMatch(/"\d+\.\d{1,2}"/); // nenhum valor com ponto decimal
+    // importa o mesmo CSV no outro projeto
+    const preview = (
+      await api('post', `/projects/${target.id}/expense-board/import/preview`)
+        .attach('file', Buffer.from(csv, 'utf8'), 'despesas.csv')
+        .expect(200)
+    ).body as {
+      valid: number;
+      invalid: number;
+      rows: Array<{
+        line: number;
+        errors: string[];
+        values: Record<string, unknown>;
+      }>;
+    };
+    expect(preview.rows.flatMap((r) => r.errors)).toEqual([]);
+    expect([preview.valid, preview.invalid]).toEqual([3, 0]);
+    const pick = (r: Record<string, unknown>) => ({
+      expense_date: r.expense_date,
+      amount: r.amount,
+      deposited_amount: r.deposited_amount,
+      reason_code: r.reason_code,
+      expense_type: r.expense_type,
+      payment_method: r.payment_method,
+      installment_count: r.installment_count,
+      invoiced_payment_date: r.invoiced_payment_date,
+    });
+    expect(
+      preview.rows
+        .map((r) => pick(r.values))
+        .sort((a, b) =>
+          String(a.expense_date).localeCompare(String(b.expense_date)),
+        ),
+    ).toEqual([
+      {
+        expense_date: '2026-03-10',
+        amount: '1234.56',
+        deposited_amount: '1000.50',
+        reason_code: 'Transporte',
+        expense_type: 'reimbursable',
+        payment_method: 'cash',
+        installment_count: null,
+        invoiced_payment_date: null,
+      },
+      {
+        expense_date: '2026-04-01',
+        amount: '99.90',
+        deposited_amount: null,
+        reason_code: 'Transporte',
+        expense_type: 'non_reimbursable',
+        payment_method: 'invoiced',
+        installment_count: null,
+        invoiced_payment_date: '2026-04-15',
+      },
+      {
+        expense_date: '2026-05-31',
+        amount: '300.00',
+        deposited_amount: null,
+        reason_code: 'Transporte',
+        expense_type: 'reimbursable',
+        payment_method: 'installments',
+        installment_count: 3,
+        invoiced_payment_date: null,
+      },
+    ]);
+    const done = (
+      await api('post', `/projects/${target.id}/expense-board/import`)
+        .send({
+          rows: preview.rows.map((r) => ({ line: r.line, values: r.values })),
+        })
+        .expect(200)
+    ).body;
+    expect(done).toMatchObject({ done: 3 });
+    const imported = (
+      await api('get', `/projects/${target.id}/expense-board`).expect(200)
+    ).body.items as Array<{ amount: string; expense_date: string }>;
+    expect(imported.map((i) => `${i.expense_date} ${i.amount}`).sort()).toEqual(
+      ['2026-03-10 1234.56', '2026-04-01 99.90', '2026-05-31 300.00'],
+    );
+
+    // Excel: datas como data, no mesmo dia (despesa, faturamento, lote)
+    const xlsx = await api(
+      'get',
+      `/projects/${origin.id}/expense-board/export?format=xlsx`,
+    )
+      .buffer(true)
+      .parse((res, cb) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => cb(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    const sheet = XLSX.read(xlsx.body as Buffer, { cellNF: true }).Sheets
+      .Despesas;
+    const day = (r: number, c: number) => {
+      const cell = sheet[XLSX.utils.encode_cell({ r, c })] as
+        | XLSX.CellObject
+        | undefined;
+      if (!cell || cell.t !== 'n') return cell?.v ?? null;
+      expect(cell.z).toBe('dd/mm/yyyy');
+      const d = XLSX.SSF.parse_date_code(cell.v);
+      return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
+    };
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+      header: 1,
+      blankrows: false,
+    });
+    const header = rows[0] as string[];
+    const col = (name: string) => header.indexOf(name);
+    const byDate = new Map(
+      rows.slice(1).map((_, i) => [day(i + 1, col('Data')), i + 1] as const),
+    );
+    expect([...byDate.keys()].filter(Boolean).sort()).toEqual([
+      '2026-03-10',
+      '2026-04-01',
+      '2026-05-31',
+    ]);
+    expect(day(byDate.get('2026-04-01')!, col('Data de faturamento'))).toBe(
+      '2026-04-15',
+    );
+    expect(day(byDate.get('2026-03-10')!, col('Data do lote'))).toBe(
+      '2026-06-30',
+    );
+    const value = sheet[
+      XLSX.utils.encode_cell({ r: byDate.get('2026-03-10')!, c: col('Valor') })
+    ] as XLSX.CellObject;
+    expect(value).toMatchObject({ t: 'n', v: 1234.56 });
+  });
+
   it('importa Excel/CSV com apelidos de cabeçalho, pré-visualização e erros por linha', async () => {
     const csv = [
       'Data;Técnico;Motivo;Tipo de despesa;Total;Adiantamento;Forma;Parcelas;Observação',

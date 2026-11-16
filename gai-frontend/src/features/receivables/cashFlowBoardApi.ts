@@ -1,3 +1,4 @@
+import { formatCivilDate, formatMonth } from "@/utils/format";
 import { api } from "@/api/http";
 
 export type FlowItem = {
@@ -82,8 +83,8 @@ export const cashFlowKeys = {
   board: (q: BoardQuery) => ["cash-flow-board", q] as const,
 };
 
-export const civilBr = (value: string | null | undefined) => (value ? value.split("-").reverse().join("/") : "");
-export const monthBr = (value: string) => value.split("-").reverse().join("/");
+export const civilBr = formatCivilDate;
+export const monthBr = formatMonth;
 
 export type FixedCostItem = { key: string; label: string; mode: string; amount: string | null; available: boolean };
 export type CashFlowIndicatorValues = {

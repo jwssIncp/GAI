@@ -1,3 +1,4 @@
+import { formatCivilDate, formatPercent } from "@/utils/format";
 import { api } from "@/api/http";
 
 export type CommissionStatus = "paid" | "overdue" | "pending";
@@ -87,5 +88,5 @@ export function normalizePercent(value: string): string | null {
   return `${Number(w)}.${f.padEnd(2, "0")}`;
 }
 
-export const pctBr = (value: string) => `${value.replace(".", ",")}%`;
-export const civilBr = (value: string | null | undefined) => (value ? value.split("-").reverse().join("/") : "");
+export const pctBr = (value: string) => formatPercent(value);
+export const civilBr = formatCivilDate;

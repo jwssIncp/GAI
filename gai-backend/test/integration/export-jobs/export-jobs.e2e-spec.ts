@@ -168,7 +168,7 @@ describe('Export Jobs (e2e)', () => {
     );
     expect(rows).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ Descricao: 'Notebook real no XLSX' }),
+        expect.objectContaining({ Descrição: 'Notebook real no XLSX' }),
       ]),
     );
 

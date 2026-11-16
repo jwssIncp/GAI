@@ -1,3 +1,4 @@
+import { formatCivilDate } from "@/utils/format";
 import { api } from "@/api/http";
 
 export type AssetTagRow = {
@@ -99,4 +100,4 @@ export function unitBr(value: string): string {
   return `R$ ${whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},${trimmed}`;
 }
 
-export const civilBr = (value: string | null | undefined) => (value ? value.split("-").reverse().join("/") : "");
+export const civilBr = formatCivilDate;
