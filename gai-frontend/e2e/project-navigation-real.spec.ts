@@ -104,7 +104,7 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   await expect(nav.getByRole("link", { name: "Imagens", exact: true })).toHaveCount(0);
   await openProjectTab(page, "Campo", "Preparação");
   await page
-    .getByRole("link", { name: "Checklist do Cliente", exact: true })
+    .getByRole("link", { name: "Checklist do cliente", exact: true })
     .click();
   await expect(page).toHaveURL(/preparation\/client-checklist$/);
   await page.getByRole("link", { name: "Kick-off", exact: true }).click();

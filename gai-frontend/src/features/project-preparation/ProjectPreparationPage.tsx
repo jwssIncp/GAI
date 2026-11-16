@@ -79,7 +79,7 @@ export function ProjectPreparationPage() {
             to: `/app/projects/${projectId}/preparation/kickoff`,
           },
           {
-            label: 'Checklist do Cliente',
+            label: 'Checklist do cliente',
             to: `/app/projects/${projectId}/preparation/client-checklist`,
           },
         ]}

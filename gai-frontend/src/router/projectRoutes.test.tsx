@@ -26,7 +26,7 @@ function Probe({ title }: { title: string }) {
             Kick-off
           </Link>
           <Link to={`/app/projects/${projectId}/preparation/client-checklist`}>
-            Checklist do Cliente
+            Checklist do cliente
           </Link>
         </>
       ) : null}
@@ -270,7 +270,7 @@ describe("Production project route tree: persistent navigation", () => {
     expect(within(tabs).getAllByRole("link").map((link) => link.textContent)).toEqual([
       "Recebíveis",
       "Fluxo de caixa",
-      "DRE Gerencial",
+      "DRE gerencial",
     ]);
     expect(within(tabs).getByRole("link", { name: "Recebíveis" })).toHaveAttribute(
       "href",

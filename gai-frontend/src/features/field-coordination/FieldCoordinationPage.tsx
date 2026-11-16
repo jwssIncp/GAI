@@ -71,7 +71,7 @@ export function FieldCoordinationPage() {
   return (
     <PageContainer>
       <PageHeader
-        title={`Coordenação de Campo · ${context.data?.project.name ?? "Projeto"}`}
+        title={`Coordenação de campo · ${context.data?.project.name ?? "Projeto"}`}
         description="Etapas, tarefas, responsáveis e validação explícita da conclusão de campo."
       />
       {context.isLoading || list.isLoading ? (

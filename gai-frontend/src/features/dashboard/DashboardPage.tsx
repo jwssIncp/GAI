@@ -80,7 +80,7 @@ function OperationalDashboardPage() {
                   return (
                     <Link key={item.to} to={item.to} className="group flex min-h-20 items-center gap-3 rounded-xl border border-border/70 bg-muted/25 p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary-subtle hover:shadow-panel">
                       <span className={cn('grid size-10 shrink-0 place-items-center rounded-xl', index % 3 === 0 ? 'bg-primary-subtle text-brand-teal' : index % 3 === 1 ? 'bg-accent text-accent-foreground' : 'bg-info-subtle text-info')}><Icon size={17} /></span>
-                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.label}</span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold" title={item.label}>{item.label}</span>
                       <ArrowUpRight className="text-muted-foreground transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" size={15} />
                     </Link>
                   );

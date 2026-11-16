@@ -255,7 +255,7 @@ test.describe('redesign behaviour', () => {
     const root = `/app/projects/${primary}/`;
     const context = '?return_to=' + encodeURIComponent('/app/dashboard?search=SINTETICO');
     await page.goto(root + 'preparation/kickoff' + context);
-    await page.getByRole('link', { name: 'Checklist do Cliente', exact: true }).click();
+    await page.getByRole('link', { name: 'Checklist do cliente', exact: true }).click();
     await expect(page).toHaveURL(root + 'preparation/client-checklist' + context);
     await page.reload();
     await page.getByRole('link', { name: 'Voltar ao projeto', exact: true }).click();

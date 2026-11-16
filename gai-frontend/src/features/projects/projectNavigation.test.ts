@@ -64,7 +64,7 @@ describe("Navegação do projeto em dois níveis", () => {
       "Comissões",
       "Recebíveis",
       "Fluxo de caixa",
-      "DRE Gerencial",
+      "DRE gerencial",
     ]);
     expect(new Set(tabs.map((tab) => tab.id)).size).toBe(tabs.length);
   });

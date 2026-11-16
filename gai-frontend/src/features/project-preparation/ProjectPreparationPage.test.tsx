@@ -253,7 +253,7 @@ describe('Project preparation UI', () => {
   it('separates the client checklist tab and shows an empty state without reusing kickoff responses', async () => {
     renderPage(['read'], 'client-checklist');
     expect(
-      await screen.findByText('Nenhum Checklist do Cliente criado'),
+      await screen.findByText('Nenhum Checklist do cliente criado'),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
