@@ -5,15 +5,15 @@ import {
   DocumentBlock,
   ProfessionalDocument,
 } from './document.contract';
-export const documentDate = (value: string | Date) => {
-  const s = value instanceof Date ? value.toISOString() : value;
-  return s.slice(0, 10).split('-').reverse().join('/');
-};
-// Format exact decimal strings without floating-point rounding of large prices.
-export function documentMoney(value: string, currency: string) {
-  const [whole, fraction = '00'] = value.split('.');
-  return `${currency} ${whole.replace(/\B(?=(\d{3})+(?!\d))/g, '.')},${fraction.padEnd(2, '0')}`;
-}
+import {
+  documentDate,
+  documentDecimal,
+  documentInteger,
+  documentMoney,
+  documentNumber,
+  documentPercent,
+} from './document.format';
+export { documentDate, documentMoney } from './document.format';
 const families: Record<string, string> = {
   identity: 'Identificação',
   units: 'Unidades',
@@ -62,7 +62,7 @@ export function reportDocument(
         columns: ['Indicador', 'Valor'],
         rows: Object.entries(d.sources.metrics).map(([k, value]) => [
           k,
-          value === null ? 'Indisponível' : String(value),
+          value === null ? 'Indisponível' : documentNumber(value),
         ]),
       },
       paragraphs: [
@@ -155,15 +155,15 @@ export function budgetDocument(
         columns: ['Serviço', 'Quantidade de bens estimada (escopo global)'],
         rows: s.input.services.map((service) => [
           service,
-          String(s.input.estimated_assets),
+          documentInteger(s.input.estimated_assets),
         ]),
       },
     },
     {
       title: 'Prazo e condições comerciais',
       paragraphs: [
-        `Prazo estimado de campo: ${c.sizing.field_days} dia(s)`,
-        `Equipe prevista: ${c.sizing.team} profissional(is)`,
+        `Prazo estimado de campo: ${documentInteger(c.sizing.field_days)} dia(s)`,
+        `Equipe prevista: ${documentInteger(c.sizing.team)} profissional(is)`,
         `Preço total: ${money(c.final_price)}`,
         `Validade: ${documentDate(s.input.valid_until)}`,
         `Elaboração: ${documentDate(s.input.prepared_on)}`,
@@ -186,16 +186,17 @@ export function budgetDocument(
         columns: ['Custo', 'Quantidade', 'Valor unitário', 'Subtotal'],
         rows: c.lines.map((l) => [
           l.label,
-          String(l.quantity),
+          documentInteger(l.quantity),
           money(l.unit_value),
           money(l.subtotal),
         ]),
       },
       paragraphs: [
+        `Parâmetros: ${documentInteger(c.inputs.assets)} bens · ${documentInteger(c.inputs.address_count)} endereço(s) · produtividade ${documentInteger(c.inputs.productivity)} bens por profissional-dia · fator de esforço por endereço ${documentDecimal(c.inputs.address_factor)} · ${documentInteger(c.inputs.available_days)} dia(s) disponível(is)`,
         `Custo total: ${money(c.cost_total)}`,
-        `Margem: ${c.rates.margin_pct}%`,
-        `Comissão: ${c.rates.commission_pct}%`,
-        `Impostos: ${c.rates.tax_pct}%`,
+        `Margem: ${documentPercent(c.rates.margin_pct)}`,
+        `Comissão: ${documentPercent(c.rates.commission_pct)}`,
+        `Impostos: ${documentPercent(c.rates.tax_pct)}`,
         ...Object.values(c.formulas),
       ],
     });
