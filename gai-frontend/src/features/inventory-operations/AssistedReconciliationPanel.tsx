@@ -144,7 +144,7 @@ export function AssistedReconciliationPanel({
           <br />
           {c.warnings.length ? "Ambiguidade / alerta" : "Candidato provável"}
           {c.evidence?.alerts.some((a) => a.startsWith("Descrição")) ? (
-            <span className="block text-amber-700">Descrição divergente</span>
+            <span className="block text-warning-text">Descrição divergente</span>
           ) : null}
         </span>
       ),
@@ -298,7 +298,7 @@ export function AssistedReconciliationPanel({
           {data.stale ? (
             <p
               role="alert"
-              className="rounded-md border border-amber-500 bg-amber-50 p-4 text-amber-900"
+              className="rounded-md border border-warning/40 bg-warning-subtle p-4 text-warning-text"
             >
               Fontes obsoletas. Gere novas sugestões antes de decidir.
             </p>
@@ -400,7 +400,7 @@ export function AssistedReconciliationPanel({
                   .
                 </p>
                 {target.evidence.alerts.map((w, i) => (
-                  <p className="text-sm text-amber-700" key={i}>
+                  <p className="text-sm text-warning-text" key={i}>
                     {w}
                   </p>
                 ))}
@@ -466,7 +466,7 @@ export function AssistedReconciliationPanel({
                   </Button>
                 </form>
               ) : null}
-              {target.warnings.map((warning, i) => <p className="text-sm text-amber-700" key={i}>{warning}</p>)}
+              {target.warnings.map((warning, i) => <p className="text-sm text-warning-text" key={i}>{warning}</p>)}
             </PermissionGate>
             {decide.error ? (
               <ErrorState

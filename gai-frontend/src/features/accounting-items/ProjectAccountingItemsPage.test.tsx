@@ -186,10 +186,10 @@ describe('ProjectAccountingItemsPage', () => {
   it('edicao valida valor monetario', async () => {
     renderPage();
     await userEvent.click(await screen.findByLabelText('Editar item contábil'));
-    await userEvent.clear(screen.getByLabelText('Valor de aquisição'));
-    await userEvent.type(screen.getByLabelText('Valor de aquisição'), '12,345');
+    await userEvent.clear(screen.getByLabelText('Valor de aquisição (R$)'));
+    await userEvent.type(screen.getByLabelText('Valor de aquisição (R$)'), '12,345');
     await userEvent.click(screen.getByRole('button', { name: /atualizar item contábil/i }));
-    expect(await screen.findByText('Valor deve seguir o formato 9999999999999.99')).toBeInTheDocument();
+    expect(await screen.findByText('Valor inválido. Use o formato 50.000,00.')).toBeInTheDocument();
   });
 
   it('desativa com confirmacao', async () => {

@@ -228,7 +228,7 @@ describe("Batch valuation integrated item workspace", () => {
       screen.getByLabelText("Data da avaliação em lote"),
       "2026-10-27",
     );
-    await userEvent.type(screen.getByLabelText("Valor novo comum"), "150.00");
+    await userEvent.type(screen.getByLabelText("Valor novo comum (R$)"), "150.00");
     await userEvent.click(
       screen.getByRole("button", { name: "Gerar prévia da avaliação" }),
     );
@@ -293,8 +293,8 @@ describe("Batch valuation integrated item workspace", () => {
       await screen.findByLabelText("Modo de valores"),
       "individual",
     );
-    expect(screen.getByLabelText("Valor novo do item 1")).toBeInTheDocument();
-    expect(screen.getByLabelText("Valor usado do item 1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Valor novo do item 1 (R$)")).toBeInTheDocument();
+    expect(screen.getByLabelText("Valor usado do item 1 (R$)")).toBeInTheDocument();
   });
   it("hides selection and writing from read-only users while retaining project navigation", async () => {
     mount(["asset-valuations:read"]);

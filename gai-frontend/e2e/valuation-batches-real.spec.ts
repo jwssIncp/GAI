@@ -98,8 +98,8 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
   await page
     .getByLabel("Data da avaliação em lote", { exact: true })
     .fill("2026-10-27");
-  await page.getByLabel("Valor novo comum", { exact: true }).fill("150.00");
-  await page.getByLabel("Valor usado comum", { exact: true }).fill("75.00");
+  await page.getByLabel("Valor novo comum (R$)", { exact: true }).fill("150.00");
+  await page.getByLabel("Valor usado comum (R$)", { exact: true }).fill("75.00");
   const previewResponse = page.waitForResponse(
     (r) =>
       r.url().endsWith("/valuation-batches/preview") &&
@@ -179,10 +179,10 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByLabel("Data da avaliação em lote", { exact: true })
     .fill("2026-10-27");
   await page
-    .getByLabel(`Valor usado do item ${ids[22]}`, { exact: true })
+    .getByLabel(`Valor usado do item ${ids[22]} (R$)`, { exact: true })
     .fill("25.50");
   await page
-    .getByLabel(`Valor novo do item ${ids[21]}`, { exact: true })
+    .getByLabel(`Valor novo do item ${ids[21]} (R$)`, { exact: true })
     .fill("350.75");
   const secondPreview = page.waitForResponse(
     (r) =>

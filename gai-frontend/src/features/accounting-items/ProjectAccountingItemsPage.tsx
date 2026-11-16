@@ -57,7 +57,7 @@ export function ProjectAccountingItemsPage() {
     { header: 'Conta contábil', cell: (item) => item.accounting_account_description ?? '-' },
     { header: 'Localização', cell: (item) => item.location ?? '-' },
     { header: 'Aquisição', cell: (item) => formatDate(item.acquisition_date) },
-    { header: 'Valor', cell: (item) => formatMoney(item.acquisition_value) },
+    { header: 'Valor', cell: (item) => formatMoney(item.acquisition_value), numeric: true },
     { header: 'Cod. base', cell: (item) => item.base_code ?? '-' },
     { header: 'Investor', cell: (item) => item.investor_code ?? '-' },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },
