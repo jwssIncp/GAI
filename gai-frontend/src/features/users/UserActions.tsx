@@ -1,3 +1,4 @@
+import { DEVELOPMENT_INVITATION_MESSAGE } from "./invitationDelivery";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
@@ -59,11 +60,11 @@ export function UserActions({ user }: { user: User }) {
           delivery === "FAILED"
             ? "Não foi possível entregar o convite"
             : delivery === "DEVELOPMENT"
-              ? "Convite preparado em desenvolvimento"
+              ? "Convite registrado (ambiente de desenvolvimento)"
               : "Operação concluída",
         description:
           delivery === "DEVELOPMENT"
-            ? "O serviço de e-mail está em modo simulado; nenhum e-mail foi enviado."
+            ? DEVELOPMENT_INVITATION_MESSAGE
             : delivery === "FAILED"
               ? "A conta permanece pendente. Revise o envio e tente novamente."
               : undefined,

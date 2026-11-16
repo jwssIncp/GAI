@@ -23,6 +23,7 @@ import { fieldAgentsApi, projectFieldAgentsApi } from "@/api/endpoints";
 import { BRAZILIAN_STATES } from "./brazilianStates";
 import { FieldAgentProjectsPicker } from "./FieldAgentProjectsPicker";
 import { FieldAgentDocumentsPanel } from "./FieldAgentDocumentsPanel";
+import { invitationDeliveryMessage } from "@/features/users/invitationDelivery";
 
 type Props =
   | {
@@ -125,7 +126,7 @@ export function FieldAgentForm(props: Props) {
               message:
                 result.invitation_delivery === "SENT"
                   ? "Conta criada e convite enviado. Você pode fechar este formulário."
-                  : "Conta criada e associada, mas o convite não foi entregue. Configure o e-mail e use Reenviar convite nos detalhes.",
+                  : `Conta criada e associada. ${invitationDeliveryMessage(result.invitation_delivery)}`,
             });
             return;
           }
@@ -306,7 +307,8 @@ export function FieldAgentForm(props: Props) {
             <p className="text-sm text-muted-foreground">
               A pessoa definirá a senha pelo convite. O perfil de campo permite
               coleta apenas nos projetos com vínculo ativo e vigente, sem
-              funções administrativas ou financeiras.
+              funções administrativas ou financeiras. Sem e-mail, crie o acesso
+              com senha temporária nos detalhes do inventariante.
             </p>
           </>
         ) : null}
