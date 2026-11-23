@@ -2,14 +2,14 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Outlet, useLocation } from "react-router-dom";
 import { PageContainer } from "@/components/base/PageContainer";
-import { PageHeader } from "@/components/base/PageHeader";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { ProjectContextLink } from "@/features/projects/ProjectContextLink";
 import { dreTabLabel } from "@/constants/dreTabs";
 
 /**
  * Título (h1) e descrição de cada tela do módulo Financeiro (a navegação é pelo menu
- * lateral). O rótulo acima do título vem da seção do menu (PageHeader); na DRE, o h1
- * é o nome da aba aberta.
+ * superior). Padrão do sistema anterior: só o título com uma linha fina; a descrição
+ * fica no "?" ao lado do título. Na DRE, o h1 é o nome da aba aberta.
  */
 const PAGES: Record<string, [title: string, description: string]> = {
   receivables: ["Recebíveis", "Parcelas a receber, recebimentos e estornos com histórico."],
@@ -63,7 +63,7 @@ export function FinanceLayout() {
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   return (
     <PageContainer>
-      <PageHeader title={title} description={description} action={<div ref={setSlot} className="flex flex-wrap items-center justify-end gap-2 empty:hidden" />} />
+      <SectionTitle as="h1" title={title} help={description} actions={<div ref={setSlot} className="flex flex-wrap items-center justify-end gap-2 empty:hidden" />} />
       <ProjectContextLink />
       <HeaderActionsSlot.Provider value={slot}>
         <Outlet />

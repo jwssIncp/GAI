@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/base/StatusBadge";
+import { DataPanel, DataPanelFilters, ViewToggle } from "@/components/base/DataPanel";
 import type { FinanceStatus } from "@/components/base/financeStatus";
 import { formatMoney } from "@/utils/format";
 import { civilBr, type FlowItem } from "./cashFlowBoardApi";
@@ -344,20 +345,20 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
         : [[`${kind === "to_reimburse" ? "Total do período" : "Saldo do período"} (${display.length})`, total(shown)]];
 
   return (
-    <section className="premium-panel" aria-labelledby={`${regionId}-title`}>
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 bg-sidebar px-4 py-3 text-sidebar-foreground">
-        <h2 id={`${regionId}-title`} className="text-base font-semibold">{title}</h2>
-        <span className="rounded-full bg-sidebar-accent px-2 py-0.5 text-xs text-sidebar-foreground">{count}</span>
-        <span className="ml-auto text-sm text-sidebar-muted" aria-label={`Subtotal de ${title}`}>
-          Subtotal <strong className="numeric text-sidebar-foreground">{formatMoney(subtotal)}</strong>
+    <DataPanel
+      title={title}
+      titleId={`${regionId}-title`}
+      count={count}
+      contentId={regionId}
+      hidden={hidden}
+      onToggle={() => setHidden(!hidden)}
+      extra={
+        <span className="text-sm text-white/80" aria-label={`Subtotal de ${title}`}>
+          Subtotal <strong className="numeric text-white">{formatMoney(subtotal)}</strong>
         </span>
-        <Button type="button" size="sm" variant="ghost" className="text-sidebar-foreground hover:border-sidebar-border hover:bg-sidebar-accent" aria-expanded={!hidden} aria-controls={regionId} onClick={() => setHidden(!hidden)}>
-          {hidden ? "Mostrar" : "Ocultar"}
-        </Button>
-      </header>
-      {hidden ? null : (
-        <div id={regionId}>
-          <div className="flex flex-col gap-2 px-4 py-3 md:flex-row md:flex-wrap md:items-end [&>*]:min-w-0" role="group" aria-label={`Filtros de ${title}`}>
+      }
+    >
+          <DataPanelFilters label={`Filtros de ${title}`}>
             <select aria-label="Projeto" className={select} value={project} onChange={(e) => setProject(e.target.value)}>
               <option value="">Projeto: todos</option>
               {options.projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
@@ -389,13 +390,13 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
             ) : null}
             <div className="flex flex-wrap gap-1" role="group" aria-label="Situação">
               {([["open", "Em aberto"], ["done", done], ["all", "Todos"]] as const).map(([v, label]) => (
-                <Button key={v} type="button" size="sm" variant={view === v ? "soft" : "ghost"} aria-pressed={view === v} onClick={() => setView(v)}>{label}</Button>
+                <ViewToggle key={v} on={view === v} onClick={() => setView(v)}>{label}</ViewToggle>
               ))}
             </div>
-            <Button type="button" size="sm" variant={currentMonth ? "soft" : "ghost"} aria-pressed={currentMonth} onClick={() => setCurrentMonth(!currentMonth)}>Mês atual</Button>
+            <ViewToggle on={currentMonth} onClick={() => setCurrentMonth(!currentMonth)}>Mês atual</ViewToggle>
             <input aria-label={`Buscar em ${title}`} placeholder="Buscar projeto, descrição…" className="h-10 w-full rounded-md border bg-background px-3 text-sm md:w-56" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <Button type="button" size="sm" variant="ghost" onClick={clear}>Limpar filtros</Button>
-          </div>
+            <Button type="button" size="sm" variant="outline" onClick={clear}>Limpar filtros</Button>
+          </DataPanelFilters>
           {chosen.length ? (
             <div className="flex flex-wrap items-center gap-2 border-y bg-muted/50 px-4 py-2" role="toolbar" aria-label={`Ações dos selecionados em ${title}`}>
               <span className="text-sm text-muted-foreground">Selecionados:</span>
@@ -421,8 +422,8 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
               <Button type="button" size="sm" variant="ghost" onClick={() => setSelected(() => [])}>Limpar seleção</Button>
             </div>
           ) : null}
-          <div className="max-w-full overflow-x-auto" role="region" aria-label={`Tabela: ${title}`} tabIndex={0}>
-            <table className="w-full min-w-[46rem] border-separate border-spacing-0 text-left text-sm lg:min-w-0">
+          <div className="max-h-[620px] max-w-full overflow-auto" role="region" aria-label={`Tabela: ${title}`} tabIndex={0}>
+            <table className="data-table w-full min-w-[46rem] border-separate border-spacing-0 text-left text-sm lg:min-w-0">
               <thead className="bg-muted text-xs text-muted-foreground">
                 <tr>
                   <th className="w-8 border-b px-2 py-1.5">
@@ -450,7 +451,7 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
                         <tr
                           className={
                             i.overdue
-                              ? "bg-destructive/[0.07]"
+                              ? "row-overdue"
                               : i.status === "proposed"
                                 ? "bg-warning/[0.08]"
                                 : i.status === "reversed"
@@ -509,8 +510,6 @@ export function CashFlowBlock({ kind, title, rows, asOf, tablesYear, can, busy, 
               </tfoot>
             </table>
           </div>
-        </div>
-      )}
-    </section>
+    </DataPanel>
   );
 }

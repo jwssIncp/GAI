@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid, type KpiGroup } from "@/components/base/Cards";
 import { useToast } from "@/components/ui/toast-context";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
@@ -40,12 +40,16 @@ function FlowKpi({
   hint,
   tone,
   simulated,
+  group,
+  tinted,
 }: {
   label: string;
   value: string;
   hint?: string;
   tone?: "danger" | "warning";
   simulated?: string;
+  group?: KpiGroup;
+  tinted?: boolean;
 }) {
   const changed = simulated !== undefined && simulated !== value;
   const shown = changed ? simulated : value;
@@ -55,6 +59,8 @@ function FlowKpi({
       value={shown}
       hint={hint}
       tone={tone ?? (changed ? "highlight" : "default")}
+      group={group}
+      tinted={tinted}
       negative={shown.startsWith("-")}
     >
       {changed ? (
@@ -85,31 +91,36 @@ function KpiRows({
   return (
     <section
       aria-label={`Indicadores do fluxo de caixa (${k.currency})`}
-      className="grid gap-2"
+      className="grid gap-3"
     >
       {k.currency !== "BRL" ? (
         <p className="text-sm font-semibold">
           Valores em {k.currency} (não somados ao BRL)
         </p>
       ) : null}
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+      <KpiGrid label={`Mês ${monthBr(k.month.reference)}`}>
         <FlowKpi
+          group="month"
+          tinted
           label={`Total previsto ${monthBr(k.month.reference)}`}
           value={m(k.month.total)}
           simulated={sim ? m(sim.month.total) : undefined}
           hint="(entradas − saídas) do mês"
         />
         <FlowKpi
+          group="month"
           label="Entradas do mês"
           value={m(sumMoney(k.month.in_realized, k.month.in_open))}
           hint={`${m(k.month.in_realized)} recebidas · ${m(k.month.in_open)} a receber`}
         />
         <FlowKpi
+          group="month"
           label="Saídas do mês"
           value={m(sumMoney(k.month.out_realized, k.month.out_open))}
           hint={`${m(k.month.out_realized)} pagas · ${m(k.month.out_open)} a pagar`}
         />
         <FlowKpi
+          group="month"
           label="Em atraso"
           value={m(k.overdue.in)}
           hint={`${k.overdue.in_count} entrada(s) · saídas ${m(k.overdue.out)} (${k.overdue.out_count})`}
@@ -117,30 +128,41 @@ function KpiRows({
             k.overdue.in_count || k.overdue.out_count ? "danger" : undefined
           }
         />
+      </KpiGrid>
+      <KpiGrid label={`Mês ${monthBr(k.next_month.reference)}`}>
         <FlowKpi
+          group="next"
+          tinted
           label={`Total previsto ${monthBr(k.next_month.reference)}`}
           value={m(k.next_month.total)}
           simulated={sim ? m(sim.next_month.total) : undefined}
           hint="entradas líquidas de IR − saídas"
         />
         <FlowKpi
+          group="next"
           label="Entradas do próximo mês (líquidas)"
           value={m(k.next_month.in_net)}
           hint={`bruto ${m(k.next_month.in_gross)}`}
         />
         <FlowKpi
+          group="next"
           label="Saídas do próximo mês"
           value={m(k.next_month.out)}
           hint="sem o IR (já descontado das entradas)"
         />
         <FlowKpi
+          group="next"
           label="Previsto não confirmado"
           value={m(k.proposed.amount)}
           hint={`${k.proposed.count} parcela(s) proposta(s)`}
           tone={k.proposed.count ? "warning" : undefined}
         />
+      </KpiGrid>
+      <KpiGrid label={`Ano ${k.year.reference}`}>
         {k.year.dre_total != null ? (
           <FlowKpi
+            group="year"
+            tinted
             label={`Total previsto ${k.year.reference} (DRE)`}
             value={m(k.year.dre_total)}
             simulated={
@@ -150,6 +172,8 @@ function KpiRows({
           />
         ) : (
           <FlowKpi
+            group="year"
+            tinted
             label={`Total do ano ${k.year.reference}`}
             value={m(k.year.total)}
             hint={
@@ -160,15 +184,17 @@ function KpiRows({
           />
         )}
         <FlowKpi
+          group="year"
           label={`A receber em ${k.year.reference} (líquido)`}
           value={m(k.year.in_open_net)}
         />
         <FlowKpi
+          group="year"
           label={`A pagar em ${k.year.reference}`}
           value={m(k.year.out_open)}
           hint="sem o IR"
         />
-      </div>
+      </KpiGrid>
     </section>
   );
 }
@@ -565,6 +591,16 @@ export function CashFlowPage() {
         sim={sim}
         onSimulate={setSim}
       />
+      {hasPermission("finance-settings:read") ? (
+        <div className="flex justify-end">
+          <Link
+            to="/app/finance/parameters"
+            className="inline-flex min-h-9 items-center rounded-[6px] border border-border-strong bg-card px-4 text-[0.84375rem] font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            Parâmetros dos cards
+          </Link>
+        </div>
+      ) : null}
       {brl ? (
         <KpiRows k={brl} sim={simKpis} projectFiltered={Boolean(projectId)} />
       ) : null}

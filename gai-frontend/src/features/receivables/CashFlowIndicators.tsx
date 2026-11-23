@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { MoneyInput } from "@/components/base/MoneyInput";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
@@ -27,13 +28,14 @@ const addMonth = (ym: string, n: number) => {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 };
 
-type Card = { label: string; value: string; simulated?: string; delta?: string | null; hint?: string };
+type Card = { label: string; value: string; simulated?: string; delta?: string | null; hint?: string; tinted?: boolean };
 
-function IndicatorCard({ label, value, simulated, delta, hint }: Card) {
+/** Card dos indicadores gerenciais: grupo de cor "indicadores" (lilás), como no sistema anterior. */
+function IndicatorCard({ label, value, simulated, delta, hint, tinted }: Card) {
   const shown = simulated ?? value;
   const changed = simulated !== undefined && simulated !== value;
   return (
-    <Kpi label={label} value={shown} hint={hint} tone={changed ? "highlight" : "default"} negative={shown.startsWith("-")}>
+    <Kpi label={label} value={shown} hint={hint} tone={changed ? "highlight" : "default"} group="indicators" tinted={tinted} negative={shown.startsWith("-")}>
       {changed ? (
         <p className="text-xs text-muted-foreground">
           sem a venda: <s>{value}</s>
@@ -64,13 +66,13 @@ export function SimulationBar({
   const data = indicators.data?.configured ? indicators.data : null;
   const simulation = data?.simulation ?? null;
   return (
-    <section aria-label="Simulação de venda" className="rounded-lg border border-dashed border-primary/50 bg-primary/[0.03] p-3">
+    <section aria-label="Simulação de venda" className="rounded-lg border border-dashed border-kpi-year/45 bg-[#F6F3FB] px-4 py-3.5 dark:bg-kpi-year-bg">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-primary-text">Simular venda</h2>
-        {sim ? <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-primary-foreground">simulação ativa</span> : null}
+        <h2 className="text-[0.71875rem] font-bold uppercase tracking-[0.07em] text-kpi-year">Simular venda</h2>
+        {sim ? <span className="rounded-full bg-kpi-year px-2 py-0.5 text-xs font-semibold text-white dark:text-[#0A1F44]">simulação ativa</span> : null}
         <span className="text-xs text-muted-foreground">50% sinal · 30% 2ª parcela · 20% 3ª parcela · só na tela, não grava</span>
-        <Button type="button" size="sm" variant="ghost" className="ml-auto" aria-expanded={!collapsed} onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? "Mostrar" : "Ocultar"}
+        <Button type="button" size="sm" variant="outline" className="ml-auto" aria-expanded={!collapsed} onClick={() => setCollapsed(!collapsed)}>
+          {collapsed ? "Mostrar ▾" : "Ocultar ▴"}
         </Button>
       </div>
       {collapsed ? null : (
@@ -82,7 +84,7 @@ export function SimulationBar({
             </p>
           ) : null}
           {simulation ? (
-            <p role="status" className="rounded-md border border-primary/50 bg-primary/5 p-3 text-sm">
+            <p role="status" className="rounded-md border border-kpi-year/40 bg-card p-3 text-sm">
               Simulação (não gravada): venda de {formatMoney(simulation.input.value)} em {monthBr(simulation.input.signal_month)},{" "}
               {monthBr(simulation.input.second_month)} e {monthBr(simulation.input.third_month)} (50/30/20)
               {simulation.input.company_expenses ? ", com despesas por conta da empresa" : ""}. Os cards mostram o valor com a venda; o valor
@@ -128,12 +130,14 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
 
   return (
     <section aria-label="Indicadores gerenciais" className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-base font-semibold">Indicadores gerenciais {data.reference.year}</h2>
-        <Button type="button" size="sm" variant="ghost" className="ml-auto" aria-expanded={!collapsed} onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? "Mostrar" : "Ocultar"}
-        </Button>
-      </div>
+      <SectionTitle
+        title={`Indicadores gerenciais ${data.reference.year}`}
+        actions={
+          <Button type="button" size="sm" variant="outline" aria-expanded={!collapsed} onClick={() => setCollapsed(!collapsed)}>
+            {collapsed ? "Mostrar" : "Ocultar"}
+          </Button>
+        }
+      />
       {collapsed ? null : (
         <>
           {o.window.months_with_revenue === 0 || o.window.missing_accounts.length ? (
@@ -146,8 +150,9 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
               </Link>
             </p>
           ) : null}
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          <KpiGrid>
             <IndicatorCard
+              tinted
               label="Resultado projetado do ano"
               {...pick((i) => i.projected_result, money)}
               delta={delta ? formatMoney(delta.projected_result) : null}
@@ -171,7 +176,7 @@ export function IndicatorsPanel({ indicators, simulating = false }: { indicators
               hint={`do contrato ao recebimento, desde ${o.collection_since.split("-").reverse().join("/")}`}
             />
             <IndicatorCard label={`Comissão do sócio (${pct(o.partner_commission.pct)})`} {...pick((i) => i.partner_commission.year, money)} hint="por trimestre, só sobre resultado positivo" />
-          </div>
+          </KpiGrid>
 
           <details className="rounded-lg border p-3 text-sm">
             <summary className="cursor-pointer font-semibold">Como foi calculado</summary>
@@ -284,7 +289,7 @@ function SimulationForm({ referenceMonth, active, onSimulate }: { referenceMonth
         <input type="checkbox" checked={companyExpenses} onChange={(e) => setCompanyExpenses(e.target.checked)} />
         Despesas por conta da empresa
       </label>
-      <Button type="submit">Simular</Button>
+      <Button type="submit" className="border-kpi-year bg-kpi-year text-white hover:border-kpi-year hover:bg-kpi-year/90 dark:text-[#0A1F44]">Simular</Button>
       {active ? <Button type="button" variant="ghost" onClick={() => onSimulate(null)}>Limpar simulação</Button> : null}
       {error ? <p role="alert" className="w-full text-sm text-destructive-text">{error}</p> : null}
     </form>

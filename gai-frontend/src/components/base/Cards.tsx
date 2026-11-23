@@ -51,20 +51,45 @@ export function ProgressCard({ label, value }: { label: string; value: number })
 export type KpiTone = 'default' | 'danger' | 'warning' | 'highlight';
 
 /**
+ * Grupo de cor do card (padrão do sistema anterior): cada linha de cards tem uma cor
+ * na borda e na barra lateral; o 1º card da linha pode ter o fundo tingido (`tinted`).
+ */
+export type KpiGroup = 'month' | 'next' | 'year' | 'indicators';
+
+const kpiGroup: Record<KpiGroup, { accent: string; tint: string }> = {
+  month: { accent: 'border-kpi-month before:bg-kpi-month', tint: 'bg-kpi-month-bg' },
+  next: { accent: 'border-kpi-next before:bg-kpi-next', tint: 'bg-kpi-next-bg' },
+  year: { accent: 'border-kpi-year before:bg-kpi-year', tint: 'bg-kpi-year-bg' },
+  indicators: { accent: 'border-kpi-indicators before:bg-kpi-indicators', tint: 'bg-kpi-indicators-bg' },
+};
+
+/** Grade de KPIs: colunas automáticas de no mínimo 215px (uma por linha no celular). */
+export function KpiGrid({ children, label, className }: { children: ReactNode; label?: string; className?: string }) {
+  return (
+    <div role={label ? 'group' : undefined} aria-label={label} className={cn('grid grid-cols-[repeat(auto-fit,minmax(min(215px,100%),1fr))] gap-3', className)}>
+      {children}
+    </div>
+  );
+}
+
+/**
  * Indicador compacto (KPI) das telas: rótulo, valor (algarismos tabulares, sem quebra),
  * dica e nota de aviso opcionais.
- * - `tone`: "danger" (borda e valor vermelhos), "warning" (borda âmbar), "highlight" (borda primária, ex.: valor simulado).
+ * - `tone`: "danger" (borda e valor vermelhos), "warning" (borda âmbar), "highlight" (contorno primário, ex.: valor simulado).
+ * - `group` + `tinted`: cor da linha de cards e fundo tingido do 1º card (ver `KpiGroup`).
  * - `negative`: só o valor em vermelho (ex.: saldo negativo).
  * - `onClick` + `active`: vira botão de filtro (aria-pressed).
  * - `children`: linha extra abaixo do valor (ex.: "sem a venda: R$ …").
  */
-export function Kpi({ label, value, hint, note, tone = 'default', negative = false, active, onClick, children }: {
+export function Kpi({ label, value, hint, note, tone = 'default', group, tinted = false, negative = false, active, onClick, children }: {
   label: string;
   value: ReactNode;
   hint?: ReactNode;
   /** Aviso curto (texto âmbar AA). */
   note?: ReactNode;
   tone?: KpiTone;
+  group?: KpiGroup;
+  tinted?: boolean;
   negative?: boolean;
   active?: boolean;
   onClick?: () => void;
@@ -72,18 +97,21 @@ export function Kpi({ label, value, hint, note, tone = 'default', negative = fal
 }) {
   const body = (
     <>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn('numeric text-lg font-semibold', (negative || tone === 'danger') && 'text-destructive-text')}>{value}</p>
+      <p title={label} className="mb-1.5 truncate text-[0.71875rem] font-semibold uppercase tracking-[0.07em] text-muted-foreground">{label}</p>
+      <p className={cn('numeric font-display text-[clamp(1.25rem,1.7vw,1.625rem)] font-bold leading-tight text-navy dark:text-foreground', (negative || tone === 'danger') && 'text-destructive-text dark:text-destructive-text')}>{value}</p>
       {children}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-      {note ? <p className="text-xs text-warning-text">{note}</p> : null}
+      {hint ? <p className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</p> : null}
+      {note ? <p className="mt-1 text-xs text-warning-text">{note}</p> : null}
     </>
   );
   const className = cn(
-    'rounded-lg border bg-card p-3 text-left',
-    tone === 'danger' && 'border-destructive/50',
-    tone === 'warning' && 'border-warning/50',
-    tone === 'highlight' && 'border-primary/60',
+    // Barra vertical de 4px à esquerda na cor do grupo/tom (::before).
+    'relative min-h-[112px] overflow-hidden rounded-lg border bg-card py-3 pl-[18px] pr-4 text-left before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-[""]',
+    group ? kpiGroup[group].accent : 'border-border before:bg-steel',
+    group && tinted && kpiGroup[group].tint,
+    tone === 'danger' && 'border-destructive/60 before:bg-destructive',
+    tone === 'warning' && 'border-warning/70 before:bg-warning',
+    tone === 'highlight' && 'ring-2 ring-primary/60',
     active && 'ring-2 ring-primary',
   );
   if (!onClick) return <div className={className}>{body}</div>;

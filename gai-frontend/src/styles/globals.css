@@ -395,6 +395,50 @@ textarea[class*="rounded-md"]:focus {
   main { min-width: 0; }
 }
 
+/* Tabela de painel (DataPanel) no padrão do sistema anterior: cabeçalho e rodapé fixos
+   na rolagem, cabeçalho em maiúsculas sobre #F5F8FA, linhas com borda fina. */
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: hsl(var(--table-head));
+  padding: 11px 14px;
+  border-bottom: 1px solid hsl(var(--border-strong));
+  font-size: 0.71875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+.data-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+  font-size: 0.8125rem;
+}
+.data-table tbody tr:hover > td { background: hsl(var(--secondary)); }
+.data-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  background: hsl(var(--table-head));
+  border-top: 1px solid hsl(var(--border-strong));
+  padding: 12px 14px;
+}
+/* Linha em atraso: fundo vermelho e texto branco (5,6:1), como no sistema anterior;
+   a etiqueta de status vira pílula branca. */
+.data-table tbody tr.row-overdue > td,
+.data-table tbody tr.row-overdue:hover > td {
+  background: #C62828;
+  color: #fff;
+  border-bottom-color: rgb(255 255 255 / 0.2);
+}
+.data-table tr.row-overdue > td * { color: inherit; }
+.data-table tr.row-overdue a { text-decoration: underline; }
+.data-table tr.row-overdue [data-status] {
+  background: #fff;
+  color: #B3261E;
+  --tw-ring-color: transparent;
+}
+
 .bg-sidebar, .bg-brand-ink, .bg-brand-hero, .bg-topbar { --primary-text: var(--brand-green); }
 
 /* Recharts also renders HTML tooltips; its defaults must follow the active theme. */

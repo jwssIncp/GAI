@@ -166,7 +166,7 @@ describe("Fluxo de caixa (paridade com o INVESTOR)", () => {
     // visão inicial "Em aberto": a recebida fica fora; vencida e proposta ficam
     expect(billing.queryByText("Recebido")).not.toBeInTheDocument();
     const outs = within(screen.getByRole("region", { name: "Tabela: Saídas não reembolsáveis" }));
-    expect(outs.getByTitle("35 dia(s) em atraso").closest("tr")).toHaveClass("bg-destructive/[0.07]");
+    expect(outs.getByTitle("35 dia(s) em atraso").closest("tr")).toHaveClass("row-overdue");
     // IR, diárias e custos fixos não têm seleção (sem baixa no fluxo)
     expect(outs.queryByLabelText(/Selecionar IR/)).not.toBeInTheDocument();
     expect(outs.queryByLabelText(/Selecionar Diárias/)).not.toBeInTheDocument();
