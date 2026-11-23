@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2 } from "lucide-react";
+import { DataPanel } from "@/components/base/DataPanel";
 import { FormField } from "@/components/base/FormField";
 import { MoneyInput } from "@/components/base/MoneyInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -291,21 +292,26 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
     cancel: "O lote é cancelado e as despesas ficam sem lote.",
   } as const;
   return (
-    <section className="premium-panel grid gap-2 p-4" aria-label="Lotes de reembolso">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">Lotes de reembolso ao cliente</h3>
-        {cancelled ? (
-          <label className="flex items-center gap-2 text-sm">
+    // Lotes no painel com a faixa azul (padrão do sistema anterior); a faixa mostra o
+    // filtro "Mostrar cancelados".
+    <DataPanel
+      title="Lotes de reembolso"
+      titleId="reimbursement-batches-title"
+      count={`${batches.length}`}
+      extra={
+        cancelled ? (
+          <label className="flex items-center gap-2 text-sm text-white">
             <input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} />
             {`Mostrar cancelados (${cancelled})`}
           </label>
-        ) : null}
-      </div>
-      {!batches.length ? <p className="text-sm text-muted-foreground">Nenhum lote aberto ou faturado.</p> : null}
-      {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+        ) : null
+      }
+    >
+      {!batches.length ? <p className="px-5 py-3 text-sm text-muted-foreground">Nenhum lote aberto ou faturado.</p> : null}
+      {error ? <p role="alert" className="px-5 py-3 text-sm text-destructive">{error}</p> : null}
       <div className={batches.length ? "overflow-x-auto" : "hidden"}>
-        <table className="w-full min-w-[560px] text-sm">
-          <thead className="text-xs text-muted-foreground">
+        <table className="data-table w-full min-w-[560px] border-separate border-spacing-0 text-sm">
+          <thead>
             <tr><th className="text-left">Lote</th><th className="text-left">Data</th><th className="text-left">Situação</th><th className="text-left">Despesas</th><th className="text-left">Valor</th><th /></tr>
           </thead>
           <tbody>
@@ -336,7 +342,7 @@ export function BatchesPanel({ projectId, onChanged, onFilter }: { projectId: nu
         busy={run.isPending}
         onConfirm={() => pending && run.mutate(pending)}
       />
-    </section>
+    </DataPanel>
   );
 }
 

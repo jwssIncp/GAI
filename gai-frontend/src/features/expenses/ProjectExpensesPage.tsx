@@ -15,10 +15,11 @@ import {
   RotateCcw,
   XCircle,
 } from "lucide-react";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
+import { DataPanel } from "@/components/base/DataPanel";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import type { FinanceStatus } from "@/components/base/financeStatus";
-import { PageHeader } from "@/components/base/PageHeader";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
@@ -94,6 +95,9 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
   const query_ = { ...filters, search: term || undefined };
   const query = useQuery({ queryKey: expensesKeys.board(projectId, query_), queryFn: () => expensesApi.board(projectId, query_) });
   const [selected, setSelected] = useState<number[]>([]);
+  // Painéis recolhíveis (botão Ocultar da faixa azul).
+  const [summaryHidden, setSummaryHidden] = useState(false);
+  const [listHidden, setListHidden] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [pageSize, setPageSize] = useState<number | "all">(25);
   const [allAgents, setAllAgents] = useState(false);
@@ -154,7 +158,8 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
     }
   }
 
-  const header = (action?: React.ReactNode) => <PageHeader title="Despesas" description={description} action={action} />;
+  // Padrão do sistema anterior: título com linha fina; a explicação fica no "?".
+  const header = (action?: React.ReactNode) => <SectionTitle as="h1" title="Despesas" help={description} actions={action} />;
   if (query.isLoading) return <>{header()}<LoadingState label="Carregando despesas" /></>;
   if (query.isError) return <>{header()}<ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /></>;
   if (!data) return header();
@@ -197,11 +202,13 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
           <Link className="font-semibold underline" to="/app/finance/parameters">Publicar parâmetros</Link>
         </p>
       ) : null}
-      <section aria-label="Indicadores das despesas" className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi label="Total de despesas" value={formatMoney(k.total)} hint={`${k.count} lançamento(s), sem rejeitadas e canceladas`} />
-        <Kpi label="Reembolsável" value={formatMoney(k.reimbursable)} hint={`${pctBr(k.reimbursable_pct)} do total`} />
-        <Kpi label="Não reembolsável" value={formatMoney(k.non_reimbursable)} hint={`${pctBr(k.non_reimbursable_pct)} do total`} />
+      <section aria-label="Indicadores das despesas">
+        <KpiGrid>
+        <Kpi group="year" tinted label="Total de despesas" value={formatMoney(k.total)} hint={`${k.count} lançamento(s), sem rejeitadas e canceladas`} />
+        <Kpi group="year" label="Reembolsável" value={formatMoney(k.reimbursable)} hint={`${pctBr(k.reimbursable_pct)} do total`} />
+        <Kpi group="year" label="Não reembolsável" value={formatMoney(k.non_reimbursable)} hint={`${pctBr(k.non_reimbursable_pct)} do total`} />
         <Kpi label="A reembolsar" value={formatMoney(k.to_reimburse)} hint="Reembolsáveis fora de lote faturado" tone={Number(k.to_reimburse) > 0 ? "warning" : "default"} />
+        </KpiGrid>
       </section>
       {k.unclassified_count ? (
         <p className="rounded-md border border-warning/40 bg-warning/10 p-2 text-sm">
@@ -242,17 +249,22 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
         <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">{feedback.message}</p>
       ) : null}
 
-      <section className="premium-panel grid gap-2 p-4" aria-label="Resumo por inventariante">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-semibold">Resumo por inventariante</h3>
+      <DataPanel
+        title="Resumo por inventariante"
+        titleId="expenses-summary-title"
+        contentId="expenses-summary"
+        hidden={summaryHidden}
+        onToggle={() => setSummaryHidden(!summaryHidden)}
+      >
+        <div className="border-b border-border px-5 py-2.5">
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={allAgents} onChange={(e) => setAllAgents(e.target.checked)} />
             Mostrar todos os vinculados
           </label>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-sm">
-            <thead className="text-xs text-muted-foreground">
+          <table className="data-table w-full min-w-[620px] border-separate border-spacing-0 text-sm">
+            <thead>
               <tr><th className="text-left">Inventariante</th><th className="text-left">Lançamentos</th><th className="text-left">Adiantamentos</th><th className="text-left">Despesas</th><th className="text-left" title="Adiantamentos − despesas">Saldo</th></tr>
             </thead>
             <tbody>
@@ -277,7 +289,7 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
             </tbody>
           </table>
         </div>
-      </section>
+      </DataPanel>
 
       {hasPermission("reimbursement-batches:read") ? (
         <BatchesPanel projectId={projectId} onChanged={() => void refresh()} onFilter={(id) => setFilter("batch_id", id)} />
@@ -286,7 +298,15 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
         <p className="text-sm">Filtrando o lote selecionado. <button type="button" className="underline" onClick={() => setFilter("batch_id", "")}>Ver todas</button></p>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <DataPanel
+        title="Lançamentos"
+        titleId="expenses-items-title"
+        contentId="expenses-items"
+        count={`${items.length} despesa${items.length === 1 ? "" : "s"}`}
+        hidden={listHidden}
+        onToggle={() => setListHidden(!listHidden)}
+      >
+      <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3 empty:hidden">
         {hasPermission("reimbursement-batches:create") && canEdit ? (
           <Button type="button" disabled={!chosen.length} onClick={() => setDialog({ kind: "account", ids: selected })}>Incluir em lote de reembolso ({chosen.length})</Button>
         ) : null}
@@ -301,10 +321,10 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
         ) : null}
       </div>
 
-      <div className="premium-panel">
-        <div className="overflow-x-auto" role="region" aria-label="Lançamentos de despesas" tabIndex={0}>
-          <table className="w-full min-w-[1100px] border-separate border-spacing-0 text-left text-sm">
-            <thead className="bg-muted text-xs text-muted-foreground">
+      <div>
+        <div className="max-h-[620px] overflow-auto" role="region" aria-label="Lançamentos de despesas" tabIndex={0}>
+          <table className="data-table w-full min-w-[1100px] border-separate border-spacing-0 text-left text-sm">
+            <thead>
               <tr>
                 <th className="border-b px-2 py-3">
                   <input type="checkbox" aria-label="Selecionar todas as exibidas" checked={visible.length > 0 && visible.every((i) => selected.includes(i.id))}
@@ -384,7 +404,7 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
           </table>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm">
         <label className="flex items-center gap-2">
           Por página
           <select aria-label="Despesas por página" className="h-9 rounded-md border bg-background px-2" value={pageSize} onChange={(e) => { setPageSize(e.target.value === "all" ? "all" : Number(e.target.value)); setPage(1); }}>
@@ -400,6 +420,7 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
           </div>
         ) : null}
       </div>
+      </DataPanel>
 
       {dialog?.kind === "form" ? (
         <ExpenseFormDialog projectId={projectId} board={data} initial={dialog.item} onClose={() => setDialog(null)} onSaved={() => void finish(dialog.item ? "Despesa atualizada." : "Despesa lançada.")} />
