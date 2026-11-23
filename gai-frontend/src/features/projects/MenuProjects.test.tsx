@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
-import { Sidebar } from "@/layouts/Sidebar";
+import { AppHeader } from "@/layouts/AppHeader";
 import type { CurrentUser } from "@/types/api";
 
 function renderMenu(keys: string[]) {
@@ -17,8 +17,8 @@ function renderMenu(keys: string[]) {
   };
   render(
     <AuthContext.Provider value={{ user } as AuthState}>
-      <MemoryRouter>
-        <Sidebar mobileOpen={false} onMobileOpenChange={vi.fn()} />
+      <MemoryRouter initialEntries={["/app/projects"]}>
+        <AppHeader />
       </MemoryRouter>
     </AuthContext.Provider>,
   );

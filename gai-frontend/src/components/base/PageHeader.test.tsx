@@ -18,7 +18,7 @@ describe("PageHeader: rótulo acima do título pelo módulo do menu", () => {
     ["/app/projects", "Projetos"],
     ["/app/projects/10/inventory/sessions/3", "Projetos"],
     ["/app/projects/10/technical-reports/templates", "Projetos"],
-    ["/app/field-agents", "Projetos"],
+    ["/app/field-agents", "Financeiro"],
     ["/app/budgets/4", "Comercial"],
     ["/app/companies/2/edit", "Comercial"],
     ["/app/finance/receivables/12", "Financeiro"],

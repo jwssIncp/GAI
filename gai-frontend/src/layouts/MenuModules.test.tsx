@@ -1,9 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { navigation } from "@/constants/navigation";
-import { Sidebar } from "./Sidebar";
+import { AppHeader } from "./AppHeader";
 import type { CurrentUser, SystemRoleKey } from "@/types/api";
 
 function user(options: { roles?: SystemRoleKey[]; permissions?: string[]; organization?: number | null }): CurrentUser {
@@ -26,21 +26,30 @@ function user(options: { roles?: SystemRoleKey[]; permissions?: string[]; organi
   };
 }
 
+/**
+ * Menu superior: áreas na linha 1 (o logo leva à Visão geral) e telas da área na linha 2.
+ * Para listar todos os itens, abre cada área e lê as telas da linha 2.
+ */
 function renderMenu(current: CurrentUser) {
   render(
     <AuthContext.Provider value={{ user: current } as AuthState}>
       <MemoryRouter initialEntries={["/app/projects"]}>
-        <Sidebar mobileOpen={false} onMobileOpenChange={vi.fn()} />
+        <AppHeader />
       </MemoryRouter>
     </AuthContext.Provider>,
   );
-  const menu = within(screen.getByRole("complementary", { name: "Menu lateral" }));
-  const items = menu.getAllByRole("link").map((link) => link.textContent);
-  const titles = menu.queryAllByText(/^(Projetos|Comercial|Financeiro|Administração)$/, { selector: "p" }).map((node) => node.textContent);
+  const areas = within(screen.getByRole("navigation", { name: "Navegação principal" })).queryAllByRole("button");
+  const titles = areas.map((button) => button.textContent);
+  const items = [screen.getByRole("link", { name: "Visão geral" }).getAttribute("aria-label")];
+  for (const area of areas) {
+    fireEvent.click(area);
+    const screens = screen.getByRole("navigation", { name: `Telas de ${area.textContent}` });
+    items.push(...within(screens).getAllByRole("link").map((link) => link.textContent));
+  }
   return { items, titles };
 }
 
-describe("Menu lateral por módulo", () => {
+describe("Menu superior por área", () => {
   beforeAll(() =>
     vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: true, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }))),
   );
@@ -60,18 +69,19 @@ describe("Menu lateral por módulo", () => {
     expect([...items].sort()).toEqual([...renamed].sort());
   });
 
-  it("agrupa o ORG_ADMIN em Projetos, Comercial, Financeiro e Administração, nessa ordem", () => {
+  it("agrupa o ORG_ADMIN nas áreas Projetos, Comercial, Financeiro e Administração, nessa ordem", () => {
     const { items, titles } = renderMenu(user({ roles: ["ORG_ADMIN"] }));
     expect(titles).toEqual(["Projetos", "Comercial", "Financeiro", "Administração"]);
     expect(items).toEqual([
       "Visão geral",
       "Projetos",
-      "Inventariantes",
       "Orçamentos",
       "Empresas",
-      "Recebíveis",
       "Fluxo de caixa",
+      "Recebíveis",
       "DRE gerencial",
+      // Inventariantes fica no Financeiro, como no sistema anterior (mesma URL e permissão).
+      "Inventariantes",
       "Remuneração",
       "Pagamento de inventariantes",
       "Despesas",
@@ -84,30 +94,30 @@ describe("Menu lateral por módulo", () => {
     ]);
   });
 
-  it("não mostra seção sem itens visíveis", () => {
+  it("não mostra área sem itens visíveis", () => {
     const { titles } = renderMenu(user({ permissions: ["projects:read", "field-agents:read"] }));
-    expect(titles).toEqual(["Projetos"]);
+    expect(titles).toEqual(["Projetos", "Financeiro"]);
   });
 
-  it("mantém rotas e permissões; só o rótulo de Recebíveis mudou", () => {
+  it("mantém rotas e permissões (nova ordem do menu); só o rótulo de Recebíveis mudou", () => {
     expect(navigation.map((item) => [item.to, item.permissions ?? []])).toEqual([
       ["/app/dashboard", []],
       ["/app/projects", ["projects:read"]],
       ["/app/budgets", ["budgets:read"]],
-      ["/app/field-agents", ["field-agents:read"]],
-      ["/app/finance/receivables", ["receivables:read"]],
+      ["/app/companies", ["companies:read"]],
       ["/app/finance/cash-flow", ["cash-flow:read"]],
+      ["/app/finance/receivables", ["receivables:read"]],
       ["/app/finance/dre", ["dre:read"]],
+      ["/app/field-agents", ["field-agents:read"]],
       ["/app/finance/remuneration", ["payments:read"]],
       ["/app/finance/field-agent-payments", ["payments:read"]],
       ["/app/finance/expenses", ["expenses:read"]],
       ["/app/finance/asset-tags", ["asset-tag-orders:read"]],
       ["/app/finance/commissions", ["commissions:read"]],
-      ["/app/organizations", ["organizations:read"]],
       ["/app/users", ["users:read"]],
       ["/app/roles", ["org_roles:read"]],
+      ["/app/organizations", ["organizations:read"]],
       ["/app/finance/parameters", ["finance-settings:read"]],
-      ["/app/companies", ["companies:read"]],
     ]);
     expect(navigation.find((item) => item.to === "/app/finance/receivables")?.label).toBe("Recebíveis");
   });

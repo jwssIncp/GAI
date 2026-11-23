@@ -81,26 +81,28 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
   }, [location.pathname, location.search, location.hash, shownGroup?.id]);
 
   return (
-    <div className="sticky top-[76px] z-20 mx-auto w-full max-w-[1560px] px-4 pt-4 sm:px-6 lg:px-8 xl:px-10">
+    // Logo abaixo do cabeçalho de duas linhas (altura medida pelo AppHeader).
+    <div className="sticky top-[var(--app-header-height,103px)] z-20 w-full border-b border-nav-border bg-card font-nav">
       <nav
-        className="grid gap-1 rounded-xl border border-border bg-card p-1.5 shadow-panel"
+        className="grid gap-0.5 px-6 py-1.5 max-md:px-3"
         aria-label="Abas do projeto"
       >
-        <div ref={groupStrip} role="group" aria-label="Grupos do projeto" className="flex gap-1.5 overflow-x-auto">
+        <div ref={groupStrip} role="group" aria-label="Grupos do projeto" className="flex gap-1 overflow-x-auto">
           {groups.map((group) => {
             const active = group.id === activeGroup?.id;
             const shown = group.id === shownGroup?.id;
             const alert = groupAlert(group);
             const descriptionId = alert ? `project-group-alert-${group.id}` : undefined;
             const className = cn(
-              "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold transition",
+              // Pílulas do submenu do sistema anterior; grupo com alerta em vermelho (#B23A48).
+              "inline-flex min-h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-[13px] text-[0.78125rem] font-semibold transition-colors max-md:min-h-10",
               alert
                 ? shown
-                  ? "bg-destructive/[0.08] text-destructive shadow-sm ring-1 ring-inset ring-destructive/40"
-                  : "text-destructive ring-1 ring-inset ring-destructive/40 hover:bg-destructive/[0.06]"
+                  ? "bg-rose text-white"
+                  : "text-destructive ring-1 ring-inset ring-rose/55 hover:bg-destructive/[0.06]"
                 : shown
-                  ? "bg-primary-subtle text-primary-text shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-[#0A1F44] text-white dark:bg-steel-dark"
+                  : "text-nav-muted hover:bg-subnav-hover hover:text-nav-ink",
             );
             const content = (
               <>
@@ -145,7 +147,7 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
             id="project-group-tabs"
             role="group"
             aria-label={`Abas de ${shownGroup.label}`}
-            className="flex gap-1 overflow-x-auto border-t border-border px-0.5 pt-1"
+            className="flex gap-1 overflow-x-auto pt-0.5"
           >
             {shownGroup.tabs.map((tab) => {
               const active = tab.id === activeTabId;
@@ -159,12 +161,12 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
                   aria-current={active ? "page" : undefined}
                   aria-describedby={descriptionId}
                   className={cn(
-                    "relative inline-flex min-h-9 shrink-0 items-center gap-1 rounded-lg px-3 text-xs font-medium transition",
+                    "relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-md px-3 text-xs font-medium transition-colors max-md:min-h-10",
                     alert
-                      ? cn("text-destructive ring-1 ring-inset ring-destructive/40 hover:bg-destructive/[0.06]", active && "font-semibold after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-destructive")
+                      ? cn("text-destructive ring-1 ring-inset ring-rose/45 hover:bg-destructive/[0.06]", active && "font-semibold after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-rose")
                       : active
-                        ? "font-semibold text-primary-text after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "font-semibold text-nav-ink after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-nav-accent"
+                        : "text-nav-muted hover:bg-subnav-hover hover:text-nav-ink",
                   )}
                 >
                   {tab.label}

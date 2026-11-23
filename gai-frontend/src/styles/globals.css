@@ -413,6 +413,8 @@ textarea[class*="rounded-md"]:focus {
 .recharts-tooltip-cursor { fill: hsl(var(--muted-foreground) / .08); }
 
 @media (pointer: coarse) {
+  /* Toque: alvo mínimo de 44px, mesmo com os controles mais baixos do visual atual (40px). */
+  :root { --control-height: 2.75rem; }
   :root button, :root a[aria-label] { min-height: var(--control-height); }
   :root button[aria-label] { min-width: var(--control-height); }
 }
