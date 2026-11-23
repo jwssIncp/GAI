@@ -12,11 +12,12 @@ import {
   UserX,
 } from "lucide-react";
 import { normalizePage } from "@/api/pagination";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
+import { DataPanel } from "@/components/base/DataPanel";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { DataTable, type Column } from "@/components/base/DataTable";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { PageContainer } from "@/components/base/PageContainer";
-import { PageHeader } from "@/components/base/PageHeader";
 import { Pagination } from "@/components/base/Pagination";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -46,6 +47,8 @@ import type { FieldAgent, FieldAgentStatus } from "@/types/api";
 
 export function FieldAgentsPage() {
   const [page, setPage] = useState(1);
+  // Painel da lista recolhível (botão Ocultar da faixa azul).
+  const [listHidden, setListHidden] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<FieldAgentStatus | "">("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -298,10 +301,12 @@ export function FieldAgentsPage() {
 
   return (
     <PageContainer>
-      <PageHeader
+      {/* Padrão do sistema anterior: título com linha fina; descrição no "?". */}
+      <SectionTitle
+        as="h1"
         title="Inventariantes"
-        description="Cadastro e acompanhamento dos inventariantes da organização ativa."
-        action={
+        help="Cadastro e acompanhamento dos inventariantes da organização ativa."
+        actions={
           <div className="flex flex-wrap gap-2">
             {hasPermission("field-agents:export") ? (
               <Button
@@ -321,10 +326,8 @@ export function FieldAgentsPage() {
           </div>
         }
       />
-      <section
-        aria-label="Indicadores de inventariantes"
-        className="grid gap-3 sm:grid-cols-3"
-      >
+      <section aria-label="Indicadores de inventariantes">
+        <KpiGrid>
         <Kpi
           label="Inventariantes"
           value={count(summary.data?.total)}
@@ -344,6 +347,7 @@ export function FieldAgentsPage() {
           value={count(data?.totalItems)}
           hint="Resultado dos filtros atuais"
         />
+        </KpiGrid>
       </section>
       <FilterPanel>
         <SearchInput
@@ -451,18 +455,29 @@ export function FieldAgentsPage() {
           onRetry={() => void query.refetch()}
         />
       ) : data ? (
-        <>
+        <DataPanel
+          title="Lista de inventariantes"
+          titleId="field-agents-list-title"
+          contentId="field-agents-list"
+          count={`${data.totalItems} cadastro${data.totalItems === 1 ? "" : "s"}`}
+          hidden={listHidden}
+          onToggle={() => setListHidden(!listHidden)}
+        >
           <DataTable
+            bare
+            caption="Inventariantes"
             columns={columns}
             items={data.items}
             getKey={(item) => item.id}
           />
-          <Pagination
-            page={data.page}
-            totalPages={data.totalPages}
-            onPageChange={setPage}
-          />
-        </>
+          <div className="px-5 py-3">
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        </DataPanel>
       ) : null}
 
       <DrawerForm
