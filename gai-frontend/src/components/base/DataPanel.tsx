@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
  * "faixa azul" (#1F4C6E) com título, contador, extras e o botão Ocultar/Mostrar.
  * O conteúdo (filtros + tabela) vem como `children` e some quando `hidden`.
  */
-export function DataPanel({ title, titleId, count, extra, hidden, onToggle, contentId, children, className }: {
+export function DataPanel({ title, titleId, count, extra, hidden, onToggle, contentId, children, className, overflowVisible = false }: {
   title: string;
   titleId: string;
   count?: ReactNode;
@@ -17,10 +17,12 @@ export function DataPanel({ title, titleId, count, extra, hidden, onToggle, cont
   contentId?: string;
   children?: ReactNode;
   className?: string;
+  /** Sem recorte nas bordas: para menus suspensos dentro do painel (ex.: "Colunas"). */
+  overflowVisible?: boolean;
 }) {
   return (
-    <section className={cn('overflow-hidden rounded-lg border border-border bg-card', className)} aria-labelledby={titleId}>
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-steel-dark px-5 py-3.5 text-white">
+    <section className={cn('rounded-lg border border-border bg-card', !overflowVisible && 'overflow-hidden', className)} aria-labelledby={titleId}>
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-t-[9px] bg-steel-dark px-5 py-3.5 text-white">
         <h2 id={titleId} className="font-display text-base font-semibold text-white">{title}</h2>
         {count !== undefined ? <span className="rounded-full bg-white/15 px-2 py-0.5 font-mono text-xs text-white">{count}</span> : null}
         <div className="ml-auto flex flex-wrap items-center gap-3">
