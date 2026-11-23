@@ -71,7 +71,7 @@ export function ReceivableDetailPage() {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">{r.data.description}</h2>
+          <h2 className="font-display text-xl font-semibold text-navy dark:text-foreground">{r.data.description}</h2>
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span>Recebível #{r.id}</span>
             <ReceivableStatus status={r.status} overdue={r.overdue} />
@@ -100,7 +100,9 @@ export function ReceivableDetailPage() {
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
+        {/* 1º card tingido, como a 1ª métrica de cada linha no sistema anterior. */}
         <MetricCard
+          tone="brand"
           label="Valor original"
           value={money(r.amount, r.currency)}
         />
@@ -217,7 +219,7 @@ export function ReceivableDetailPage() {
           <EmptyState title="Nenhum evento no histórico deste recebível." description="Criação, recebimentos, estornos e cancelamento aparecem aqui." />
         )
       ) : tab === "details" ? (
-        <div className="premium-panel grid gap-2 p-5 text-sm">
+        <div className="grid gap-2 rounded-lg border border-border bg-card px-5 py-4 text-sm">
           <p>
             Cliente: {r.company_name ?? "não encontrado"} · Projeto: {r.project_name ?? "não vinculado"}
           </p>

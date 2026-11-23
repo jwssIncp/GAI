@@ -272,17 +272,18 @@
 
 @layer components {
   .section-navigation {
-    @apply flex min-w-0 gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1.5 text-sm;
+    @apply flex min-w-0 gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1.5 text-sm;
   }
   /* Barra de abas única (componente Tabs): links de rota ou botões da mesma tela;
-     a aba ativa é a que tem aria-current="page". */
+     a aba ativa é a que tem aria-current="page". Pílulas como o submenu do sistema
+     anterior: ativa em azul-escuro. */
   .section-navigation > a,
   .section-navigation > button {
-    @apply inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+    @apply inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-[13px] font-nav text-[0.78125rem] font-semibold text-nav-muted transition-colors hover:bg-subnav-hover hover:text-nav-ink;
   }
   .section-navigation > a[aria-current="page"],
   .section-navigation > button[aria-current="page"] {
-    @apply bg-primary-subtle font-semibold text-primary-text;
+    @apply bg-[#0A1F44] text-white hover:bg-[#0A1F44] hover:text-white dark:bg-steel-dark;
   }
   /* Número/valor monetário: algarismos de mesma largura e sem quebra ("R$ 100,01" numa
      linha só). DataTable aplica em colunas `numeric`; use em células/valores avulsos. */

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 
+/** Card de métrica (padrão do sistema anterior): borda fina, barra lateral azul-aço (verde no tom "brand"). */
 export function MetricCard({
   label,
   value,
@@ -17,17 +18,17 @@ export function MetricCard({
   const branded = tone === 'brand';
   return (
     <div className={cn(
-      'premium-panel group min-h-36 p-5 sm:p-6',
-      branded && 'border-primary/35 bg-primary-subtle text-foreground',
+      'group relative min-h-[112px] overflow-hidden rounded-lg border border-border bg-card py-3.5 pl-[18px] pr-4 before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-steel before:content-[""]',
+      branded && 'border-primary/40 bg-primary-subtle text-foreground before:bg-primary',
     )}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[0.71875rem] font-semibold uppercase leading-5 tracking-[0.07em] text-muted-foreground">{label}</p>
-          <p className="mt-3 break-words font-display text-[1.625rem] font-bold leading-tight text-foreground [font-variant-numeric:tabular-nums]">{value}</p>
+          <p className="mt-1.5 break-words font-display text-[clamp(1.25rem,1.7vw,1.625rem)] font-bold leading-tight text-navy [font-variant-numeric:tabular-nums] dark:text-foreground">{value}</p>
         </div>
-        {icon ? <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/15 bg-primary-subtle text-primary-text">{icon}</div> : null}
+        {icon ? <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-steel-tint text-steel-dark dark:text-steel">{icon}</div> : null}
       </div>
-      {hint ? <p className="mt-5 border-t border-border/60 pt-3 text-xs leading-5 text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
