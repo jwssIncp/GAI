@@ -9,6 +9,7 @@ import { FilterPanel } from '@/components/base/FilterPanel';
 import { PageContainer } from '@/components/base/PageContainer';
 import { PageHeader } from '@/components/base/PageHeader';
 import { Pagination } from '@/components/base/Pagination';
+import { DataPanel } from '@/components/base/DataPanel';
 import { SearchInput } from '@/components/base/SearchInput';
 import { ErrorState, LoadingState } from '@/components/base/States';
 import { StatusBadge } from '@/components/base/StatusBadge';
@@ -27,6 +28,7 @@ export function CompaniesPage() {
   const params = { ...state.params, status: status || undefined };
   const location = useLocation();
   const navigate = useNavigate();
+  const [listHidden, setListHidden] = useState(false);
   const { hasPermission } = usePermissions();
   const query = useQuery({ queryKey: ['companies', params], queryFn: () => companiesApi.list(params) });
   const page = query.data ? normalizePage(query.data) : null;
@@ -34,8 +36,9 @@ export function CompaniesPage() {
     <PageHeader title="Empresas" description="Gerencie os dados empresariais e as empresas vinculadas à organização." action={hasPermission('companies:create') ? <Button onClick={() => navigate(`/app/companies/new${location.search}`)}><Plus size={17} /> Nova empresa</Button> : null} />
     <FilterPanel><SearchInput value={state.search} onChange={state.setSearch} placeholder="Buscar por nome, razão social ou CNPJ" /><select aria-label="Filtrar por situação" className="min-h-11 rounded-lg border border-input bg-background px-3 text-sm" value={status} onChange={(event) => { const next = new URLSearchParams(search); if (event.target.value) next.set('status', event.target.value); else next.delete('status'); next.delete('page'); setSearch(next); }}><option value="">Todas as situações</option>{Object.entries(companyStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></FilterPanel>
     {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={query.error.message} onRetry={() => void query.refetch()} /> : page ? <>
-      <p className="text-sm text-muted-foreground">{page.totalItems} empresa(s) encontrada(s)</p>
-      <DataTable items={page.items} getKey={(company) => company.id} caption="Empresas" columns={[
+      {/* Lista no painel com a faixa azul (padrão do sistema anterior). */}
+      <DataPanel title="Lista de empresas" titleId="companies-list-title" contentId="companies-list" count={`${page.totalItems} empresa(s) encontrada(s)`} hidden={listHidden} onToggle={() => setListHidden(!listHidden)}>
+      <DataTable bare items={page.items} getKey={(company) => company.id} caption="Empresas" columns={[
         { header: 'Empresa', cell: (company) => <Link className="font-semibold text-primary hover:underline" to={`/app/companies/${company.id}${location.search}`}>{company.name}</Link> },
         { header: 'Razão social', cell: (company) => company.corporate_name || 'Não informado' },
         { header: 'CNPJ', cell: (company) => company.document ? maskCnpj(company.document) : 'Não informado' },
@@ -43,7 +46,8 @@ export function CompaniesPage() {
         { header: 'Situação', cell: (company) => <StatusBadge value={company.status} /> },
         { header: 'Ações', cell: (company) => <div className="flex flex-wrap gap-2"><Button size="sm" variant="secondary" onClick={() => navigate(`/app/companies/${company.id}${location.search}`)}>Visualizar</Button>{hasPermission('companies:update') && !company.deleted_at ? <Button size="sm" variant="secondary" onClick={() => navigate(`/app/companies/${company.id}/edit${location.search}`)}>Editar</Button> : null}<CompanyStatusAction company={company} /></div> },
       ]} />
-      <Pagination page={page.page} totalPages={page.totalPages} onPageChange={state.setPage} />
+      <div className="px-5 py-3"><Pagination page={page.page} totalPages={page.totalPages} onPageChange={state.setPage} /></div>
+      </DataPanel>
     </> : null}
   </PageContainer>;
 }
