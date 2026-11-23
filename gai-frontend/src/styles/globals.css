@@ -294,6 +294,11 @@
   .premium-panel {
     @apply relative overflow-hidden rounded-lg border border-border bg-card shadow-panel;
   }
+  /* Títulos de seção dentro dos cards: Space Grotesk em azul-escuro, como os títulos
+     do sistema anterior. */
+  .premium-panel :is(h2, h3) {
+    @apply font-display text-navy dark:text-foreground;
+  }
 
   .interactive-card {
     @apply transition-colors duration-150 ease-out hover:border-steel/60 hover:bg-secondary;

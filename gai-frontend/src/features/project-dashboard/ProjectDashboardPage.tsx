@@ -175,7 +175,6 @@ function DashboardContent({
     <div className="relative grid gap-6">
       {updating ? <div className="absolute inset-x-0 -top-3 z-30 mx-auto h-1 max-w-sm overflow-hidden rounded-full bg-primary/15"><span className="block h-full w-1/2 animate-pulse rounded-full bg-primary" /></div> : null}
       <section className="premium-panel relative overflow-hidden p-5 sm:p-7">
-        <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl" />
         <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
             <p className="eyebrow">Pulso do inventário</p>
@@ -300,8 +299,8 @@ function UnitsTable({ title, data }: { title: string; data: ProjectDashboardAnal
   return (
     <ChartCard title={title} description="Valores absolutos e percentual de conclusão.">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[32rem] text-left text-sm">
-          <thead><tr className="border-b border-sidebar-border bg-brand-navy text-xs uppercase tracking-wider text-white/70"><th className="rounded-l-lg py-3 pl-3">Unidade</th><th>Total</th><th>Inventariados</th><th>Pendentes</th><th className="rounded-r-lg pr-3">Conclusão</th></tr></thead>
+        <table className="data-table w-full min-w-[32rem] border-separate border-spacing-0 text-left text-sm">
+          <thead><tr><th className="rounded-l-lg py-3 pl-3">Unidade</th><th>Total</th><th>Inventariados</th><th>Pendentes</th><th className="rounded-r-lg pr-3">Conclusão</th></tr></thead>
           <tbody>{data.map((unit, index) => <tr key={`${unit.unit}-${index}`} className="border-b border-border/60 transition-colors hover:bg-primary/[0.07] last:border-0"><td className="py-3 pl-3 font-medium">{unit.unit || 'Sem unidade'}</td><td>{unit.total_items}</td><td>{unit.inventoried_items}</td><td>{unit.pending_items}</td><td className="pr-3">{unit.completion_percentage.toLocaleString('pt-BR')}%</td></tr>)}</tbody>
         </table>
       </div>
@@ -312,8 +311,8 @@ function UnitsTable({ title, data }: { title: string; data: ProjectDashboardAnal
 function GeographyTable({ data, unlocatedItems }: { data: ProjectDashboardAnalytics['geography']; unlocatedItems: number }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead><tr className="border-b border-sidebar-border bg-brand-navy text-xs uppercase tracking-wider text-white/70"><th className="rounded-l-lg py-3 pl-3">UF</th><th>Itens</th><th>Unidades</th><th className="rounded-r-lg pr-3">Conclusão</th></tr></thead>
+      <table className="data-table w-full border-separate border-spacing-0 text-left text-sm">
+        <thead><tr><th className="rounded-l-lg py-3 pl-3">UF</th><th>Itens</th><th>Unidades</th><th className="rounded-r-lg pr-3">Conclusão</th></tr></thead>
         <tbody>{data.map((state) => <tr key={state.state} className="border-b border-border/60 transition-colors hover:bg-primary/[0.07]"><td className="py-3 pl-3 font-bold">{state.state}</td><td>{state.total_items}</td><td>{state.total_units}</td><td className="pr-3">{state.completion_percentage.toLocaleString('pt-BR')}%</td></tr>)}</tbody>
         <tfoot><tr><td className="pt-4 font-semibold" colSpan={4}>{unlocatedItems.toLocaleString('pt-BR')} itens sem UF confiável</td></tr></tfoot>
       </table>
