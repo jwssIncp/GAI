@@ -1,5 +1,7 @@
+import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { normalizePage } from "@/api/pagination";
+import { DataPanel } from "@/components/base/DataPanel";
 import { DataTable } from "@/components/base/DataTable";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { MetricCard } from "@/components/base/Cards";
@@ -272,7 +274,7 @@ export function ProjectsPage() {
       />
       {projects.data?.status_counts ? (
         <div
-          className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+          className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3"
           aria-label="Indicadores dos projetos filtrados"
         >
           <MetricCard
@@ -391,18 +393,22 @@ export function ProjectsPage() {
         />
       ) : null}
       {!projects.isLoading && !projects.isError && pageData ? (
-        <>
+        <ProjectsListPanel total={projects.data?.total_items ?? pageData.items.length}>
           <DataTable
+            bare
+            caption="Projetos"
             columns={columns}
             items={pageData.items}
             getKey={(item) => item.id}
           />
-          <Pagination
-            page={pageData.page}
-            totalPages={pageData.totalPages}
-            onPageChange={(value) => updateParams({ page: value })}
-          />
-        </>
+          <div className="px-5 py-3">
+            <Pagination
+              page={pageData.page}
+              totalPages={pageData.totalPages}
+              onPageChange={(value) => updateParams({ page: value })}
+            />
+          </div>
+        </ProjectsListPanel>
       ) : null}
     </PageContainer>
   );
@@ -423,4 +429,21 @@ function statusLabel(status: ProjectStatus) {
     cancelled: "Cancelado",
     archived: "Arquivado",
   }[status];
+}
+
+/** Lista de projetos no painel com a faixa azul (padrão do sistema anterior), recolhível. */
+function ProjectsListPanel({ total, children }: { total: number; children: ReactNode }) {
+  const [hidden, setHidden] = useState(false);
+  return (
+    <DataPanel
+      title="Lista de projetos"
+      titleId="projects-list-title"
+      contentId="projects-list"
+      count={`${total} projeto${total === 1 ? "" : "s"}`}
+      hidden={hidden}
+      onToggle={() => setHidden(!hidden)}
+    >
+      {children}
+    </DataPanel>
+  );
 }
