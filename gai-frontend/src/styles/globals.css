@@ -432,7 +432,8 @@ textarea[class*="rounded-md"]:focus {
   color: #fff;
   border-bottom-color: rgb(255 255 255 / 0.2);
 }
-.data-table tr.row-overdue > td * { color: inherit; }
+/* Campos editáveis na linha (selects, inputs) mantêm o texto escuro sobre fundo branco. */
+.data-table tr.row-overdue > td *:not(input, select, textarea, option) { color: inherit; }
 .data-table tr.row-overdue a { text-decoration: underline; }
 .data-table tr.row-overdue [data-status] {
   background: #fff;
