@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, CreditCard, Download, Pencil, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { PageContainer } from "@/components/base/PageContainer";
-import { PageHeader } from "@/components/base/PageHeader";
-import { Kpi } from "@/components/base/Cards";
+import { SectionTitle } from "@/components/base/SectionTitle";
+import { DataPanel } from "@/components/base/DataPanel";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
@@ -46,6 +47,7 @@ export function ProjectRemunerationPage() {
   const { toast } = useToast();
   const cache = useQueryClient();
   const [filters, setFilters] = useState<RemunerationFilters>({ status_group: "all" });
+  const [listHidden, setListHidden] = useState(false);
   const [form, setForm] = useState<
     { mode: "create"; preset?: { field_agent_id: number; state: string | null } } | { mode: "edit"; item: RemunerationItem } | null
   >(null);
@@ -133,10 +135,12 @@ export function ProjectRemunerationPage() {
 
   return (
     <PageContainer>
-      <PageHeader
+      {/* Padrão do sistema anterior: título com linha fina; a explicação fica no "?". */}
+      <SectionTitle
+        as="h1"
         title="Remuneração"
-        description={`Diárias dos inventariantes${label ? ` · ${label}` : ""}. Total = dias × diária + adicional; final = total − descontos.`}
-        action={
+        help={`Diárias dos inventariantes${label ? ` · ${label}` : ""}. Total = dias × diária + adicional; final = total − descontos.`}
+        actions={
           <>
             {hasPermission("payments:export") ? (
               <Button type="button" variant="secondary" onClick={() => void exportList()}>
@@ -152,9 +156,11 @@ export function ProjectRemunerationPage() {
         }
       />
       {data ? (
-        <section aria-label="Indicadores da remuneração" className="grid gap-3 sm:grid-cols-2">
-          <Kpi label="Total final" value={formatMoney(data.kpis.total_final)} hint={`${formatMoney(data.kpis.paid_final)} já pago · cancelados fora`} />
-          <Kpi label="A lançar" value={data.to_launch.length} hint="Vinculados ativos sem nenhum lançamento" />
+        <section aria-label="Indicadores da remuneração">
+          <KpiGrid>
+          <Kpi group="month" tinted label="Total final" value={formatMoney(data.kpis.total_final)} hint={`${formatMoney(data.kpis.paid_final)} já pago · cancelados fora`} />
+          <Kpi group="month" label="A lançar" value={data.to_launch.length} hint="Vinculados ativos sem nenhum lançamento" />
+          </KpiGrid>
         </section>
       ) : null}
       <FilterPanel>
@@ -202,10 +208,18 @@ export function ProjectRemunerationPage() {
       ) : query.isError ? (
         <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} />
       ) : data ? (
-        <div className="premium-panel">
-          <div className="overflow-x-auto" role="region" aria-label="Lançamentos de remuneração" tabIndex={0}>
-            <table className="w-full min-w-[980px] border-separate border-spacing-0 text-left text-sm">
-              <thead className="bg-muted text-xs text-muted-foreground">
+        // Lançamentos no painel com a faixa azul (padrão do sistema anterior).
+        <DataPanel
+          title="Lançamentos"
+          titleId="remuneration-items-title"
+          contentId="remuneration-items"
+          count={`${data.items.length} lançamento${data.items.length === 1 ? "" : "s"}`}
+          hidden={listHidden}
+          onToggle={() => setListHidden(!listHidden)}
+        >
+          <div className="max-h-[620px] overflow-auto" role="region" aria-label="Lançamentos de remuneração" tabIndex={0}>
+            <table className="data-table w-full min-w-[980px] border-separate border-spacing-0 text-left text-sm">
+              <thead>
                 <tr>
                   {["Inventariante / UF", "Período / dias", "Previsto", "Pago em", "Diária", "Adicional", "Total", "Descontos", "Final", "Situação"].map((h) => (
                     <th key={h} scope="col" className={`whitespace-nowrap border-b px-2 py-2.5 font-semibold ${MONEY_COLUMNS.has(h) ? "text-right" : ""}`}>{h}</th>
@@ -299,7 +313,7 @@ export function ProjectRemunerationPage() {
               </tfoot>
             </table>
           </div>
-        </div>
+        </DataPanel>
       ) : null}
 
       <ModalForm

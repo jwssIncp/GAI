@@ -6,9 +6,43 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'Geist', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['"Space Grotesk"', '"IBM Plex Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        nav: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
+        steel: {
+          DEFAULT: 'hsl(var(--steel))',
+          dark: 'hsl(var(--steel-dark))',
+          tint: 'hsl(var(--steel-tint))',
+        },
+        brass: 'hsl(var(--brass))',
+        navy: 'hsl(var(--navy))',
+        rose: 'hsl(var(--rose))',
+        'border-strong': 'hsl(var(--border-strong))',
+        'table-head': 'hsl(var(--table-head))',
+        nav: {
+          DEFAULT: 'hsl(var(--nav))',
+          border: 'hsl(var(--nav-border))',
+          ink: 'hsl(var(--nav-ink))',
+          muted: 'hsl(var(--nav-muted))',
+          accent: 'hsl(var(--nav-accent))',
+        },
+        subnav: {
+          DEFAULT: 'hsl(var(--subnav))',
+          hover: 'hsl(var(--subnav-hover))',
+        },
+        kpi: {
+          month: 'hsl(var(--kpi-month))',
+          'month-bg': 'hsl(var(--kpi-month-bg))',
+          next: 'hsl(var(--kpi-next))',
+          'next-bg': 'hsl(var(--kpi-next-bg))',
+          year: 'hsl(var(--kpi-year))',
+          'year-bg': 'hsl(var(--kpi-year-bg))',
+          indicators: 'hsl(var(--kpi-indicators))',
+          'indicators-bg': 'hsl(var(--kpi-indicators-bg))',
+        },
         brand: {
           ink: 'hsl(var(--brand-ink))',
           navy: 'hsl(var(--brand-navy))',
@@ -102,15 +136,18 @@ export default {
         '2xl': 'calc(var(--radius) + 10px)',
       },
       boxShadow: {
-        panel: '0 1px 2px hsl(var(--shadow-color) / 0.04), 0 12px 36px -18px hsl(var(--shadow-color) / 0.22)',
-        elevated: '0 22px 70px -28px hsl(var(--shadow-color) / 0.4), 0 2px 8px hsl(var(--shadow-color) / 0.08)',
-        glow: '0 0 0 1px hsl(var(--primary) / 0.08), 0 16px 48px -20px hsl(var(--primary) / 0.5)',
-        'inner-highlight': 'inset 0 1px 0 hsl(0 0% 100% / 0.08)',
+        // Sistema anterior: cards com borda fina e quase sem sombra; só menus e
+        // diálogos flutuantes têm sombra perceptível. Nomes mantidos (usados nas telas).
+        panel: '0 1px 2px hsl(var(--shadow-color) / 0.05)',
+        elevated: '0 12px 30px hsl(var(--shadow-color) / 0.18)',
+        glow: 'none',
+        'inner-highlight': 'none',
       },
       backgroundImage: {
-        'premium-gradient': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--chart-2)))',
-        'brand-hero': 'linear-gradient(135deg, hsl(var(--brand-ink)) 0%, hsl(var(--brand-navy)) 100%)',
-        'card-sheen': 'linear-gradient(145deg, hsl(var(--card) / 0.96), hsl(var(--card) / 0.74))',
+        // Cores sólidas no lugar dos degradês (nomes mantidos por compatibilidade).
+        'premium-gradient': 'linear-gradient(hsl(var(--primary)), hsl(var(--primary)))',
+        'brand-hero': 'linear-gradient(hsl(var(--steel-dark)), hsl(var(--steel-dark)))',
+        'card-sheen': 'linear-gradient(hsl(var(--card)), hsl(var(--card)))',
       },
       keyframes: {
         'fade-up': {

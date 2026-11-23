@@ -1,6 +1,8 @@
 import { requestFilters } from "@/features/projects/navigationContext";
 import { navigationHref } from "@/features/projects/navigationContext";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { DataPanel } from "@/components/base/DataPanel";
 import { Link, useSearchParams } from "react-router-dom";
 import { DataTable } from "@/components/base/DataTable";
 import { Pagination } from "@/components/base/Pagination";
@@ -19,6 +21,7 @@ export function ReceivablesPage() {
     queryKey: ["finance", "list", user?.id, filters],
     queryFn: () => financeApi.list(filters),
   });
+  const [hidden, setHidden] = useState(false);
   return (
     <div className="grid gap-4">
       {/* Ações no cabeçalho: exportar (secundária) e depois "Novo recebível" (primária). */}
@@ -29,14 +32,23 @@ export function ReceivablesPage() {
         />
         {hasPermission("receivables:edit") && (
           <Link
-            className="inline-flex min-h-11 items-center rounded-lg border border-primary/30 bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary-hover"
+            className="inline-flex min-h-10 items-center rounded-[6px] border border-primary bg-primary px-4 py-2 text-[0.84375rem] font-semibold text-primary-foreground hover:bg-primary-hover"
             to={navigationHref("/app/finance/receivables/new", p)}
           >
             Novo recebível
           </Link>
         )}
       </FinanceHeaderActions>
-      <FinanceFilters />
+      {/* Painel com a faixa azul (padrão do sistema anterior): filtros e tabela dentro dele. */}
+      <DataPanel
+        title="Recebíveis"
+        titleId="receivables-panel-title"
+        contentId="receivables-panel"
+        count={q.data ? `${q.data.total} recebíve${q.data.total === 1 ? "l" : "is"}` : undefined}
+        hidden={hidden}
+        onToggle={() => setHidden(!hidden)}
+      >
+      <FinanceFilters embedded />
       {q.isLoading ? (
         <LoadingState />
       ) : q.error ? (
@@ -46,6 +58,7 @@ export function ReceivablesPage() {
           <>
             {q.data.items.length ? (
               <DataTable
+                bare
                 caption="Recebíveis"
                 items={q.data.items}
                 getKey={(r) => r.id}
@@ -93,6 +106,7 @@ export function ReceivablesPage() {
                 description="Mude ou limpe os filtros para ver outros recebíveis."
               />
             )}
+            <div className="px-5 py-3">
             <Pagination
               page={q.data.page}
               totalPages={Math.ceil(q.data.total / q.data.page_size)}
@@ -102,9 +116,11 @@ export function ReceivablesPage() {
                 set(next);
               }}
             />
+            </div>
           </>
         )
       )}
+      </DataPanel>
     </div>
   );
 }

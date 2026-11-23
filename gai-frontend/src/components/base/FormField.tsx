@@ -25,10 +25,11 @@ export function FormField({ label, error, hint, optional, help, helpTitle, child
     : children;
 
   return (
-    <div className="group grid gap-2 text-sm font-semibold text-foreground">
+    <div className="group grid gap-1.5 text-sm text-foreground">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
-          <label htmlFor={controlId}>{label}</label>
+          {/* Rótulo no padrão do sistema anterior: pequeno, maiúsculo (só no CSS). */}
+          <label htmlFor={controlId} className="text-[0.71875rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{label}</label>
           {element?.props.required ? <span className="text-destructive" aria-hidden="true">*</span> : null}
           {help ? <HelpPopover label={`Ajuda sobre ${label}`} title={helpTitle}>{help}</HelpPopover> : null}
         </div>

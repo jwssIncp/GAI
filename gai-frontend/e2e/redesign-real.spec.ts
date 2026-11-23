@@ -37,8 +37,9 @@ for (const width of [1366, 390]) for (const theme of ['light', 'dark']) {
     await shot(page, `modal-${theme}-${width}`);
     await page.keyboard.press('Escape');
     if (width < 1024) {
-      await page.getByRole('button', { name: 'Abrir navegação' }).click();
-      await expect(page.getByRole('dialog', { name: 'Navegação principal' })).toBeVisible();
+      // Menu superior: as áreas ficam sempre visíveis (rolam na horizontal no celular).
+      await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Telas de Projetos' })).toBeVisible();
       await shot(page, `navigation-${theme}-${width}`);
     }
   });
@@ -94,25 +95,18 @@ test.describe('redesign behaviour', () => {
         observations.push(observation);
         if (width === 360 || width === 1366 || index === 0) await shot(page, `module-${index}-${theme}-${width}`);
       }
-      if (width < 1024) {
-        const trigger = page.getByRole('button', { name: 'Abrir navegação' });
-        await trigger.click();
-        const dialog = page.getByRole('dialog', { name: 'Navegação principal' });
-        await expect(dialog).toBeVisible();
-        for (let i = 0; i < 15; i++) {
-          await page.keyboard.press('Tab');
-          expect(await dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
-        }
-        await page.keyboard.press('Escape');
-        await expect(dialog).not.toBeVisible();
-        await expect(trigger).toBeFocused();
-      } else {
-        await page.getByRole('button', { name: 'Recolher menu lateral' }).click();
-        await expect(page.getByRole('button', { name: 'Expandir menu lateral' })).toBeVisible();
-        await shot(page, `collapsed-${theme}-${width}`);
-        await page.reload();
-        await expect(page.getByRole('button', { name: 'Expandir menu lateral' })).toBeVisible();
-        await page.getByRole('button', { name: 'Expandir menu lateral' }).click();
+      // Menu superior: clicar numa área só troca a linha 2 (não navega).
+      const areas = page.getByRole('navigation', { name: 'Navegação principal' });
+      const url = page.url();
+      await areas.getByRole('button', { name: 'Financeiro', exact: true }).click();
+      await expect(page.getByRole('navigation', { name: 'Telas de Financeiro' })).toBeVisible();
+      expect(page.url()).toBe(url);
+      if (width >= 1024) {
+        await page.getByRole('button', { name: 'Tela cheia' }).click();
+        await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toHaveCount(0);
+        await shot(page, `fullscreen-${theme}-${width}`);
+        await page.getByRole('button', { name: 'Sair da tela cheia' }).click();
+        await expect(page.getByRole('navigation', { name: 'Navegação principal' })).toBeVisible();
       }
       fs.writeFileSync(path.join(output, `observed-${theme}-${width}.json`), JSON.stringify({ observations, errors, responses }, null, 2));
       expect(errors).toEqual([]);
@@ -304,10 +298,8 @@ test.describe('redesign behaviour', () => {
       await group.getByRole('button', { name: 'SP', exact: true }).tap();
       await expect(page).toHaveURL(/state=SP/);
       if (width < 1024) {
-        await page.getByRole('button', { name: 'Abrir navegação' }).tap();
-        await expect(page.getByRole('dialog', { name: 'Navegação principal' })).toBeVisible();
-        await page.getByRole('button', { name: 'Fechar menu' }).tap();
-        await expect(page.getByRole('dialog')).not.toBeVisible();
+        await page.getByRole('navigation', { name: 'Navegação principal' }).getByRole('button', { name: 'Comercial', exact: true }).tap();
+        await expect(page.getByRole('navigation', { name: 'Telas de Comercial' })).toBeVisible();
       }
       await page.goto('/app/projects');
       await page.waitForLoadState('networkidle');

@@ -6,7 +6,8 @@ import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { projectBreadcrumbSteps } from "@/features/projects/projectNavigation";
 import { projectKeys } from "@/features/projects/projectQueries";
 import type { CurrentUser } from "@/types/api";
-import { Breadcrumbs, Topbar } from "./Topbar";
+import { AppHeader } from "./AppHeader";
+import { Breadcrumbs } from "./Breadcrumbs";
 
 const get = vi.fn();
 vi.mock("@/api/endpoints", async (original) => ({
@@ -152,19 +153,19 @@ describe("Breadcrumbs fora do projeto", () => {
   });
 });
 
-describe("Topbar: organização pelo nome", () => {
+describe("Cabeçalho: organização pelo nome", () => {
   beforeAll(() =>
     vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }))),
   );
   afterAll(() => vi.unstubAllGlobals());
 
-  function renderTopbar(current: CurrentUser) {
+  function renderHeader(current: CurrentUser) {
     const auth: AuthState = { user: current, accessToken: "t", expiresAt: "2099-01-01", bootstrapping: false, login: vi.fn(), logout: vi.fn(), restore: vi.fn() };
     render(
       <QueryClientProvider client={new QueryClient()}>
         <AuthContext.Provider value={auth}>
           <MemoryRouter initialEntries={["/app/dashboard"]}>
-            <Topbar onOpenNavigation={vi.fn()} />
+            <AppHeader />
           </MemoryRouter>
         </AuthContext.Provider>
       </QueryClientProvider>,
@@ -172,18 +173,18 @@ describe("Topbar: organização pelo nome", () => {
   }
 
   it("mostra o nome da organização, nunca \"Organização #id\"", () => {
-    renderTopbar({ ...user([]), organization_name: "Center Norte Patrimônio" });
+    renderHeader({ ...user([]), organization_name: "Center Norte Patrimônio" });
     expect(screen.getAllByText("Center Norte Patrimônio").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Organização #/)).not.toBeInTheDocument();
   });
 
   it("API antiga sem o nome: mostra o número da organização", () => {
-    renderTopbar(user([]));
+    renderHeader(user([]));
     expect(screen.getAllByText("Organização #1").length).toBeGreaterThan(0);
   });
 
   it("usuário da plataforma (sem organização)", () => {
-    renderTopbar({ ...user([]), organization_id: null, organization_name: null });
+    renderHeader({ ...user([]), organization_id: null, organization_name: null });
     expect(screen.getAllByText("Plataforma").length).toBeGreaterThan(0);
   });
 });

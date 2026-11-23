@@ -207,7 +207,8 @@ describe("DRE mensal", () => {
     await screen.findByRole("table");
     expect(screen.queryByRole("button", { name: "Importar planilha" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Configurar" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Ocultar" })).toBeNull();
+    // Ocultar linha (ação de configuração, dentro da tabela); o "Ocultar" da faixa azul só recolhe o painel.
+    expect(within(screen.getByRole("table")).queryByRole("button", { name: "Ocultar" })).toBeNull();
   });
 
   it("valor com sinal no padrão brasileiro", () => {

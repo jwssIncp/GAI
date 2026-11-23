@@ -108,7 +108,6 @@ function ProjectWorkspace({ project, summary }: { project: Project; summary: Pro
 function ProjectHero({ project, summary }: { project: Project; summary: ProjectSummary }) {
   return (
     <section className="premium-panel relative grid gap-6 overflow-hidden p-5 sm:p-7 lg:grid-cols-[1.2fr_0.8fr]">
-      <div className="pointer-events-none absolute -left-20 -top-28 size-64 rounded-full bg-primary/[0.08] blur-3xl" aria-hidden="true" />
       <div className="relative z-10 grid gap-5">
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge value={project.status} />

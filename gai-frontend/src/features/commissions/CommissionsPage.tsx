@@ -6,7 +6,7 @@ import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { InlineEdit } from "@/components/base/InlineEdit";
 import { ErrorState, LoadingState } from "@/components/base/States";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
 import { MoneyInput } from "@/components/base/MoneyInput";
 import { StatusBadge } from "@/components/base/StatusBadge";
 import type { FinanceStatus } from "@/components/base/financeStatus";
@@ -83,15 +83,18 @@ export function CommissionsPage() {
 
   return (
     <div className="grid gap-4">
-      <p className="max-w-3xl text-sm text-muted-foreground">
+      <p className="max-w-4xl text-xs leading-5 text-muted-foreground">
         Comissão = valor do contrato × % ÷ 100; o valor informado à mão prevalece (apague para voltar ao cálculo). Situação automática:
         Pago com data de pagamento, Em atraso se a data prevista já passou, senão Pendente.
       </p>
-      <section aria-label="Indicadores das comissões" className="grid grid-cols-2 gap-2 md:grid-cols-4">
-        <Kpi label="Total de comissões" value={formatMoney(k.total)} />
-        <Kpi label="Pagas" value={formatMoney(k.paid)} />
-        <Kpi label="Pendentes" value={formatMoney(k.pending)} />
-        <Kpi label="Em atraso" value={formatMoney(k.overdue)} hint={`${k.overdue_count} comissão(ões) com a data prevista já passada`} tone={k.overdue_count > 0 ? "danger" : "default"} />
+      {/* Quatro cards como no sistema anterior, numa linha de cor (o 1º tingido). */}
+      <section aria-label="Indicadores das comissões">
+        <KpiGrid>
+        <Kpi group="year" tinted label="Total de comissões" value={formatMoney(k.total)} />
+        <Kpi group="year" label="Pagas" value={formatMoney(k.paid)} />
+        <Kpi group="year" label="Pendentes" value={formatMoney(k.pending)} />
+        <Kpi group="year" label="Em atraso" value={formatMoney(k.overdue)} hint={`${k.overdue_count} comissão(ões) com a data prevista já passada`} tone={k.overdue_count > 0 ? "danger" : "default"} />
+        </KpiGrid>
       </section>
       {/* Ações no cabeçalho: secundária (Parceiros) e depois a primária (Nova comissão). */}
       <FinanceHeaderActions>
@@ -114,19 +117,19 @@ export function CommissionsPage() {
         <Button type="button" variant="ghost" onClick={() => setFilters({})}>Limpar filtros</Button>
       </FilterPanel>
 
-      <div className="premium-panel">
-        <div className="overflow-x-auto" role="region" aria-label="Lançamentos de comissões" tabIndex={0}>
-          <table className="w-full min-w-[1100px] border-separate border-spacing-0 text-left text-sm">
-            <thead className="bg-muted text-xs text-muted-foreground">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="max-h-[620px] overflow-auto" role="region" aria-label="Lançamentos de comissões" tabIndex={0}>
+          <table className="data-table w-full min-w-[1100px] border-separate border-spacing-0 text-left text-sm">
+            <thead>
               <tr>
                 {["Projeto", "Parceiro", "Valor do contrato", "% comissão", "Valor da comissão", "Data prevista", "Data de pagamento", "Situação", ""].map((h, i) => (
-                  <th key={`${h}-${i}`} scope="col" className={`whitespace-nowrap border-b px-2 py-3 font-semibold ${i === 0 ? "sticky left-0 z-10 bg-muted" : ""}`}>{h || <span className="sr-only">Ações</span>}</th>
+                  <th key={`${h}-${i}`} scope="col" className={`whitespace-nowrap border-b px-2 py-3 font-semibold ${i === 0 ? "sticky left-0 !z-[3]" : ""}`}>{h || <span className="sr-only">Ações</span>}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {data.items.map((r) => (
-                <tr key={r.id} className={r.status === "overdue" ? "bg-destructive/[0.06]" : "hover:bg-primary/[0.05]"}>
+                <tr key={r.id} className={r.status === "overdue" ? "row-overdue" : undefined}>
                   <td className={`${cell} sticky left-0 z-10 max-w-[14rem] truncate bg-card`} title={r.project_name}>
                     <InlineEdit label="Projeto" kind="select" value={String(r.project_id)} disabled={!canEdit}
                       options={data.projects.filter((p) => p.open || p.id === r.project_id).map((p) => ({ value: String(p.id), label: p.name }))}

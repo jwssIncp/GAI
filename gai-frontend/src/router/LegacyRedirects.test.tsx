@@ -44,7 +44,7 @@ describe("/app/finance abre a 1ª tela financeira permitida", () => {
   const redirect = <FirstAllowedRedirect section="finance" prefix="/app/finance" />;
 
   it("segue a ordem do menu e mantém o projeto do contexto", () => {
-    expect(renderAt("/app/start?project_id=7", redirect, user(["receivables:read", "cash-flow:read"]))).toBe("/app/finance/receivables?project_id=7");
+    expect(renderAt("/app/start?project_id=7", redirect, user(["receivables:read", "cash-flow:read"]))).toBe("/app/finance/cash-flow?project_id=7");
   });
 
   it("pula as telas sem permissão", () => {

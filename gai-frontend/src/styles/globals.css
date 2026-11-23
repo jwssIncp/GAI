@@ -10,48 +10,75 @@
     --brand-green: 151 92% 46%;
     --brand-green-deep: 157 100% 39%;
     --brand-teal: 164 100% 31%;
-    --background: 210 25% 98%;
-    --foreground: 222 47% 11%;
+    /* Identidade visual do sistema anterior (Netlify): fundo cinza-azulado, cards
+       brancos com borda fina, azul-aço nas faixas de tabela e verde #2E7D5B nas ações. */
+    --background: 210 21% 95%;          /* #EEF1F4 */
+    --foreground: 213 26% 15%;          /* #1C2530 */
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 213 26% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --surface: 150 20% 98%;
+    --popover-foreground: 213 26% 15%;
+    --surface: 0 0% 100%;
     --surface-elevated: 0 0% 100%;
-    --primary: 151 92% 46%;
-    --primary-foreground: 216 100% 6%;
-    --primary-subtle: 151 80% 95%;
-    --primary-hover: 151 92% 42%;
-    --primary-text: 164 100% 24%;
+    --primary: 154 46% 34%;             /* #2E7D5B — 5,0:1 com texto branco */
+    --primary-foreground: 0 0% 100%;
+    --primary-subtle: 145 33% 93%;      /* #E7F3EC */
+    --primary-hover: 154 47% 28%;       /* #26694C */
+    --primary-text: 157 51% 25%;        /* #1F6047 */
     --disabled: 214 14% 48%;
-    --control-height: 2.75rem;
-    --secondary: 210 29% 95%;
-    --secondary-foreground: 216 60% 14%;
-    --muted: 210 29% 96%;
-    --muted-foreground: 215 16% 42%;
-    --accent: 164 58% 92%;
-    --accent-foreground: 164 100% 24%;
-    --destructive: 348 77% 50%;
+    --control-height: 2.5rem;
+    --secondary: 204 33% 97%;           /* #F5F8FA */
+    --secondary-foreground: 212 27% 10%;
+    --muted: 204 33% 97%;
+    --muted-foreground: 208 13% 38%;    /* #55636F — 5,4:1 no fundo */
+    --accent: 205 33% 93%;              /* #E7EEF3 */
+    --accent-foreground: 206 56% 28%;
+    --destructive: 353 51% 46%;         /* #B23A48 */
     --destructive-foreground: 0 0% 100%;
     /* Texto/etiqueta negativa (valor negativo, "Em atraso", erro): AA (≥ 4,5:1) sobre
-       background, card, muted e tons tingidos (destructive/10–15). --destructive puro
-       (4,47 no background; 3,83 em destructive/10) fica para fundos e bordas. */
-    --destructive-text: 348 80% 40%;
-    --success: 160 84% 26%;
+       background, card, muted e tons tingidos (destructive/10–15). */
+    --destructive-text: 353 55% 40%;
+    --success: 154 46% 34%;
     --success-foreground: 0 0% 100%;
-    --success-subtle: 151 80% 95%;
-    --warning: 38 92% 50%;
+    --success-subtle: 145 33% 93%;
+    --warning: 36 65% 48%;              /* #C98A2B (brass) — só fundo/borda/ícone */
     --warning-foreground: 30 92% 13%;
-    --warning-subtle: 42 100% 93%;
-    /* Texto de aviso (âmbar): AA sobre background, card, muted e warning-subtle. Use
-       text-warning-text; o --warning puro (2,0:1 no claro) é só para fundo/borda/ícone. */
-    --warning-text: 30 92% 24%;
-    --info: 205 91% 36%;
+    --warning-subtle: 38 76% 94%;       /* #FBF2E2 */
+    /* Texto de aviso (âmbar): AA sobre background, card, muted e warning-subtle. */
+    --warning-text: 38 77% 31%;         /* #8A5E12 */
+    --info: 206 51% 37%;                /* #2F6690 (steel) */
     --info-foreground: 0 0% 100%;
-    --info-subtle: 203 73% 95%;
-    --border: 210 24% 88%;
-    --input: 214 18% 54%;
-    --ring: 164 100% 25%;
+    --info-subtle: 205 33% 93%;
+    --border: 210 20% 88%;              /* #DBE1E7 (hairline) */
+    --border-strong: 208 17% 80%;       /* #C3CCD4 (hairline forte: botões outline) */
+    /* Borda de campo: #8593A0 (3,1:1 no branco, mínimo de contraste de componente). */
+    --input: 208 12% 57%;
+    --ring: 206 51% 37%;
+    /* Paleta das telas */
+    --steel: 206 51% 37%;               /* #2F6690 */
+    --steel-dark: 206 56% 28%;          /* #1F4C6E — faixa azul dos cabeçalhos de tabela */
+    --steel-tint: 205 33% 93%;          /* #E7EEF3 */
+    --brass: 36 65% 48%;                /* #C98A2B */
+    --navy: 212 27% 10%;                /* #12181F */
+    --rose: 353 51% 46%;                /* #B23A48 */
+    --table-head: 204 33% 97%;          /* #F5F8FA */
+    /* Menu superior (shell) */
+    --nav: 0 0% 100%;
+    --nav-border: 220 24% 90%;          /* #E0E4EC */
+    --nav-ink: 218 74% 15%;             /* #0A1F44 */
+    --nav-muted: 219 13% 41%;           /* #5B6577 */
+    --nav-accent: 155 95% 43%;          /* #06D67E — aba ativa (texto nav-ink, 8,5:1) */
+    --subnav: 216 45% 98%;              /* #F7F9FC */
+    --subnav-hover: 217 42% 94%;        /* #E9EEF6 */
+    /* Grupos dos KPI (cor da barra/borda e fundo do 1º card da linha) */
+    --kpi-month: 157 51% 25%;           /* #1F6047 */
+    --kpi-month-bg: 153 31% 93%;        /* #E8F3EE */
+    --kpi-next: 206 56% 28%;            /* #1F4C6E */
+    --kpi-next-bg: 208 37% 93%;         /* #E7EEF4 */
+    --kpi-year: 259 43% 43%;            /* #5B3E9B */
+    --kpi-year-bg: 261 50% 95%;         /* #EFEAF8 */
+    --kpi-indicators: 263 33% 46%;      /* #6B4E9B */
+    --kpi-indicators-bg: 263 52% 95%;   /* #F1ECF9 */
     --sidebar: 214 98% 16%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 211 22% 72%;
@@ -61,13 +88,13 @@
     --topbar-foreground: 0 0% 100%;
     --topbar-muted: 213 18% 70%;
     --topbar-border: 216 55% 14%;
-    --chart-1: 157 100% 30%;
-    --chart-2: 164 100% 31%;
-    --chart-3: 214 98% 16%;
-    --chart-4: 151 70% 30%;
-    --chart-5: 198 71% 38%;
+    --chart-1: 154 46% 34%;
+    --chart-2: 206 51% 37%;
+    --chart-3: 206 56% 28%;
+    --chart-4: 36 65% 48%;
+    --chart-5: 259 43% 43%;
     --shadow-color: 216 72% 12%;
-    --radius: 0.75rem;
+    --radius: 0.625rem;
   }
 
   .dark {
@@ -106,8 +133,32 @@
     --info-foreground: 216 100% 6%;
     --info-subtle: 201 50% 15%;
     --border: 213 32% 20%;
+    --border-strong: 213 26% 30%;
     --input: 214 22% 43%;
-    --ring: 151 92% 46%;
+    --ring: 206 60% 62%;
+    /* Mesma paleta do tema claro, em tons para fundo escuro (texto AA sobre card). */
+    --steel: 206 60% 62%;
+    --steel-dark: 206 56% 24%;          /* faixa azul continua azul */
+    --steel-tint: 206 40% 16%;
+    --brass: 36 75% 62%;
+    --navy: 212 27% 10%;
+    --rose: 353 80% 72%;
+    --table-head: 214 40% 13%;
+    --nav: 214 52% 10%;
+    --nav-border: 213 32% 20%;
+    --nav-ink: 210 33% 96%;
+    --nav-muted: 212 16% 67%;
+    --nav-accent: 155 95% 43%;
+    --subnav: 215 59% 8%;
+    --subnav-hover: 214 32% 15%;
+    --kpi-month: 151 55% 62%;
+    --kpi-month-bg: 156 40% 13%;
+    --kpi-next: 206 60% 66%;
+    --kpi-next-bg: 206 45% 15%;
+    --kpi-year: 259 60% 76%;
+    --kpi-year-bg: 259 30% 17%;
+    --kpi-indicators: 263 50% 76%;
+    --kpi-indicators-bg: 263 25% 16%;
     --sidebar: 214 98% 16%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-muted: 211 22% 72%;
@@ -137,10 +188,6 @@
 
   body {
     @apply min-h-dvh bg-background font-sans text-foreground antialiased;
-    background-image:
-      radial-gradient(circle at 82% -14%, hsl(var(--primary) / 0.055), transparent 34rem),
-      radial-gradient(circle at 8% 84%, hsl(var(--brand-navy) / 0.035), transparent 30rem);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
   }
 
@@ -177,19 +224,19 @@
   select,
   textarea {
     max-width: 100%;
-    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04);
+    box-shadow: none;
     transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
   }
 
   select:hover,
   textarea:hover {
-    border-color: hsl(var(--primary) / 0.42);
+    border-color: hsl(var(--steel) / 0.6);
   }
 
   select:focus,
   textarea:focus {
     border-color: hsl(var(--ring));
-    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.14);
+    box-shadow: 0 0 0 3px hsl(var(--steel-tint));
   }
 
   textarea {
@@ -225,59 +272,51 @@
 
 @layer components {
   .section-navigation {
-    @apply flex min-w-0 gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1.5 text-sm;
+    @apply flex min-w-0 gap-1 overflow-x-auto rounded-lg border border-border bg-card p-1.5 text-sm;
   }
   /* Barra de abas única (componente Tabs): links de rota ou botões da mesma tela;
-     a aba ativa é a que tem aria-current="page". */
+     a aba ativa é a que tem aria-current="page". Pílulas como o submenu do sistema
+     anterior: ativa em azul-escuro. */
   .section-navigation > a,
   .section-navigation > button {
-    @apply inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+    @apply inline-flex min-h-9 shrink-0 items-center whitespace-nowrap rounded-full px-[13px] font-nav text-[0.78125rem] font-semibold text-nav-muted transition-colors hover:bg-subnav-hover hover:text-nav-ink;
   }
   .section-navigation > a[aria-current="page"],
   .section-navigation > button[aria-current="page"] {
-    @apply bg-primary-subtle font-semibold text-primary-text;
+    @apply bg-[#0A1F44] text-white hover:bg-[#0A1F44] hover:text-white dark:bg-steel-dark;
   }
   /* Número/valor monetário: algarismos de mesma largura e sem quebra ("R$ 100,01" numa
      linha só). DataTable aplica em colunas `numeric`; use em células/valores avulsos. */
   .numeric {
     @apply whitespace-nowrap tabular-nums;
   }
+  /* Painel/card: branco, borda fina, raio 10px, sem vidro nem brilho (padrão Netlify). */
   .premium-panel {
-    @apply relative overflow-hidden rounded-xl border border-border/80 bg-card/95 shadow-panel backdrop-blur-xl;
+    @apply relative overflow-hidden rounded-lg border border-border bg-card shadow-panel;
   }
-
-  .premium-panel::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.12), transparent);
-    pointer-events: none;
+  /* Títulos de seção dentro dos cards: Space Grotesk em azul-escuro, como os títulos
+     do sistema anterior. */
+  .premium-panel :is(h2, h3) {
+    @apply font-display text-navy dark:text-foreground;
   }
 
   .interactive-card {
-    @apply transition duration-300 ease-out hover:-translate-y-0.5 hover:border-primary/45;
-  }
-
-  .interactive-card:hover {
-    box-shadow: 0 22px 70px -28px hsl(var(--shadow-color) / 0.4), 0 2px 8px hsl(var(--shadow-color) / 0.08);
+    @apply transition-colors duration-150 ease-out hover:border-steel/60 hover:bg-secondary;
   }
 
   .glass-surface {
-    background: linear-gradient(145deg, hsl(var(--card) / 0.9), hsl(var(--card) / 0.62));
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.07), 0 18px 60px -32px hsl(var(--shadow-color) / 0.45);
-    backdrop-filter: blur(22px) saturate(135%);
+    background: hsl(var(--popover));
+    box-shadow: 0 12px 30px hsl(var(--shadow-color) / 0.16);
   }
 
+  /* Mantida por compatibilidade: título em cor sólida (sem degradê). */
   .text-gradient {
-    background: linear-gradient(120deg, hsl(var(--foreground)) 12%, hsl(var(--brand-teal)) 60%, hsl(var(--primary)) 108%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: hsl(var(--foreground));
   }
 
+  /* Rótulo acima do título: maiúsculas discretas, como os rótulos do sistema anterior. */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-primary-text;
+    @apply inline-flex items-center gap-2 text-[0.71875rem] font-semibold uppercase tracking-[0.07em] text-muted-foreground;
   }
 
   .skeleton-shimmer {
@@ -299,11 +338,11 @@
 input[class*="rounded-md"][class*="border"],
 select[class*="rounded-md"],
 textarea[class*="rounded-md"] {
-  min-height: 2.75rem;
-  border-radius: var(--radius);
+  min-height: var(--control-height);
+  border-radius: 6px;
   border-color: hsl(var(--input));
-  background-color: hsl(var(--background) / 0.65);
-  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04);
+  background-color: hsl(var(--card));
+  box-shadow: none;
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
@@ -312,7 +351,7 @@ select[class*="rounded-md"]:focus,
 textarea[class*="rounded-md"]:focus {
   border-color: hsl(var(--ring));
   background-color: hsl(var(--background));
-  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.14);
+  box-shadow: 0 0 0 3px hsl(var(--steel-tint));
 }
 
 @media (max-width: 767px) {
@@ -362,6 +401,51 @@ textarea[class*="rounded-md"]:focus {
   main { min-width: 0; }
 }
 
+/* Tabela de painel (DataPanel) no padrão do sistema anterior: cabeçalho e rodapé fixos
+   na rolagem, cabeçalho em maiúsculas sobre #F5F8FA, linhas com borda fina. */
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: hsl(var(--table-head));
+  padding: 11px 14px;
+  border-bottom: 1px solid hsl(var(--border-strong));
+  font-size: 0.71875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+.data-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid hsl(var(--border));
+  font-size: 0.8125rem;
+}
+.data-table tbody tr:hover > td { background: hsl(var(--secondary)); }
+.data-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  background: hsl(var(--table-head));
+  border-top: 1px solid hsl(var(--border-strong));
+  padding: 12px 14px;
+}
+/* Linha em atraso: fundo vermelho e texto branco (5,6:1), como no sistema anterior;
+   a etiqueta de status vira pílula branca. */
+.data-table tbody tr.row-overdue > td,
+.data-table tbody tr.row-overdue:hover > td {
+  background: #C62828;
+  color: #fff;
+  border-bottom-color: rgb(255 255 255 / 0.2);
+}
+/* Campos editáveis na linha (selects, inputs) mantêm o texto escuro sobre fundo branco. */
+.data-table tr.row-overdue > td *:not(input, select, textarea, option) { color: inherit; }
+.data-table tr.row-overdue a { text-decoration: underline; }
+.data-table tr.row-overdue [data-status] {
+  background: #fff;
+  color: #B3261E;
+  --tw-ring-color: transparent;
+}
+
 .bg-sidebar, .bg-brand-ink, .bg-brand-hero, .bg-topbar { --primary-text: var(--brand-green); }
 
 /* Recharts also renders HTML tooltips; its defaults must follow the active theme. */
@@ -380,6 +464,8 @@ textarea[class*="rounded-md"]:focus {
 .recharts-tooltip-cursor { fill: hsl(var(--muted-foreground) / .08); }
 
 @media (pointer: coarse) {
+  /* Toque: alvo mínimo de 44px, mesmo com os controles mais baixos do visual atual (40px). */
+  :root { --control-height: 2.75rem; }
   :root button, :root a[aria-label] { min-height: var(--control-height); }
   :root button[aria-label] { min-width: var(--control-height); }
 }

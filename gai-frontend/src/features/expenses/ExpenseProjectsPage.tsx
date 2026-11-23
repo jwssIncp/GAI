@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { DataPanel } from "@/components/base/DataPanel";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { SearchInput } from "@/components/base/SearchInput";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -24,6 +25,7 @@ export function ExpenseProjectsPage() {
   const [search, setSearch] = useState("");
   const [onlyOpen, setOnlyOpen] = useState(true);
   const [year, setYear] = useState("");
+  const [hidden, setHidden] = useState(false);
   const term = useDebouncedValue(search);
   const params = { search: term || undefined, only_open: onlyOpen, year: year ? Number(year) : undefined };
   const query = useQuery({ queryKey: expensesKeys.projects(params), queryFn: () => expensesApi.projects(params) });
@@ -33,7 +35,7 @@ export function ExpenseProjectsPage() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-xs leading-5 text-muted-foreground">
           A reembolsar = despesas com tipo reembolsável que ainda não entraram num lote de reembolso faturado ao cliente
           (a mesma regra em todas as telas). Vale o tipo marcado em cada despesa; o contrato só define o padrão.
         </p>
@@ -67,12 +69,20 @@ export function ExpenseProjectsPage() {
       ) : query.isError ? (
         <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} />
       ) : data ? (
-        <div className="premium-panel">
-          <div className="overflow-x-auto" role="region" aria-label="Despesas por projeto" tabIndex={0}>
-            <table className="w-full min-w-[960px] border-separate border-spacing-0 text-left text-sm">
-              <thead className="bg-muted text-xs text-muted-foreground">
+        // Lista no painel com a faixa azul (padrão do sistema anterior).
+        <DataPanel
+          title="Projetos"
+          titleId="expense-projects-title"
+          contentId="expense-projects"
+          count={`${data.items.length} projeto${data.items.length === 1 ? "" : "s"}`}
+          hidden={hidden}
+          onToggle={() => setHidden(!hidden)}
+        >
+          <div className="max-h-[620px] overflow-auto" role="region" aria-label="Despesas por projeto" tabIndex={0}>
+            <table className="data-table w-full min-w-[960px] border-separate border-spacing-0 text-left text-sm">
+              <thead>
                 <tr>
-                  <th scope="col" className="sticky left-0 z-10 whitespace-nowrap border-b bg-muted px-3 py-3 font-semibold">Projeto</th>
+                  <th scope="col" className="sticky left-0 !z-[3] whitespace-nowrap">Projeto</th>
                   {COLUMNS.map(([label, full]) => (
                     <th key={label} scope="col" title={full} className="whitespace-nowrap border-b px-2.5 py-3 font-semibold">
                       {label}
@@ -131,7 +141,7 @@ export function ExpenseProjectsPage() {
               </tfoot>
             </table>
           </div>
-        </div>
+        </DataPanel>
       ) : null}
     </div>
   );

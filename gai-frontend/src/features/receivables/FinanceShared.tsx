@@ -24,8 +24,14 @@ export function ReceivableStatus({ status, overdue }: { status: string; overdue?
   return <StatusBadge finance="forecast" label={statusLabels[status]} />;
 }
 
-/** Filtros de recebíveis: cada mudança vale na hora (vai para a URL, com o ID). */
-export function FinanceFilters({ cash = false }: { cash?: boolean }) {
+/** Rótulo de filtro no padrão do sistema anterior (pequeno, em maiúsculas). */
+const fieldLabel = "text-[0.71875rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground";
+
+/**
+ * Filtros de recebíveis: cada mudança vale na hora (vai para a URL, com o ID).
+ * `embedded`: dentro de um DataPanel (logo abaixo da faixa azul), sem card próprio.
+ */
+export function FinanceFilters({ cash = false, embedded = false }: { cash?: boolean; embedded?: boolean }) {
   const [p, set] = useSearchParams();
   const update = (changes: Record<string, string | number | null>) => {
     const next = new URLSearchParams(p);
@@ -39,8 +45,8 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
   const companyId = idOf(p.get("company_id"));
   const projectId = idOf(p.get("project_id"));
   const select = (name: string, label: string, options: [string, string][], fallback = "") => (
-    <label className="grid gap-1 text-sm">
-      {label}
+    <label className="grid gap-1.5 text-sm">
+      <span className={fieldLabel}>{label}</span>
       <select className={cls} name={name} value={p.get(name) ?? fallback} onChange={(e) => update({ [name]: e.target.value === fallback && fallback !== "" ? null : e.target.value })}>
         {options.map(([v, l]) => (
           <option key={v} value={v}>
@@ -51,13 +57,13 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
     </label>
   );
   return (
-    <div role="search" aria-label="Filtros" className="premium-panel grid items-end gap-3 p-4 sm:grid-cols-3 lg:grid-cols-5">
-      <label className="grid gap-1 text-sm">
-        Cliente
+    <div role="search" aria-label="Filtros" className={embedded ? "grid items-end gap-3 border-b border-border px-5 py-4 sm:grid-cols-3 lg:grid-cols-5" : "grid items-end gap-3 rounded-lg border border-border bg-card px-[18px] py-4 sm:grid-cols-3 lg:grid-cols-5"}>
+      <label className="grid gap-1.5 text-sm">
+        <span className={fieldLabel}>Cliente</span>
         <EntityCombobox aria-label="Cliente" source={companySource} value={companyId} onChange={(id) => update({ company_id: id })} />
       </label>
-      <label className="grid gap-1 text-sm">
-        Projeto
+      <label className="grid gap-1.5 text-sm">
+        <span className={fieldLabel}>Projeto</span>
         <EntityCombobox
           aria-label="Projeto"
           source={projectSource}
@@ -66,8 +72,8 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
           onChange={(id) => update({ project_id: id, contract_id: null })}
         />
       </label>
-      <label className="grid gap-1 text-sm">
-        Contrato
+      <label className="grid gap-1.5 text-sm">
+        <span className={fieldLabel}>Contrato</span>
         <EntityCombobox
           aria-label="Contrato"
           source={contractSource}
@@ -81,8 +87,8 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
         ["date_from", "De"],
         ["date_to", "Até"],
       ].map(([name, label]) => (
-        <label key={name} className="grid gap-1 text-sm">
-          {label}
+        <label key={name} className="grid gap-1.5 text-sm">
+          <span className={fieldLabel}>{label}</span>
           <input name={name} aria-label={label} type="date" value={p.get(name) ?? ""} onChange={(e) => update({ [name]: e.target.value })} className={cls} />
         </label>
       ))}
@@ -93,7 +99,7 @@ export function FinanceFilters({ cash = false }: { cash?: boolean }) {
           {select("direction", "Movimento", [["all", "Entradas e saídas"], ["in", "Entradas"], ["out", "Saídas"]], "all")}
         </>
       )}
-      <Button type="button" variant="secondary" onClick={() => set(navigationContext(p), { replace: true })}>
+      <Button type="button" variant="outline" onClick={() => set(navigationContext(p), { replace: true })}>
         Limpar filtros
       </Button>
     </div>
@@ -132,7 +138,7 @@ export function ExportFinance({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <label className="flex items-center gap-2 text-sm">
-        Exportar
+        <span className={fieldLabel}>Exportar</span>
         <select
           aria-label="Tipo de exportação"
           className="min-h-11 rounded-lg border bg-background p-2 text-sm"

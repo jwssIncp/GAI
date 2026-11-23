@@ -92,7 +92,7 @@ export function ReceivableForm() {
   return (
     <form
       onChange={() => setPreview(undefined)}
-      className="premium-panel grid gap-4 p-5"
+      className="grid gap-4 rounded-lg border border-border bg-card px-5 py-5"
       onSubmit={async (e) => {
         e.preventDefault();
         setError("");
@@ -150,7 +150,7 @@ export function ReceivableForm() {
         }
       }}
     >
-      <h2 className="text-lg font-semibold">Novo recebível</h2>
+      <h2 className="font-display text-lg font-semibold text-navy dark:text-foreground">Novo recebível</h2>
       <p className="text-sm text-muted-foreground">
         A prévia não cria obrigação. Confira valores e vencimentos antes de
         confirmar.

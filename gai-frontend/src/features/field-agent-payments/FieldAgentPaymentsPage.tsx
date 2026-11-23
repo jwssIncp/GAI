@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Download, RefreshCw, RotateCcw, Wallet } from "lucide-react";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
+import { DataPanel } from "@/components/base/DataPanel";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { StatusBadge } from "@/components/base/StatusBadge";
@@ -79,6 +80,7 @@ export function FieldAgentPaymentsPage() {
   const [dialog, setDialog] = useState<Dialog>(null);
   const [hidden, setHidden] = useState<OptionalColumn[]>(loadHidden);
   const [expanded, setExpanded] = useState(false);
+  const [listHidden, setListHidden] = useState(false);
   /** Falhas e resultados parciais ficam na tela; sucesso completo vai para o toast. */
   const [feedback, setFeedback] = useState<string | null>(null);
   const query = useQuery({
@@ -140,7 +142,8 @@ export function FieldAgentPaymentsPage() {
         </FinanceHeaderActions>
       ) : null}
       {data ? (
-        <section aria-label="Indicadores do pagamento de inventariantes" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+        <section aria-label="Indicadores do pagamento de inventariantes">
+          <KpiGrid>
           <Kpi label="Total" value={formatMoney(data.kpis.total)} hint="Sem cancelados" />
           <Kpi label="Pago" value={formatMoney(data.kpis.paid)} />
           <Kpi label="Em aberto" value={formatMoney(data.kpis.open)} hint="Pendente e aprovado" />
@@ -161,6 +164,7 @@ export function FieldAgentPaymentsPage() {
           <Kpi label={`Pago em ${monthBr(data.kpis.reference_month)}`} value={formatMoney(data.kpis.paid_in_month)} />
           <Kpi label={`Em aberto em ${monthBr(data.kpis.reference_month)}`} value={formatMoney(data.kpis.open_in_month)} />
           <Kpi label="Em aberto no próximo mês" value={formatMoney(data.kpis.open_next_month)} />
+          </KpiGrid>
         </section>
       ) : null}
 
@@ -207,7 +211,16 @@ export function FieldAgentPaymentsPage() {
         <>
           <Summary data={data} onPick={(id) => setFilter("field_agent_id", String(id))} />
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <DataPanel
+            title="Lançamentos"
+            titleId="payments-items-title"
+            contentId="payments-items"
+            count={`${data.items.length} lançamento${data.items.length === 1 ? "" : "s"}`}
+            hidden={listHidden}
+            onToggle={() => setListHidden(!listHidden)}
+            overflowVisible
+          >
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
             <div className="flex flex-wrap gap-2">
               {hasPermission("payments:mark-as-paid") ? (
                 <Button type="button" disabled={!toPay.length} onClick={() => setDialog({ kind: "pay", rows: toPay })}>
@@ -241,10 +254,10 @@ export function FieldAgentPaymentsPage() {
             </details>
           </div>
 
-          <div className="premium-panel">
-            <div className="overflow-x-auto" role="region" aria-label="Lançamentos de todos os projetos" tabIndex={0}>
-              <table className="w-full min-w-[900px] border-separate border-spacing-0 text-left text-sm">
-                <thead className="bg-muted text-xs text-muted-foreground">
+          <div>
+            <div className="max-h-[620px] overflow-auto" role="region" aria-label="Lançamentos de todos os projetos" tabIndex={0}>
+              <table className="data-table w-full min-w-[900px] border-separate border-spacing-0 text-left text-sm">
+                <thead>
                   <tr>
                     <th scope="col" className="border-b px-2 py-3">
                       <input
@@ -261,7 +274,7 @@ export function FieldAgentPaymentsPage() {
                 </thead>
                 <tbody>
                   {visible.map((r) => (
-                    <tr key={r.id} className={r.overdue || r.no_expected ? "bg-destructive/[0.06]" : "hover:bg-primary/[0.05]"}>
+                    <tr key={r.id} className={r.overdue || r.no_expected ? "row-overdue" : undefined}>
                       <td className="border-b px-2 py-2">
                         <input
                           type="checkbox"
@@ -337,10 +350,13 @@ export function FieldAgentPaymentsPage() {
             </div>
           </div>
           {data.items.length > PAGE ? (
-            <Button type="button" variant="ghost" onClick={() => setExpanded((v) => !v)}>
-              {expanded ? "Mostrar menos" : `Mostrar todos (${data.items.length})`}
-            </Button>
+            <div className="px-5 py-3">
+              <Button type="button" variant="outline" onClick={() => setExpanded((v) => !v)}>
+                {expanded ? "Mostrar menos" : `Mostrar todos (${data.items.length})`}
+              </Button>
+            </div>
           ) : null}
+          </DataPanel>
         </>
       ) : null}
 
@@ -361,18 +377,24 @@ export function FieldAgentPaymentsPage() {
   );
 }
 
+/** Resumo por inventariante no painel com a faixa azul (padrão do sistema anterior). */
 function Summary({ data, onPick }: { data: Consolidated; onPick: (id: number) => void }) {
+  const [hidden, setHidden] = useState(false);
   return (
-    <section className="premium-panel p-4" aria-label="Resumo por inventariante">
-      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-semibold">Resumo por inventariante</h2>
-        <p className="text-xs text-muted-foreground">
-          {data.summary.show_all ? "Todos os inventariantes do filtro." : "Só quem tem valor em aberto. Clique para filtrar os lançamentos."}
-        </p>
-      </div>
+    <DataPanel
+      title="Resumo por inventariante"
+      titleId="payments-summary-title"
+      contentId="payments-summary"
+      count={`${data.summary.rows.length}`}
+      hidden={hidden}
+      onToggle={() => setHidden(!hidden)}
+    >
+      <p className="border-b border-border px-5 py-2.5 text-xs text-muted-foreground">
+        {data.summary.show_all ? "Todos os inventariantes do filtro." : "Só quem tem valor em aberto. Clique para filtrar os lançamentos."}
+      </p>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
-          <thead className="text-left text-xs text-muted-foreground">
+        <table className="data-table w-full min-w-[560px] border-separate border-spacing-0 text-sm">
+          <thead className="text-left">
             <tr>
               {["Inventariante", "Lançamentos", "Dias", "Final", "Pago", "Em aberto"].map((h) => (
                 <th key={h} scope="col" className={`px-2 py-2 font-semibold ${["Final", "Pago", "Em aberto"].includes(h) ? "text-right" : ""}`}>{h}</th>
@@ -405,7 +427,7 @@ function Summary({ data, onPick }: { data: Consolidated; onPick: (id: number) =>
           </tfoot>
         </table>
       </div>
-    </section>
+    </DataPanel>
   );
 }
 

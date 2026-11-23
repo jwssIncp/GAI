@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { retroactiveSettingsUrl } from "@/features/finance-settings/financeSettingsApi";
 import { Plus, Trash2 } from "lucide-react";
-import { Kpi } from "@/components/base/Cards";
+import { Kpi, KpiGrid } from "@/components/base/Cards";
 import { FilterPanel } from "@/components/base/FilterPanel";
 import { FormField } from "@/components/base/FormField";
 import { InlineEdit } from "@/components/base/InlineEdit";
@@ -82,7 +82,7 @@ export function AssetTagsPage() {
   return (
     <div className="grid gap-4">
       {actions}
-      <p className="max-w-3xl text-sm text-muted-foreground">
+      <p className="max-w-4xl text-xs leading-5 text-muted-foreground">
         Quantidade = sequência final − inicial + 1 (quando informada).
         Valor líquido = valor total − {tax ? `${tax.replace(".", ",")}%` : "% de impostos dos parâmetros"} de impostos; lucro = líquido − custo.
         O tipo de despesa vem de "Plaquetas por conta de" do contrato; a alteração manual prevalece.
@@ -99,13 +99,16 @@ export function AssetTagsPage() {
           ) : null}
         </p>
       ) : null}
-      <section aria-label="Indicadores das placas" className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-6">
-        <Kpi label="Placas compradas" value={qty(k.purchased)} />
-        <Kpi label="Pagamento pendente (qtd)" value={qty(k.supplier_pending)} />
-        <Kpi label="A receber (qtd)" value={qty(k.to_receive)} />
-        <Kpi label="Custo total" value={formatMoney(k.cost_total)} />
-        <Kpi label="Valor total cliente" value={formatMoney(k.value_total)} />
-        <Kpi label="Lucro líquido" value={formatMoney(k.net_profit)} negative={k.net_profit.startsWith("-")} note={k.missing_tax_count ? `${k.missing_tax_count} pedido(s) sem % de impostos` : undefined} />
+      {/* Seis cards como no sistema anterior: quantidades (azul) e valores (verde). */}
+      <section aria-label="Indicadores das placas">
+        <KpiGrid>
+        <Kpi group="next" tinted label="Placas compradas" value={qty(k.purchased)} />
+        <Kpi group="next" label="Pagamento pendente (qtd)" value={qty(k.supplier_pending)} />
+        <Kpi group="next" label="A receber (qtd)" value={qty(k.to_receive)} />
+        <Kpi group="month" tinted label="Custo total" value={formatMoney(k.cost_total)} />
+        <Kpi group="month" label="Valor total cliente" value={formatMoney(k.value_total)} />
+        <Kpi group="month" label="Lucro líquido" value={formatMoney(k.net_profit)} negative={k.net_profit.startsWith("-")} note={k.missing_tax_count ? `${k.missing_tax_count} pedido(s) sem % de impostos` : undefined} />
+        </KpiGrid>
       </section>
       <FilterPanel>
         <select aria-label="Filtrar por projeto" className={select} value={filters.project_id ?? ""} onChange={(e) => setFilter("project_id", e.target.value)}>
@@ -132,13 +135,13 @@ export function AssetTagsPage() {
         <Button type="button" variant="ghost" onClick={() => setFilters({})}>Limpar</Button>
       </FilterPanel>
 
-      <div className="premium-panel">
-        <div className="overflow-x-auto" role="region" aria-label="Pedidos de placas" tabIndex={0}>
-          <table className="w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
-            <thead className="bg-muted text-xs text-muted-foreground">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="max-h-[620px] overflow-auto" role="region" aria-label="Pedidos de placas" tabIndex={0}>
+          <table className="data-table w-full min-w-[1800px] border-separate border-spacing-0 text-left text-sm">
+            <thead>
               <tr>
                 {["Proposta", "Projeto", "Data", "Qtd", "Seq. inicial", "Seq. final", "Modelo", "Fornecedor", "Custo unit.", "Pgto fornecedor", "Previsão pgto", "Pago em", "Valor unit.", "Previsão receb.", "Recebido", "Recebido em", "Tipo de despesa", "Custo total", "Valor total", `Líquido (−${tax ? tax.replace(".", ",") : "?"}%)`, "Lucro", ""].map((h, i) => (
-                  <th key={`${h}-${i}`} scope="col" className={`whitespace-nowrap border-b px-2 py-3 font-semibold ${i === 0 ? "sticky left-0 z-10 bg-muted" : ""}`}>{h || <span className="sr-only">Ações</span>}</th>
+                  <th key={`${h}-${i}`} scope="col" className={`whitespace-nowrap border-b px-2 py-3 font-semibold ${i === 0 ? "sticky left-0 !z-[3]" : ""}`}>{h || <span className="sr-only">Ações</span>}</th>
                 ))}
               </tr>
             </thead>

@@ -7,6 +7,7 @@ import { companySource, projectSource } from "@/components/base/entitySources";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
+import { DataPanel } from "@/components/base/DataPanel";
 import { DataTable } from "@/components/base/DataTable";
 import { Pagination } from "@/components/base/Pagination";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -83,6 +84,7 @@ function CompanyName({ id }: { id: number }) {
 export function BudgetsPage() {
   const [params, setParams] = useSearchParams(),
     [open, setOpen] = useState(false),
+    [listHidden, setListHidden] = useState(false),
     { user } = useAuth(),
     { hasPermission } = usePermissions(),
     cache = useQueryClient(),
@@ -103,15 +105,14 @@ export function BudgetsPage() {
   });
   return (
     <div className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">Carteira de orçamentos</h2>
+      <div className="flex flex-wrap items-center justify-end gap-3 empty:hidden">
         {hasPermission("budgets:edit") ? (
           <Button onClick={() => setOpen(true)}>Novo orçamento</Button>
         ) : null}
       </div>
       <form
         key={params.toString()}
-        className="premium-panel grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid gap-3 rounded-lg border border-border bg-card px-[18px] py-4 sm:grid-cols-2 lg:grid-cols-4"
         onSubmit={(e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget);
@@ -168,8 +169,18 @@ export function BudgetsPage() {
       ) : query.isError ? (
         <ErrorState message={query.error.message} />
       ) : (
-        <>
+        // Carteira no painel com a faixa azul (padrão do sistema anterior).
+        <DataPanel
+          title="Carteira de orçamentos"
+          titleId="budgets-list-title"
+          contentId="budgets-list"
+          count={`${query.data?.total ?? 0} orçamento${(query.data?.total ?? 0) === 1 ? "" : "s"}`}
+          hidden={listHidden}
+          onToggle={() => setListHidden(!listHidden)}
+        >
           <DataTable
+            bare
+            caption="Orçamentos"
             items={query.data?.items ?? []}
             getKey={(b) => b.id}
             columns={[
@@ -217,16 +228,18 @@ export function BudgetsPage() {
               },
             ]}
           />
-          <Pagination
-            page={query.data?.page ?? 1}
-            totalPages={Math.ceil((query.data?.total ?? 0) / 20)}
-            onPageChange={(page) => {
-              const p = new URLSearchParams(params);
-              p.set("page", String(page));
-              setParams(p);
-            }}
-          />
-        </>
+          <div className="px-5 py-3">
+            <Pagination
+              page={query.data?.page ?? 1}
+              totalPages={Math.ceil((query.data?.total ?? 0) / 20)}
+              onPageChange={(page) => {
+                const p = new URLSearchParams(params);
+                p.set("page", String(page));
+                setParams(p);
+              }}
+            />
+          </div>
+        </DataPanel>
       )}
       <ModalForm open={open} onOpenChange={setOpen} title="Novo orçamento">
         <BudgetForm

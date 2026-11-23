@@ -43,14 +43,19 @@ function uniqueKeys<T>(items: T[], getKey: (item: T) => string | number): string
   });
 }
 
-export function DataTable<T>({ columns, items, getKey, caption = 'Registros' }: { columns: Column<T>[]; items: T[]; getKey: (item: T) => string | number; caption?: string }) {
+/**
+ * Tabela padrão das telas, no visual do sistema anterior (classe `.data-table`: cabeçalho
+ * em maiúsculas sobre #F5F8FA, linhas com borda fina). `bare`: sem o card externo, para
+ * uso dentro de um `DataPanel` (faixa azul).
+ */
+export function DataTable<T>({ columns, items, getKey, caption = 'Registros', bare = false }: { columns: Column<T>[]; items: T[]; getKey: (item: T) => string | number; caption?: string; bare?: boolean }) {
   if (!items.length) return <EmptyState />;
   const keys = uniqueKeys(items, getKey);
   return (
-    <div className="premium-panel">
+    <div className={bare ? undefined : 'premium-panel'}>
       <p className="border-b border-border px-4 py-2 text-xs text-muted-foreground md:hidden">Deslize a tabela para ver todas as colunas e ações.</p>
       <div className="overflow-x-auto focus-visible:ring-inset" role="region" aria-label={caption} tabIndex={0}>
-        <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left text-sm">
+        <table className="data-table w-full min-w-[760px] border-separate border-spacing-0 text-left text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-muted text-xs text-muted-foreground">
             <tr>{columns.map((column, index) => <th scope="col" key={`${column.header}-${index}`} className={cn('border-b border-border px-5 py-4 font-semibold first:pl-6 last:pr-6', columnClass(column), column.className, column.sticky === 'right' && stickyHead)}>{column.headerContent ?? column.header}</th>)}</tr>

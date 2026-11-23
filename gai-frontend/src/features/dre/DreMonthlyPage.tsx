@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
-import { FilterPanel } from "@/components/base/FilterPanel";
+import { DataPanel, DataPanelFilters } from "@/components/base/DataPanel";
 import { FormField } from "@/components/base/FormField";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { MoneyInput } from "@/components/base/MoneyInput";
@@ -70,6 +70,8 @@ export function DreMonthlyPage() {
   const [params] = useSearchParams();
   const [year, setYear] = useState(() => (/^\d{4}$/.test(params.get("year") ?? "") ? params.get("year")! : thisYear));
   const [compareYear, setCompareYear] = useState("");
+  // Painel da DRE recolhível (botão Ocultar da faixa azul), como no sistema anterior.
+  const [panelHidden, setPanelHidden] = useState(false);
   const [from, setFrom] = useState(1);
   const [to, setTo] = useState(12);
   const [onlyTotal, setOnlyTotal] = useState(false);
@@ -147,14 +149,7 @@ export function DreMonthlyPage() {
 
   return (
     <div className="grid min-w-0 gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold">DRE mensal {g.year}</h2>
-          <p className="text-sm text-muted-foreground">
-            Até {monthLabel(addMonth(g.cutoff, -1))}: valores lançados ou importados. Desde {monthLabel(g.cutoff)}: fluxo de caixa pelas regras + ajustes lançados.
-            Meses fechados ficam congelados; <span className="italic">≈ valores em itálico</span> são estimativas dos meses abertos (não gravadas).
-          </p>
-        </div>
+      <div className="contents">
         <FinanceHeaderActions>
           {hasPermission("dre:import") ? <Button type="button" variant="secondary" onClick={() => setDialog("import")}>Importar planilha</Button> : null}
           {canConfigure ? <Button type="button" variant="secondary" onClick={() => setDialog("model")}>Aplicar modelo padrão</Button> : null}
@@ -178,7 +173,18 @@ export function DreMonthlyPage() {
       />
       {failure ? <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive-text">{failure}</p> : null}
 
-      <FilterPanel>
+      <DataPanel
+        title={`DRE mensal ${g.year}`}
+        titleId="dre-monthly-title"
+        contentId="dre-monthly-panel"
+        hidden={panelHidden}
+        onToggle={() => setPanelHidden(!panelHidden)}
+      >
+      <p className="border-b border-border px-5 py-2.5 text-xs leading-5 text-muted-foreground">
+        Até {monthLabel(addMonth(g.cutoff, -1))}: valores lançados ou importados. Desde {monthLabel(g.cutoff)}: fluxo de caixa pelas regras + ajustes lançados.
+        Meses fechados ficam congelados; <span className="italic">≈ valores em itálico</span> são estimativas dos meses abertos (não gravadas).
+      </p>
+      <DataPanelFilters label="Filtros da DRE">
         <select aria-label="Ano" className={select} value={year} onChange={(e) => setYear(e.target.value)}>
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
@@ -195,13 +201,14 @@ export function DreMonthlyPage() {
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyTotal} onChange={(e) => setOnlyTotal(e.target.checked)} />Somente acumulado</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={summary} onChange={(e) => setSummary(e.target.checked)} />DRE resumida</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />Mostrar linhas ocultas</label>
-      </FilterPanel>
+      </DataPanelFilters>
 
-      <div className="relative min-w-0 max-w-full scroll-pl-48 overflow-x-auto rounded-lg border sm:scroll-pl-[19rem]">
-        <table className="w-full min-w-max text-sm">
-          <thead className="bg-muted/50">
+      {/* Cabeçalho fixo na rolagem vertical (até 75% da tela) e coluna Conta fixa na horizontal. */}
+      <div className="relative max-h-[75vh] min-w-0 max-w-full scroll-pl-48 overflow-auto sm:scroll-pl-[19rem]">
+        <table className="data-table w-full min-w-max text-sm">
+          <thead>
             <tr>
-              <th className="sticky left-0 z-10 w-48 min-w-48 max-w-48 bg-muted px-3 py-2 text-left sm:w-72 sm:min-w-72 sm:max-w-72">Conta</th>
+              <th className="sticky left-0 !z-[3] w-48 min-w-48 max-w-48 text-left sm:w-72 sm:min-w-72 sm:max-w-72">Conta</th>
               {!onlyTotal && !data.compare
                 ? months.map((m) => {
                     const st = g.month_state.find((s) => s.month === m)!;
@@ -214,7 +221,7 @@ export function DreMonthlyPage() {
                     );
                   })
                 : null}
-              <th className="px-3 py-2 text-right">Acumulado {monthLabel(months[0])}–{monthLabel(months[months.length - 1])}</th>
+              <th className="px-3 py-2 text-right !bg-steel-tint">Acumulado {monthLabel(months[0])}–{monthLabel(months[months.length - 1])}</th>
               {data.compare ? <th className="px-3 py-2 text-right">{data.compare.year} (mesmo período)</th> : null}
               {data.compare ? <th className="px-3 py-2 text-right">Variação</th> : null}
               {canConfigure && !summary ? <th className="px-3 py-2"><span className="sr-only">Ações</span></th> : null}
@@ -235,10 +242,10 @@ export function DreMonthlyPage() {
                 const cmp = cmpLine(r.key);
                 const cmpTotal = cmp ? sum(cmp.values) : null;
                 return (
-                  <tr key={r.key} className={`border-t ${r.strong ? "bg-primary/5 font-semibold" : "font-medium"}`}>
+                  <tr key={r.key} className={`border-t ${r.strong ? "font-semibold [&>td]:bg-steel-tint" : "font-medium"}`}>
                     <td className="sticky left-0 z-[1] w-48 min-w-48 max-w-48 bg-card px-3 py-2 sm:w-72 sm:min-w-72 sm:max-w-72">{r.label}</td>
                     {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className={`numeric px-3 py-2 text-right ${l.values[j].startsWith("-") ? "text-destructive-text" : ""}`}>{money(l.values[j])}</td>) : null}
-                    <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
+                    <td className={`numeric bg-steel-tint/50 px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
                     {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
                     {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
                     {canConfigure && !summary ? <td /> : null}
@@ -268,7 +275,7 @@ export function DreMonthlyPage() {
                     </div>
                   </td>
                   {!onlyTotal && !data.compare ? idx.map((j) => <td key={j} className="px-3 py-2">{cellView(a, a.cells[j])}</td>) : null}
-                  <td className={`numeric px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
+                  <td className={`numeric bg-steel-tint/50 px-3 py-2 text-right ${total.startsWith("-") ? "text-destructive-text" : ""}`}>{money(total)}</td>
                   {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money(cmpTotal) : "—"}</td> : null}
                   {data.compare ? <td className="numeric px-3 py-2 text-right">{cmpTotal ? money((Number(total) - Number(cmpTotal)).toFixed(2)) : "—"}</td> : null}
                   {canConfigure && !summary ? (
@@ -296,6 +303,7 @@ export function DreMonthlyPage() {
           </tbody>
         </table>
       </div>
+      </DataPanel>
 
       {data.config.excluded_accounts.length ? (
         <section aria-label="Linhas excluídas" className="rounded-lg border p-3 text-sm">
