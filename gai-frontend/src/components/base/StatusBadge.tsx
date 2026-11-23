@@ -86,8 +86,9 @@ const label: Record<string, string> = {
   critical: 'Crítica',
 };
 
-const base = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-wide ring-1 ring-inset';
-const dot = 'before:size-1.5 before:rounded-full before:bg-current before:opacity-75';
+// Pílula do sistema anterior: 12px/600, raio cheio, borda fina na cor do status, sem ponto.
+const base = 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-[3px] text-xs font-semibold ring-1 ring-inset';
+const dot = '';
 
 /**
  * Etiqueta de status.

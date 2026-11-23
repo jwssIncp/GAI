@@ -20,12 +20,10 @@ export function MetricCard({
       'premium-panel group min-h-36 p-5 sm:p-6',
       branded && 'border-primary/35 bg-primary-subtle text-foreground',
     )}>
-      <div className={cn('absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100', branded && 'via-white/55 opacity-60')} />
-      <div className={cn('absolute -right-10 -top-12 size-32 rounded-full bg-primary/5 blur-3xl transition duration-500 group-hover:bg-primary/10', branded && 'bg-white/15 group-hover:bg-white/25')} aria-hidden="true" />
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold leading-5 text-muted-foreground">{label}</p>
-          <p className="mt-3 break-words text-3xl font-bold leading-tight tracking-[-0.04em] text-foreground [font-variant-numeric:tabular-nums]">{value}</p>
+          <p className="text-[0.71875rem] font-semibold uppercase leading-5 tracking-[0.07em] text-muted-foreground">{label}</p>
+          <p className="mt-3 break-words font-display text-[1.625rem] font-bold leading-tight text-foreground [font-variant-numeric:tabular-nums]">{value}</p>
         </div>
         {icon ? <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-primary/15 bg-primary-subtle text-primary-text">{icon}</div> : null}
       </div>

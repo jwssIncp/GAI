@@ -27,7 +27,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       {typeof document !== 'undefined' ? createPortal(
-        <div className="pointer-events-none fixed inset-x-4 bottom-4 z-[100] flex flex-col items-end gap-2 sm:left-auto sm:right-5 sm:w-[380px]" aria-label="Notificações">
+        <div className="pointer-events-none fixed inset-x-4 bottom-6 z-[100] flex flex-col items-center gap-2 sm:inset-x-auto sm:left-1/2 sm:w-[420px] sm:-translate-x-1/2" aria-label="Notificações">
           {toasts.map((entry) => <ToastItem key={entry.id} entry={entry} onDismiss={dismiss} />)}
         </div>,
         document.body,
@@ -46,19 +46,19 @@ function ToastItem({ entry, onDismiss }: { entry: ToastEntry; onDismiss: (id: st
   return (
     <div
       className={cn(
-        'glass-surface pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border bg-popover/90 p-4 pr-11 text-popover-foreground shadow-elevated animate-slide-in-right',
-        entry.tone === 'success' ? 'border-success/25' : entry.tone === 'error' ? 'border-destructive/25' : 'border-info/25',
+        // Aviso do sistema anterior: fundo navy, texto claro, centralizado embaixo.
+        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-lg border border-white/10 bg-navy p-3.5 pr-11 text-[#EAF0F4] shadow-elevated animate-fade-up',
       )}
       role={entry.tone === 'error' ? 'alert' : 'status'}
     >
-      <span className={cn('grid size-9 shrink-0 place-items-center rounded-xl', entry.tone === 'success' ? 'bg-success-subtle text-success' : entry.tone === 'error' ? 'bg-destructive/10 text-destructive' : 'bg-info-subtle text-info')}>
-        <Icon size={17} />
+      <span className={cn('grid size-8 shrink-0 place-items-center rounded-md bg-white/10', entry.tone === 'success' ? 'text-[hsl(145_50%_72%)]' : entry.tone === 'error' ? 'text-[hsl(353_85%_80%)]' : 'text-[hsl(205_65%_78%)]')}>
+        <Icon size={16} />
       </span>
       <div className="min-w-0 pt-0.5">
-        <p className="text-sm font-bold">{entry.title}</p>
-        {entry.description ? <p className="mt-1 text-xs leading-5 text-muted-foreground">{entry.description}</p> : null}
+        <p className="text-[0.84375rem] font-semibold">{entry.title}</p>
+        {entry.description ? <p className="mt-1 text-xs leading-5 text-[#EAF0F4]/75">{entry.description}</p> : null}
       </div>
-      <button type="button" className="absolute right-2.5 top-2.5 grid size-8 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground" onClick={() => onDismiss(entry.id)} aria-label="Fechar notificação">
+      <button type="button" className="absolute right-2.5 top-2.5 grid size-8 place-items-center rounded-md text-[#EAF0F4]/70 transition hover:bg-white/10 hover:text-white" onClick={() => onDismiss(entry.id)} aria-label="Fechar notificação">
         <X size={14} />
       </button>
       <span className={cn('absolute inset-x-0 bottom-0 h-0.5', entry.tone === 'success' ? 'bg-success' : entry.tone === 'error' ? 'bg-destructive' : 'bg-info')} />
