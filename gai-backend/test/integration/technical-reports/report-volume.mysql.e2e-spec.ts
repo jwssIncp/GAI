@@ -535,7 +535,7 @@ describe('Complete report extraction with real MySQL and immutable document sour
     expect(table.references).toHaveLength(2500);
     expect(new Set(table.references.map((ref: any) => ref.id)).size).toBe(2500);
     expect(r.data.sources.metrics['valuation.count']).toBe(1);
-    expect(r.data.sources.metrics['valuation.used_total']).toBeNull();
+    expect(r.data.sources.metrics['valuation.used_total']).toBe('100.01');
     observations.push({
       family: 'valuation',
       historical_rows: 2500,

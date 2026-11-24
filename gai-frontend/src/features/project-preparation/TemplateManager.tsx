@@ -13,6 +13,7 @@ import {
 import { referenceTemplate } from './referenceTemplates';
 import {
   kindLabels,
+  ORGANIZATION_OPTION,
   questionTypeLabels,
   type Condition,
   type PreparationKind,
@@ -489,7 +490,7 @@ function QuestionEditor({
           e.preventDefault();
           onSave({
             ...q,
-            ...(q.type === 'select'
+            ...(q.type === 'select' || q.type === 'multi_select'
               ? {
                   options: options
                     .split('\n')
@@ -542,8 +543,8 @@ function QuestionEditor({
             ))}
           </select>
         </FormField>
-        {q.type === 'select' ? (
-          <FormField label="Opções, uma por linha">
+        {q.type === 'select' || q.type === 'multi_select' ? (
+          <FormField label="Opções, uma por linha" hint={`Use ${ORGANIZATION_OPTION} para mostrar o nome da organização.`}>
             <textarea
               required
               className={control}
@@ -553,8 +554,8 @@ function QuestionEditor({
             />
           </FormField>
         ) : null}
-        {q.type === 'sequence' ? (
-          <FormField label="Conferir quantidade com" optional>
+        {q.type === 'sequence' || q.type === 'sequence_list' ? (
+          <FormField label={q.type === 'sequence_list' ? 'Quantidade de sequências vem de' : 'Conferir quantidade com'} optional>
             <select
               className={control}
               value={q.quantity_question_id ?? ''}
@@ -722,7 +723,8 @@ function ConditionEditor({
           }
         >
           <option value="answered">Foi respondida</option>
-          {!['sequence', 'unit_allocations'].includes(source?.type ?? '') ? (
+          {source?.type === 'multi_select' ? <option value="contains">Inclui a opção</option> : null}
+          {!['sequence', 'unit_allocations', 'multi_select', 'contact', 'date_range', 'schedule', 'sequence_list', 'none'].includes(source?.type ?? '') ? (
             <>
               <option value="equals">É igual a</option>
               <option value="not_equals">É diferente de</option>

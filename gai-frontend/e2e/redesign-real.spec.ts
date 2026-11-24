@@ -1,5 +1,5 @@
 import { runtimePassword } from './runtime-credentials';
-import { projectNav, projectTabLink } from './projectNavigation';
+import { projectTabLink } from './projectNavigation';
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,7 +30,7 @@ for (const width of [1366, 390]) for (const theme of ['light', 'dark']) {
     await login(page);
     await shot(page, `dashboard-${theme}-${width}`);
     await page.goto('/app/projects');
-    await expect(page.getByRole('heading', { name: 'Projetos', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Painel Geral', exact: true })).toBeVisible();
     await shot(page, `projects-${theme}-${width}`);
     await page.getByRole('button', { name: 'Novo projeto', exact: true }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
@@ -258,9 +258,9 @@ test.describe('redesign behaviour', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
     await expect(page).toHaveURL(root + 'summary' + context);
-    await expect(projectNav(page).getByRole('link', { name: 'Visão geral', exact: true })).toHaveAttribute('aria-current', 'true');
-    await expect(projectTabLink(page, 'Visão geral', 'Resumo')).toHaveAttribute('aria-current', 'page');
-    await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Projetos', exact: true }).click();
+    await expect(page.getByRole('navigation', { name: 'Telas de Projetos' }).getByRole('link', { name: 'Painel Geral', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(projectTabLink(page, 'Painel', 'Resumo')).toHaveAttribute('aria-current', 'page');
+    await page.getByRole('navigation', { name: 'Telas de Projetos' }).getByRole('link', { name: 'Painel Geral', exact: true }).click();
     await expect(page).toHaveURL(/\/app\/projects/);
     await page.goBack();
     await expect(page).toHaveURL(root + 'summary' + context);

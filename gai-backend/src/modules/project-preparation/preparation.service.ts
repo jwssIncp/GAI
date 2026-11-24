@@ -1,9 +1,19 @@
 import {
+  BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
-import { EntityManager, In, IsNull, LessThan } from 'typeorm';
+import { EntityManager, In, IsNull, LessThan, Not } from 'typeorm';
+import { ProjectActivationHooks } from '../projects/application/services/project-activation-hooks';
+import { hasAllPermissions } from '../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../auth/domain/ports/permission-resolver.port';
+import { ContractEntity } from '../contracts/contract.entity';
 import {
   ProjectActorContext,
   ProjectScopeService,
@@ -25,6 +35,7 @@ import {
   CreatePreparationDto,
   CreateTemplateDto,
   SaveAnswersDto,
+  SaveEmailDto,
   UpdatePreparationDto,
   UpdateTemplateDto,
 } from './preparation.dto';
@@ -38,20 +49,80 @@ import {
 import {
   allocations,
   applicability,
+  formatAnswerValue,
+  prefillValues,
   invalid,
   progress,
   validateAnswer,
   validateQuestions,
   validDate,
 } from './domain/preparation.policy';
+import { renderEmail, validateEmailTemplate } from './domain/preparation.email';
+import { exportFileName, exportRows } from './domain/preparation.export';
 import { PolicyAnswer, PreparationQuestion } from './domain/preparation.types';
 
 @Injectable()
-export class PreparationService {
+export class PreparationService implements OnModuleInit {
   constructor(
     private readonly repo: PreparationRepository,
     private readonly scope: ProjectScopeService,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
+    private readonly activation: ProjectActivationHooks,
   ) {}
+  onModuleInit() {
+    // Kick-off automático quando o projeto é ativado (decisão de 24/11/2026).
+    this.activation.register('kickoff', (event) =>
+      this.ensureKickoff(event.projectId, event.actor).then(() => undefined),
+    );
+  }
+  /**
+   * Cria o kick-off do projeto, se ainda não houver um ativo (idempotente; vínculo pelo ID do
+   * projeto, nunca pelo nome — I1/I2). Usa o modelo de kick-off mais recente não arquivado da
+   * organização, como a tela; sem modelo, não cria nada. Retorna o ID criado ou null.
+   */
+  async ensureKickoff(projectId: number, actor: ProjectActorContext) {
+    const project = await this.project(projectId, actor);
+    const existing = await this.repo.manager
+      .getRepository(ProjectPreparationEntity)
+      .count({
+        where: {
+          organizationId: project.organizationId,
+          projectId,
+          kind: 'kickoff',
+          status: Not('archived'),
+        },
+      });
+    if (existing) return null;
+    const template = await this.repo.manager
+      .getRepository(PreparationTemplateEntity)
+      .findOne({
+        where: {
+          organizationId: project.organizationId,
+          kind: 'kickoff',
+          archivedAt: IsNull(),
+        },
+        order: { id: 'DESC' },
+      });
+    if (!template) return null;
+    const company = project.companyId
+      ? await this.repo.manager.getRepository(CompanyEntity).findOneBy({
+          id: project.companyId,
+          organizationId: project.organizationId,
+        })
+      : null;
+    const created = await this.create(
+      projectId,
+      {
+        template_id: template.id,
+        // Nome do cliente, como no "Novo kick-off" da tela.
+        title: (company?.name ?? project.name).slice(0, 200),
+      },
+      actor,
+      'project_activation',
+    );
+    return created.id;
+  }
   private missing(): never {
     throw new NotFoundException({
       code: 'NOT_FOUND',
@@ -169,6 +240,7 @@ export class PreparationService {
     return {
       ...this.templateSummary(item),
       questions: current.questions,
+      email: current.email ?? null,
       versions: versions.map((v) => ({
         version: v.version,
         name: v.name,
@@ -192,6 +264,7 @@ export class PreparationService {
       version: row.version,
       name: row.name,
       questions: row.questions,
+      email: row.email ?? null,
       created_at: row.createdAt,
       created_by_id: row.createdById,
     };
@@ -203,6 +276,7 @@ export class PreparationService {
   ) {
     await this.organization(organizationId, actor);
     const questions = validateQuestions(dto.questions);
+    const email = validateEmailTemplate(dto.email, questions);
     const id = await this.repo.transaction(async (manager) => {
       const item = await manager.getRepository(PreparationTemplateEntity).save({
         organizationId,
@@ -217,6 +291,7 @@ export class PreparationService {
         version: 1,
         name: item.name,
         questions,
+        email,
         createdById: actor.id,
       });
       await this.audit(
@@ -224,7 +299,7 @@ export class PreparationService {
         actor,
         organizationId,
         'TEMPLATE_CREATED',
-        { version: 1, name: item.name, questions },
+        { version: 1, name: item.name, questions, email },
         null,
         null,
         item.id,
@@ -257,6 +332,13 @@ export class PreparationService {
         invalid(
           'Mudança de tipo exige novo ID de pergunta; preserve a identidade das versões anteriores',
         );
+      // Sem o campo, a versão nova mantém o e-mail da anterior (revalidado com as perguntas novas).
+      const email = validateEmailTemplate(
+        dto.email === undefined
+          ? versions.find((v) => v.version === item.currentVersion)?.email
+          : dto.email,
+        questions,
+      );
       const name = this.text(dto.name);
       const changed = await manager
         .getRepository(PreparationTemplateEntity)
@@ -276,6 +358,7 @@ export class PreparationService {
         version: dto.expected_version + 1,
         name,
         questions,
+        email,
         createdById: actor.id,
       });
       await this.audit(
@@ -285,7 +368,7 @@ export class PreparationService {
         'TEMPLATE_VERSION_CREATED',
         {
           before: { version: item.currentVersion, name: item.name },
-          after: { version: dto.expected_version + 1, name, questions },
+          after: { version: dto.expected_version + 1, name, questions, email },
         },
         null,
         null,
@@ -341,6 +424,7 @@ export class PreparationService {
         name: `${original.name.slice(0, 185)} (cópia)`,
         kind: original.kind,
         questions: original.questions,
+        email: original.email as Record<string, unknown> | null,
       },
       actor,
     );
@@ -393,6 +477,11 @@ export class PreparationService {
       address: [unit.address, unit.number, unit.city, unit.state]
         .filter(Boolean)
         .join(', '),
+      // Cidade e UF separadas: contagem de estados/cidades e resumo por UF (endereços do kick-off).
+      city: unit.city?.trim() || null,
+      state: /^[A-Za-z]{2}$/.test(unit.state?.trim() ?? '')
+        ? unit.state!.trim().toUpperCase()
+        : null,
     }));
   }
   async context(projectId: number, actor: ProjectActorContext) {
@@ -403,6 +492,9 @@ export class PreparationService {
           organizationId: project.organizationId,
         })
       : null;
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
     const users = await this.repo.manager.getRepository(UserEntity).find({
       where: {
         organizationId: project.organizationId,
@@ -419,6 +511,13 @@ export class PreparationService {
         organization_id: project.organizationId,
         status: project.status,
       },
+      // Nome da organização dona do projeto: aparece no lugar da opção ORGANIZATION_OPTION.
+      organization: organization
+        ? {
+            id: organization.id,
+            name: organization.tradeName ?? organization.legalName,
+          }
+        : null,
       company: company ? { id: company.id, name: company.name } : null,
       units: await this.units(project),
       responsible_users: users.map((user) => ({
@@ -453,6 +552,8 @@ export class PreparationService {
     projectId: number,
     dto: CreatePreparationDto,
     actor: ProjectActorContext,
+    /** Origem registrada no histórico: tela ou ativação do projeto. */
+    origin: 'manual' | 'project_activation' = 'manual',
   ) {
     const project = await this.project(projectId, actor, true);
     validDate(dto.scheduled_date);
@@ -488,6 +589,7 @@ export class PreparationService {
           name: version.name,
           version: version.version,
           questions: version.questions,
+          email: version.email ?? null,
         },
         status: 'draft',
         revision: 1,
@@ -510,14 +612,119 @@ export class PreparationService {
           responsible_user_id: row.responsibleUserId,
           scheduled_date: row.scheduledDate,
           due_date: row.dueDate,
+          origin,
         },
         projectId,
         row.id,
         template.id,
       );
+      // Pré-preenchimento na criação (uma vez), a partir do contrato e das unidades.
+      await this.applyPrefill(manager, project, row, 1, actor);
       return row.id;
     });
     return this.get(projectId, id, actor);
+  }
+  /**
+   * "Aplicar dados do projeto": preenche, sem sobrescrever, as perguntas ainda sem
+   * resposta a partir do contrato e das unidades. Retorna quantas foram preenchidas.
+   */
+  async prefill(
+    projectId: number,
+    id: number,
+    revision: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    const applied = await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      if (row.revision !== revision) this.conflict();
+      this.editable(row);
+      return this.applyPrefill(manager, project, row, revision, actor);
+    });
+    return { ...(await this.get(projectId, id, actor)), prefilled: applied };
+  }
+  private async applyPrefill(
+    manager: EntityManager,
+    project: ProjectEntity,
+    row: ProjectPreparationEntity,
+    revision: number,
+    actor: ProjectActorContext,
+  ) {
+    if (!row.snapshot.questions.some((q) => q.prefill)) return 0;
+    // Dados do contrato só para quem pode lê-los (princípio: uma permissão por dado).
+    const canReadContracts = await hasAllPermissions(
+      actor,
+      ['contracts:read'],
+      this.permissions,
+    );
+    const contracts = canReadContracts
+      ? (
+          await manager.getRepository(ContractEntity).find({
+            where: {
+              organizationId: project.organizationId,
+              projectId: project.id,
+            },
+          })
+        ).filter((c) => c.data.status !== 'cancelled')
+      : [];
+    const assets = contracts.filter((c) => c.data.estimated_assets != null);
+    const payers = [
+      ...new Set(contracts.flatMap((c) => c.data.expenses_paid_by ?? [])),
+    ];
+    const units = await this.units(project, manager);
+    const existing = await this.repo.answers(row, manager);
+    const values = prefillValues(row.snapshot.questions, existing, {
+      contract: canReadContracts
+        ? {
+            services: contracts.flatMap((c) => c.data.services ?? []),
+            estimatedAssets: assets.length
+              ? assets.reduce((s, c) => s + Number(c.data.estimated_assets), 0)
+              : null,
+            // Só quando todos os contratos concordam.
+            expensesPaidBy: payers.length === 1 ? payers[0] : null,
+          }
+        : null,
+      unitIds: units.map((unit) => unit.id),
+    });
+    if (!values.length) return 0;
+    for (const item of values) {
+      const before = existing.find((a) => a.questionId === item.questionId);
+      await manager.getRepository(PreparationAnswerEntity).save({
+        id: before?.id,
+        organizationId: project.organizationId,
+        projectId: project.id,
+        preparationId: row.id,
+        questionId: item.questionId,
+        state: 'completed',
+        value: item.value,
+        notes: before?.notes ?? null,
+        responsibleUserId: before?.responsibleUserId ?? null,
+        dueDate: before?.dueDate ?? null,
+        answeredById: actor.id,
+        answeredAt: new Date(),
+        realized: before?.realized ?? false,
+        realizedAt: before?.realizedAt ?? null,
+        realizedById: before?.realizedById ?? null,
+      });
+    }
+    await this.claim(manager, row, revision);
+    await this.audit(
+      manager,
+      actor,
+      project.organizationId,
+      'ANSWERS_PREFILLED',
+      {
+        applied: values.map((item) => ({
+          question_id: item.questionId,
+          source: item.source,
+          value: item.value,
+        })),
+        revision: revision + 1,
+      },
+      project.id,
+      row.id,
+    );
+    return values.length;
   }
   private async scopedInstance(
     project: ProjectEntity,
@@ -570,7 +777,11 @@ export class PreparationService {
       loaded.flatMap(({ row, answers }) => [
         row.responsibleUserId,
         row.approvedById,
-        ...answers.flatMap((a) => [a.responsibleUserId, a.answeredById]),
+        ...answers.flatMap((a) => [
+          a.responsibleUserId,
+          a.answeredById,
+          a.realizedById,
+        ]),
       ]),
     );
   }
@@ -615,6 +826,9 @@ export class PreparationService {
           answered_by_id: a?.answeredById ?? null,
           answered_by_name: userNameOf(names, a?.answeredById),
           answered_at: a?.answeredAt ?? null,
+          realized: a?.realized ?? false,
+          realized_by_name: userNameOf(names, a?.realizedById ?? undefined),
+          realized_at: a?.realizedAt ?? null,
           allocations: allocations(a?.value ?? null),
         };
       }),
@@ -695,10 +909,29 @@ export class PreparationService {
       if (
         q.type === 'unit_allocations' &&
         Array.isArray(answer.value) &&
-        answer.value.some((row) => !unitIds.has(row.unit_id))
+        (answer.value as Array<{ unit_id: number }>).some(
+          (row) => !unitIds.has(row.unit_id),
+        )
       )
         invalid('Unidade não vinculada à empresa e ao projeto deste escopo');
     }
+  }
+  /** Quem marcou e quando: só muda quando o realizado muda; omitido mantém o atual. */
+  private realizedFields(
+    realized: boolean | undefined,
+    before: PreparationAnswerEntity | undefined,
+    actorId: number,
+  ) {
+    const current = before?.realized ?? false;
+    if (realized === undefined || realized === current)
+      return {
+        realized: current,
+        realizedAt: before?.realizedAt ?? null,
+        realizedById: before?.realizedById ?? null,
+      };
+    return realized
+      ? { realized: true, realizedAt: new Date(), realizedById: actorId }
+      : { realized: false, realizedAt: null, realizedById: null };
   }
   async saveAnswers(
     projectId: number,
@@ -729,11 +962,13 @@ export class PreparationService {
           project.organizationId,
           manager,
         );
+        const previous = merged.get(answer.question_id);
         merged.set(answer.question_id, {
           questionId: answer.question_id,
           state: answer.state,
           value: answer.value,
           notes: answer.notes ?? null,
+          realized: answer.realized ?? previous?.realized ?? false,
         });
       }
       const answers = [...merged.values()];
@@ -776,6 +1011,7 @@ export class PreparationService {
                 : answer.due_date,
             answeredById: actor.id,
             answeredAt: answer.state === 'pending' ? null : new Date(),
+            ...this.realizedFields(answer.realized, before, actor.id),
           });
         await this.audit(
           manager,
@@ -804,7 +1040,17 @@ export class PreparationService {
     revision: number,
     action: 'approve' | 'reopen' | 'archive',
     actor: ProjectActorContext,
+    reason?: string,
   ) {
+    const why = reason?.trim() ?? '';
+    if (action !== 'approve' && why.length < 5)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message:
+          action === 'reopen'
+            ? 'Informe o motivo da reabertura (mínimo de 5 caracteres).'
+            : 'Informe o motivo da exclusão (mínimo de 5 caracteres).',
+      });
     const project = await this.project(projectId, actor, true);
     await this.repo.transaction(async (manager) => {
       const row = await this.scopedInstance(project, id, manager);
@@ -850,7 +1096,12 @@ export class PreparationService {
         actor,
         project.organizationId,
         `INSTANCE_${action.toUpperCase()}`,
-        { before: row.status, after: changes, revision: revision + 1 },
+        {
+          before: row.status,
+          after: changes,
+          revision: revision + 1,
+          ...(why ? { reason: why } : {}),
+        },
         projectId,
         id,
       );
@@ -893,6 +1144,258 @@ export class PreparationService {
       next_before_id: rows.length === 50 ? rows.at(-1)!.id : null,
     };
   }
+  /**
+   * Planilha (.xlsx) do kick-off: só o visível, na numeração da tela, com observações.
+   * Exige permissão própria de exportação (dados pessoais dos focais) e fica no histórico.
+   */
+  async exportWorkbook(
+    projectId: number,
+    id: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor);
+    const row = await this.scopedInstance(project, id);
+    const answers = await this.repo.answers(row);
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
+    const summary = progress(row.snapshot.questions, answers);
+    const rows = exportRows({
+      title: row.title,
+      status: row.status,
+      scheduledDate: row.scheduledDate,
+      templateName: row.snapshot.name,
+      templateVersion: row.snapshot.version,
+      questions: row.snapshot.questions,
+      answers,
+      applicable: applicability(row.snapshot.questions, answers),
+      realized: {
+        done: summary.realized,
+        total: summary.total,
+        percent: summary.realized_percent,
+      },
+      organizationName: organization
+        ? (organization.tradeName ?? organization.legalName)
+        : '',
+      units: await this.units(project),
+    });
+    await this.audit(
+      this.repo.manager,
+      actor,
+      project.organizationId,
+      'EXPORTED',
+      { revision: row.revision, format: 'xlsx', rows: rows.length },
+      projectId,
+      id,
+    );
+    return { rows, fileName: exportFileName(row.title) };
+  }
+  /**
+   * Kick-offs não concluídos da organização do usuário, em projetos que ainda aceitam
+   * operação (alerta ⚠ da sub-aba Kick-off, como no sistema anterior).
+   */
+  async openSummary(actor: ProjectActorContext) {
+    if (!actor.organizationId) return { open: 0 };
+    const rows = await this.repo.manager
+      .getRepository(ProjectPreparationEntity)
+      .createQueryBuilder('preparation')
+      .innerJoin(
+        ProjectEntity,
+        'project',
+        'project.id = preparation.projectId AND project.organizationId = preparation.organizationId',
+      )
+      .select('project.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('preparation.organizationId = :organization', {
+        organization: actor.organizationId,
+      })
+      .andWhere('preparation.kind = :kind', { kind: 'kickoff' })
+      .andWhere('preparation.status IN (:...statuses)', {
+        statuses: ['draft', 'in_progress'],
+      })
+      .groupBy('project.status')
+      .getRawMany<{ status: ProjectEntity['status']; count: string }>();
+    return {
+      open: rows
+        .filter((r) =>
+          ProjectStatusTransitionPolicy.allowsOperationalMutation(r.status),
+        )
+        .reduce((sum, r) => sum + Number(r.count), 0),
+    };
+  }
+  /**
+   * E-mail ao cliente: gerado pelo modelo da organização (snapshot do kick-off) e, se houver,
+   * a versão editada, com aviso quando as respostas mudaram depois dela. Não envia nada.
+   */
+  async email(projectId: number, id: number, actor: ProjectActorContext) {
+    const project = await this.project(projectId, actor);
+    const row = await this.scopedInstance(project, id);
+    const view = await this.emailView(project, row);
+    await this.audit(
+      this.repo.manager,
+      actor,
+      project.organizationId,
+      'EMAIL_GENERATED',
+      {
+        revision: row.revision,
+        edited: view.edited,
+        stale: view.stale,
+        pendings: view.pendings,
+      },
+      projectId,
+      id,
+    );
+    return view;
+  }
+  async saveEmail(
+    projectId: number,
+    id: number,
+    dto: SaveEmailDto,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    const text = dto.text.replace(/\r\n?/g, '\n');
+    if (!text.trim()) invalid('O e-mail não pode ficar vazio');
+    await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      this.emailEditable(row);
+      if (dto.source_revision > row.revision)
+        invalid('Revisão de origem do e-mail inválida');
+      // Uma edição sobre texto já desatualizado continua desatualizada.
+      const source =
+        row.emailText !== null ? row.emailSourceRevision : dto.source_revision;
+      await this.claimEmail(manager, row, dto.email_version, {
+        emailText: text,
+        emailSourceRevision: source,
+        emailUpdatedById: actor.id,
+        emailUpdatedAt: new Date(),
+      });
+      // Sem o texto no histórico: o e-mail tem dados pessoais (focais) (LGPD).
+      await this.audit(
+        manager,
+        actor,
+        project.organizationId,
+        'EMAIL_EDITED',
+        {
+          email_version: dto.email_version + 1,
+          characters: text.length,
+          source_revision: source,
+          stale: (source ?? 0) < row.revision,
+        },
+        projectId,
+        id,
+      );
+    });
+    return this.emailView(project, await this.scopedInstance(project, id));
+  }
+  async restoreEmail(
+    projectId: number,
+    id: number,
+    emailVersion: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      this.emailEditable(row);
+      if (row.emailText === null)
+        this.conflict('Não há versão editada do e-mail para restaurar');
+      await this.claimEmail(manager, row, emailVersion, {
+        emailText: null,
+        emailSourceRevision: null,
+        emailUpdatedById: actor.id,
+        emailUpdatedAt: new Date(),
+      });
+      await this.audit(
+        manager,
+        actor,
+        project.organizationId,
+        'EMAIL_RESTORED',
+        { email_version: emailVersion + 1 },
+        projectId,
+        id,
+      );
+    });
+    return this.emailView(project, await this.scopedInstance(project, id));
+  }
+  private emailEditable(row: ProjectPreparationEntity) {
+    // Concluído pode ter o e-mail editado (é enviado depois da reunião); arquivado não.
+    if (row.status === 'archived')
+      this.conflict('Kick-off excluído não pode ter o e-mail editado');
+    if (!row.snapshot.email)
+      this.conflict('O modelo deste kick-off não tem e-mail ao cliente');
+  }
+  /** Concorrência própria do e-mail: não disputa a revisão com quem responde o kick-off. */
+  private async claimEmail(
+    manager: EntityManager,
+    row: ProjectPreparationEntity,
+    emailVersion: number,
+    changes: Partial<ProjectPreparationEntity>,
+  ) {
+    const changed = await manager
+      .getRepository(ProjectPreparationEntity)
+      .update(
+        {
+          id: row.id,
+          organizationId: row.organizationId,
+          projectId: row.projectId,
+          emailVersion,
+        },
+        { ...changes, emailVersion: emailVersion + 1 },
+      );
+    if (changed.affected !== 1)
+      this.conflict(
+        'O e-mail foi alterado por outro usuário. Recarregue para ver a versão atual.',
+      );
+  }
+  private async emailView(
+    project: ProjectEntity,
+    row: ProjectPreparationEntity,
+  ) {
+    if (!row.snapshot.email)
+      this.conflict(
+        'O modelo deste kick-off não tem e-mail ao cliente. Use um kick-off criado a partir de um modelo com e-mail.',
+      );
+    const answers = await this.repo.answers(row);
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
+    const created = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Sao_Paulo',
+    }).format(row.createdAt);
+    const generated = renderEmail(row.snapshot.email, {
+      questions: row.snapshot.questions,
+      answers,
+      applicable: applicability(row.snapshot.questions, answers),
+      organizationName: organization
+        ? (organization.tradeName ?? organization.legalName)
+        : '',
+      clientName: row.title,
+      // Prazo das pendências pela data da reunião; a de criação é a reserva.
+      meetingDate: row.scheduledDate ?? created,
+      now: new Date(),
+      units: await this.units(project),
+    });
+    const edited = row.emailText !== null;
+    const names = edited
+      ? await loadUserNames(this.repo.manager, [row.emailUpdatedById])
+      : new Map<number, string>();
+    return {
+      subject: generated.subject,
+      original: generated.text,
+      text: row.emailText ?? generated.text,
+      strong_lines: generated.strong_lines,
+      pending_title: row.snapshot.email.pending_title,
+      pendings: generated.pendings,
+      edited,
+      // Respostas mudaram depois da edição: avisar e oferecer gerar de novo.
+      stale: edited && (row.emailSourceRevision ?? 0) < row.revision,
+      revision: row.revision,
+      email_version: row.emailVersion,
+      updated_by_name: edited ? userNameOf(names, row.emailUpdatedById) : null,
+      updated_at: edited ? row.emailUpdatedAt : null,
+    };
+  }
   async communication(
     projectId: number,
     id: number,
@@ -926,20 +1429,12 @@ export class PreparationService {
       const value =
         answer.state === 'not_applicable'
           ? 'Não aplicável'
-          : typeof answer.value === 'boolean'
-            ? answer.value
-              ? 'Sim'
-              : 'Não'
-            : Array.isArray(answer.value)
-              ? answer.allocations
-                  .map(
-                    (allocation) =>
-                      `${context.units.find((unit) => unit.id === allocation.unit_id)?.name ?? 'Unidade desvinculada'}: ${allocation.quantity} itens (${allocation.participation_percent}%)`,
-                  )
-                  .join('; ')
-              : answer.value && typeof answer.value === 'object'
-                ? `${answer.value.start} a ${answer.value.end}`
-                : String(answer.value);
+          : formatAnswerValue(question, answer.value, {
+              organizationName: context.organization?.name ?? '',
+              unitName: (unitId) =>
+                context.units.find((unit) => unit.id === unitId)?.name ??
+                'Unidade desvinculada',
+            });
       lines.push(
         `[${question.category}] ${question.label}: ${value}`,
         ...(answer.notes ? [`Observações: ${answer.notes}`] : []),

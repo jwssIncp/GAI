@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { ModalForm } from "@/components/ui/dialog";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Pagination } from "@/components/base/Pagination";
@@ -24,6 +25,11 @@ import {
   type ValuationSelection,
   type ValuationSnapshot,
 } from "./valuationBatchApi";
+/** Data de hoje (fuso local) no formato do campo de data: a avaliação já abre com ela. */
+function todayLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 export interface BatchSelectionState {
   contract: ValuationSelection;
   ids: number[];
@@ -47,7 +53,7 @@ export function ValuationBatchPanel({
     [items, setItems] = useState<ValuationSnapshot[]>([]),
     [mode, setMode] = useState<"common" | "individual">("common");
   const [source, setSource] = useState(""),
-    [date, setDate] = useState(""),
+    [date, setDate] = useState(todayLocal),
     [newValue, setNew] = useState(""),
     [usedValue, setUsed] = useState(""),
     [notes, setNotes] = useState("");
@@ -85,6 +91,7 @@ export function ValuationBatchPanel({
       if (show) {
         setBatch(null);
         setCommand(createIdempotencyKey());
+        if (!date) setDate(todayLocal());
         setOpen(true);
         preview.reset();
         confirm.reset();
@@ -233,13 +240,15 @@ export function ValuationBatchPanel({
     },
   ];
   return (
-    <section className="grid gap-3" aria-label="Avaliação patrimonial em lote">
-      <div>
-        <h2 className="text-lg font-bold">Avaliação patrimonial em lote</h2>
-        <p className="text-sm text-muted-foreground">
-          Novos registros históricos com fonte documentada. Cadastro mestre,
-          observações e conciliações são preservados. Limite atual:{" "}
-          {history.data?.limit ?? "…"} itens por operação.
+    <section id="avaliacao" className="grid scroll-mt-[calc(var(--app-header-height,103px)+5.5rem)] gap-3" aria-label="Avaliação patrimonial em lote">
+      <div className="grid gap-1">
+        <SectionTitle title="Avaliação" />
+        <p className="text-xs leading-5 text-muted-foreground">
+          Selecione os itens na tabela e clique em Avaliar para informar fonte
+          de consulta, valor novo e valor usado. Cada avaliação vira um
+          registro histórico; cadastro mestre, observações e conciliações são
+          preservados. Limite atual: {history.data?.limit ?? "…"} itens por
+          operação.
         </p>
       </div>
       <PermissionGate
@@ -250,7 +259,9 @@ export function ValuationBatchPanel({
       >
         <div className="flex flex-wrap items-center gap-2">
           <span aria-live="polite" className="text-sm font-semibold">
-            {selection.ids.length} itens selecionados
+            {selection.ids.length === 1
+              ? "1 item selecionado"
+              : `${selection.ids.length} itens selecionados`}
           </span>
           <Button
             variant="secondary"
@@ -293,7 +304,7 @@ export function ValuationBatchPanel({
               resolve.mutate({ contract: selection.contract, show: true })
             }
           >
-            Avaliar selecionados
+            Avaliar
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
@@ -367,9 +378,14 @@ export function ValuationBatchPanel({
                 preview.mutate();
               }}
             >
-              <p className="text-sm">
-                Projeto #{p} · {items.length} itens. Gere a prévia e confira os
-                dados antes de confirmar.
+              <p className="text-sm text-muted-foreground">
+                {items.length === 1
+                  ? "1 item selecionado"
+                  : `${items.length} itens selecionados`}
+                {mode === "common"
+                  ? " · os campos preenchidos serão aplicados a todos."
+                  : " · informe os valores de cada item."}{" "}
+                Gere a prévia e confira os dados antes de confirmar.
               </p>
               <label className="grid gap-1 text-sm">
                 Modo de valores
@@ -387,7 +403,7 @@ export function ValuationBatchPanel({
                 </select>
               </label>
               <label className="grid gap-1 text-sm">
-                Fonte da avaliação em lote
+                Fonte de consulta
                 <input
                   required
                   maxLength={255}
@@ -400,7 +416,7 @@ export function ValuationBatchPanel({
                 />
               </label>
               <label className="grid gap-1 text-sm">
-                Data da avaliação em lote
+                Data da avaliação
                 <input
                   required
                   type="date"
@@ -415,7 +431,7 @@ export function ValuationBatchPanel({
               {mode === "common" ? (
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Money
-                    label="Valor novo comum"
+                    label="Valor novo"
                     value={newValue}
                     onChange={(v) => {
                       setNew(v);
@@ -423,7 +439,7 @@ export function ValuationBatchPanel({
                     }}
                   />
                   <Money
-                    label="Valor usado comum"
+                    label="Valor usado"
                     value={usedValue}
                     onChange={(v) => {
                       setUsed(v);

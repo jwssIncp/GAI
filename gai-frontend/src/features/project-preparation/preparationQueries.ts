@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/http';
 import type {
   AnswerPayload,
+  ClientEmail,
   CommunicationPreview,
   Preparation,
   PreparationContext,
@@ -15,6 +16,7 @@ const templatePath = (org: number) =>
   `/organizations/${org}/preparation-templates`;
 export const preparationKeys = {
   project: (id: number) => ['project-preparation', id] as const,
+  openSummary: ['project-preparation-open-summary'] as const,
   templates: (org?: number) => ['preparation-templates', org] as const,
 };
 export const preparationApi = {
@@ -58,22 +60,61 @@ export const preparationApi = {
     instance: number,
     revision: number,
     action: 'approve' | 'reopen' | 'archive',
+    /** Obrigatório ao reabrir e ao excluir (arquivar); fica no histórico. */
+    reason?: string,
   ) =>
     action === 'archive'
       ? api
           .delete<Preparation>(`${projectPath(id)}/${instance}`, {
-            data: { revision },
+            data: { revision, reason },
           })
           .then((r) => r.data)
       : api
           .post<Preparation>(`${projectPath(id)}/${instance}/${action}`, {
             revision,
+            ...(reason ? { reason } : {}),
           })
           .then((r) => r.data),
+  /** Preenche, sem sobrescrever, as perguntas sem resposta a partir do contrato e das unidades. */
+  prefill: (id: number, instance: number, revision: number) =>
+    api
+      .post<Preparation & { prefilled: number }>(`${projectPath(id)}/${instance}/prefill`, { revision })
+      .then((r) => r.data),
   history: (id: number, instance: number, before_id?: number) =>
     api
       .get<PreparationHistory>(`${projectPath(id)}/${instance}/history`, {
         params: { before_id },
+      })
+      .then((r) => r.data),
+  /** Planilha (.xlsx) do kick-off gerada no servidor: só o visível, com observações. */
+  exportWorkbook: (id: number, instance: number) =>
+    api
+      .get<Blob>(`${projectPath(id)}/${instance}/export`, {
+        responseType: 'blob',
+      })
+      .then((r) => r.data),
+  /** Kick-offs não concluídos da organização (alerta da sub-aba). */
+  openSummary: () =>
+    api
+      .get<{ open: number }>('/project-preparations/open-summary')
+      .then((r) => r.data),
+  /** E-mail ao cliente (gerado e, se houver, editado). Fica registrado no histórico. */
+  email: (id: number, instance: number) =>
+    api
+      .get<ClientEmail>(`${projectPath(id)}/${instance}/email`)
+      .then((r) => r.data),
+  saveEmail: (
+    id: number,
+    instance: number,
+    payload: { email_version: number; source_revision: number; text: string },
+  ) =>
+    api
+      .put<ClientEmail>(`${projectPath(id)}/${instance}/email`, payload)
+      .then((r) => r.data),
+  restoreEmail: (id: number, instance: number, email_version: number) =>
+    api
+      .delete<ClientEmail>(`${projectPath(id)}/${instance}/email`, {
+        data: { email_version },
       })
       .then((r) => r.data),
   communication: (
@@ -158,6 +199,16 @@ export function usePreparationTemplates(org?: number) {
     enabled: Boolean(org),
   });
 }
+/** Alerta ⚠ da sub-aba Kick-off: quantidade de kick-offs não concluídos. */
+export function useOpenKickoffs(enabled: boolean) {
+  return useQuery({
+    queryKey: preparationKeys.openSummary,
+    queryFn: preparationApi.openSummary,
+    retry: false,
+    enabled,
+    staleTime: 60_000,
+  });
+}
 export function usePreparationMutation<T, TResult>(
   projectId: number,
   operation: (input: T) => Promise<TResult>,
@@ -169,6 +220,7 @@ export function usePreparationMutation<T, TResult>(
       await client.invalidateQueries({
         queryKey: preparationKeys.project(projectId),
       });
+      await client.invalidateQueries({ queryKey: preparationKeys.openSummary });
     },
   });
 }

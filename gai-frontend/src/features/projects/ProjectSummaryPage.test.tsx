@@ -150,12 +150,14 @@ describe('ProjectSummaryPage workspace', () => {
     expect(screen.queryByText('Itens inventariados')).not.toBeInTheDocument();
   });
 
-  it('navega entre abas e atalho novo item', async () => {
+  it('barra do projeto no Painel Geral: trocar projeto e telas extras do GAI', async () => {
     renderPage();
     const nav = await screen.findByRole('navigation', { name: 'Abas do projeto' });
-    await userEvent.click(within(nav).getByRole('link', { name: 'Inventário' }));
-    await userEvent.click(await within(nav).findByRole('link', { name: 'Itens e avaliação' }));
-    expect(await screen.findByRole('heading', { name: 'Itens do projeto' })).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: /Trocar projeto/ })).toHaveAttribute('href', '/app/projects');
+    expect(within(nav).getByRole('link', { name: 'Resumo' })).toHaveAttribute('aria-current', 'page');
+    // As telas do Netlify (Kick-off, Inventário, ...) ficam nas sub-abas da área, não na barra.
+    expect(within(nav).queryByRole('link', { name: 'Inventário' })).not.toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Dashboard' }).getAttribute('href')).toMatch(/^\/app\/projects\/\d+\/dashboard/);
   });
 
   it('atalho importar base contabil redireciona para o fluxo existente', async () => {

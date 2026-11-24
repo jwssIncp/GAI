@@ -84,10 +84,14 @@ mysqlSuite('Migration users.email opcional (MySQL, do zero)', () => {
 
   it('revert preenche sem-email+<id>@invalido.local e volta ao NOT NULL; reaplica', async () => {
     const { collation } = await column();
-    const last = await db.query(
-      'SELECT name FROM migrations ORDER BY id DESC LIMIT 1',
-    );
-    expect(last[0].name).toBe(MIGRATION);
+    // Migrations posteriores saem antes (runMigrations as reaplica no fim).
+    for (;;) {
+      const last = await db.query(
+        'SELECT name FROM migrations ORDER BY id DESC LIMIT 1',
+      );
+      if (last[0].name === MIGRATION) break;
+      await db.undoLastMigration();
+    }
     await db.undoLastMigration();
     expect(await column()).toEqual({ nullable: 'NO', collation });
     expect(await uniqueEmailIndex()).toEqual(['uk_users_email']);

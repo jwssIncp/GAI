@@ -3,6 +3,12 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams , useSearchParams } from "react-router-dom";
 import { DataTable } from "@/components/base/DataTable";
+import {
+  DataPanel,
+  DataPanelFilters,
+  ViewToggle,
+} from "@/components/base/DataPanel";
+import { StatusBadge } from "@/components/base/StatusBadge";
 import { ErrorState, LoadingState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
@@ -10,6 +16,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { usePermissions } from "@/features/auth/usePermissions";
 import {
   reportApi,
+  reportCode,
   reportInput as cls,
   reportStatuses,
   selectionFrom,
@@ -25,7 +32,9 @@ export function ReportsPage() {
     [open, setOpen] = useState(false),
     [error, setError] = useState(""),
     [key, setKey] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [search, setSearch] = useState(""),
+    [status, setStatus] = useState("");
   const q = useQuery({
       queryKey: ["technical-reports", "list", user?.id, p],
       queryFn: () => reportApi.list(p),
@@ -34,56 +43,120 @@ export function ReportsPage() {
       queryKey: ["technical-reports", "templates", user?.id, p],
       queryFn: () => reportApi.templates(p),
     });
+  const all = q.data ?? [],
+    term = search.trim().toLocaleLowerCase("pt-BR"),
+    rows = all.filter(
+      (r) =>
+        (!status || r.status === status) &&
+        (!term ||
+          `${reportCode(r.id)} ${r.title} ${r.report_type}`
+            .toLocaleLowerCase("pt-BR")
+            .includes(term)),
+    ),
+    href = (id: number) =>
+      navigationHref(
+        `/app/projects/${p}/technical-reports/${id}`,
+        navigationParams,
+      );
   return (
     <div className="grid gap-4">
-      <h3 className="font-semibold">Laudos do projeto</h3>
-      {hasPermission("technical-reports:edit") && (
-        <div>
-          <Button
-            onClick={() => {
-              setKey(crypto.randomUUID());
-              setError("");
-              setOpen(true);
-            }}
-          >
-            Criar laudo
-          </Button>
-        </div>
-      )}
-      {q.isLoading ? (
-        <LoadingState />
-      ) : q.error ? (
-        <ErrorState message={q.error.message} />
-      ) : (
-        <DataTable
-          items={q.data ?? []}
-          getKey={(r) => r.id}
-          columns={[
-            {
-              header: "Laudo",
-              cell: (r) => (
-                <Link className="text-primary" to={navigationHref(`/app/projects/${p}/technical-reports/${r.id}`, navigationParams)}>
-                  {r.title}
-                </Link>
-              ),
-            },
-            { header: "Tipo", cell: (r) => r.report_type },
-            {
-              header: "Situação",
-              cell: (r) => reportStatuses[r.status] ?? r.status,
-            },
-            { header: "Revisão", cell: (r) => r.revision },
-            {
-              header: "Versão aprovada ID",
-              cell: (r) => r.approvedVersionId ?? "Nenhuma",
-            },
-          ]}
-        />
-      )}
+      <DataPanel
+        title="Laudos do projeto"
+        titleId="reports-list-title"
+        count={q.data ? `${rows.length} de ${all.length}` : undefined}
+        extra={
+          hasPermission("technical-reports:edit") ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setKey(crypto.randomUUID());
+                setError("");
+                setOpen(true);
+              }}
+            >
+              ＋ Novo laudo
+            </Button>
+          ) : undefined
+        }
+      >
+        <DataPanelFilters label="Filtros dos laudos">
+          <input
+            type="search"
+            aria-label="Buscar laudo"
+            placeholder="Buscar por código, título ou tipo"
+            className="min-h-8 rounded-[6px] border border-input bg-background px-3 text-sm md:w-72"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <ViewToggle on={!status} onClick={() => setStatus("")}>
+            Todos
+          </ViewToggle>
+          {Object.entries(reportStatuses).map(([value, label]) => (
+            <ViewToggle
+              key={value}
+              on={status === value}
+              onClick={() => setStatus(value)}
+            >
+              {label}
+            </ViewToggle>
+          ))}
+        </DataPanelFilters>
+        {q.isLoading ? (
+          <LoadingState />
+        ) : q.error ? (
+          <ErrorState message={q.error.message} />
+        ) : !all.length ? (
+          <p className="px-5 py-6 text-sm text-muted-foreground">
+            Nenhum laudo. Clique em “Novo laudo” para começar.
+          </p>
+        ) : (
+          <DataTable
+            bare
+            caption="Laudos do projeto"
+            items={rows}
+            getKey={(r) => r.id}
+            columns={[
+              { header: "Código", cell: (r) => reportCode(r.id) },
+              {
+                header: "Laudo",
+                cell: (r) => (
+                  <Link className="font-medium text-primary" to={href(r.id)}>
+                    {r.title}
+                  </Link>
+                ),
+              },
+              { header: "Tipo", cell: (r) => r.report_type },
+              {
+                header: "Status",
+                cell: (r) => (
+                  <StatusBadge
+                    value={r.status}
+                    label={reportStatuses[r.status] ?? r.status}
+                  />
+                ),
+              },
+              { header: "Revisão", cell: (r) => r.revision },
+              {
+                header: "Ações",
+                cell: (r) => (
+                  <Link
+                    className="text-sm font-semibold text-primary"
+                    to={href(r.id)}
+                    aria-label={`Abrir ${r.title}`}
+                  >
+                    Abrir
+                  </Link>
+                ),
+              },
+            ]}
+          />
+        )}
+      </DataPanel>
       <ModalForm
         open={open}
         onOpenChange={setOpen}
-        title="Criar laudo do projeto"
+        title="Novo laudo"
       >
         <form
           className="grid gap-3"

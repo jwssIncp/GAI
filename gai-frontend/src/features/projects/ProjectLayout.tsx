@@ -1,8 +1,10 @@
 import { dashboardReturn, navigationHref } from "./navigationContext";
-import { activeProjectTabId, groupOfTab, projectTabAlerts, projectTabGroups, type ProjectTab, type ProjectTabAlert } from "./projectNavigation";
+import { activeProjectTabId, projectTabAlerts, projectTabGroups, type ProjectTab, type ProjectTabAlert } from "./projectNavigation";
+import { activeProjectAreaTab, projectAreaTab, rememberProject } from "./projectArea";
 import { useProjectDashboard } from "./projectQueries";
-import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, ArrowUpRight } from "lucide-react";
+import { useProjectLabel } from "./useProjectLabel";
+import { Fragment, useEffect, useRef } from "react";
+import { AlertTriangle, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
 import { ErrorState } from "@/components/base/States";
 import { usePermissions } from "@/features/auth/usePermissions";
@@ -12,13 +14,16 @@ export function ProjectLayout() {
   const { projectId } = useParams();
   const location = useLocation();
   const back = dashboardReturn(new URLSearchParams(location.search).get("return_to"));
-  if (!projectId || !/^\d+$/.test(projectId) || Number(projectId) < 1) {
-    return <ErrorState message="Projeto inválido." />;
-  }
+  const valid = Boolean(projectId && /^\d+$/.test(projectId) && Number(projectId) >= 1);
+  // Projeto escolhido fica lembrado: as outras sub-abas da área Projetos abrem direto nele.
+  useEffect(() => {
+    if (valid) rememberProject(Number(projectId));
+  }, [projectId, valid]);
+  if (!valid) return <ErrorState message="Projeto inválido." />;
   return (
     <div className="flex min-w-0 flex-1 flex-col" data-project-id={projectId}>
       {back && <Link className="mx-4 mt-4 text-sm text-primary underline" to={back}>Retornar ao dashboard da organização</Link>}
-      <ProjectNavigation projectId={projectId} />
+      <ProjectNavigation projectId={projectId!} />
       <Outlet />
     </div>
   );
@@ -35,157 +40,95 @@ function scrollIntoStrip(strip: HTMLElement | null) {
 }
 
 /**
- * Navegação do workspace em dois níveis: grupos (nível 1) e abas do grupo ativo (nível 2).
- * Cada aba mantém exatamente as permissões e o destino que tinha antes; um grupo só
- * aparece quando ao menos uma de suas abas está visível para o usuário.
+ * Barra do projeto escolhido, logo abaixo das sub-abas da área Projetos (Painel Geral, Kick-off,
+ * Pendências - Campo, ...): nome do projeto, "Trocar projeto" e as telas da sub-aba ativa quando
+ * ela tem mais de uma (ex.: Inventário › Itens inventariados · Importações). No Painel Geral,
+ * mostra as telas do GAI que não existem no sistema anterior: resumo/cadastro, dashboard,
+ * unidades, contratos, financeiro e exportações. Destinos e permissões são os mesmos de antes.
  */
 export function ProjectNavigation({ projectId }: { projectId: string }) {
   const location = useLocation();
   const { canAccess, hasPermission } = usePermissions();
-  const groupStrip = useRef<HTMLDivElement>(null);
   const tabStrip = useRef<HTMLDivElement>(null);
   const root = `/app/projects/${projectId}/`;
   const href = (tab: ProjectTab) => navigationHref(tab.path.startsWith("/") ? tab.path : root + tab.path, location.search);
+  const projectName = useProjectLabel(projectId);
 
+  const area = activeProjectAreaTab(location.pathname, location.hash) ?? projectAreaTab("overview");
   const groups = projectTabGroups(projectId)
+    .filter((group) => area.groups.includes(group.id))
     .map((group) => ({ ...group, tabs: group.tabs.filter((tab) => canAccess(tab.permissions)) }))
     .filter((group) => group.tabs.length > 0);
+  const tabCount = groups.reduce((sum, group) => sum + group.tabs.length, 0);
   const activeTabId = activeProjectTabId(projectId, location.pathname, location.hash);
-  const activeGroup = groupOfTab(groups, activeTabId);
-  // Grupo cuja primeira aba visível sai do workspace (↗): o clique só o seleciona e mostra
-  // suas abas, sem navegar. A seleção vale apenas para a localização atual.
-  const locationKey = location.pathname + location.search + location.hash;
-  const [selection, setSelection] = useState<{ groupId: string; at: string } | null>(null);
-  const selectedGroup = selection && selection.at === locationKey ? groups.find((group) => group.id === selection.groupId) ?? null : null;
-  const shownGroup = selectedGroup ?? activeGroup;
+  const switchTo = area.id === "overview" ? "/app/projects" : `${area.to}?escolher=1`;
 
-  // Alertas ⚠ v1: mesma consulta (mesma chave de cache) de GET /projects/:id/dashboard que a
-  // Visão geral usa; uma chamada por workspace, nenhuma por aba. Só abas visíveis recebem alerta
-  // e o alerta do grupo considera apenas as abas visíveis dele.
+  // Alertas ⚠: mesma consulta (mesma chave de cache) de GET /projects/:id/dashboard da Visão geral.
   const canReadProject = hasPermission("projects:read");
   const dashboard = useProjectDashboard(canReadProject ? Number(projectId) : undefined);
   const allAlerts = dashboard.data && String(dashboard.data.project?.id) === projectId ? projectTabAlerts(dashboard.data, { approvePayments: hasPermission("payments:approve"), approveExpenses: hasPermission("expenses:approve"), reschedulePayments: hasPermission("payments:reschedule") }) : {};
   const alertOf = (tab: ProjectTab): ProjectTabAlert | undefined => allAlerts[tab.id];
-  const groupAlert = (group: (typeof groups)[number]) => {
-    const tabs = group.tabs.filter((tab) => alertOf(tab));
-    if (!tabs.length) return undefined;
-    return {
-      severity: tabs.some((tab) => alertOf(tab)!.severity === "danger") ? ("danger" as const) : ("warning" as const),
-      description: tabs.map((tab) => `${tab.label}: ${alertOf(tab)!.description}`).join("; "),
-    };
-  };
 
   useEffect(() => {
-    scrollIntoStrip(groupStrip.current);
     scrollIntoStrip(tabStrip.current);
-  }, [location.pathname, location.search, location.hash, shownGroup?.id]);
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     // Logo abaixo do cabeçalho de duas linhas (altura medida pelo AppHeader).
     <div className="sticky top-[var(--app-header-height,103px)] z-20 w-full border-b border-nav-border bg-card font-nav">
-      <nav
-        className="grid gap-0.5 px-6 py-1.5 max-md:px-3"
-        aria-label="Abas do projeto"
-      >
-        <div ref={groupStrip} role="group" aria-label="Grupos do projeto" className="flex gap-1 overflow-x-auto">
-          {groups.map((group) => {
-            const active = group.id === activeGroup?.id;
-            const shown = group.id === shownGroup?.id;
-            const alert = groupAlert(group);
-            const descriptionId = alert ? `project-group-alert-${group.id}` : undefined;
-            const className = cn(
-              // Pílulas do submenu do sistema anterior; grupo com alerta em vermelho (#B23A48).
-              "inline-flex min-h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-[13px] text-[0.78125rem] font-semibold transition-colors max-md:min-h-10",
-              alert
-                ? shown
-                  ? "bg-rose text-white"
-                  : "text-destructive ring-1 ring-inset ring-rose/55 hover:bg-destructive/[0.06]"
-                : shown
-                  ? "bg-[#0A1F44] text-white dark:bg-steel-dark"
-                  : "text-nav-muted hover:bg-subnav-hover hover:text-nav-ink",
-            );
-            const content = (
-              <>
-                {group.label}
-                {alert ? <AlertTriangle size={14} strokeWidth={2.2} aria-hidden="true" /> : null}
-              </>
-            );
-            if (group.tabs[0].external) {
-              return (
-                <button
-                  key={group.id}
-                  type="button"
-                  aria-expanded={shown}
-                  aria-controls="project-group-tabs"
-                  aria-current={active ? "true" : undefined}
-                  onClick={() => setSelection({ groupId: group.id, at: locationKey })}
-                  className={className}
-                  aria-describedby={descriptionId}
-                  title={alert ? `Atenção: ${alert.description}` : undefined}
-                >
-                  {content}
-                </button>
-              );
-            }
-            return (
-              <Link
-                key={group.id}
-                to={href(group.tabs[0])}
-                aria-current={active ? "true" : undefined}
-                className={className}
-                aria-describedby={descriptionId}
-                title={alert ? `Atenção: ${alert.description}` : undefined}
-              >
-                {content}
-              </Link>
-            );
-          })}
-        </div>
-        {shownGroup ? (
-          <div
-            ref={tabStrip}
-            id="project-group-tabs"
-            role="group"
-            aria-label={`Abas de ${shownGroup.label}`}
-            className="flex gap-1 overflow-x-auto pt-0.5"
+      <nav className="flex flex-wrap items-center gap-x-4 gap-y-1 px-6 py-1.5 max-md:px-3" aria-label="Abas do projeto">
+        <div className="flex min-w-0 items-center gap-2 text-sm">
+          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-nav-muted">Projeto</span>
+          <span className="truncate font-semibold text-nav-ink" title={projectName}>{projectName}</span>
+          <Link
+            to={switchTo}
+            className="inline-flex min-h-7 shrink-0 items-center gap-1 rounded-md border border-border-strong px-2.5 text-xs font-semibold text-nav-ink hover:bg-subnav-hover"
           >
-            {shownGroup.tabs.map((tab) => {
-              const active = tab.id === activeTabId;
-              const alert = alertOf(tab);
-              const descriptionId = alert ? `project-tab-alert-${tab.id}` : undefined;
-              return (
-                <Link
-                  key={tab.id}
-                  to={href(tab)}
-                  title={alert ? `Atenção: ${alert.description}` : tab.hint}
-                  aria-current={active ? "page" : undefined}
-                  aria-describedby={descriptionId}
-                  className={cn(
-                    "relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-md px-3 text-xs font-medium transition-colors max-md:min-h-10",
-                    alert
-                      ? cn("text-destructive ring-1 ring-inset ring-rose/45 hover:bg-destructive/[0.06]", active && "font-semibold after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-rose")
-                      : active
-                        ? "font-semibold text-nav-ink after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-nav-accent"
-                        : "text-nav-muted hover:bg-subnav-hover hover:text-nav-ink",
-                  )}
-                >
-                  {tab.label}
-                  {alert ? <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" /> : null}
-                  {/* Quantidade só na aba (no grupo, apenas o ⚠). aria-hidden: a descrição já informa o número. */}
-                  {alert?.count ? <span aria-hidden="true" className="tabular-nums font-semibold">{alert.count}</span> : null}
-                  {tab.external ? <ArrowUpRight size={13} strokeWidth={2} aria-hidden="true" className="opacity-70" /> : null}
-                </Link>
-              );
-            })}
+            <ArrowLeftRight size={13} aria-hidden="true" /> Trocar projeto
+          </Link>
+        </div>
+        {tabCount > 1 ? (
+          <div ref={tabStrip} id="project-group-tabs" role="group" aria-label={`Telas de ${area.label}`} className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+            {groups.map((group, index) => (
+              <Fragment key={group.id}>
+                {groups.length > 1 ? (
+                  <span className={cn("shrink-0 px-1 text-[0.6875rem] font-semibold uppercase tracking-[0.07em] text-nav-muted", index > 0 && "ml-2 border-l border-nav-border pl-3")}>
+                    {group.label}
+                  </span>
+                ) : null}
+                {group.tabs.map((tab) => {
+                  const active = tab.id === activeTabId;
+                  const alert = alertOf(tab);
+                  return (
+                    <Link
+                      key={tab.id}
+                      to={href(tab)}
+                      title={alert ? `Atenção: ${alert.description}` : tab.hint}
+                      aria-current={active ? "page" : undefined}
+                      aria-describedby={alert ? `project-tab-alert-${tab.id}` : undefined}
+                      className={cn(
+                        "relative inline-flex min-h-8 shrink-0 items-center gap-1 rounded-md px-3 text-xs font-medium transition-colors max-md:min-h-10",
+                        alert
+                          ? cn("text-destructive ring-1 ring-inset ring-rose/45 hover:bg-destructive/[0.06]", active && "font-semibold after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-rose")
+                          : active
+                            ? "font-semibold text-nav-ink after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-nav-accent"
+                            : "text-nav-muted hover:bg-subnav-hover hover:text-nav-ink",
+                      )}
+                    >
+                      {tab.label}
+                      {alert ? <AlertTriangle size={13} strokeWidth={2.2} aria-hidden="true" /> : null}
+                      {alert?.count ? <span aria-hidden="true" className="tabular-nums font-semibold">{alert.count}</span> : null}
+                      {tab.external ? <ArrowUpRight size={13} strokeWidth={2} aria-hidden="true" className="opacity-70" /> : null}
+                    </Link>
+                  );
+                })}
+              </Fragment>
+            ))}
           </div>
         ) : null}
         {/* Descrições dos alertas (aria-describedby): fora dos links para não alterar o nome acessível. */}
         <div hidden>
-          {groups.map((group) => {
-            const alert = groupAlert(group);
-            return alert ? <span key={group.id} id={`project-group-alert-${group.id}`}>Atenção: {alert.description}</span> : null;
-          })}
-          {shownGroup?.tabs.map((tab) => {
+          {groups.flatMap((group) => group.tabs).map((tab) => {
             const alert = alertOf(tab);
             return alert ? <span key={tab.id} id={`project-tab-alert-${tab.id}`}>Atenção: {alert.description}</span> : null;
           })}

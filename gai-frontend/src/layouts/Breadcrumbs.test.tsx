@@ -55,11 +55,13 @@ describe("Breadcrumbs do workspace do projeto", () => {
     get.mockResolvedValue({ id: 10, name: "Center Norte" });
   });
   it.each([
-    ["/app/projects/10/summary", "", ["Visão geral", "Resumo"]],
-    ["/app/projects/10/summary", "#inventariantes", ["Campo", "Equipe de campo"]],
-    ["/app/projects/10/preparation/client-checklist", "", ["Campo", "Preparação", "Checklist do cliente"]],
-    ["/app/projects/10/inventory/sessions/12", "", ["Inventário", "Sessões e conciliação", "Sessão #12"]],
-    ["/app/projects/10/technical-reports/templates/3", "", ["Contábil e laudo", "Laudos", "Modelos da organização", "Modelo #3"]],
+    ["/app/projects/10/summary", "", ["Painel", "Resumo"]],
+    ["/app/projects/10/summary", "#inventariantes", ["Pendências - Campo", "Equipe de campo"]],
+    // Grupos de uma aba só (Kick-off, Avaliação, Laudo) não repetem o nome na trilha.
+    ["/app/projects/10/preparation/client-checklist", "", ["Kick-off", "Checklist do cliente"]],
+    ["/app/projects/10/inventory-items", "#avaliacao", ["Avaliação"]],
+    ["/app/projects/10/inventory/sessions/12", "", ["Conciliação Físico-Contábil", "Sessões e conciliação", "Sessão #12"]],
+    ["/app/projects/10/technical-reports/templates/3", "", ["Laudos", "Modelos da organização", "Modelo #3"]],
     ["/app/projects/10/finance/accountabilities", "", ["Financeiro", "Prestações"]],
     ["/app/projects/10/area", "", ["Área"]],
   ])("%s%s → %j", (pathname, hash, labels) => {
@@ -71,7 +73,7 @@ describe("Breadcrumbs do workspace do projeto", () => {
     expect(crumbs.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Projetos",
       "Center Norte",
-      "Inventário",
+      "Conciliação Físico-Contábil",
       "Sessões e conciliação",
       "Sessão #12",
     ]);
@@ -86,8 +88,8 @@ describe("Breadcrumbs do workspace do projeto", () => {
     expect(crumbs.getAllByRole("listitem").map((item) => item.textContent)).toEqual([
       "Projetos",
       "#10",
-      "Campo",
-      "Coordenação de campo",
+      "Pendências - Campo",
+      "Check list - Campo",
     ]);
     expect(get).not.toHaveBeenCalled();
   });
@@ -95,8 +97,8 @@ describe("Breadcrumbs do workspace do projeto", () => {
   it("no mobile mostra só os dois últimos itens e não mostra seta antes do primeiro visível", () => {
     const crumbs = renderAt("/app/projects/10/summary", user(["projects:read"]));
     const items = crumbs.getAllByRole("listitem");
-    expect(items.map((item) => item.textContent)).toEqual(["Projetos", "Center Norte", "Visão geral", "Resumo"]);
-    // Itens anteriores ficam ocultos abaixo de sm; "Visão geral › Resumo" fica visível.
+    expect(items.map((item) => item.textContent)).toEqual(["Projetos", "Center Norte", "Painel", "Resumo"]);
+    // Itens anteriores ficam ocultos abaixo de sm; "Painel › Resumo" fica visível.
     expect(items[0].className).toContain("hidden sm:inline-flex");
     expect(items[1].className).toContain("hidden sm:inline-flex");
     expect(items[2].className).not.toContain("hidden sm:inline-flex");

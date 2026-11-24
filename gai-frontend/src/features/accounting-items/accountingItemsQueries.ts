@@ -53,6 +53,15 @@ export function useUpdateAccountingItem(projectId: number) {
   });
 }
 
+/** "Alterar status ▾": classificação da sobra contábil em lote. */
+export function useClassifyAccountingItems(projectId: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, classification }: { ids: number[]; classification: string | null }) => accountingItemsApi.classify(projectId, ids, classification),
+    onSuccess: async () => queryClient.invalidateQueries({ queryKey: accountingItemKeys.project(projectId) }),
+  });
+}
+
 export function useChangeAccountingItemStatus(projectId: number, action: 'deactivate' | 'reactivate') {
   const queryClient = useQueryClient();
   return useMutation({

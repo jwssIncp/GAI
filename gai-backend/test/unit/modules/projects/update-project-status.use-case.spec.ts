@@ -2,6 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { UpdateProjectStatusUseCase } from '../../../../src/modules/projects/application/use-cases/update-project-status.use-case';
 import { ProjectScopeService } from '../../../../src/modules/projects/application/services/project-scope.service';
+import { ProjectActivationHooks } from '../../../../src/modules/projects/application/services/project-activation-hooks';
 import { Project } from '../../../../src/modules/projects/domain/entities/project';
 import { ProjectStatus } from '../../../../src/modules/projects/domain/enums/project-status.enum';
 
@@ -31,6 +32,10 @@ describe('UpdateProjectStatusUseCase', () => {
     info: jest.fn(),
   } as unknown as PinoLogger;
   const actor = { id: 1, organizationId: 1, systemRoles: [] };
+  const hooks = new ProjectActivationHooks({
+    setContext: jest.fn(),
+    error: jest.fn(),
+  } as unknown as PinoLogger);
 
   const captureConflict = async (
     operation: Promise<unknown>,
@@ -58,6 +63,7 @@ describe('UpdateProjectStatusUseCase', () => {
       repository as never,
       scope,
       logger,
+      hooks,
     );
 
     const response = await captureConflict(
@@ -85,6 +91,7 @@ describe('UpdateProjectStatusUseCase', () => {
       repository as never,
       scope,
       logger,
+      hooks,
     );
 
     const response = await captureConflict(useCase.execute(1, 'finish', actor));
@@ -96,5 +103,43 @@ describe('UpdateProjectStatusUseCase', () => {
         operations: [{ type: 'export_job', count: 2 }],
       },
     });
+  });
+
+  it('notifies activation hooks only after a successful activation, without failing on hook errors', async () => {
+    const active = new Project({
+      ...project.toProps(),
+      status: ProjectStatus.ACTIVE,
+    });
+    const repository = {
+      findById: jest.fn().mockResolvedValue(project),
+      transitionStatusWithAudit: jest
+        .fn()
+        .mockResolvedValue({ kind: 'success', project: active }),
+    };
+    const errors = jest.fn();
+    const local = new ProjectActivationHooks({
+      setContext: jest.fn(),
+      error: errors,
+    } as unknown as PinoLogger);
+    const seen: number[] = [];
+    local.register('ok', async (event) => {
+      seen.push(event.projectId);
+    });
+    local.register('broken', () => Promise.reject(new Error('falhou')));
+    const useCase = new UpdateProjectStatusUseCase(
+      repository as never,
+      scope,
+      logger,
+      local,
+    );
+    await expect(useCase.execute(1, 'activate', actor)).resolves.toMatchObject({
+      status: ProjectStatus.ACTIVE,
+    });
+    expect(seen).toEqual([1]);
+    expect(errors).toHaveBeenCalledWith(
+      expect.objectContaining({ hook: 'broken', result: 'FAILURE' }),
+    );
+    await useCase.execute(1, 'pause', actor);
+    expect(seen).toEqual([1]);
   });
 });

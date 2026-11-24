@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -130,8 +130,8 @@ function mount(
                 element={<ProjectInventoryItemsPage />}
               />
               <Route
-                path="summary"
-                element={<h1>Resumo do mesmo projeto</h1>}
+                path="import-sessions"
+                element={<h1>Importações do mesmo projeto</h1>}
               />
             </Route>
           </Routes>
@@ -214,22 +214,31 @@ describe("Batch valuation integrated item workspace", () => {
     );
     expect(screen.getByText("2 itens selecionados")).toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: "Avaliar selecionados" }),
+      screen.getByRole("button", { name: "Avaliar" }),
     );
-    await screen.findByLabelText("Fonte da avaliação em lote");
+    await screen.findByLabelText("Fonte de consulta");
     expect(valuationBatchApi.selection).toHaveBeenCalledWith(7, {
       kind: "ids",
       ids: [1, 21],
     });
     await userEvent.type(
-      screen.getByLabelText("Fonte da avaliação em lote"),
+      screen.getByLabelText("Fonte de consulta"),
       "Catalogo sintetico",
     );
+    // Como no sistema anterior: abre com a data de hoje e aplica os campos a todos.
+    const today = new Date();
+    expect(screen.getByLabelText("Data da avaliação")).toHaveValue(
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`,
+    );
+    expect(
+      screen.getByText(/os campos preenchidos serão aplicados a todos/),
+    ).toBeInTheDocument();
+    await userEvent.clear(screen.getByLabelText("Data da avaliação"));
     await userEvent.type(
-      screen.getByLabelText("Data da avaliação em lote"),
+      screen.getByLabelText("Data da avaliação"),
       "2026-10-27",
     );
-    await userEvent.type(screen.getByLabelText("Valor novo comum (R$)"), "150.00");
+    await userEvent.type(screen.getByLabelText("Valor novo (R$)"), "150.00");
     await userEvent.click(
       screen.getByRole("button", { name: "Gerar prévia da avaliação" }),
     );
@@ -291,7 +300,7 @@ describe("Batch valuation integrated item workspace", () => {
       }),
     );
     await userEvent.click(
-      screen.getByRole("button", { name: "Avaliar selecionados" }),
+      screen.getByRole("button", { name: "Avaliar" }),
     );
     await userEvent.selectOptions(
       await screen.findByLabelText("Modo de valores"),
@@ -301,18 +310,33 @@ describe("Batch valuation integrated item workspace", () => {
     expect(screen.getByLabelText("Valor usado do item 1 (R$)")).toBeInTheDocument();
   });
   it("hides selection and writing from read-only users while retaining project navigation", async () => {
-    mount(["asset-valuations:read"]);
+    mount(["asset-valuations:read", "import-sessions:read"]);
     await screen.findByText("Item sintetico 1");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Avaliar selecionados" }),
+      screen.queryByRole("button", { name: "Avaliar" }),
     ).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("link", { name: "Visão geral" }));
+    const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
+    // A barra do projeto lista as telas da sub-aba Inventário.
+    const screens = within(nav).getByRole("group", {
+      name: "Telas de Inventário",
+    });
+    expect(
+      within(screens).getByRole("link", { name: "Itens inventariados" }),
+    ).toHaveAttribute("aria-current", "page");
+    await userEvent.click(
+      within(screens).getByRole("link", { name: "Importações" }),
+    );
     await waitFor(() =>
-      expect(screen.getByText("Resumo do mesmo projeto")).toBeInTheDocument(),
+      expect(
+        screen.getByText("Importações do mesmo projeto"),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
+      nav,
     );
     expect(
-      screen.getByRole("navigation", { name: "Abas do projeto" }),
-    ).toBeInTheDocument();
+      within(nav).getByRole("link", { name: "Importações" }),
+    ).toHaveAttribute("aria-current", "page");
   });
 });

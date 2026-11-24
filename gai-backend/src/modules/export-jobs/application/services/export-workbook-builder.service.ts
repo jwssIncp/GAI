@@ -7,9 +7,15 @@ import {
 import {
   DataSource,
   EntityManager,
+  In,
   ObjectLiteral,
   SelectQueryBuilder,
 } from 'typeorm';
+import { ReconciliationStatus } from '../../../inventory-operations/domain/inventory-operation.enums';
+import {
+  AssetValuationEntity,
+  InventoryReconciliationEntity,
+} from '../../../inventory-operations/infrastructure/persistence/inventory-operation.entity';
 import * as XLSX from 'xlsx';
 import { InventoryAccountingItemEntity } from '../../../inventory-accounting-items/infrastructure/persistence/inventory-accounting-item.entity';
 import { InventoryItemEntity } from '../../../inventory-items/infrastructure/persistence/inventory-item.entity';
@@ -21,6 +27,29 @@ import { ExportJobType } from '../../domain/enums/export-job-type.enum';
 import { ExportJobEntity } from '../../infrastructure/persistence/export-job.entity';
 
 type CellValue = string | number | boolean | null;
+
+/** Rótulos e abas da exportação da conciliação, no vocabulário do sistema anterior. */
+const RECONCILIATION_LABELS: Record<string, string> = {
+  [ReconciliationStatus.MATCHED]: 'Conciliado',
+  [ReconciliationStatus.PLATE_DIVERGENCE]: 'Divergência de placa',
+  [ReconciliationStatus.PHYSICAL_SURPLUS]: 'Sobra física',
+  [ReconciliationStatus.ACCOUNTING_SURPLUS]: 'Sobra contábil',
+  [ReconciliationStatus.DUPLICATE]: 'Duplicidade',
+};
+const RECONCILIATION_SHEET_ORDER = [
+  ReconciliationStatus.MATCHED,
+  ReconciliationStatus.PLATE_DIVERGENCE,
+  ReconciliationStatus.PHYSICAL_SURPLUS,
+  ReconciliationStatus.ACCOUNTING_SURPLUS,
+  ReconciliationStatus.DUPLICATE,
+];
+const RECONCILIATION_SHEETS: Record<ReconciliationStatus, string> = {
+  [ReconciliationStatus.MATCHED]: 'Conciliados',
+  [ReconciliationStatus.PLATE_DIVERGENCE]: 'Divergência de placa',
+  [ReconciliationStatus.PHYSICAL_SURPLUS]: 'Sobra física',
+  [ReconciliationStatus.ACCOUNTING_SURPLUS]: 'Só na contabilidade',
+  [ReconciliationStatus.DUPLICATE]: 'Duplicidades',
+};
 
 export class ExportRowLimitExceededError extends Error {
   constructor(limit: number) {
@@ -126,6 +155,18 @@ export class ExportWorkbookBuilderService {
             workbook,
             await this.loadInventoryItems(manager, job, false),
           );
+          break;
+        case ExportJobType.INVENTORY_ITEMS_VALUATION_XLSX: {
+          const items = await this.loadInventoryItems(manager, job, false);
+          this.addInventorySheet(
+            workbook,
+            items,
+            await this.loadLatestValuations(manager, job),
+          );
+          break;
+        }
+        case ExportJobType.RECONCILIATION_XLSX:
+          await this.addReconciliation(manager, workbook, job);
           break;
         case ExportJobType.INVENTORY_ACCOUNTING_ITEMS_XLSX:
           this.addAccountingSheet(
@@ -252,9 +293,167 @@ export class ExportWorkbookBuilderService {
     this.addExpensesSheet(workbook, expenses);
   }
 
+  /** Avaliação mais recente de cada item (maior data; empate pelo maior ID), como no laudo. */
+  private async loadLatestValuations(
+    manager: EntityManager,
+    job: ExportJobEntity,
+  ): Promise<Map<number, AssetValuationEntity>> {
+    const rows = await manager.getRepository(AssetValuationEntity).find({
+      where: {
+        projectId: job.projectId!,
+        organizationId: job.organizationId,
+      },
+      order: { valuationDate: 'ASC', id: 'ASC' },
+    });
+    const latest = new Map<number, AssetValuationEntity>();
+    for (const row of rows) latest.set(Number(row.inventoryItemId), row);
+    return latest;
+  }
+
+  /**
+   * Conciliação da última execução do projeto, no formato do sistema anterior: uma aba por
+   * situação (Conciliados, Divergência de placa, Sobra física, Só na contabilidade,
+   * Duplicidades) e um Resumo com quantidade e valor residual.
+   */
+  private async addReconciliation(
+    manager: EntityManager,
+    workbook: XLSX.WorkBook,
+    job: ExportJobEntity,
+  ): Promise<void> {
+    const latest = await manager
+      .getRepository(InventoryReconciliationEntity)
+      .findOne({
+        where: {
+          projectId: job.projectId!,
+          organizationId: job.organizationId,
+        },
+        order: { createdAt: 'DESC', id: 'DESC' },
+      });
+    const rows = latest
+      ? await manager.getRepository(InventoryReconciliationEntity).find({
+          where: {
+            projectId: job.projectId!,
+            organizationId: job.organizationId,
+            sessionId: latest.sessionId,
+            runNumber: latest.runNumber,
+          },
+          order: { id: 'ASC' },
+          take: this.maxRows() + 1,
+        })
+      : [];
+    if (rows.length > this.maxRows())
+      throw new ExportRowLimitExceededError(this.maxRows());
+    const ids = (key: 'inventoryItemId' | 'accountingItemId') => [
+      ...new Set(
+        rows.flatMap((r) => (r[key] === null ? [] : [Number(r[key])])),
+      ),
+    ];
+    const physical = new Map<number, InventoryItemEntity>();
+    for (const chunk of this.chunks(ids('inventoryItemId')))
+      for (const item of await manager
+        .getRepository(InventoryItemEntity)
+        .find({ where: { id: In(chunk) }, withDeleted: true }))
+        physical.set(Number(item.id), item);
+    const accounting = new Map<number, InventoryAccountingItemEntity>();
+    for (const chunk of this.chunks(ids('accountingItemId')))
+      for (const item of await manager
+        .getRepository(InventoryAccountingItemEntity)
+        .find({ where: { id: In(chunk) }, withDeleted: true }))
+        accounting.set(Number(item.id), item);
+
+    const headers = [
+      'Situação',
+      'Placa física',
+      'Placa contábil',
+      'Descrição física',
+      'Localização física',
+      'Valor usado (inventário)',
+      'Descrição contábil',
+      'Localização contábil',
+      'Código base',
+      'Código investor',
+      'Valor de aquisição',
+      'Valor residual',
+      'Classificação da sobra',
+      'Item físico ID',
+      'Item contábil ID',
+    ];
+    const formats: Array<CellFormat | null> = headers.map((h) =>
+      h.startsWith('Valor') ? 'money' : null,
+    );
+    const line = (r: InventoryReconciliationEntity): CellValue[] => {
+      const p =
+        r.inventoryItemId === null
+          ? undefined
+          : physical.get(Number(r.inventoryItemId));
+      const a =
+        r.accountingItemId === null
+          ? undefined
+          : accounting.get(Number(r.accountingItemId));
+      return [
+        RECONCILIATION_LABELS[r.status] ?? r.status,
+        r.physicalPlate ?? p?.oldPlate ?? p?.newPlate ?? null,
+        r.accountingPlate ?? a?.plate ?? null,
+        p?.description ?? null,
+        p?.locationText ?? null,
+        this.number(p?.usedValue ?? null),
+        a?.description ?? null,
+        a?.location ?? null,
+        a?.baseCode ?? null,
+        a?.investorCode ?? null,
+        this.number(a?.acquisitionValue ?? null),
+        this.number(a?.residualValue ?? null),
+        a?.surplusClassification ?? null,
+        r.inventoryItemId === null ? null : Number(r.inventoryItemId),
+        r.accountingItemId === null ? null : Number(r.accountingItemId),
+      ];
+    };
+    const summary: CellValue[][] = [];
+    for (const status of RECONCILIATION_SHEET_ORDER) {
+      const group = rows.filter((r) => r.status === status);
+      this.addSheet(
+        workbook,
+        RECONCILIATION_SHEETS[status],
+        headers,
+        group.map(line),
+        formats,
+      );
+      const residual = group.reduce((sum, r) => {
+        const value =
+          r.accountingItemId === null
+            ? null
+            : accounting.get(Number(r.accountingItemId))?.residualValue;
+        return value == null ? sum : sum + Math.round(Number(value) * 100);
+      }, 0);
+      summary.push([
+        RECONCILIATION_LABELS[status],
+        group.length,
+        residual / 100,
+      ]);
+    }
+    summary.push(['Total', rows.length, null]);
+    this.addSheet(
+      workbook,
+      'Resumo',
+      ['Situação', 'Quantidade', 'Valor residual (linhas contábeis)'],
+      latest
+        ? summary
+        : [['Nenhuma conciliação executada neste projeto', 0, null]],
+      [null, 'number', 'money'],
+    );
+  }
+
+  private chunks(values: number[], size = 500): number[][] {
+    const out: number[][] = [];
+    for (let i = 0; i < values.length; i += size)
+      out.push(values.slice(i, i + size));
+    return out;
+  }
+
   private addInventorySheet(
     workbook: XLSX.WorkBook,
     items: InventoryItemEntity[],
+    valuations?: Map<number, AssetValuationEntity>,
   ): void {
     this.addSheet(
       workbook,
@@ -287,37 +486,66 @@ export class ExportWorkbookBuilderService {
         'Criado em',
         'Atualizado em',
         'Excluido em',
+        ...(valuations
+          ? [
+              'Avaliação: fonte de consulta',
+              'Avaliação: data',
+              'Avaliação: valor novo',
+              'Avaliação: valor usado',
+              'Avaliação ID',
+            ]
+          : []),
       ],
       items.map((item) => [
-        item.id,
-        item.organizationId,
-        item.projectId,
-        item.externalItemId,
-        item.sequence,
-        item.oldPlate,
-        item.newPlate,
-        item.unitText,
-        item.addressText,
-        item.locationText,
-        item.description,
-        item.brand,
-        item.model,
-        item.serialNumber,
-        item.capacity,
-        item.year,
-        item.notes,
-        item.source,
-        this.number(item.usedValue),
-        this.number(item.newValue),
-        item.status,
-        this.json(item.metadata),
-        item.createdById,
-        item.updatedById,
-        this.date(item.createdAt),
-        this.date(item.updatedAt),
-        this.date(item.deletedAt),
+        ...this.inventoryCells(item),
+        ...(valuations
+          ? this.valuationCells(valuations.get(Number(item.id)))
+          : []),
       ]),
     );
+  }
+
+  private valuationCells(v: AssetValuationEntity | undefined): CellValue[] {
+    if (!v) return [null, null, null, null, null];
+    return [
+      v.source,
+      this.date(v.valuationDate),
+      this.number(v.newValue),
+      this.number(v.usedValue),
+      Number(v.id),
+    ];
+  }
+
+  private inventoryCells(item: InventoryItemEntity): CellValue[] {
+    return [
+      item.id,
+      item.organizationId,
+      item.projectId,
+      item.externalItemId,
+      item.sequence,
+      item.oldPlate,
+      item.newPlate,
+      item.unitText,
+      item.addressText,
+      item.locationText,
+      item.description,
+      item.brand,
+      item.model,
+      item.serialNumber,
+      item.capacity,
+      item.year,
+      item.notes,
+      item.source,
+      this.number(item.usedValue),
+      this.number(item.newValue),
+      item.status,
+      this.json(item.metadata),
+      item.createdById,
+      item.updatedById,
+      this.date(item.createdAt),
+      this.date(item.updatedAt),
+      this.date(item.deletedAt),
+    ];
   }
 
   private addAccountingSheet(
@@ -337,8 +565,10 @@ export class ExportWorkbookBuilderService {
         'Localização',
         'Data de aquisição',
         'Valor de aquisição',
+        'Valor residual',
         'Código base',
         'Status',
+        'Classificação da sobra',
         'Código investidor',
         'Nota 1',
         'Nota 2',
@@ -362,8 +592,10 @@ export class ExportWorkbookBuilderService {
         item.location,
         this.date(item.acquisitionDate),
         this.number(item.acquisitionValue),
+        this.number(item.residualValue),
         item.baseCode,
         item.status,
+        item.surplusClassification ?? null,
         item.investorCode,
         item.note1,
         item.note2,

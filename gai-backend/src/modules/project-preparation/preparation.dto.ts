@@ -8,17 +8,21 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
   Max,
   MaxLength,
+  MinLength,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ANSWER_STATES,
+  PREFILL_SOURCES,
+  type PrefillSource,
   type AnswerState,
   PREPARATION_KINDS,
   type PreparationKind,
@@ -31,8 +35,8 @@ import {
 
 export class ConditionDto implements QuestionCondition {
   @ApiProperty() @IsString() @MaxLength(80) question_id!: string;
-  @ApiProperty({ enum: ['equals', 'not_equals', 'in', 'answered'] })
-  @IsIn(['equals', 'not_equals', 'in', 'answered'])
+  @ApiProperty({ enum: ['equals', 'not_equals', 'in', 'answered', 'contains'] })
+  @IsIn(['equals', 'not_equals', 'in', 'answered', 'contains'])
   operator!: QuestionCondition['operator'];
   @ApiPropertyOptional() @Allow() value?: Scalar | Scalar[];
 }
@@ -66,6 +70,15 @@ export class QuestionDto {
   @IsString()
   @MaxLength(80)
   quantity_question_id?: string;
+  /** "inline": complemento exibido na linha da pergunta da qual depende (ex.: "QUAL SISTEMA?"). */
+  @ApiPropertyOptional({ enum: ['row', 'inline'] })
+  @IsOptional()
+  @IsIn(['row', 'inline'])
+  display?: 'row' | 'inline';
+  @ApiPropertyOptional({ enum: PREFILL_SOURCES })
+  @IsOptional()
+  @IsIn(PREFILL_SOURCES)
+  prefill?: PrefillSource;
 }
 export class TemplateContentDto {
   @ApiProperty() @IsString() @MaxLength(200) name!: string;
@@ -76,6 +89,14 @@ export class TemplateContentDto {
   @ValidateNested({ each: true })
   @Type(() => QuestionDto)
   questions!: QuestionDto[];
+  /**
+   * E-mail ao cliente (tópicos, textos e pendências), validado por completo no servidor.
+   * Ao editar o modelo sem enviar o campo, a versão nova mantém o e-mail da anterior; null remove.
+   */
+  @ApiPropertyOptional({ type: Object, nullable: true })
+  @IsOptional()
+  @IsObject()
+  email?: Record<string, unknown> | null;
 }
 export class CreateTemplateDto extends TemplateContentDto {
   @ApiProperty({ enum: PREPARATION_KINDS })
@@ -87,6 +108,15 @@ export class UpdateTemplateDto extends TemplateContentDto {
 }
 export class RevisionDto {
   @ApiProperty() @IsInt() @Min(1) revision!: number;
+}
+/** Concluir, reabrir ou excluir (arquivar). Reabrir e excluir exigem motivo, registrado no histórico. */
+export class TransitionDto extends RevisionDto {
+  @ApiPropertyOptional({ minLength: 5, maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MinLength(5)
+  @MaxLength(500)
+  reason?: string;
 }
 export class CreatePreparationDto {
   @ApiProperty() @IsInt() @Min(1) template_id!: number;
@@ -152,6 +182,11 @@ export class AnswerDto {
   @IsString()
   @MaxLength(10000)
   notes?: string | null;
+  /** Marca/desmarca o item como realizado. Omitido: mantém o valor atual. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  realized?: boolean;
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsInt()
@@ -178,6 +213,29 @@ export class HistoryQueryDto {
   @IsInt()
   @Min(1)
   before_id?: number;
+}
+/** Versão editada do e-mail ao cliente (texto simples; a formatação é aplicada na tela). */
+export class SaveEmailDto {
+  @ApiProperty({
+    description: 'Versão do e-mail editado lida (0 quando não há edição)',
+  })
+  @IsInt()
+  @Min(0)
+  email_version!: number;
+  @ApiProperty({
+    description: 'Revisão das respostas em que o texto gerado se baseou',
+  })
+  @IsInt()
+  @Min(1)
+  source_revision!: number;
+  @ApiProperty({ maxLength: 15000 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(15000)
+  text!: string;
+}
+export class RestoreEmailDto {
+  @ApiProperty() @IsInt() @Min(1) email_version!: number;
 }
 export class CommunicationQueryDto {
   @ApiPropertyOptional({ enum: ['email', 'guidance'], default: 'email' })

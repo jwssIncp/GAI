@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import * as XLSX from 'xlsx';
 import { DataSource } from 'typeorm';
 import {
   createTestApp,
@@ -166,7 +167,7 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     await app?.close();
   });
 
-  it('registers all three organizational permissions in the live catalog', async () => {
+  it('registers all four organizational permissions in the live catalog', async () => {
     const permissions = await app
       .get(DataSource)
       .getRepository(PermissionEntity)
@@ -179,6 +180,7 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     ).toEqual([
       ['approve', 'ORGANIZATION'],
       ['edit', 'ORGANIZATION'],
+      ['export', 'ORGANIZATION'],
       ['read', 'ORGANIZATION'],
     ]);
   });
@@ -416,7 +418,14 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       admin,
       409,
     );
-    await post(`${base()}/${item.id}/reopen`, { revision: 3 }, admin, 200);
+    // Reabrir exige motivo (registrado no histórico).
+    await post(`${base()}/${item.id}/reopen`, { revision: 3 }, admin, 400);
+    await post(
+      `${base()}/${item.id}/reopen`,
+      { revision: 3, reason: 'Cliente pediu ajuste' },
+      admin,
+      200,
+    );
     const pending = await patch(`${base()}/${item.id}/answers`, {
       revision: 4,
       answers: [answer('details', null, 'pending')],
@@ -516,6 +525,43 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       ),
     ).toBe(true);
   });
+  it('marca "Realizado" independente da resposta, com autor, e mantém quando omitido', async () => {
+    const item = await create();
+    // Realizado sem resposta (item tratado sem valor), como no sistema anterior.
+    let saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [{ ...answer('flag', null, 'pending'), realized: true }],
+    });
+    let flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({ state: 'pending', realized: true });
+    expect(flag.realized_at).toBeTruthy();
+    expect(saved.body.progress.realized).toBe(1);
+    // Responder sem enviar "realized" não desmarca.
+    saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 2,
+      answers: [answer('flag', true)],
+    });
+    flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({
+      state: 'completed',
+      value: true,
+      realized: true,
+    });
+    // Desmarcar limpa autor e data.
+    saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 3,
+      answers: [{ ...answer('flag', true), realized: false }],
+    });
+    flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({ realized: false, realized_at: null });
+    expect(saved.body.progress.realized).toBe(0);
+  });
   it('archives instances without losing answers or audit records', async () => {
     const item = await create();
     await patch(`${base()}/${item.id}/answers`, {
@@ -526,6 +572,11 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       .delete(`${base()}/${item.id}`)
       .set(auth())
       .send({ revision: 2 })
+      .expect(400);
+    await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}`)
+      .set(auth())
+      .send({ revision: 2, reason: 'Criado por engano' })
       .expect(200);
     const archived = await get(`${base()}/${item.id}`);
     expect(archived.body.status).toBe('archived');
@@ -749,6 +800,296 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
           row.operation === 'COMMUNICATION_PREVIEW',
       ),
     ).toHaveLength(2);
+  });
+  it('exports the visible items as xlsx with its own permission and audit', async () => {
+    const item = await create();
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [
+        answer('flag', true, 'completed', 'Observação exportada'),
+        answer('details', '=HYPERLINK("http://x")'),
+      ],
+    });
+    const file = await request(app.getHttpServer())
+      .get(`${base()}/${item.id}/export`)
+      .set(auth())
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    expect(file.headers['content-type']).toContain('spreadsheetml');
+    expect(file.headers['content-disposition']).toContain(
+      'kick-off-preparacao-sintetica.xlsx',
+    );
+    const sheet = XLSX.read(file.body as Buffer).Sheets['Kick-off'];
+    const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
+    const flat = JSON.stringify(rows);
+    expect(flat).toContain('Observação exportada');
+    // Fórmulas vindas de respostas não são executadas pela planilha.
+    expect(flat).toContain("'=HYPERLINK");
+    // Item oculto no modelo não sai.
+    expect(rows.some((row) => row[2] === 'hidden')).toBe(false);
+    const history = await get(`${base()}/${item.id}/history`);
+    expect(
+      history.body.items.some(
+        (row: { operation: string }) => row.operation === 'EXPORTED',
+      ),
+    ).toBe(true);
+    // Leitura sem a permissão de exportar: recusado.
+    await grant(['project-preparation:read']);
+    await get(`${base()}/${item.id}/export`, user, 403);
+    await grant(['project-preparation:read', 'project-preparation:export']);
+    await get(`${base()}/${item.id}/export`, user, 200);
+  });
+  it('creates the kick-off once when the project is activated, with the latest kick-off model', async () => {
+    const latest = (
+      await post(templates, {
+        name: 'Modelo mais recente',
+        kind: 'kickoff',
+        questions: questions(),
+      })
+    ).body.id as number;
+    const fresh = (
+      await post('/api/v1/projects', {
+        organization_id: 1,
+        company_id: 1,
+        name: 'Projeto ativado',
+      })
+    ).body.id as number;
+    const list = async () =>
+      (await get(`/api/v1/projects/${fresh}/preparations`)).body
+        .items as Array<{
+        id: number;
+        kind: string;
+        status: string;
+        title: string;
+        template_version_id: number;
+      }>;
+    expect(await list()).toHaveLength(0);
+    await post(`/api/v1/projects/${fresh}/activate`, {}, admin, 200);
+    const created = await list();
+    expect(created).toHaveLength(1);
+    expect(created[0]).toMatchObject({ kind: 'kickoff', status: 'draft' });
+    const detail = await get(
+      `/api/v1/projects/${fresh}/preparations/${created[0].id}`,
+    );
+    expect(detail.body.snapshot.name).toBe('Modelo mais recente');
+    const history = await get(
+      `/api/v1/projects/${fresh}/preparations/${created[0].id}/history`,
+    );
+    expect(
+      history.body.items.find(
+        (row: { operation: string }) => row.operation === 'INSTANCE_CREATED',
+      ).changes.origin,
+    ).toBe('project_activation');
+    // Idempotente: inativar e reativar não criam outro.
+    await post(`/api/v1/projects/${fresh}/deactivate`, {}, admin, 200);
+    await post(`/api/v1/projects/${fresh}/reactivate`, {}, admin, 200);
+    expect(await list()).toHaveLength(1);
+    // Sem kick-off ativo (excluído), a reativação cria um novo.
+    await request(app.getHttpServer())
+      .delete(`/api/v1/projects/${fresh}/preparations/${created[0].id}`)
+      .set(auth())
+      .send({ revision: detail.body.revision, reason: 'Criado por engano' })
+      .expect(200);
+    await post(`/api/v1/projects/${fresh}/deactivate`, {}, admin, 200);
+    await post(`/api/v1/projects/${fresh}/reactivate`, {}, admin, 200);
+    expect(
+      (await list()).filter((item) => item.status !== 'archived'),
+    ).toHaveLength(1);
+    // Limpeza: arquiva o modelo criado aqui.
+    await request(app.getHttpServer())
+      .delete(`${templates}/${latest}`)
+      .set(auth())
+      .send({ revision: 1 })
+      .expect(200);
+  });
+  it('counts open kick-offs only of the user organization and of operating projects', async () => {
+    const before = (await get('/api/v1/project-preparations/open-summary')).body
+      .open as number;
+    const item = await create();
+    expect(
+      (await get('/api/v1/project-preparations/open-summary')).body.open,
+    ).toBe(before + 1);
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [answer('flag', false)],
+    });
+    await post(`${base()}/${item.id}/approve`, { revision: 2 }, admin, 200);
+    expect(
+      (await get('/api/v1/project-preparations/open-summary')).body.open,
+    ).toBe(before);
+  });
+  it('generates the client e-mail from the model, saves edits with their own version, warns when stale and restores', async () => {
+    const emailTemplate = (
+      await post(templates, {
+        name: 'Modelo com e-mail',
+        kind: 'kickoff',
+        questions: questions(),
+        email: {
+          subject: 'Kick-off {client}',
+          header: [{ lines: [{ text: 'Prezados, {greeting}.' }] }],
+          topics: [
+            {
+              title: 'Quantidade',
+              inline: true,
+              empty: '—',
+              lines: [{ text: '{q:quantity} bens' }],
+            },
+            {
+              lines: [
+                {
+                  text: 'Detalhes: {q:details}',
+                  when: [
+                    { question_id: 'flag', operator: 'equals', value: true },
+                  ],
+                },
+              ],
+            },
+          ],
+          footer: [],
+          pending_title: 'PENDÊNCIAS:',
+          pendings: [
+            {
+              text: 'Base – {deadline} - ({client})',
+              unless_realized: 'flag',
+            },
+          ],
+        },
+      })
+    ).body as { id: number; email: unknown };
+    expect(emailTemplate.email).toBeTruthy();
+    // Marcador desconhecido é recusado pelo servidor.
+    await post(
+      templates,
+      {
+        name: 'Modelo inválido',
+        kind: 'kickoff',
+        questions: questions(),
+        email: {
+          subject: '{senha}',
+          header: [],
+          topics: [],
+          footer: [],
+          pending_title: 'P',
+          pendings: [],
+        },
+      },
+      admin,
+      400,
+    );
+    // Modelo sem e-mail: a tela própria não se aplica.
+    const plain = await create();
+    await get(`${base()}/${plain.id}/email`, admin, 409);
+
+    const item = await create(emailTemplate.id);
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [answer('quantity', 1500)],
+    });
+    let email = await get(`${base()}/${item.id}/email`);
+    expect(email.body).toMatchObject({
+      subject: 'Kick-off PREPARAÇÃO SINTÉTICA',
+      edited: false,
+      stale: false,
+      revision: 2,
+      email_version: 0,
+      pendings: 1,
+    });
+    // Prazo: primeira sexta depois da data da reunião (29/02/2028 → 03/03).
+    expect(email.body.text).toContain('01- Quantidade: 1.500 bens');
+    expect(email.body.text).toContain(
+      'PENDÊNCIAS:\n\n01- Base – 03/03 - (PREPARAÇÃO SINTÉTICA)',
+    );
+    expect(email.body.text).not.toContain('Detalhes');
+
+    // Edição: concorrência própria do e-mail, sem disputar a revisão das respostas.
+    const put = (body: object, status = 200, token = admin) =>
+      request(app.getHttpServer())
+        .put(`${base()}/${item.id}/email`)
+        .set(auth(token))
+        .send(body)
+        .expect(status);
+    email = await put({
+      email_version: 0,
+      source_revision: 2,
+      text: 'Texto revisado com dados pessoais',
+    });
+    expect(email.body).toMatchObject({
+      edited: true,
+      stale: false,
+      email_version: 1,
+      revision: 2,
+      text: 'Texto revisado com dados pessoais',
+    });
+    await put(
+      { email_version: 0, source_revision: 2, text: 'Conflitante' },
+      409,
+    );
+    await put({ email_version: 1, source_revision: 99, text: 'x' }, 400);
+    await put({ email_version: 1, source_revision: 2, text: '' }, 400);
+
+    // Respostas mudaram depois da edição: aviso de desatualizado.
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 2,
+      answers: [{ ...answer('flag', true), realized: true }],
+    });
+    email = await get(`${base()}/${item.id}/email`);
+    expect(email.body).toMatchObject({ edited: true, stale: true });
+    expect(email.body.original).not.toContain('PENDÊNCIAS');
+    // Editar um texto desatualizado não o torna atual.
+    email = await put({
+      email_version: 1,
+      source_revision: 3,
+      text: 'Ainda antigo',
+    });
+    expect(email.body.stale).toBe(true);
+
+    // Restaurar descarta a edição e volta ao gerado com as respostas atuais.
+    const restored = await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}/email`)
+      .set(auth())
+      .send({ email_version: 2 })
+      .expect(200);
+    expect(restored.body).toMatchObject({
+      edited: false,
+      stale: false,
+      email_version: 3,
+    });
+    expect(restored.body.text).toBe(restored.body.original);
+    await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}/email`)
+      .set(auth())
+      .send({ email_version: 3 })
+      .expect(409);
+
+    // Histórico sem o texto do e-mail (dados pessoais).
+    const history = await get(`${base()}/${item.id}/history`);
+    const operations = history.body.items.map(
+      (row: { operation: string }) => row.operation,
+    );
+    expect(operations).toEqual(
+      expect.arrayContaining([
+        'EMAIL_GENERATED',
+        'EMAIL_EDITED',
+        'EMAIL_RESTORED',
+      ]),
+    );
+    expect(JSON.stringify(history.body)).not.toContain('dados pessoais');
+
+    // Só leitura: gera, mas não edita.
+    await grant(['project-preparation:read']);
+    await get(`${base()}/${item.id}/email`, user);
+    await put({ email_version: 3, source_revision: 3, text: 'x' }, 403, user);
+    // Projeto de outra organização na URL: recusado.
+    await get(
+      `/api/v1/projects/${otherProject}/preparations/${item.id}/email`,
+      user,
+      403,
+    );
   });
   it.each([
     ProjectStatus.FINISHED,

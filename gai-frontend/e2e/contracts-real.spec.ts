@@ -123,7 +123,7 @@ test("ORG_ADMIN manages contracts/amendments, refreshes history and exports filt
   await dialog.getByLabel("Justificativa").fill("Revisão documental sintética");
   await dialog.getByRole("button", { name: "Salvar contrato" }).click();
   await expect(page.getByText(`Contrato ${number} · versão 3`)).toBeVisible();
-  await openProjectTab(page, "Visão geral", "Resumo");
+  await openProjectTab(page, "Painel", "Resumo");
   await openProjectTab(page, "Comercial", "Contratos");
   await expect(page.locator("[data-project-id]")).toHaveAttribute(
     "data-project-id",

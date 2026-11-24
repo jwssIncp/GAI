@@ -256,6 +256,11 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
           'accounting.status',
           InventoryAccountingItemStatus.IGNORED,
         ),
+        'SUM(accounting.residual_value) AS total_residual_value',
+        this.countCase(
+          'residual_missing_items',
+          'accounting.residual_value IS NULL',
+        ),
       ])
       .where('accounting.project_id = :projectId', { projectId })
       .getRawOne<RawRow>();
@@ -291,7 +296,15 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
               'r.status',
               ReconciliationStatus.DUPLICATE,
             ),
+            // Valor residual da linha contábil vinculada, por situação da última execução.
+            `SUM(CASE WHEN r.status = '${ReconciliationStatus.MATCHED}' THEN a.residual_value END) AS reconciled_residual_value`,
+            `SUM(CASE WHEN r.status = '${ReconciliationStatus.ACCOUNTING_SURPLUS}' THEN a.residual_value END) AS accounting_surplus_residual_value`,
           ])
+          .leftJoin(
+            InventoryAccountingItemEntity,
+            'a',
+            'a.id = r.accounting_item_id',
+          )
           .where('r.project_id = :projectId', { projectId })
           .andWhere('r.session_id = :sessionId', {
             sessionId: latest.sessionId,
@@ -328,6 +341,14 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
       ),
       duplicate_items: this.number(operational, 'duplicate_items'),
       consolidated_items: consolidatedItems,
+      total_residual_value: this.nullableMoney(row?.total_residual_value),
+      residual_missing_items: this.number(row, 'residual_missing_items'),
+      reconciled_residual_value: this.nullableMoney(
+        operational.reconciled_residual_value,
+      ),
+      accounting_surplus_residual_value: this.nullableMoney(
+        operational.accounting_surplus_residual_value,
+      ),
     };
   }
 
@@ -779,6 +800,20 @@ export class TypeOrmProjectSummaryRepository implements ProjectSummaryRepository
 
   private money(value: unknown): string {
     return Number(value ?? 0).toFixed(2);
+  }
+
+  /** Soma monetária com 2 casas; nula quando nenhuma linha tem valor (ausência não é zero). */
+  private nullableMoney(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    // MySQL devolve DECIMAL exato como texto; SQLite devolve número (arredonda).
+    if (typeof value === 'number') return value.toFixed(2);
+    if (typeof value !== 'string') return null;
+    const text = value;
+    if (/^-?\d+(\.\d+)?$/.test(text)) {
+      const [whole, fraction = ''] = text.split('.');
+      return `${whole}.${fraction.padEnd(2, '0').slice(0, 2)}`;
+    }
+    return Number(value).toFixed(2);
   }
 
   private isoDate(value: unknown): string | null {

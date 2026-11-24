@@ -18,6 +18,7 @@ import {
   ProjectActorContext,
   ProjectScopeService,
 } from '../services/project-scope.service';
+import { ProjectActivationHooks } from '../services/project-activation-hooks';
 
 @Injectable()
 export class UpdateProjectStatusUseCase {
@@ -26,6 +27,7 @@ export class UpdateProjectStatusUseCase {
     private readonly repository: ProjectRepository,
     private readonly scope: ProjectScopeService,
     private readonly logger: PinoLogger,
+    private readonly activation: ProjectActivationHooks,
   ) {
     this.logger.setContext(UpdateProjectStatusUseCase.name);
   }
@@ -93,6 +95,14 @@ export class UpdateProjectStatusUseCase {
       organizationId: saved.organizationId,
       result: 'SUCCESS',
     });
+
+    // Projeto passou a ativo: ganchos idempotentes (ex.: kick-off automático).
+    if (action === 'activate' || action === 'reactivate')
+      await this.activation.notify({
+        projectId: saved.id,
+        organizationId: saved.organizationId,
+        actor,
+      });
 
     return ProjectResponseDto.fromDomain(saved);
   }

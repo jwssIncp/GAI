@@ -267,7 +267,22 @@ export type ProjectHistoryEntry = {
   created_at: string;
   changes: Record<string, { before: unknown; after: unknown }>;
 };
+/** Resumo comercial do projeto na listagem (só para quem lê contratos). */
+export type ProjectContractSummary = {
+  count: number;
+  numbers: string[];
+  contracted_on: string | null;
+  segments: string[];
+  currency: string | null;
+  current_value: string | null;
+  missing_value: number;
+  estimated_assets: number | null;
+  recurring: boolean | null;
+  services: string[];
+};
 export type Project = ProjectRegistrationFields & {
+  /** Ausente quando o perfil não lê contratos; nulo quando o projeto não tem contrato. */
+  contract?: ProjectContractSummary | null;
   company_name?: string | null;
   responsible_user_name?: string | null;
   planning_responsible_user_name?: string | null;
@@ -343,6 +358,8 @@ export type ProjectUnitListResponse = {
 export type ExportJobType =
   | 'valuation_batches_xlsx'
   | 'inventory_items_xlsx'
+  | 'inventory_items_valuation_xlsx'
+  | 'reconciliation_xlsx'
   | 'inventory_accounting_items_xlsx'
   | 'pending_issues_xlsx'
   | 'payments_xlsx'
@@ -410,6 +427,18 @@ export type ProjectAccountingSummary = {
   divergent_accounting_items: number;
   not_found_accounting_items: number;
   ignored_accounting_items: number;
+  /** Última execução da conciliação do projeto (nulo: nunca executada) e contagens dela. */
+  latest_reconciliation_run?: number | null;
+  reconciled_items?: number;
+  physical_surplus_items?: number;
+  accounting_surplus_items?: number;
+  duplicate_items?: number;
+  consolidated_items?: number;
+  /** Valor residual (texto decimal); nulo quando nenhuma linha informa. */
+  total_residual_value?: string | null;
+  residual_missing_items?: number;
+  reconciled_residual_value?: string | null;
+  accounting_surplus_residual_value?: string | null;
 };
 export type ProjectPendingIssuesSummary = {
   total_pending_issues: number;
@@ -809,6 +838,8 @@ export type InventoryAccountingItemInput = {
   location?: string | null;
   acquisition_date?: string | null;
   acquisition_value?: string | null;
+  /** Valor residual (líquido contábil). */
+  residual_value?: string | null;
   base_code?: string | null;
   status?: InventoryAccountingItemStatus;
   investor_code?: string | null;
@@ -822,6 +853,8 @@ export type InventoryAccountingItemInput = {
 
 export type InventoryAccountingItem = InventoryAccountingItemInput & {
   id: number;
+  /** Classificação manual da sobra contábil (NPI, ABRIR NF ou texto livre). */
+  surplus_classification?: string | null;
   organization_id: number;
   project_id: number;
   status: InventoryAccountingItemStatus;

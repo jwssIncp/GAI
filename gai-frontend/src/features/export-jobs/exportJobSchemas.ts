@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 export const exportJobTypes = [
   'inventory_items_xlsx',
+  'inventory_items_valuation_xlsx',
+  'reconciliation_xlsx',
   'inventory_accounting_items_xlsx',
   'pending_issues_xlsx',
   'payments_xlsx',
@@ -15,6 +17,8 @@ export const exportJobStatuses = ['pending', 'processing', 'finished', 'failed',
 export const exportJobTypeLabels: Record<(typeof exportJobTypes)[number], string> = {
   valuation_batches_xlsx: 'Resultados de avaliações em lote XLSX',
   inventory_items_xlsx: 'Itens inventariados XLSX',
+  inventory_items_valuation_xlsx: 'Itens com avaliação XLSX',
+  reconciliation_xlsx: 'Conciliação físico-contábil XLSX',
   inventory_accounting_items_xlsx: 'Base contábil XLSX',
   pending_issues_xlsx: 'Pendências XLSX',
   payments_xlsx: 'Pagamentos XLSX',

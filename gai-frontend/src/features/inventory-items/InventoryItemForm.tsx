@@ -5,7 +5,7 @@ import { FormField } from '@/components/base/FormField';
 import { MoneyInput } from '@/components/base/MoneyInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { inventoryItemFormSchema, inventoryItemStatuses, type InventoryItemFormValues } from './inventoryItemSchemas';
+import { inventoryItemFormSchema, inventoryItemStatusLabels, inventoryItemStatuses, type InventoryItemFormValues } from './inventoryItemSchemas';
 import type { InventoryItem, InventoryItemInput } from '@/types/api';
 
 export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: InventoryItem; busy: boolean; onSubmit: (payload: InventoryItemInput) => void }) {
@@ -50,7 +50,7 @@ export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: Inven
         <FormField label="Número de série"><Input {...form.register('serial_number')} /></FormField>
         <FormField label="Capacidade"><Input {...form.register('capacity')} /></FormField>
         <FormField label="Ano" error={form.formState.errors.year?.message}><DateInput type="number" min={1900} max={2100} {...form.register('year')} /></FormField>
-        <FormField label="Origem"><Input {...form.register('source')} /></FormField>
+        <FormField label="Fonte de consulta"><Input {...form.register('source')} /></FormField>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField label="Unidade"><Input {...form.register('unit_text')} /></FormField>
@@ -81,7 +81,7 @@ export function InventoryItemForm({ initial, busy, onSubmit }: { initial?: Inven
         ))}
         <FormField label="Status">
           <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register('status')}>
-            {inventoryItemStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
+            {inventoryItemStatuses.map((status) => <option key={status} value={status}>{inventoryItemStatusLabels[status]}</option>)}
           </select>
         </FormField>
       </div>

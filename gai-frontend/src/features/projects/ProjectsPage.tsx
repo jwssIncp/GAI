@@ -4,7 +4,6 @@ import { normalizePage } from "@/api/pagination";
 import { DataPanel } from "@/components/base/DataPanel";
 import { DataTable } from "@/components/base/DataTable";
 import { FilterPanel } from "@/components/base/FilterPanel";
-import { MetricCard } from "@/components/base/Cards";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
 import { Pagination } from "@/components/base/Pagination";
@@ -16,7 +15,8 @@ import { useToast } from "@/components/ui/toast-context";
 import { useAuth } from "@/features/auth/AuthContext";
 import { PermissionGate } from "@/features/auth/PermissionGate";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { formatDate } from "@/utils/format";
+import { formatDate, formatInteger } from "@/utils/format";
+import { contractDate, contractMoney } from "@/features/contracts/contractsApi";
 import type {
   Project,
   ProjectStatus,
@@ -26,6 +26,7 @@ import type {
 import { ProjectForm } from "./ProjectForm";
 import { ProjectCreatePage } from "./ProjectCreatePage";
 import { ProjectLifecycleActions } from "./ProjectLifecycleActions";
+import { ProjectsDashboard, ProjectsKpis } from "./ProjectsDashboard";
 import { ProjectRegistrationSelect } from "./ProjectRegistrationSelect";
 import { OrganizationSelect } from "./ProjectSelectors";
 import { canMutateProjectOperations } from "./projectLifecycle";
@@ -89,6 +90,14 @@ export function ProjectsPage() {
     sort_by: sortBy,
     sort_order: sortOrder,
   });
+  // Mesmo recorte da lista para os KPIs e o Dashboard (filtros aceitos pela visão geral).
+  const overviewFilters = Object.fromEntries(
+    Object.entries({
+      search: search || undefined,
+      status,
+      company_id: companyId ? String(companyId) : undefined,
+    }).filter((entry): entry is [string, string] => Boolean(entry[1])),
+  );
   const editId = positiveInt(searchParams.get("edit"));
   const editing = useProject(editId);
   const updateProject = useUpdateProject(editId ?? 0);
@@ -209,6 +218,9 @@ export function ProjectsPage() {
       header: "Status",
       cell: (item: Project) => <StatusBadge value={item.status} />,
     },
+    ...(pageData?.items.some((item) => item.contract !== undefined)
+      ? contractColumns
+      : []),
     {
       header: "Responsável",
       cell: (item: Project) => item.responsible_user_name || "Não definido",
@@ -255,7 +267,7 @@ export function ProjectsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Projetos"
+        title="Painel Geral"
         description="Planejamento e acompanhamento dos projetos por empresa e operação."
         action={
           hasPermission("projects:create") ? (
@@ -272,24 +284,20 @@ export function ProjectsPage() {
           ) : null
         }
       />
-      {projects.data?.status_counts ? (
-        <div
-          className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3"
-          aria-label="Indicadores dos projetos filtrados"
-        >
-          <MetricCard
-            label="Total filtrado"
-            value={projects.data.total_items}
-          />
-          {(["draft", "active", "paused", "finished"] as const).map((value) => (
-            <MetricCard
-              key={value}
-              label={statusLabel(value)}
-              value={projects.data?.status_counts?.[value] ?? 0}
-            />
-          ))}
-        </div>
-      ) : null}
+      <ProjectsKpis
+        filters={overviewFilters}
+        total={projects.data?.total_items}
+        open={
+          projects.data
+            ? (projects.data.status_counts?.active ?? 0)
+            : undefined
+        }
+      />
+      <ProjectsDashboard
+        filters={overviewFilters}
+        status={status}
+        onStatus={(value) => updateParams({ status: value, page: 1 })}
+      />
       <FilterPanel>
         <div className="grid w-full min-w-0 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
           <SearchInput
@@ -447,3 +455,53 @@ function ProjectsListPanel({ total, children }: { total: number; children: React
     </DataPanel>
   );
 }
+
+const noContract = (
+  <span className="text-xs text-muted-foreground">Sem contrato</span>
+);
+/** Colunas do contrato na lista (valor vigente, itens, segmento e data), como no sistema anterior. */
+const contractColumns = [
+  {
+    header: "Valor",
+    className: "text-right",
+    cell: (item: Project) =>
+      !item.contract ? (
+        noContract
+      ) : item.contract.current_value == null ? (
+        <span className="text-xs text-muted-foreground">
+          {item.contract.currency ? "Não informado" : "Moedas diferentes"}
+        </span>
+      ) : (
+        <span className="tabular-nums">
+          {contractMoney(item.contract.current_value, item.contract.currency!)}
+          {item.contract.missing_value ? (
+            <span className="block text-xs text-muted-foreground">
+              {item.contract.missing_value} contrato(s) sem valor
+            </span>
+          ) : null}
+        </span>
+      ),
+  },
+  {
+    header: "Itens",
+    className: "text-right",
+    cell: (item: Project) =>
+      !item.contract
+        ? "—"
+        : item.contract.estimated_assets == null
+          ? "—"
+          : formatInteger(item.contract.estimated_assets),
+  },
+  {
+    header: "Segmento",
+    cell: (item: Project) =>
+      !item.contract
+        ? "—"
+        : item.contract.segments.join(", ") || "—",
+  },
+  {
+    header: "Data do contrato",
+    cell: (item: Project) =>
+      !item.contract ? "—" : contractDate(item.contract.contracted_on),
+  },
+];

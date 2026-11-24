@@ -15,6 +15,15 @@ export const EXPORT_CONTENT_PERMISSIONS: Record<ExportJobType, string[]> = {
     'inventory-items:read',
   ],
   [ExportJobType.INVENTORY_ITEMS_XLSX]: ['inventory-items:read'],
+  [ExportJobType.INVENTORY_ITEMS_VALUATION_XLSX]: [
+    'inventory-items:read',
+    'asset-valuations:read',
+  ],
+  [ExportJobType.RECONCILIATION_XLSX]: [
+    'reconciliations:read',
+    'inventory-items:read',
+    'inventory-accounting-items:read',
+  ],
   [ExportJobType.INVENTORY_ACCOUNTING_ITEMS_XLSX]: [
     'inventory-accounting-items:read',
   ],

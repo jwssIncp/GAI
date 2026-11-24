@@ -831,7 +831,7 @@ test('filtra itens por status e busca', async ({ page }) => {
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
   await page.getByLabel('Filtrar por status').selectOption('pending');
-  await page.getByPlaceholder('Buscar item').fill('Notebook');
+  await page.getByPlaceholder('Buscar (placa, descrição, marca, modelo, série)').fill('Notebook');
   await expect(page.getByText('Notebook Dell')).toBeVisible();
 });
 
@@ -1038,9 +1038,9 @@ test('navega entre abas do workspace do projeto', async ({ page }) => {
   await mockApi(page);
   await authenticate(page);
   await page.goto('/app/projects/10/summary');
-  await openProjectTab(page, 'Inventário', 'Itens e avaliação');
+  await openProjectTab(page, 'Inventário', 'Itens inventariados');
   await expect(page.getByRole('heading', { name: 'Itens inventariados' })).toBeVisible();
-  await expect(projectTabLink(page, 'Inventário', 'Itens e avaliação')).toHaveAttribute('aria-current', 'page');
+  await expect(projectTabLink(page, 'Inventário', 'Itens inventariados')).toHaveAttribute('aria-current', 'page');
   await expect(projectNav(page).getByRole('link', { name: 'Imagens', exact: true })).toHaveCount(0);
 });
 

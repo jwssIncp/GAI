@@ -13,6 +13,8 @@ export interface ParsedAccountingRow {
     location: string | null;
     acquisitionDate: Date | null;
     acquisitionValue: string | null;
+    /** Ausente quando a planilha não tem a coluna: a reimportação não apaga o valor. */
+    residualValue?: string | null;
     baseCode: string | null;
     status: InventoryAccountingItemStatus;
     investorCode: string | null;
@@ -25,6 +27,16 @@ export interface ParsedAccountingRow {
   };
   errors: string[];
 }
+
+/** Cabeçalhos aceitos para o valor residual (líquido contábil), em português e inglês. */
+const RESIDUAL_KEYS = [
+  'valor_residual',
+  'residual_value',
+  'valor_liquido_contabil',
+  'valor_contabil_liquido',
+  'vlc',
+  'net_book_value',
+];
 
 @Injectable()
 export class AccountingImportParserService {
@@ -60,6 +72,8 @@ export class AccountingImportParserService {
     const money = this.scope.normalizeMoney(
       this.pick(normalized, ['valor_aquisicao', 'acquisition_value']),
     );
+    const residualRaw = this.pick(normalized, RESIDUAL_KEYS);
+    const residual = this.scope.normalizeMoney(residualRaw);
     const statusValue = this.scope.cleanText(this.pick(normalized, ['status']));
     const status = this.parseStatus(statusValue, errors);
     const serial =
@@ -82,6 +96,13 @@ export class AccountingImportParserService {
     ) {
       errors.push('O valor de aquisição deve ser um número decimal.');
     }
+    if (
+      residual !== null &&
+      residual !== undefined &&
+      !/^\d{1,13}(\.\d{1,2})?$/.test(residual)
+    ) {
+      errors.push('O valor residual deve ser um número decimal.');
+    }
 
     const consumed = new Set([
       'serial_number',
@@ -93,6 +114,7 @@ export class AccountingImportParserService {
       'localizacao',
       'data_aquisicao',
       'valor_aquisicao',
+      ...RESIDUAL_KEYS,
       'cod_base',
       'status',
       'codigo_investor',
@@ -130,6 +152,9 @@ export class AccountingImportParserService {
           this.scope.cleanText(this.pick(normalized, ['localizacao'])) ?? null,
         acquisitionDate: date ?? null,
         acquisitionValue: money ?? null,
+        residualValue: RESIDUAL_KEYS.some((key) => key in normalized)
+          ? (residual ?? null)
+          : undefined,
         baseCode:
           this.scope.cleanText(
             this.pick(normalized, ['cod_base', 'base_code']),

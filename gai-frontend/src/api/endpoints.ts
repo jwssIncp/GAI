@@ -373,6 +373,8 @@ export const accountingItemsApi = {
     api.post<InventoryAccountingItem>(`/projects/${projectId}/inventory-accounting-items/${id}/deactivate`).then((r) => r.data),
   reactivate: (projectId: number, id: number) =>
     api.post<InventoryAccountingItem>(`/projects/${projectId}/inventory-accounting-items/${id}/reactivate`).then((r) => r.data),
+  classify: (projectId: number, ids: number[], classification: string | null) =>
+    api.post<{ updated: number; classification: string | null }>(`/projects/${projectId}/inventory-accounting-items/classification`, { ids, classification }).then((r) => r.data),
 };
 
 export const accountingImportsApi = {

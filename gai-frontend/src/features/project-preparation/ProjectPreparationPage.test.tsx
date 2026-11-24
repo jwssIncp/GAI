@@ -7,10 +7,11 @@ import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import type { CurrentUser } from '@/types/api';
 import { ProjectPreparationPage } from './ProjectPreparationPage';
 import { preparationApi } from './preparationQueries';
-import type {
-  Preparation,
-  PreparationContext,
-  PreparationTemplate,
+import {
+  ORGANIZATION_OPTION,
+  type Preparation,
+  type PreparationContext,
+  type PreparationTemplate,
 } from './preparationTypes';
 import { referenceTemplate } from './referenceTemplates';
 
@@ -192,15 +193,51 @@ describe('Project preparation UI', () => {
     renderPage();
     await screen.findByText('Reunião inicial', { selector: 'h2' });
     expect(
-      screen.getByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.getByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Lições anteriores' }),
+      screen.queryByRole('button', { name: 'Detalhes: Lições anteriores' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/Desabilitada pelas respostas atuais/),
+      screen.getByText('BLOQUEADO'),
     ).toBeInTheDocument();
-    expect(screen.getByText(/0 não aplicáveis/)).toBeInTheDocument();
+    expect(screen.getByText(/não aplicáveis: 0/)).toBeInTheDocument();
+  });
+  it('lista kick-offs no painel azul, filtra por situação e responde listas na linha como no sistema anterior', async () => {
+    const ui = userEvent.setup();
+    vi.spyOn(preparationApi, 'answers').mockResolvedValue(structuredClone(seed));
+    renderPage();
+    const [list] = await screen.findAllByRole('region', { name: 'Kick-offs' });
+    expect(list).toHaveTextContent('Reunião inicial');
+    expect(list).toHaveTextContent('0 de 1 (0%)');
+    expect(list).toHaveTextContent('Em andamento');
+    const [group] = await screen.findAllByRole('region', { name: 'Escopo' });
+    expect(group).toHaveTextContent('PENDENTE');
+    expect(screen.getByText('0 de 1 verificado(s)')).toBeInTheDocument();
+    await ui.click(screen.getByRole('button', { name: 'Realizados' }));
+    expect(screen.getByText('Nenhum item nesta situação.')).toBeInTheDocument();
+    await ui.click(screen.getByRole('button', { name: 'Todos' }));
+    await ui.selectOptions(
+      screen.getByLabelText('Resposta: Já houve inventário?'),
+      'true',
+    );
+    await waitFor(() =>
+      expect(preparationApi.answers).toHaveBeenCalledWith(10, 20, 1, [
+        expect.objectContaining({
+          question_id: 'flag',
+          state: 'completed',
+          value: true,
+        }),
+      ]),
+    );
+    // Responder não conclui: o "Realizado" é um botão à parte, como no sistema anterior.
+    expect(vi.mocked(preparationApi.answers).mock.calls[0][3][0]).not.toHaveProperty('realized');
+    await ui.click(screen.getByRole('button', { name: 'Realizado: Já houve inventário?' }));
+    await waitFor(() =>
+      expect(preparationApi.answers).toHaveBeenLastCalledWith(10, 20, 1, [
+        expect.objectContaining({ question_id: 'flag', realized: true }),
+      ]),
+    );
   });
   it('persists a typed answer with revision and refreshes enablement from the backend', async () => {
     const ui = userEvent.setup();
@@ -229,7 +266,7 @@ describe('Project preparation UI', () => {
     renderPage();
     await ui.click(
       await screen.findByRole('button', {
-        name: 'Responder: Já houve inventário?',
+        name: 'Detalhes: Já houve inventário?',
       }),
     );
     await ui.selectOptions(screen.getByLabelText('Situação'), 'completed');
@@ -246,7 +283,7 @@ describe('Project preparation UI', () => {
     );
     expect(
       await screen.findByRole('button', {
-        name: 'Responder: Lições anteriores',
+        name: 'Detalhes: Lições anteriores',
       }),
     ).toBeInTheDocument();
     expect(await screen.findByText(/Resposta salva/)).toBeInTheDocument();
@@ -257,10 +294,10 @@ describe('Project preparation UI', () => {
       await screen.findByText('Nenhum Checklist do cliente criado'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Nova preparação' }),
+      screen.queryByRole('button', { name: 'Novo checklist' }),
     ).not.toBeInTheDocument();
   });
   it('shows API errors with retry and does not show protected content', async () => {
@@ -281,10 +318,10 @@ describe('Project preparation UI', () => {
     renderPage(['read']);
     await screen.findByText('Reunião inicial', { selector: 'h2' });
     expect(
-      screen.queryByRole('button', { name: 'Aprovar preparação' }),
+      screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     await ui.click(screen.getByRole('button', { name: 'Histórico' }));
     expect(await screen.findByText('Preparação criada')).toBeInTheDocument();
@@ -297,11 +334,16 @@ describe('Project preparation UI', () => {
     vi.spyOn(preparationApi, 'create').mockResolvedValue({ ...seed, id: 21 });
     renderPage();
     await ui.click(
-      await screen.findByRole('button', { name: 'Nova preparação' }),
+      await screen.findByRole('button', { name: '+ Novo kick-off' }),
     );
-    await ui.type(screen.getByLabelText('Título'), 'Nova reunião');
+    // Como no sistema anterior, basta o nome do cliente (já vem com a empresa do projeto).
+    const name = screen.getByLabelText('Nome do cliente');
+    expect(name).toHaveValue(context.company!.name);
+    await ui.clear(name);
+    await ui.type(name, 'Nova reunião');
+    await ui.click(screen.getByText('Mais opções'));
     await ui.type(screen.getByLabelText('Data da preparação'), '2028-02-29');
-    await ui.click(screen.getByRole('button', { name: 'Criar preparação' }));
+    await ui.click(screen.getByRole('button', { name: 'Criar' }));
     await waitFor(() =>
       expect(preparationApi.create).toHaveBeenCalledWith(
         10,
@@ -317,7 +359,7 @@ describe('Project preparation UI', () => {
     const ui = userEvent.setup();
     const copy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     vi.spyOn(preparationApi, 'communication').mockResolvedValue({
-      channel: 'email',
+      channel: 'guidance',
       recipient: null,
       subject: 'Ata Alfa',
       body: 'Conteúdo autorizado da reunião',
@@ -325,14 +367,14 @@ describe('Project preparation UI', () => {
     });
     renderPage();
     await ui.click(
-      await screen.findByRole('button', { name: 'Prévia de comunicação' }),
+      await screen.findByRole('button', { name: 'Orientação técnica' }),
     );
     expect(preparationApi.communication).not.toHaveBeenCalled();
     expect(
       screen.queryByRole('button', { name: 'Copiar texto revisado' }),
     ).not.toBeInTheDocument();
     await ui.click(
-      screen.getByRole('button', { name: 'Gerar prévia de e-mail' }),
+      screen.getByRole('button', { name: 'Gerar orientação técnica' }),
     );
     expect(
       await screen.findByDisplayValue('Conteúdo autorizado da reunião'),
@@ -382,7 +424,7 @@ describe('Project preparation UI', () => {
     renderPage();
     await ui.click(
       await screen.findByRole('button', {
-        name: 'Responder: Já houve inventário?',
+        name: 'Detalhes: Já houve inventário?',
       }),
     );
     await ui.click(screen.getByRole('button', { name: 'Salvar resposta' }));
@@ -393,6 +435,41 @@ describe('Project preparation UI', () => {
   });
 });
 describe('Preparation on closed projects', () => {
+  it('lista no padrão do sistema anterior: busca sem acento, Concluir na linha e Excluir com motivo', async () => {
+    const ui = userEvent.setup();
+    vi.spyOn(preparationApi, 'list').mockResolvedValue({
+      items: [
+        { ...structuredClone(seed), title: 'São Paulo Indústria' },
+        { ...structuredClone(seed), id: 12, title: 'Arquivado antigo', status: 'archived' },
+        { ...structuredClone(seed), id: 13, title: 'Concluído', status: 'approved' },
+      ],
+    });
+    vi.spyOn(preparationApi, 'get').mockResolvedValue({ ...structuredClone(seed), title: 'São Paulo Indústria' });
+    const transition = vi.spyOn(preparationApi, 'transition').mockResolvedValue(structuredClone(seed));
+    renderPage();
+    const table = (await screen.findAllByRole('region', { name: 'Kick-offs' }))[0];
+    expect(within(table).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['Cliente', 'Data', 'Check list', 'Situação', 'Ações']);
+    // Arquivados ficam fora da lista até "Mostrar arquivados".
+    expect(within(table).queryByText('Arquivado antigo')).not.toBeInTheDocument();
+    expect(within(table).getByText('Em andamento')).toBeInTheDocument();
+    expect(within(table).getByText('Concluída')).toBeInTheDocument();
+    expect(within(table).getByRole('button', { name: 'Reabrir Concluído' })).toBeInTheDocument();
+    await ui.type(screen.getByRole('searchbox', { name: 'Buscar cliente' }), 'sao paulo');
+    expect(within(table).queryByText('Concluído')).not.toBeInTheDocument();
+    expect(within(table).getByText('São Paulo Indústria')).toBeInTheDocument();
+    await ui.click(within(table).getByRole('button', { name: 'Concluir São Paulo Indústria' }));
+    await ui.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Concluir' }));
+    await waitFor(() => expect(transition).toHaveBeenCalledWith(10, seed.id, seed.revision, 'approve', undefined));
+    // Excluir (arquiva) exige motivo de pelo menos 5 caracteres.
+    // Excluir da barra da lista (o detalhe também tem o botão).
+    await ui.click(within(table).getByRole('button', { name: 'Excluir' }));
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', { name: 'Excluir' });
+    expect(confirm).toBeDisabled();
+    await ui.type(within(dialog).getByLabelText('Motivo'), 'Criado por engano');
+    await ui.click(confirm);
+    await waitFor(() => expect(transition).toHaveBeenCalledWith(10, seed.id, seed.revision, 'archive', 'Criado por engano'));
+  });
   it('preserves consultation while hiding instance mutations and approval on finished projects', async () => {
     vi.spyOn(preparationApi, 'context').mockResolvedValue({
       ...context,
@@ -405,13 +482,13 @@ describe('Preparation on closed projects', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Nova preparação' }),
+      screen.queryByRole('button', { name: /Novo kick-off/ }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Aprovar preparação' }),
+      screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Histórico' }),
@@ -428,17 +505,53 @@ describe('Audited reference model suggestions', () => {
     );
     const sequence = kickoff.questions.find((q) => q.id === 'label-sequence')!;
     expect(sequence.quantity_question_id).toBe('label-quantity');
+    // Só o fornecedor N/A bloqueia as etiquetas (como no sistema anterior).
     expect(sequence.enabled_when).toEqual([
-      {
-        question_id: 'label-supplier',
-        operator: 'not_equals',
-        value: 'Não aplicável',
-      },
+      { question_id: 'label-supplier', operator: 'not_equals', value: 'N/A' },
     ]);
+    // Fornecedor e despesas mostram o nome da organização (valor estável no modelo).
+    expect(kickoff.questions.find((q) => q.id === 'label-supplier')!.options).toEqual([ORGANIZATION_OPTION, 'CLIENTE', 'N/A']);
+    const byId = (id: string) => kickoff.questions.find((q) => q.id === id)!;
+    expect(byId('scope').type).toBe('multi_select');
+    expect(byId('asset-profile-other')).toMatchObject({
+      type: 'text',
+      required: true,
+      display: 'inline',
+      enabled_when: [{ question_id: 'asset-profile', operator: 'contains', value: 'OUTROS' }],
+    });
+    expect(byId('field-period').type).toBe('date_range');
+    expect(byId('field-hours-detail').type).toBe('schedule');
+    expect(byId('project-contact').type).toBe('contact');
+    expect(byId('old-label-sequences')).toMatchObject({ type: 'sequence_list', quantity_question_id: 'old-label-models' });
+    expect(byId('participants').type).toBe('none');
+    // Pré-preenchimento a partir do contrato e das unidades (sem sobrescrever).
+    expect(['scope', 'item-count', 'unit-allocation', 'travel-guidance'].map((id) => byId(id).prefill)).toEqual([
+      'contract.scope',
+      'contract.estimated_assets',
+      'project.units',
+      'contract.expenses_paid_by',
+    ]);
+    expect(byId('site-plan').options).toEqual(['N/A', 'SOLICITADO', 'RECEBIDO']);
     expect(client.questions.some((q) => q.type === 'unit_allocations')).toBe(
       true,
     );
     kickoff.questions[0].label = 'Alterado';
     expect(client.questions[0].label).not.toBe('Alterado');
+  });
+  it('keeps the client e-mail in the kick-off model, referencing only its own questions and no company name', () => {
+    const kickoff = referenceTemplate('kickoff');
+    expect(referenceTemplate('client_checklist').email).toBeNull();
+    const email = kickoff.email!;
+    const ids = new Set(kickoff.questions.map((q) => q.id));
+    const blocks = [...email.header, ...email.topics, ...email.footer];
+    const lines = [...blocks.flatMap((b) => b.lines), ...email.pendings];
+    const texts = [email.subject, ...lines.map((l) => l.text), ...blocks.flatMap((b) => (b.empty ? [b.empty] : []))];
+    const referenced = [
+      ...texts.flatMap((t) => [...t.matchAll(/\{(?:q|notes|addresses):([a-z0-9-]+)/g)].map((m) => m[1])),
+      ...lines.flatMap((l) => [...(l.when ?? []).map((c) => c.question_id), ...(l.unless_realized ? [l.unless_realized] : [])]),
+    ];
+    expect(referenced.filter((id) => !ids.has(id))).toEqual([]);
+    expect(email.topics).toHaveLength(15);
+    expect(texts.join('\n')).not.toMatch(/investor/i);
   });
 });

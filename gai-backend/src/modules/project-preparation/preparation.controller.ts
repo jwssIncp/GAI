@@ -8,12 +8,16 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import * as XLSX from 'xlsx';
+import { safeSpreadsheetText } from '../project-dashboard/presentation/organization-overview.controller';
 import { RequirePermissions } from '../auth/presentation/decorators/require-permissions.decorator';
 import { PermissionsGuard } from '../auth/presentation/guards/permissions.guard';
 import {
@@ -26,7 +30,10 @@ import {
   CreatePreparationDto,
   CreateTemplateDto,
   HistoryQueryDto,
+  RestoreEmailDto,
   RevisionDto,
+  SaveEmailDto,
+  TransitionDto,
   SaveAnswersDto,
   UpdatePreparationDto,
   UpdateTemplateDto,
@@ -212,6 +219,21 @@ export class ProjectPreparationController {
   ) {
     return this.service.saveAnswers(projectId, id, dto, actor(req));
   }
+  @Post(':id/prefill')
+  @HttpCode(200)
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({
+    summary:
+      'Preencher, sem sobrescrever, perguntas sem resposta a partir do contrato e das unidades',
+  })
+  prefill(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RevisionDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.prefill(projectId, id, dto.revision, actor(req));
+  }
   @Post(':id/approve')
   @HttpCode(200)
   @RequirePermissions('project-preparation:read', 'project-preparation:approve')
@@ -221,7 +243,7 @@ export class ProjectPreparationController {
   approve(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -230,6 +252,7 @@ export class ProjectPreparationController {
       dto.revision,
       'approve',
       actor(req),
+      dto.reason,
     );
   }
   @Post(':id/reopen')
@@ -239,7 +262,7 @@ export class ProjectPreparationController {
   reopen(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -248,6 +271,7 @@ export class ProjectPreparationController {
       dto.revision,
       'reopen',
       actor(req),
+      dto.reason,
     );
   }
   @Delete(':id')
@@ -256,7 +280,7 @@ export class ProjectPreparationController {
   archive(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -265,6 +289,7 @@ export class ProjectPreparationController {
       dto.revision,
       'archive',
       actor(req),
+      dto.reason,
     );
   }
   @Get(':id/history')
@@ -280,6 +305,77 @@ export class ProjectPreparationController {
   ) {
     return this.service.history(projectId, id, actor(req), query.before_id);
   }
+  @Get(':id/export')
+  @RequirePermissions('project-preparation:read', 'project-preparation:export')
+  @ApiOperation({
+    summary:
+      'Exportar o kick-off (.xlsx): só o visível, na numeração da tela, com observações',
+  })
+  async exportWorkbook(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: PreparationRequest,
+    @Res() res: Response,
+  ) {
+    const { rows, fileName } = await this.service.exportWorkbook(
+      projectId,
+      id,
+      actor(req),
+    );
+    const sheet = XLSX.utils.aoa_to_sheet(
+      rows.map((row) => row.map((cell) => safeSpreadsheetText(cell))),
+    );
+    sheet['!cols'] = [6, 10, 56, 13, 70, 50].map((wch) => ({ wch }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Kick-off');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res
+      .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .send(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  }
+  @Get(':id/email')
+  @RequirePermissions('project-preparation:read')
+  @ApiOperation({
+    summary:
+      'E-mail ao cliente gerado pelo modelo da organização, com a versão editada (se houver) e aviso de desatualizado; não envia',
+  })
+  email(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.email(projectId, id, actor(req));
+  }
+  @Put(':id/email')
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({ summary: 'Salvar a versão editada do e-mail ao cliente' })
+  saveEmail(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SaveEmailDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.saveEmail(projectId, id, dto, actor(req));
+  }
+  @Delete(':id/email')
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({
+    summary: 'Restaurar o e-mail original (descarta a versão editada)',
+  })
+  restoreEmail(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RestoreEmailDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.restoreEmail(
+      projectId,
+      id,
+      dto.email_version,
+      actor(req),
+    );
+  }
   @Get(':id/communication')
   @RequirePermissions('project-preparation:read')
   @ApiOperation({
@@ -292,5 +388,22 @@ export class ProjectPreparationController {
     @Req() req: PreparationRequest,
   ) {
     return this.service.communication(projectId, id, actor(req), query.channel);
+  }
+}
+/** Resumo da organização do usuário (alerta da sub-aba Kick-off). */
+@ApiTags('Project Preparation')
+@ApiBearerAuth()
+@Controller('project-preparations')
+@UseGuards(SessionAuthGuard, PermissionsGuard)
+export class PreparationSummaryController {
+  constructor(private readonly service: PreparationService) {}
+  @Get('open-summary')
+  @RequirePermissions('project-preparation:read')
+  @ApiOperation({
+    summary:
+      'Quantidade de kick-offs não concluídos em projetos em operação da organização',
+  })
+  openSummary(@Req() req: PreparationRequest) {
+    return this.service.openSummary(actor(req));
   }
 }

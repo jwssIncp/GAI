@@ -360,6 +360,7 @@ export class ProjectsController {
       allowedProjectIds: req.user!.allowedProjectIds,
       systemRoles: req.user!.systemRoles,
       organizationId: req.user!.organizationId,
+      permissions: req.user!.permissions,
     };
   }
 }

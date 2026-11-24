@@ -21,6 +21,11 @@ import { accountingItemStatuses } from './accountingItemSchemas';
 import { useChangeAccountingItemStatus, useProjectAccountingItems, useUpdateAccountingItem } from './accountingItemsQueries';
 import type { InventoryAccountingItem, InventoryAccountingItemStatus } from '@/types/api';
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
+import { usePermissions } from '@/features/auth/usePermissions';
+import { SurplusClassificationBadge, SurplusClassificationMenu } from './SurplusClassificationMenu';
+
+/** Só a sobra (não conciliada e ativa) pode receber classificação manual. */
+const classifiable = (item: InventoryAccountingItem) => item.status !== 'matched' && item.status !== 'inactive';
 
 export function ProjectAccountingItemsPage() {
   const projectId = Number(useParams().projectId);
@@ -35,6 +40,8 @@ export function ProjectAccountingItemsPage() {
   const [viewingId, setViewingId] = useState<number | undefined>();
   const [editing, setEditing] = useState<InventoryAccountingItem | null>(null);
   const [confirm, setConfirm] = useState<{ action: 'deactivate' | 'reactivate'; item: InventoryAccountingItem } | null>(null);
+  const [selected, setSelected] = useState<number[]>([]);
+  const canClassify = usePermissions().hasPermission('inventory-accounting-items:update');
   const params = useMemo(() => ({
     page,
     page_size: 20,
@@ -51,16 +58,29 @@ export function ProjectAccountingItemsPage() {
   const reactivate = useChangeAccountingItemStatus(projectId, 'reactivate');
   const data = query.data ? normalizePage(query.data) : null;
 
+  const pageSelectable = (data?.items ?? []).filter(classifiable).map((item) => item.id);
+  const allSelected = pageSelectable.length > 0 && pageSelectable.every((id) => selected.includes(id));
   const columns: Column<InventoryAccountingItem>[] = [
+    ...(canClassify
+      ? [{
+          header: 'Selecionar',
+          headerContent: <input type="checkbox" aria-label="Selecionar a sobra contábil desta página" checked={allSelected} disabled={!pageSelectable.length} onChange={() => setSelected(allSelected ? selected.filter((id) => !pageSelectable.includes(id)) : [...new Set([...selected, ...pageSelectable])])} />,
+          cell: (item: InventoryAccountingItem) => (
+            <input type="checkbox" aria-label={`Selecionar item contábil ${item.plate ?? item.id}`} disabled={!classifiable(item)} title={classifiable(item) ? undefined : 'Itens conciliados ou inativos não recebem classificação.'} checked={selected.includes(item.id)} onChange={() => setSelected(selected.includes(item.id) ? selected.filter((id) => id !== item.id) : [...selected, item.id])} />
+          ),
+        } satisfies Column<InventoryAccountingItem>]
+      : []),
     { header: 'Placa', cell: (item) => <div className="font-medium">{item.plate ?? '-'}<div className="text-xs text-muted-foreground">#{item.id}</div></div> },
     { header: 'Descrição', cell: (item) => item.description ?? '-' },
     { header: 'Conta contábil', cell: (item) => item.accounting_account_description ?? '-' },
     { header: 'Localização', cell: (item) => item.location ?? '-' },
     { header: 'Aquisição', cell: (item) => formatDate(item.acquisition_date) },
     { header: 'Valor', cell: (item) => formatMoney(item.acquisition_value), numeric: true },
+    { header: 'Valor residual', cell: (item) => (item.residual_value == null ? '-' : formatMoney(item.residual_value)), numeric: true },
     { header: 'Cod. base', cell: (item) => item.base_code ?? '-' },
     { header: 'Investor', cell: (item) => item.investor_code ?? '-' },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },
+    { header: 'Classificação', cell: (item) => <SurplusClassificationBadge value={item.surplus_classification} /> },
     { header: 'Atualizado em', cell: (item) => formatDateTime(item.updated_at) },
     {
       header: 'Ações',
@@ -100,6 +120,13 @@ export function ProjectAccountingItemsPage() {
       </FilterPanel>
       {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
         <>
+          {canClassify ? (
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Ações com a seleção">
+              <span className="rounded-md border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">Selec. contábil: {selected.length}</span>
+              <SurplusClassificationMenu projectId={projectId} ids={selected} onDone={() => setSelected([])} />
+              {selected.length ? <Button type="button" size="sm" variant="ghost" onClick={() => setSelected([])}>Limpar seleção</Button> : null}
+            </div>
+          ) : null}
           <DataTable columns={columns} items={data.items} getKey={(item) => item.id} />
           <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
         </>

@@ -1,4 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { DataSource, In } from 'typeorm';
+import { hasAllPermissions } from '../../../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../../../auth/domain/ports/permission-resolver.port';
+import { contractSummaries } from '../../../contracts/contract-summary';
+import { ContractEntity } from '../../../contracts/contract.entity';
 import {
   PROJECT_REPOSITORY,
   type ProjectRepository,
@@ -19,6 +27,10 @@ export class ListProjectsUseCase {
     @Inject(PROJECT_REPOSITORY)
     private readonly repository: ProjectRepository,
     private readonly scope: ProjectScopeService,
+    @Optional() private readonly ds?: DataSource,
+    @Optional()
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions?: PermissionResolver,
   ) {}
 
   async execute(
@@ -44,14 +56,38 @@ export class ListProjectsUseCase {
       sortBy: query.sort_by,
       sortOrder: query.sort_order,
     });
+    const contracts = await this.contracts(
+      items.map((p) => Number(p.id)),
+      actor,
+    );
 
     return {
       status_counts: counts ?? {},
-      items: items.map((project) => ProjectResponseDto.fromDomain(project)),
+      items: items.map((project) => {
+        const dto = ProjectResponseDto.fromDomain(project);
+        return contracts
+          ? { ...dto, contract: contracts.get(Number(project.id)) ?? null }
+          : dto;
+      }),
       page,
       page_size: pageSize,
       total_items: total,
       total_pages: total === 0 ? 0 : Math.ceil(total / pageSize),
     };
+  }
+
+  /**
+   * Colunas do contrato na listagem (valor vigente, segmento, data, itens). Só para quem lê
+   * contratos; para os demais o campo `contract` nem aparece na resposta.
+   */
+  private async contracts(projectIds: number[], actor: ProjectActorContext) {
+    if (!this.ds || !this.permissions || !projectIds.length) return null;
+    if (!(await hasAllPermissions(actor, ['contracts:read'], this.permissions)))
+      return null;
+    const rows = await this.ds.getRepository(ContractEntity).find({
+      select: { projectId: true, number: true, data: true },
+      where: { projectId: In(projectIds) },
+    });
+    return contractSummaries(rows);
   }
 }

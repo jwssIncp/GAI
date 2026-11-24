@@ -82,7 +82,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   const base = `/projects/${project}/technical-reports`,
     root = "/app" + base;
   await page.goto(`/app/projects/${project}/summary`);
-  await openProjectTab(page, "Contábil e laudo", "Laudos");
+  await openProjectTab(page, "Laudo", "Laudos");
   await expect(page).toHaveURL(root);
   const nav = page.getByRole("navigation", { name: "Navegação dos laudos" });
   await nav.getByRole("link", { name: "Responsáveis cadastrados" }).click();
@@ -157,7 +157,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   await nav
     .getByRole("link", { name: "Laudos do projeto", exact: true })
     .click();
-  await page.getByRole("button", { name: "Criar laudo", exact: true }).click();
+  await page.getByRole("button", { name: "＋ Novo laudo", exact: true }).click();
   await dialog.getByLabel("Título do laudo").fill(name);
   await dialog
     .getByRole("combobox", { name: /Modelo publicado/ })
@@ -248,7 +248,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   ).toBeVisible();
   const download = page.waitForEvent("download");
   await page
-    .getByRole("button", { name: "Exportar snapshot aprovado", exact: true })
+    .getByRole("button", { name: "Exportar dados (JSON)", exact: true })
     .click();
   await (await download).saveAs(info.outputPath("laudo-aprovado.json"));
   await page.screenshot({
@@ -311,11 +311,11 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   await expect(page.locator(".technical-report-document h1")).toHaveText(name);
   await page.goForward();
   await expect(page.getByRole("link", { name, exact: true })).toBeVisible();
-  await openProjectTab(page, "Inventário", "Itens e avaliação");
+  await openProjectTab(page, "Inventário", "Itens inventariados");
   await expect(page).toHaveURL(
     new RegExp(`/projects/${project}/inventory-items`),
   );
-  await openProjectTab(page, "Contábil e laudo", "Laudos");
+  await openProjectTab(page, "Laudo", "Laudos");
   await expect(page).toHaveURL(root);
   expect(errors).toEqual([]);
   expect(http).toEqual([]);

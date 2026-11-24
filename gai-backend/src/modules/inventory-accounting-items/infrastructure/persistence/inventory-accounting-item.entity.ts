@@ -74,6 +74,23 @@ export class InventoryAccountingItemEntity {
   })
   acquisitionValue!: string | null;
 
+  @Column({
+    name: 'residual_value',
+    type: 'decimal',
+    precision: 15,
+    scale: 2,
+    nullable: true,
+  })
+  residualValue!: string | null;
+
+  @Column({
+    name: 'surplus_classification',
+    type: 'varchar',
+    length: 120,
+    nullable: true,
+  })
+  surplusClassification!: string | null;
+
   @Column({ name: 'base_code', type: 'varchar', length: 100, nullable: true })
   baseCode!: string | null;
 

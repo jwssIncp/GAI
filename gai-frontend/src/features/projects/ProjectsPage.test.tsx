@@ -360,7 +360,7 @@ describe("Project registration and management", () => {
     await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     await userEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     expect(
-      await screen.findByRole("heading", { name: "Projetos" }),
+      await screen.findByRole("heading", { name: "Painel Geral" }),
     ).toBeInTheDocument();
     expect(mocks.create).not.toHaveBeenCalled();
   });
@@ -475,6 +475,57 @@ describe("Project registration and management", () => {
         }),
       ),
     );
+  });
+  it("mostra as colunas do contrato quando a listagem traz o resumo comercial", async () => {
+    mocks.list.mockResolvedValue({
+      items: [
+        {
+          ...project,
+          contract: {
+            count: 1,
+            numbers: ["C-1"],
+            contracted_on: "2025-03-10",
+            segments: ["Indústria"],
+            currency: "BRL",
+            current_value: "1500.00",
+            missing_value: 0,
+            estimated_assets: 1200,
+            recurring: true,
+            services: [],
+          },
+        },
+        { ...project, id: 99, code: "PRJ-SEM", contract: null },
+      ],
+      page: 1,
+      page_size: 20,
+      total_items: 2,
+      total_pages: 1,
+      status_counts: {},
+    });
+    renderPage("/app/projects");
+    expect(await screen.findByText(/1\.500,00/)).toBeInTheDocument();
+    expect(screen.getByText("1.200")).toBeInTheDocument();
+    expect(screen.getByText("Indústria")).toBeInTheDocument();
+    expect(screen.getByText("10/03/2025")).toBeInTheDocument();
+    expect(screen.getAllByText("Sem contrato")).toHaveLength(1);
+    expect(
+      screen.getByRole("columnheader", { name: "Data do contrato" }),
+    ).toBeInTheDocument();
+  });
+  it("não mostra colunas do contrato para quem não lê contratos", async () => {
+    mocks.list.mockResolvedValue({
+      items: [project],
+      page: 1,
+      page_size: 20,
+      total_items: 1,
+      total_pages: 1,
+      status_counts: {},
+    });
+    renderPage("/app/projects");
+    expect(await screen.findByText("PRJ-ALPHA")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Data do contrato" }),
+    ).not.toBeInTheDocument();
   });
   it("resets company pagination when the platform administrator changes organization", async () => {
     mocks.options.mockImplementation(async (_purpose, params) => ({

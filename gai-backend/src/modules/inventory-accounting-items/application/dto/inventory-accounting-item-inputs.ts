@@ -1,6 +1,13 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsCivilDate } from '../../../../common/validation/civil-date';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
+  IsInt,
+  Min,
   IsEnum,
   IsObject,
   IsOptional,
@@ -12,6 +19,25 @@ import { JsonRecord } from '../../domain/entities/inventory-accounting-item';
 import { InventoryAccountingItemStatus } from '../../domain/enums/inventory-accounting-item-status.enum';
 
 const MONEY_PATTERN = /^\d{1,13}(\.\d{1,2})?$/;
+
+/** "Alterar status ▾": aplica (ou limpa, com null) a classificação da sobra contábil em lote. */
+export class ClassifyAccountingItemsDto {
+  @ApiProperty({ type: [Number], minItems: 1, maxItems: 500 })
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(500)
+  @ArrayUnique()
+  @Type(() => Number)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  ids!: number[];
+
+  @ApiPropertyOptional({ nullable: true, maxLength: 120 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  classification?: string | null;
+}
 
 export class UpdateInventoryAccountingItemDto {
   @ApiPropertyOptional({ nullable: true, maxLength: 100 })
@@ -50,6 +76,12 @@ export class UpdateInventoryAccountingItemDto {
   @IsString()
   @Matches(MONEY_PATTERN)
   acquisition_value?: string | null;
+
+  @ApiPropertyOptional({ pattern: MONEY_PATTERN.source, nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(MONEY_PATTERN)
+  residual_value?: string | null;
 
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()

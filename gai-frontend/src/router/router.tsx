@@ -53,6 +53,8 @@ import { CompanyFormPage } from "@/features/companies/CompanyFormPage";
 import { CompanyDetailPage } from "@/features/companies/CompanyDetailPage";
 import { ProjectCreatePage } from '@/features/projects/ProjectCreatePage';
 import { ProjectsPage } from "@/features/projects/ProjectsPage";
+import { ProjectAreaPicker } from "@/features/projects/ProjectAreaPicker";
+import { projectAreaTabs } from "@/features/projects/projectArea";
 import { FieldAgentsPage } from "@/features/field-agents/FieldAgentsPage";
 import { FirstAllowedRedirect, LegacyRedirect } from "./LegacyRedirects";
 
@@ -141,6 +143,19 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute permissions={["projects:read"]} />,
             children: [{ path: "projects", element: <ProjectsPage /> }],
           },
+          // Sub-abas da área Projetos (padrão do sistema anterior): escolhem o projeto e abrem
+          // a tela dele. Rotas estáticas: têm precedência sobre /app/projects/:projectId.
+          ...projectAreaTabs
+            .filter((tab) => tab.id !== "overview")
+            .map((tab) => ({
+              element: <ProtectedRoute permissions={tab.permissions} />,
+              children: [
+                {
+                  path: tab.to.replace("/app/", ""),
+                  element: <ProjectAreaPicker tabId={tab.id} />,
+                },
+              ],
+            })),
           { element: <ProtectedRoute permissions={['projects:create']} />, children: [{ path: 'projects/new', element: <ProjectCreatePage /> }] },
           projectRoute,
           {

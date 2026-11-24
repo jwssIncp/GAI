@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   applicability,
+  addressSummary,
   allocations,
+  prefillValues,
   progress,
   validateAnswer,
   validateQuestions,
@@ -118,6 +120,8 @@ describe('Preparation domain rules', () => {
       conditionally_disabled: 1,
       percent: 66.7,
       missing_required: [],
+      realized: 0,
+      realized_percent: 0,
     });
     expect(progress([q('hidden', { visible: false })], []).percent).toBe(0);
   });
@@ -160,5 +164,229 @@ describe('Preparation domain rules', () => {
     expect(
       allocations([{ unit_id: 1, quantity: 0 }])[0].participation_percent,
     ).toBe(0);
+  });
+});
+
+describe('Tipos de resposta do kick-off do sistema anterior', () => {
+  const ok = (
+    question: PreparationQuestion,
+    value: unknown,
+    answers: PolicyAnswer[] = [],
+  ) =>
+    validateAnswer(
+      question,
+      {
+        questionId: question.id,
+        state: 'completed',
+        value: value as never,
+        notes: null,
+      },
+      answers,
+    );
+  const bad = (
+    question: PreparationQuestion,
+    value: unknown,
+    answers: PolicyAnswer[] = [],
+  ) => expect(() => ok(question, value, answers)).toThrow(BadRequestException);
+
+  it('valida escolha múltipla, contato, período, horário e item sem resposta', () => {
+    const chips = q('scope', {
+      type: 'multi_select',
+      options: ['VISTORIA', 'OUTROS'],
+    });
+    ok(chips, ['VISTORIA', 'OUTROS']);
+    bad(chips, []);
+    bad(chips, ['VISTORIA', 'VISTORIA']);
+    bad(chips, ['INEXISTENTE']);
+    const contact = q('focal', { type: 'contact' });
+    ok(contact, { name: 'Maria', phone: '(11) 91234-5678' });
+    ok(contact, { name: 'Maria', phone: null });
+    ok(contact, { name: 'Maria', phone: '+55 11 3123-4567' });
+    bad(contact, { name: '', phone: '(11) 91234-5678' });
+    bad(contact, { name: 'Maria', phone: '1234' });
+    bad(contact, { name: 'Maria', phone: null, email: 'x' });
+    const period = q('periodo', { type: 'date_range' });
+    ok(period, { start: '2026-01-10', end: '2026-01-20' });
+    bad(period, { start: '2026-01-20', end: '2026-01-10' });
+    bad(period, { start: '2026-02-30', end: '2026-03-01' });
+    const hours = q('horario', { type: 'schedule' });
+    ok(hours, { start: '07:00', end: '16:00', weekends: true });
+    bad(hours, { start: '7h', end: '16:00', weekends: false });
+    bad(hours, { start: '07:00', end: '07:00', weekends: false });
+    const none = q('call', { type: 'none' });
+    expect(() => ok(none, null)).toThrow(BadRequestException);
+    validateAnswer(
+      none,
+      {
+        questionId: 'call',
+        state: 'pending',
+        value: null,
+        notes: null,
+        realized: true,
+      },
+      [],
+    );
+  });
+
+  it('lista de sequências segue a quantidade de modelos declarada', () => {
+    const models = q('modelos', { type: 'number' });
+    const list = q('sequencias', {
+      type: 'sequence_list',
+      quantity_question_id: 'modelos',
+    });
+    validateQuestions([models, list]);
+    const two: PolicyAnswer[] = [
+      { questionId: 'modelos', state: 'completed', value: 2, notes: null },
+    ];
+    ok(
+      list,
+      [
+        { start: 1, end: 10 },
+        { start: 20, end: 30 },
+      ],
+      two,
+    );
+    bad(list, [{ start: 1, end: 10 }], two);
+    bad(
+      list,
+      [
+        { start: 10, end: 1 },
+        { start: 20, end: 30 },
+      ],
+      two,
+    );
+  });
+
+  it('"contém" vale só para escolha múltipla e habilita o complemento na linha', () => {
+    const chips = q('perfil', {
+      type: 'multi_select',
+      options: ['MÓVEIS', 'OUTROS'],
+    });
+    const other = q('outros', {
+      type: 'text',
+      display: 'inline',
+      enabled_when: [
+        { question_id: 'perfil', operator: 'contains', value: 'OUTROS' },
+      ],
+    });
+    validateQuestions([chips, other]);
+    expect(() =>
+      validateQuestions([
+        chips,
+        {
+          ...other,
+          enabled_when: [
+            { question_id: 'perfil', operator: 'equals', value: 'OUTROS' },
+          ],
+        },
+      ]),
+    ).toThrow(BadRequestException);
+    const answer = (value: string[]): PolicyAnswer[] => [
+      { questionId: 'perfil', state: 'completed', value, notes: null },
+    ];
+    expect(
+      applicability([chips, other], answer(['OUTROS'])).get('outros'),
+    ).toBe(true);
+    expect(
+      applicability([chips, other], answer(['MÓVEIS'])).get('outros'),
+    ).toBe(false);
+  });
+});
+
+describe('Resumo dos endereços do kick-off (unidades do projeto)', () => {
+  it('conta endereços, cidades e estados e ordena por quantidade', () => {
+    const units = [
+      { id: 1, city: 'São Paulo', state: 'SP' },
+      { id: 2, city: 'Campinas', state: 'SP' },
+      { id: 3, city: 'Belo Horizonte', state: 'MG' },
+      { id: 4, city: null, state: null },
+    ];
+    const value = [1, 2, 3, 4].map((unit_id) => ({ unit_id, quantity: 10 }));
+    expect(addressSummary(value, units)).toEqual({
+      addresses: 4,
+      cities: 3,
+      states: [
+        { state: 'SP', count: 2 },
+        { state: 'MG', count: 1 },
+      ],
+      without_state: 1,
+    });
+    expect(addressSummary(null, units).addresses).toBe(0);
+  });
+});
+
+describe('Pré-preenchimento do kick-off (contrato e unidades)', () => {
+  const questions = [
+    q('scope', {
+      type: 'multi_select',
+      options: [
+        'VISTORIA',
+        'INVENTÁRIO',
+        'CONCILIAÇÃO',
+        'VIDA ÚTIL',
+        'VALOR JUSTO',
+        'IMPAIRMENT',
+      ],
+      prefill: 'contract.scope',
+    }),
+    q('items', { type: 'number', prefill: 'contract.estimated_assets' }),
+    q('expenses', {
+      type: 'select',
+      options: ['@organizacao', 'CLIENTE', 'N/A'],
+      prefill: 'contract.expenses_paid_by',
+    }),
+    q('units', { type: 'unit_allocations', prefill: 'project.units' }),
+  ];
+  const contract = {
+    services: ['Inventário patrimonial', 'Conciliação', 'Laudo CPC 27'],
+    estimatedAssets: 1200,
+    expensesPaidBy: 'company' as const,
+  };
+
+  it('mapeia serviços, bens, despesas e unidades sem sobrescrever respostas', () => {
+    validateQuestions(questions);
+    const values = prefillValues(questions, [a('items', 50)], {
+      contract,
+      unitIds: [7],
+    });
+    expect(values).toEqual([
+      {
+        questionId: 'scope',
+        source: 'contract.scope',
+        value: ['INVENTÁRIO', 'CONCILIAÇÃO', 'VIDA ÚTIL'],
+      },
+      {
+        questionId: 'expenses',
+        source: 'contract.expenses_paid_by',
+        value: '@organizacao',
+      },
+      // Uma unidade só recebe todos os bens estimados.
+      {
+        questionId: 'units',
+        source: 'project.units',
+        value: [{ unit_id: 7, quantity: 1200 }],
+      },
+    ]);
+  });
+  it('sem permissão de contratos só aplica as unidades; com várias unidades a quantidade fica zerada', () => {
+    const values = prefillValues(questions, [], {
+      contract: null,
+      unitIds: [1, 2],
+    });
+    expect(values).toEqual([
+      {
+        questionId: 'units',
+        source: 'project.units',
+        value: [
+          { unit_id: 1, quantity: 0 },
+          { unit_id: 2, quantity: 0 },
+        ],
+      },
+    ]);
+  });
+  it('rejeita origem incompatível com o tipo da pergunta', () => {
+    expect(() =>
+      validateQuestions([q('x', { type: 'text', prefill: 'project.units' })]),
+    ).toThrow(BadRequestException);
   });
 });

@@ -24,6 +24,7 @@ export function AccountingItemDetailDrawer({ projectId, id, open, onOpenChange }
           </section>
           <div className="grid gap-3 md:grid-cols-2">
             <MetricCard label="Valor de aquisição" value={formatMoney(item.acquisition_value)} />
+            <MetricCard label="Valor residual" value={item.residual_value == null ? 'Não informado' : formatMoney(item.residual_value)} />
             <MetricCard label="Data de aquisição" value={formatDate(item.acquisition_date)} />
             <MetricCard label="Código base" value={item.base_code ?? '-'} />
             <MetricCard label="Código investor" value={item.investor_code ?? '-'} />

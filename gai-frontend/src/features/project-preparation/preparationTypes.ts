@@ -8,16 +8,33 @@ export type QuestionType =
   | 'date'
   | 'select'
   | 'sequence'
-  | 'unit_allocations';
+  | 'unit_allocations'
+  | 'multi_select'
+  | 'contact'
+  | 'date_range'
+  | 'schedule'
+  | 'sequence_list'
+  | 'none';
+/** Opção que mostra o nome da organização dona do projeto (valor estável). */
+export const ORGANIZATION_OPTION = '@organizacao';
+export type ContactValue = { name: string; phone: string | null };
+export type DateRangeValue = { start: string; end: string };
+export type ScheduleValue = { start: string; end: string; weekends: boolean };
+export type SequenceValue = { start: number; end: number };
 export type Scalar = string | number | boolean;
 export type AnswerValue =
   | Scalar
   | null
-  | { start: number; end: number }
-  | Array<{ unit_id: number; quantity: number }>;
+  | SequenceValue
+  | Array<{ unit_id: number; quantity: number }>
+  | string[]
+  | ContactValue
+  | DateRangeValue
+  | ScheduleValue
+  | SequenceValue[];
 export interface Condition {
   question_id: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'answered';
+  operator: 'equals' | 'not_equals' | 'in' | 'answered' | 'contains';
   value?: Scalar | Scalar[];
 }
 export interface PreparationQuestion {
@@ -32,6 +49,10 @@ export interface PreparationQuestion {
   options?: string[];
   enabled_when?: Condition[];
   quantity_question_id?: string;
+  /** "inline": complemento exibido na linha da pergunta da qual depende. */
+  display?: 'row' | 'inline';
+  /** Origem do pré-preenchimento (contrato ou unidades), aplicado sem sobrescrever. */
+  prefill?: 'contract.scope' | 'contract.estimated_assets' | 'contract.expenses_paid_by' | 'project.units';
 }
 export interface PreparationTemplate {
   id: number;
@@ -48,10 +69,59 @@ export interface PreparationTemplate {
     created_by_id: number;
   }>;
 }
+/** Condição de uma linha do e-mail: as da pergunta, mais "not_answered"; "contains" aceita lista. */
+export interface EmailCondition {
+  question_id: string;
+  operator: Condition['operator'] | 'not_answered';
+  value?: Scalar | Scalar[];
+}
+/**
+ * Linha do e-mail com marcadores {q:id}, {q:id.campo}, {notes:id}, {addresses:id},
+ * {organization}, {client}, {deadline} e {greeting}. Omitida se um marcador ficar vazio.
+ */
+export interface EmailLine {
+  text: string;
+  when?: EmailCondition[];
+  unless_realized?: string;
+}
+export interface EmailBlock {
+  title?: string;
+  lines: EmailLine[];
+  first?: boolean;
+  inline?: boolean;
+  empty?: string;
+  strong?: boolean;
+}
+/** E-mail ao cliente, no modelo versionado da organização. */
+export interface EmailTemplate {
+  subject: string;
+  header: EmailBlock[];
+  topics: EmailBlock[];
+  footer: EmailBlock[];
+  pending_title: string;
+  pendings: EmailLine[];
+}
 export interface TemplatePayload {
   name: string;
   kind: PreparationKind;
   questions: PreparationQuestion[];
+  email?: EmailTemplate | null;
+}
+/** E-mail ao cliente gerado no servidor (texto simples) e a versão editada, se houver. */
+export interface ClientEmail {
+  subject: string;
+  original: string;
+  text: string;
+  strong_lines: string[];
+  pending_title: string;
+  pendings: number;
+  edited: boolean;
+  /** As respostas mudaram depois da edição. */
+  stale: boolean;
+  revision: number;
+  email_version: number;
+  updated_by_name: string | null;
+  updated_at: string | null;
 }
 export type AnswerState = 'pending' | 'completed' | 'not_applicable';
 export interface AnswerPayload {
@@ -61,8 +131,12 @@ export interface AnswerPayload {
   notes: string | null;
   responsible_user_id: number | null;
   due_date: string | null;
+  /** "Realizado" (item tratado), independente da resposta. Omitido: mantém. */
+  realized?: boolean;
 }
 export interface PreparationAnswer extends AnswerPayload {
+  realized_by_name?: string | null;
+  realized_at?: string | null;
   applicable: boolean;
   answered_by_id: number | null;
   /** Nomes para exibição (nulo = usuário removido). */
@@ -83,7 +157,12 @@ export interface Preparation {
   title: string;
   revision: number;
   template_version_id: number;
-  snapshot: { name: string; version: number; questions: PreparationQuestion[] };
+  snapshot: {
+    name: string;
+    version: number;
+    questions: PreparationQuestion[];
+    email?: EmailTemplate | null;
+  };
   status: 'draft' | 'in_progress' | 'approved' | 'archived';
   responsible_user_id: number | null;
   scheduled_date: string | null;
@@ -105,6 +184,9 @@ export interface Preparation {
     conditionally_disabled: number;
     percent: number;
     missing_required: string[];
+    /** Itens realizados ("X de Y verificado(s)"). */
+    realized?: number;
+    realized_percent?: number;
   };
   answers: PreparationAnswer[];
 }
@@ -115,8 +197,11 @@ export interface PreparationContext {
     name: string;
     status: ProjectStatus;
   };
+  /** Organização dona do projeto: nome exibido na opção ORGANIZATION_OPTION. */
+  organization?: { id: number; name: string } | null;
   company: { id: number; name: string } | null;
-  units: Array<{ id: number; name: string; address: string }>;
+  /** Unidades vinculadas ao projeto (endereços do kick-off), com cidade e UF. */
+  units: Array<{ id: number; name: string; address: string; city?: string | null; state?: string | null }>;
   responsible_users: Array<{ id: number; label: string }>;
 }
 export interface PreparationMetadata {
@@ -163,4 +248,10 @@ export const questionTypeLabels: Record<QuestionType, string> = {
   select: 'Seleção',
   sequence: 'Sequência de etiquetas',
   unit_allocations: 'Itens por unidade',
+  multi_select: 'Escolha múltipla (chips)',
+  contact: 'Contato (nome e telefone)',
+  date_range: 'Período (início e fim)',
+  schedule: 'Horário (entrada, saída, fins de semana)',
+  sequence_list: 'Sequências por modelo',
+  none: 'Sem resposta (só Realizado)',
 };

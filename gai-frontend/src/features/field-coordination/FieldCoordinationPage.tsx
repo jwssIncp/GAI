@@ -9,11 +9,15 @@ import { PageHeader } from "@/components/base/PageHeader";
 import { MetricCard, ProgressCard } from "@/components/base/Cards";
 import { FormField } from "@/components/base/FormField";
 import { DataTable, type Column } from "@/components/base/DataTable";
+import { DataPanel } from "@/components/base/DataPanel";
+import { SectionTitle } from "@/components/base/SectionTitle";
+import { StatusBadge } from "@/components/base/StatusBadge";
+import { cn } from "@/utils/cn";
 import { Pagination } from "@/components/base/Pagination";
 import { LoadingState, EmptyState, ErrorState } from "@/components/base/States";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ModalForm, DrawerForm } from "@/components/ui/dialog";
+import { ConfirmDialog, ModalForm, DrawerForm } from "@/components/ui/dialog";
 import { usePermissions } from "@/features/auth/usePermissions";
 import { canMutateProjectOperations } from "@/features/projects/projectLifecycle";
 import { PendingIssueDetailDrawer } from "@/features/pending-issues/PendingIssueDetailDrawer";
@@ -31,6 +35,7 @@ import {
   priorities,
   stateLabels,
   type Checklist,
+  type GroupProgress,
   type Task,
   type TaskState,
   type Priority,
@@ -56,7 +61,8 @@ export function FieldCoordinationPage() {
   const [listPage, setListPage] = useState(1),
     [selected, setSelected] = useState<number>(),
     [models, setModels] = useState(false),
-    [create, setCreate] = useState(false);
+    [create, setCreate] = useState(false),
+    [listHidden, setListHidden] = useState(false);
   const context = useQuery({
     queryKey: [...fieldKeys.all(project), "context"],
     queryFn: () => fieldApi.context(project, { page_size: 20 }),
@@ -72,8 +78,8 @@ export function FieldCoordinationPage() {
   return (
     <PageContainer>
       <PageHeader
-        title={`Coordenação de campo · ${context.data?.project.name ?? "Projeto"}`}
-        description="Etapas, tarefas, responsáveis e validação explícita da conclusão de campo."
+        title={`Check list - Campo · ${context.data?.project.name ?? "Projeto"}`}
+        description="Seções e sub atividades do campo com marcação em um clique, responsáveis e validação explícita da conclusão."
       />
       {context.isLoading || list.isLoading ? (
         <LoadingState />
@@ -83,45 +89,105 @@ export function FieldCoordinationPage() {
         />
       ) : context.data ? (
         <>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <FormField label="Checklist de campo">
-              <select
-                className={control}
-                value={selection ?? ""}
-                onChange={(e) => setSelected(Number(e.target.value))}
-              >
-                <option value="" disabled>
-                  Selecione
-                </option>
-                {list.data?.items.map((row) => (
-                  <option key={row.id} value={row.id}>
-                    {row.title} ·{" "}
-                    {row.status === "open"
-                      ? "Aberto"
-                      : row.status === "completed"
-                        ? "Concluído"
-                        : "Arquivado"}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={() => setModels(true)}>
-                Modelos de campo
-              </Button>
-              {canEdit &&
-              canMutateProjectOperations(context.data.project.status) ? (
-                <Button onClick={() => setCreate(true)}>
-                  Iniciar checklist de campo
+          <DataPanel
+            title="Check lists de campo"
+            titleId="field-checklists-title"
+            count={list.data?.total ?? 0}
+            hidden={listHidden}
+            onToggle={() => setListHidden((value) => !value)}
+            contentId="field-checklists"
+            extra={
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setModels(true)}
+                >
+                  Modelos de campo
                 </Button>
-              ) : null}
-            </div>
-          </div>
-          <Pagination
-            page={listPage}
-            totalPages={Math.max(1, Math.ceil((list.data?.total ?? 0) / 20))}
-            onPageChange={setListPage}
-          />
+                {canEdit &&
+                canMutateProjectOperations(context.data.project.status) ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setCreate(true)}
+                  >
+                    Iniciar checklist de campo
+                  </Button>
+                ) : null}
+              </>
+            }
+          >
+            {list.data?.items.length ? (
+              <>
+                <DataTable
+                  bare
+                  caption="Check lists de campo"
+                  items={list.data.items}
+                  getKey={(row) => row.id}
+                  columns={[
+                    {
+                      header: "Check list",
+                      cell: (row) => (
+                        <button
+                          type="button"
+                          aria-pressed={row.id === selection}
+                          onClick={() => setSelected(row.id)}
+                          className={
+                            row.id === selection
+                              ? "text-left font-semibold text-primary hover:underline"
+                              : "text-left font-semibold hover:underline"
+                          }
+                        >
+                          {row.title}
+                          {row.id === selection ? (
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">
+                              (aberto)
+                            </span>
+                          ) : null}
+                        </button>
+                      ),
+                    },
+                    {
+                      header: "Modelo",
+                      cell: (row) => (
+                        <span className="text-xs text-muted-foreground">
+                          {row.snapshot.name} · v{row.snapshot.version}
+                        </span>
+                      ),
+                    },
+                    {
+                      header: "Situação",
+                      cell: (row) => (
+                        <StatusBadge
+                          value={row.status === "open" ? "in_progress" : row.status}
+                          label={checklistStatus[row.status]}
+                        />
+                      ),
+                    },
+                    {
+                      header: "Conclusão",
+                      cell: (row) => <CompletionBadge row={row} />,
+                    },
+                  ]}
+                />
+                {(list.data.total ?? 0) > 20 ? (
+                  <Pagination
+                    page={listPage}
+                    totalPages={Math.ceil(list.data.total / 20)}
+                    onPageChange={setListPage}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <EmptyState
+                title="Nenhum checklist de campo"
+                description="Configure um modelo da organização (há um modelo de referência com as 4 seções) e inicie uma instância para este projeto."
+              />
+            )}
+          </DataPanel>
           {selection ? (
             <FieldWorkspace
               key={`${project}-${selection}`}
@@ -129,12 +195,7 @@ export function FieldCoordinationPage() {
               id={selection}
               mutable={canMutateProjectOperations(context.data.project.status)}
             />
-          ) : (
-            <EmptyState
-              title="Nenhum checklist de campo"
-              description="Configure um modelo da organização e inicie uma instância para este projeto."
-            />
-          )}
+          ) : null}
           {models ? (
             <FieldTemplates
               org={context.data.project.organizationId}
@@ -285,7 +346,9 @@ function FieldWorkspace({
     [transition, setTransition] = useState<"complete" | "reopen" | "archive">(),
     [history, setHistory] = useState(false),
     [message, setMessage] = useState(false),
-    [issue, setIssue] = useState<number>();
+    [issue, setIssue] = useState<number>(),
+    [advanced, setAdvanced] = useState(false),
+    [clearing, setClearing] = useState(false);
   const dashboard = useQuery({
     queryKey: [...fieldKeys.all(project), id, "dashboard"],
     queryFn: () => fieldApi.dashboard(project, id),
@@ -422,21 +485,21 @@ function FieldWorkspace({
   const summary = dashboard.data.summary;
   return (
     <>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          ["Etapas", summary.groups],
-          ["Etapas concluídas", summary.groupsCompleted],
-          ["Etapas pendentes", summary.groupsPending],
-          ["Tarefas aplicáveis", summary.total],
-          ["Concluídas", summary.completed],
-          ["Bloqueadas", summary.blocked],
-          ["Vencidas", summary.overdue],
-          ["Pendências vinculadas", summary.linkedIssues],
-        ].map(([label, value]) => (
-          <MetricCard key={String(label)} label={String(label)} value={value} />
-        ))}
+      <section
+        aria-label="Resumo do check list"
+        className="premium-panel grid items-center gap-4 p-5 sm:grid-cols-[auto_1fr_auto]"
+      >
+        <div>
+          <p className="font-mono text-3xl font-bold tabular-nums">
+            {summary.completed}/{summary.total}
+          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.07em] text-muted-foreground">
+            Sub atividades concluídas
+          </p>
+        </div>
+        <ProgressCard label="Progresso geral de campo" value={summary.percent} />
+        <CompletionBadge row={row} />
       </section>
-      <ProgressCard label="Progresso geral de campo" value={summary.percent} />
       <p className="text-sm text-muted-foreground">
         {summary.denominator} {summary.notApplicable} N/A;{" "}
         {summary.conditionallyExcluded} excluídas por condição. Situação:{" "}
@@ -483,23 +546,36 @@ function FieldWorkspace({
             </Button>
           </>
         ) : null}
+        {canCoordinate && row.status === "open" ? (
+          <Button variant="secondary" onClick={() => setClearing(true)}>
+            Limpar marcações
+          </Button>
+        ) : null}
       </div>
-      <section className="premium-panel p-5">
-        <h2 className="text-lg font-semibold">Etapas do campo</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {dashboard.data.groups
-            .sort((a, b) => a.order - b.order)
-            .map((group) => (
-              <div key={group.id}>
-                <ProgressCard label={group.title} value={group.percent} />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {group.completed} concluídas · {group.notApplicable} N/A ·{" "}
-                  {group.pending} pendentes · {group.blocked} bloqueadas /{" "}
-                  {group.total} aplicáveis
-                </p>
-              </div>
-            ))}
-        </div>
+      <ChecklistSections
+        project={project}
+        id={id}
+        row={row}
+        groups={dashboard.data.groups}
+        canEdit={!!canEdit}
+        canCoordinate={!!canCoordinate}
+        onOpen={setEditing}
+      />
+      <section aria-label="Indicadores do campo" className="grid gap-4">
+        <SectionTitle title="Indicadores do campo" />
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          ["Etapas", summary.groups],
+          ["Etapas concluídas", summary.groupsCompleted],
+          ["Etapas pendentes", summary.groupsPending],
+          ["Tarefas aplicáveis", summary.total],
+          ["Concluídas", summary.completed],
+          ["Bloqueadas", summary.blocked],
+          ["Vencidas", summary.overdue],
+          ["Pendências vinculadas", summary.linkedIssues],
+        ].map(([label, value]) => (
+          <MetricCard key={String(label)} label={String(label)} value={value} />
+        ))}
       </section>
       <section className="premium-panel p-5">
         <h2 className="font-semibold">Distribuição por responsável</h2>
@@ -516,6 +592,16 @@ function FieldWorkspace({
           ))}
         </ul>
       </section>
+      </section>
+      <DataPanel
+        title="Busca avançada de tarefas"
+        titleId="field-advanced-title"
+        count={tasks.data?.total}
+        hidden={!advanced}
+        onToggle={() => setAdvanced((value) => !value)}
+        contentId="field-advanced"
+      >
+        <div className="grid gap-4 p-4">
       <section
         aria-label="Filtros das tarefas"
         className="premium-panel grid gap-3 p-4 sm:grid-cols-3"
@@ -662,6 +748,14 @@ function FieldWorkspace({
           />
         </>
       )}
+        </div>
+      </DataPanel>
+      <ClearMarksDialog
+        open={clearing}
+        project={project}
+        id={id}
+        onClose={() => setClearing(false)}
+      />
       {editing ? (
         <TaskForm
           project={project}
@@ -1416,5 +1510,246 @@ function MessagePanel({
         ) : null}
       </div>
     </ModalForm>
+  );
+}
+
+const checklistStatus: Record<Checklist["status"], string> = {
+  open: "Aberto",
+  completed: "Concluído",
+  archived: "Arquivado",
+};
+
+/** Selo "Check list 100%" com a data, como na coluna Conclusão do sistema anterior. */
+function CompletionBadge({ row }: { row: Checklist }) {
+  if (row.status !== "completed")
+    return <span className="text-sm text-muted-foreground">—</span>;
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2 text-sm">
+      <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100">
+        Check list 100%
+      </span>
+      {row.completedAt ? (
+        <span className="text-muted-foreground">{formatDate(row.completedAt)}</span>
+      ) : null}
+    </span>
+  );
+}
+
+/** Todas as tarefas do check list (a API pagina em até 100), para as seções por etapa. */
+async function loadAllTasks(project: number, id: number) {
+  const first = await fieldApi.tasks(project, id, { page: 1, page_size: 100 });
+  const items = [...first.items];
+  const pages = Math.ceil(first.total / 100);
+  for (let page = 2; page <= pages; page += 1)
+    items.push(
+      ...(await fieldApi.tasks(project, id, { page, page_size: 100 })).items,
+    );
+  return { items, revision: first.revision };
+}
+
+const UNCHECK_REASON = "Desmarcada no check list de campo";
+
+/**
+ * Seções numeradas com faixa azul e "n/m", como no sistema anterior: a caixa marca a sub
+ * atividade como concluída em um clique. Desmarcar reabre a tarefa e, pela regra do
+ * servidor, exige permissão de coordenação.
+ */
+function ChecklistSections({
+  project,
+  id,
+  row,
+  groups,
+  canEdit,
+  canCoordinate,
+  onOpen,
+}: {
+  project: number;
+  id: number;
+  row: Checklist;
+  groups: GroupProgress[];
+  canEdit: boolean;
+  canCoordinate: boolean;
+  onOpen: (task: Task) => void;
+}) {
+  const [hidden, setHidden] = useState<string[]>([]);
+  const all = useQuery({
+    queryKey: [...fieldKeys.all(project), id, "all-tasks"],
+    queryFn: () => loadAllTasks(project, id),
+  });
+  const client = useQueryClient();
+  const toggle = useMutation({
+    mutationFn: (task: Task) =>
+      fieldApi.task(
+        project,
+        id,
+        task.id,
+        task.state === "completed"
+          ? {
+              revision: all.data!.revision,
+              state: "pending",
+              reason: UNCHECK_REASON,
+            }
+          : { revision: all.data!.revision, state: "completed" },
+      ),
+    onSettled: () =>
+      client.invalidateQueries({ queryKey: fieldKeys.all(project) }),
+  });
+  if (all.isLoading) return <LoadingState label="Carregando sub atividades" />;
+  if (all.isError)
+    return (
+      <ErrorState
+        message={(all.error as Error).message}
+        onRetry={() => all.refetch()}
+      />
+    );
+  const tasks = all.data?.items ?? [];
+  const ordered = [...row.snapshot.groups].sort((a, b) => a.order - b.order);
+  return (
+    <div className="grid gap-4">
+      {toggle.isError ? (
+        <ErrorState message={(toggle.error as Error).message} />
+      ) : null}
+      {ordered.map((group, index) => {
+        const progress = groups.find((g) => g.id === group.id);
+        const rows = tasks
+          .filter((t) => t.groupId === group.id)
+          .sort((a, b) => a.definition.order - b.definition.order);
+        const isHidden = hidden.includes(group.id);
+        return (
+          <DataPanel
+            key={group.id}
+            title={`${index + 1} · ${group.title}`}
+            titleId={`field-group-${group.id}`}
+            count={
+              progress
+                ? `${progress.completed + progress.notApplicable}/${progress.total}`
+                : undefined
+            }
+            hidden={isHidden}
+            onToggle={() =>
+              setHidden((current) =>
+                isHidden
+                  ? current.filter((value) => value !== group.id)
+                  : [...current, group.id],
+              )
+            }
+            contentId={`field-group-${group.id}-content`}
+          >
+            {rows.length ? (
+              <ul className="divide-y divide-border/60">
+                {rows.map((task) => {
+                  const done = task.state === "completed";
+                  const disabled =
+                    toggle.isPending ||
+                    !task.applicable ||
+                    task.state === "not_applicable" ||
+                    (done ? !canCoordinate || row.status !== "open" : !canEdit);
+                  return (
+                    <li
+                      key={task.id}
+                      className={cn(
+                        "flex flex-wrap items-center gap-3 px-5 py-3 text-sm",
+                        done && "bg-emerald-50 dark:bg-emerald-950/30",
+                        !task.applicable && "opacity-60",
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="size-4 accent-[hsl(var(--primary))]"
+                        aria-label={`Concluída: ${task.title}`}
+                        checked={done}
+                        disabled={disabled}
+                        onChange={() => toggle.mutate(task)}
+                      />
+                      <span
+                        className={cn(
+                          "min-w-0 flex-1 font-medium",
+                          done && "line-through decoration-1 opacity-80",
+                        )}
+                      >
+                        {task.title}
+                        {!["pending", "completed"].includes(task.state) ? (
+                          <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                            · {stateLabels[task.state]}
+                          </span>
+                        ) : null}
+                        {!task.applicable ? (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            · Fora de aplicabilidade
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {task.responsible?.name ?? "Sem responsável"}
+                        {task.dueDate
+                          ? ` · Prazo ${formatDate(task.dueDate)}`
+                          : ""}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onOpen(task)}
+                      >
+                        {canEdit ? "Abrir tarefa" : "Consultar tarefa"}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="px-5 py-4 text-sm text-muted-foreground">
+                Nenhuma sub atividade nesta seção.
+              </p>
+            )}
+          </DataPanel>
+        );
+      })}
+    </div>
+  );
+}
+
+/** "Limpar marcações": reabre, uma a uma, as sub atividades concluídas, com motivo registrado. */
+function ClearMarksDialog({
+  open,
+  project,
+  id,
+  onClose,
+}: {
+  open: boolean;
+  project: number;
+  id: number;
+  onClose: () => void;
+}) {
+  const client = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const { items, revision } = await loadAllTasks(project, id);
+      let current = revision;
+      for (const task of items.filter((t) => t.state === "completed")) {
+        const result = (await fieldApi.task(project, id, task.id, {
+          revision: current,
+          state: "pending",
+          reason: "Marcações limpas no check list de campo",
+        })) as { revision?: number };
+        current = result.revision ?? current + 1;
+      }
+    },
+    onSettled: () =>
+      client.invalidateQueries({ queryKey: fieldKeys.all(project) }),
+    onSuccess: onClose,
+  });
+  return (
+    <ConfirmDialog
+      open={open}
+      onOpenChange={(value) => !value && onClose()}
+      title="Limpar marcações"
+      description={
+        mutation.isError
+          ? (mutation.error as Error).message
+          : "Todas as sub atividades concluídas voltam para pendente. O histórico registra cada reabertura com o motivo."
+      }
+      busy={mutation.isPending}
+      onConfirm={() => mutation.mutate()}
+    />
   );
 }

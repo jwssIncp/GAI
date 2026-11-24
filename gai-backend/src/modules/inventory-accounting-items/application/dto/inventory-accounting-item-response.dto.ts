@@ -29,6 +29,10 @@ export class InventoryAccountingItemResponseDto {
   @ApiPropertyOptional({ nullable: true })
   acquisition_value!: string | null;
   @ApiPropertyOptional({ nullable: true })
+  residual_value!: string | null;
+  @ApiPropertyOptional({ nullable: true })
+  surplus_classification!: string | null;
+  @ApiPropertyOptional({ nullable: true })
   base_code!: string | null;
   @ApiProperty({ enum: InventoryAccountingItemStatus })
   status!: InventoryAccountingItemStatus;
@@ -77,6 +81,8 @@ export class InventoryAccountingItemResponseDto {
       acquisition_date:
         props.acquisitionDate?.toISOString().slice(0, 10) ?? null,
       acquisition_value: props.acquisitionValue,
+      residual_value: props.residualValue ?? null,
+      surplus_classification: props.surplusClassification ?? null,
       base_code: props.baseCode,
       status: props.status,
       investor_code: props.investorCode,
