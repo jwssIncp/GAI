@@ -18,6 +18,11 @@ import {
   type Template,
   type TaskState,
 } from "./fieldApi";
+import {
+  fieldReferenceDefinition,
+  fieldReferenceDescription,
+  fieldReferenceName,
+} from "./fieldReferenceTemplate";
 export const control =
   "min-h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm";
 const flags: Array<
@@ -206,6 +211,7 @@ export function FieldTemplates({
     [page, setPage] = useState(1),
     [selected, setSelected] = useState<number>(),
     [editing, setEditing] = useState<Template | null | undefined>(),
+    [reference, setReference] = useState(false),
     [version, setVersion] = useState<number>();
   const list = useQuery({
     queryKey: [...fieldKeys.templates(org), page],
@@ -233,7 +239,25 @@ export function FieldTemplates({
           checklists existentes.
         </p>
         {canEdit ? (
-          <Button onClick={() => setEditing(null)}>Novo modelo de campo</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                setReference(true);
+                setEditing(null);
+              }}
+            >
+              Novo modelo de referência
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setReference(false);
+                setEditing(null);
+              }}
+            >
+              Novo modelo de campo
+            </Button>
+          </div>
         ) : null}
         {list.isLoading ? (
           <LoadingState />
@@ -331,6 +355,7 @@ export function FieldTemplates({
         <ModelForm
           org={org}
           existing={editing}
+          reference={editing === null && reference}
           onClose={() => setEditing(undefined)}
           onSaved={(id) => {
             setSelected(id);
@@ -348,20 +373,29 @@ export function FieldTemplates({
 function ModelForm({
   org,
   existing,
+  reference = false,
   onClose,
   onSaved,
 }: {
   org: number;
   existing: Template | null;
+  /** Novo modelo já preenchido com as 4 seções do check list de campo do sistema anterior. */
+  reference?: boolean;
   onClose: () => void;
   onSaved: (id: number) => void;
 }) {
-  const [name, setName] = useState(existing?.name ?? ""),
-    [description, setDescription] = useState(existing?.description ?? ""),
+  const [name, setName] = useState(
+      existing?.name ?? (reference ? fieldReferenceName : ""),
+    ),
+    [description, setDescription] = useState(
+      existing?.description ?? (reference ? fieldReferenceDescription : ""),
+    ),
     [definition, setDefinition] = useState<Definition>(() =>
       existing
         ? structuredClone(existing.definition)
-        : {
+        : reference
+          ? fieldReferenceDefinition()
+          : {
             groups: [
               {
                 id: "stage_" + crypto.randomUUID().replaceAll("-", ""),

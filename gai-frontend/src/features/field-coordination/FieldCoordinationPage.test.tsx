@@ -225,10 +225,91 @@ beforeEach(() => {
   });
 });
 describe("Field coordination UI", () => {
+  it("marca sub atividade em um clique, mostra n/m por seção e o selo Check list 100% como no sistema anterior", async () => {
+    vi.mocked(fieldApi.list).mockResolvedValue({
+      items: [
+        row,
+        {
+          ...row,
+          id: 10,
+          title: "Campo concluído",
+          status: "completed",
+          completedAt: "2026-11-20T12:00:00.000Z",
+        },
+      ],
+      total: 2,
+      page: 1,
+      page_size: 20,
+    });
+    setup();
+    const [list] = await screen.findAllByRole("region", {
+      name: "Check lists de campo",
+    });
+    expect(list).toHaveTextContent("Campo concluído");
+    expect(list).toHaveTextContent("Check list 100%");
+    expect(
+      await screen.findByText("Sub atividades concluídas"),
+    ).toBeInTheDocument();
+    await userEvent.click(
+      await screen.findByRole("checkbox", { name: "Concluída: Verificar campo" }),
+    );
+    await waitFor(() =>
+      expect(fieldApi.task).toHaveBeenCalledWith(2, 9, 11, {
+        revision: 7,
+        state: "completed",
+      }),
+    );
+    // A busca avançada (filtros do GAI) fica recolhida até ser aberta.
+    expect(screen.queryByLabelText("Filtrar etapa")).not.toBeInTheDocument();
+    const [advanced] = screen.getAllByRole("region", {
+      name: /Busca avançada de tarefas/,
+    });
+    await userEvent.click(within(advanced).getByRole("button", { name: "Mostrar" }));
+    expect(screen.getByLabelText("Filtrar etapa")).toBeInTheDocument();
+  });
+  it("cria o modelo de referência com as 4 seções do check list de campo", async () => {
+    vi.spyOn(fieldApi, "saveTemplate").mockResolvedValue({
+      id: 3,
+      name: "x",
+      description: null,
+      currentVersion: 1,
+      archivedAt: null,
+      definition: { groups: [], tasks: [] },
+    });
+    vi.spyOn(fieldApi, "template").mockResolvedValue({
+      id: 3,
+      name: "x",
+      description: null,
+      currentVersion: 1,
+      archivedAt: null,
+      definition: { groups: [], tasks: [] },
+    });
+    setup();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Modelos de campo" }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Novo modelo de referência" }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Salvar|Publicar/ }),
+    );
+    await waitFor(() => expect(fieldApi.saveTemplate).toHaveBeenCalled());
+    const payload = vi.mocked(fieldApi.saveTemplate).mock.calls[0][1] as {
+      definition: { groups: { title: string }[]; tasks: unknown[] };
+    };
+    expect(payload.definition.groups.map((g) => g.title)).toEqual([
+      "COORDENAÇÃO PROJETO",
+      "COORDENAÇÃO CAMPO",
+      "COORDENAÇÃO CAMPO - EQUIPE",
+      "PRIORIDADE DIÁRIA",
+    ]);
+    expect(payload.definition.tasks).toHaveLength(23);
+  });
   it("uses server KPIs, renders all stages and navigates back to another workspace area without losing the bar", async () => {
     setup();
     expect(
-      (await screen.findAllByText("Terceira etapa")).length,
+      (await screen.findAllByText("1 · Terceira etapa")).length,
     ).toBeGreaterThan(0);
     expect(screen.getByText("Verificar campo")).toBeInTheDocument();
     expect(screen.getByText(/Todas as tarefas aplicáveis/)).toBeInTheDocument();
