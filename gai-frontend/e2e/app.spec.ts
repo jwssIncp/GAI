@@ -831,7 +831,7 @@ test('filtra itens por status e busca', async ({ page }) => {
   await authenticate(page);
   await page.goto('/app/projects/10/inventory-items');
   await page.getByLabel('Filtrar por status').selectOption('pending');
-  await page.getByPlaceholder('Buscar item').fill('Notebook');
+  await page.getByPlaceholder('Buscar (placa, descrição, marca, modelo, série)').fill('Notebook');
   await expect(page.getByText('Notebook Dell')).toBeVisible();
 });
 

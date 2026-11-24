@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Camera, Eye, Pencil, Plus, RotateCcw, XCircle } from 'lucide-react';
+import { Camera, Download, Eye, Pencil, Plus, RotateCcw, XCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { exportJobsApi } from '@/api/endpoints';
 import { normalizePage } from '@/api/pagination';
+import { Kpi, KpiGrid } from '@/components/base/Cards';
+import { DataPanel, DataPanelFilters } from '@/components/base/DataPanel';
 import { DataTable, type Column } from '@/components/base/DataTable';
-import { FilterPanel } from '@/components/base/FilterPanel';
+import { useProjectDashboard } from '@/features/projects/projectQueries';
 import { PageContainer } from '@/components/base/PageContainer';
 import { PageHeader } from '@/components/base/PageHeader';
 import { Pagination } from '@/components/base/Pagination';
@@ -22,6 +26,57 @@ import { useChangeInventoryItemStatus, useCreateInventoryItem, useProjectInvento
 import type { InventoryItem, InventoryItemStatus } from '@/types/api';
 import { ValuationBatchPanel,type BatchSelectionState } from './ValuationBatchPanel';
 import { useProjectLabel } from '@/features/projects/useProjectLabel';
+
+/** Colunas que o usuário pode ocultar ("Colunas ▾"); a escolha fica salva neste navegador. */
+const OPTIONAL_COLUMNS = ['Sequência', 'Placa antiga', 'Placa nova', 'Marca', 'Modelo', 'Localização', 'Fonte de consulta', 'Valor novo', 'Valor usado', 'Atualizado em'];
+const COLUMNS_STORAGE_KEY = 'gai.inventory-items.hidden-columns';
+function loadHiddenColumns(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(COLUMNS_STORAGE_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => OPTIONAL_COLUMNS.includes(value)) : [];
+  } catch {
+    return [];
+  }
+}
+function saveHiddenColumns(value: string[]) {
+  try { window.localStorage.setItem(COLUMNS_STORAGE_KEY, JSON.stringify(value)); } catch { /* sem armazenamento: vale só nesta visita */ }
+}
+
+function ColumnsMenu({ hidden, onChange }: { hidden: string[]; onChange: (next: string[]) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <details className="relative text-sm" open={open} onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <summary className="inline-flex min-h-8 cursor-pointer list-none items-center rounded-lg border border-white/60 px-3.5 text-[0.8125rem] font-bold text-white hover:bg-white/15">Colunas ▾</summary>
+      {/* Opções só no DOM com o menu aberto (fechado, não somam aos campos da tela). */}
+      {open ? <div className="absolute right-0 z-20 mt-1 grid gap-1 rounded-md border bg-popover p-3 text-foreground shadow-elevated" role="group" aria-label="Colunas visíveis">
+        {OPTIONAL_COLUMNS.map((column) => (
+          <label key={column} className="flex items-center gap-2 whitespace-nowrap">
+            <input type="checkbox" checked={!hidden.includes(column)} onChange={(event) => onChange(event.target.checked ? hidden.filter((h) => h !== column) : [...hidden, column])} />
+            {column}
+          </label>
+        ))}
+      </div> : null}
+    </details>
+  );
+}
+
+const percentLabel = (value: number) => `${Math.round(value * 10) / 10}%`.replace('.', ',');
+
+/** KPIs do inventário no topo da aba, como no sistema anterior (dados do resumo do projeto). */
+function InventoryIndicators({ projectId }: { projectId: number }) {
+  const inventory = useProjectDashboard(projectId).data?.inventory;
+  if (!inventory) return null;
+  return (
+    <KpiGrid label="Indicadores do inventário">
+      <Kpi group="indicators" tinted label="Itens inventariados" value={inventory.total_items} />
+      <Kpi group="indicators" label="% avaliado" value={percentLabel(Number(inventory.progress_percentage ?? 0))} hint={`${inventory.evaluated_items} avaliados`} />
+      <Kpi group="indicators" label="Pendentes" value={inventory.pending_items} />
+      <Kpi group="indicators" label="Divergentes" value={inventory.divergent_items} tone={inventory.divergent_items ? 'warning' : 'default'} />
+      <Kpi group="indicators" label="Não encontrados" value={inventory.not_found_items} tone={inventory.not_found_items ? 'warning' : 'default'} />
+      <Kpi group="indicators" label="Duplicados" value={inventory.duplicated_items} tone={inventory.duplicated_items ? 'danger' : 'default'} />
+    </KpiGrid>
+  );
+}
 
 export function ProjectInventoryItemsPage() {
   const projectId = Number(useParams().projectId);
@@ -62,6 +117,14 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
   const reactivate = useChangeInventoryItemStatus(projectId, 'reactivate');
   const { hasPermission } = usePermissions();
   const data = query.data ? normalizePage(query.data) : null;
+  const [panelHidden, setPanelHidden] = useState(false);
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>(loadHiddenColumns);
+  const queryClient = useQueryClient();
+  // "Exportar (Excel)" como no sistema anterior: dispara o export assíncrono de itens.
+  const exportItems = useMutation({
+    mutationFn: () => exportJobsApi.create(projectId, 'inventory_items_xlsx'),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['export-jobs', projectId] }),
+  });
 
   const columns: Column<InventoryItem>[] = [
     ...(hasPermission('asset-valuations:batch-create')&&hasPermission('asset-valuations:create')&&hasPermission('asset-valuations:read')?[{header:'Selecionar',cell:(item:InventoryItem)=><input type="checkbox" aria-label={`Selecionar item ${item.id}`} checked={selection.ids.includes(item.id)} onChange={()=>{const ids=selection.ids.includes(item.id)?selection.ids.filter(id=>id!==item.id):[...selection.ids,item.id];setSelection({ids,contract:{kind:'ids',ids}});}}/>}]:[]),
@@ -102,6 +165,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
       ),
     },
   ];
+  const shownColumns = columns.filter((column) => !hiddenColumns.includes(column.header));
 
   return (
     <PageContainer>
@@ -110,27 +174,40 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
         description={`${projectLabel}. Itens patrimoniais registrados no inventário.`}
         action={hasPermission('inventory-items:create') ? <Button type="button" onClick={() => setCreateOpen(true)}><Plus size={17} /> Novo item</Button> : null}
       />
-      <div className="flex gap-2 border-b pb-3 text-sm">
-        <Link className="text-primary hover:underline" to={`/app/projects/${projectId}/summary`}>Resumo</Link>
-        <span className="text-muted-foreground">/ Itens</span>
-      </div>
-      <FilterPanel>
-        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar item" />
-        <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryItemStatus | ''); setPage(1); }} aria-label="Filtrar por status">
-          <option value="">Todos os status</option>
-          {inventoryItemStatuses.map((itemStatus) => <option key={itemStatus} value={itemStatus}>{inventoryItemStatusLabels[itemStatus]}</option>)}
-        </select>
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={oldPlate} onChange={(event) => { setOldPlate(event.target.value); setPage(1); }} placeholder="Placa antiga" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={newPlate} onChange={(event) => { setNewPlate(event.target.value); setPage(1); }} placeholder="Placa nova" />
-        <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descrição" />
-      </FilterPanel>
+      <InventoryIndicators projectId={projectId} />
       <PermissionGate permissions={['asset-valuations:read','inventory-items:read']}><ValuationBatchPanel projectId={projectId} selection={selection} currentItems={data?.items??[]} filters={{search:params.search,status:params.status,old_plate:params.old_plate,new_plate:params.new_plate,description:params.description}} onSelection={setSelection} onViewItem={setViewingId}/></PermissionGate>
-      {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
-        <>
-          <DataTable columns={columns} items={data.items} getKey={(item) => item.id} />
-          <Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} />
-        </>
-      ) : null}
+      <DataPanel
+        title="Itens inventariados"
+        titleId="itens-inventariados"
+        contentId="itens-inventariados-conteudo"
+        count={data ? data.totalItems : undefined}
+        hidden={panelHidden}
+        onToggle={() => setPanelHidden((value) => !value)}
+        overflowVisible
+        extra={<>
+          <ColumnsMenu hidden={hiddenColumns} onChange={(next) => { setHiddenColumns(next); saveHiddenColumns(next); }} />
+          {hasPermission('export-jobs:create') ? <Button type="button" size="sm" variant="secondary" disabled={exportItems.isPending} onClick={() => exportItems.mutate()}><Download size={15} /> Exportar (Excel)</Button> : null}
+        </>}
+      >
+        <DataPanelFilters label="Filtros dos itens">
+          <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar (placa, descrição, marca, modelo, série)" />
+          <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryItemStatus | ''); setPage(1); }} aria-label="Filtrar por status">
+            <option value="">Status: todos</option>
+            {inventoryItemStatuses.map((itemStatus) => <option key={itemStatus} value={itemStatus}>{inventoryItemStatusLabels[itemStatus]}</option>)}
+          </select>
+          <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={oldPlate} onChange={(event) => { setOldPlate(event.target.value); setPage(1); }} placeholder="Placa antiga" />
+          <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={newPlate} onChange={(event) => { setNewPlate(event.target.value); setPage(1); }} placeholder="Placa nova" />
+          <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={description} onChange={(event) => { setDescription(event.target.value); setPage(1); }} placeholder="Descrição" />
+        </DataPanelFilters>
+        {exportItems.isSuccess ? <p role="status" className="border-b border-border px-5 py-2 text-sm">Exportação #{exportItems.data.id} solicitada. <Link className="font-semibold text-primary hover:underline" to={`/app/projects/${projectId}/export-jobs`}>Acompanhar e baixar em Exportações</Link></p> : null}
+        {exportItems.isError ? <div className="px-5 py-2"><ErrorState message={(exportItems.error as Error).message} /></div> : null}
+        {query.isLoading ? <LoadingState /> : query.isError ? <ErrorState message={(query.error as Error).message} onRetry={() => void query.refetch()} /> : data ? (
+          <>
+            <DataTable bare columns={shownColumns} items={data.items} getKey={(item) => item.id} />
+            <div className="px-5 pb-3"><Pagination page={data.page} totalPages={data.totalPages} onPageChange={setPage} /></div>
+          </>
+        ) : null}
+      </DataPanel>
       <DrawerForm open={createOpen} onOpenChange={setCreateOpen} title="Novo item">
         <InventoryItemForm busy={create.isPending} onSubmit={(payload) => create.mutate(payload, { onSuccess: () => setCreateOpen(false) })} />
       </DrawerForm>

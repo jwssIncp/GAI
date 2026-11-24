@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -16,6 +16,8 @@ const mocks = vi.hoisted(() => ({
   deactivate: vi.fn(),
   reactivate: vi.fn(),
   images: vi.fn(),
+  dashboard: vi.fn(),
+  createExport: vi.fn(),
 }));
 
 vi.mock('@/api/endpoints', () => ({
@@ -28,6 +30,8 @@ vi.mock('@/api/endpoints', () => ({
     reactivate: mocks.reactivate,
   },
   inventoryItemImagesApi: { list: mocks.images },
+  projectsApi: { dashboard: mocks.dashboard },
+  exportJobsApi: { create: mocks.createExport },
 }));
 
 const admin: CurrentUser = {
@@ -96,6 +100,25 @@ describe('ProjectInventoryItemsPage', () => {
     mocks.images.mockResolvedValue({ items: [], page: 1, page_size: 6, total_items: 0, total_pages: 0 });
     mocks.create.mockResolvedValue(item);
     mocks.deactivate.mockResolvedValue({ ...item, status: 'inactive' });
+    mocks.dashboard.mockResolvedValue({ inventory: { total_items: 40, evaluated_items: 10, pending_items: 25, divergent_items: 3, not_found_items: 2, duplicated_items: 0, removed_items: 0, inactive_items: 0, progress_percentage: 25 } });
+    mocks.createExport.mockResolvedValue({ id: 77, type: 'inventory_items_xlsx', status: 'pending' });
+    window.localStorage.clear();
+  });
+
+  it('mostra KPIs, oculta colunas e exporta em Excel como no sistema anterior', async () => {
+    renderPage();
+    const kpis = await screen.findByRole('group', { name: 'Indicadores do inventário' });
+    expect(kpis).toHaveTextContent('Itens inventariados40');
+    expect(kpis).toHaveTextContent('% avaliado25%');
+    expect(kpis).toHaveTextContent('Divergentes3');
+    expect(await screen.findByRole('columnheader', { name: 'Marca' })).toBeInTheDocument();
+    await userEvent.click(screen.getByText('Colunas ▾'));
+    await userEvent.click(within(screen.getByRole('group', { name: 'Colunas visíveis' })).getByLabelText('Marca'));
+    expect(screen.queryByRole('columnheader', { name: 'Marca' })).not.toBeInTheDocument();
+    expect(JSON.parse(window.localStorage.getItem('gai.inventory-items.hidden-columns') ?? '[]')).toEqual(['Marca']);
+    await userEvent.click(screen.getByRole('button', { name: 'Exportar (Excel)' }));
+    await waitFor(() => expect(mocks.createExport).toHaveBeenCalledWith(10, 'inventory_items_xlsx'));
+    expect(await screen.findByRole('link', { name: 'Acompanhar e baixar em Exportações' })).toHaveAttribute('href', '/app/projects/10/export-jobs');
   });
 
   it('renderiza listagem de itens', async () => {
