@@ -192,3 +192,110 @@ export function SequenceListEditor({ label, count, sourceLabel, value, busy, onC
     </div>
   );
 }
+
+type UnitOption = { id: number; name: string; address: string; city?: string | null; state?: string | null };
+type Allocation = { unit_id: number; quantity: number };
+
+/**
+ * Endereços do kick-off pelas unidades cadastradas do projeto (decisão: sem lista livre).
+ * Marca as unidades, informa a quantidade de itens; a participação é sempre calculada
+ * (qtde ÷ total) e as contagens de endereços, estados e cidades são derivadas, somente
+ * leitura. Colar várias linhas na quantidade preenche as unidades seguintes.
+ */
+export function UnitAllocationsEditor({
+  label,
+  units,
+  value,
+  busy,
+  onCommit,
+}: {
+  label: string;
+  units: UnitOption[];
+  value: Allocation[];
+  busy: boolean;
+  onCommit: (value: Allocation[] | null) => void;
+}) {
+  const [rows, setRows] = useState<Record<number, string>>(() =>
+    Object.fromEntries(value.map((row) => [row.unit_id, String(row.quantity)])),
+  );
+  if (!units.length)
+    return (
+      <span className="inline-flex rounded-md border border-dashed px-2 py-1 text-xs text-muted-foreground">
+        Nenhuma unidade vinculada ao projeto. Vincule em Painel Geral › projeto › Unidades.
+      </span>
+    );
+  const chosen = units.filter((unit) => unit.id in rows);
+  const quantities = chosen.map((unit) => Number(rows[unit.id] || 0));
+  const total = quantities.reduce((sum, n) => sum + n, 0);
+  const states = [...new Set(chosen.flatMap((unit) => (unit.state ? [unit.state] : [])))].sort();
+  const cities = new Set(chosen.flatMap((unit) => (unit.city ? [`${unit.city.toLocaleLowerCase('pt-BR')}|${unit.state ?? ''}`] : []))).size;
+  const commit = (next: Record<number, string>) => {
+    const list = units.filter((unit) => unit.id in next).map((unit) => ({ unit_id: unit.id, quantity: Number(next[unit.id] || 0) }));
+    if (JSON.stringify(list) === JSON.stringify(value)) return;
+    onCommit(list.length ? list : null);
+  };
+  const toggle = (id: number) => {
+    const next = { ...rows };
+    if (id in next) delete next[id];
+    else next[id] = '0';
+    setRows(next);
+    commit(next);
+  };
+  // Colar uma coluna de quantidades distribui pelas unidades seguintes (padrão do sistema anterior).
+  const paste = (id: number, text: string) => {
+    const lines = text.split(/\r?\n/).map((line) => line.replace(/\D/g, '')).filter(Boolean);
+    if (lines.length < 2) return false;
+    const start = units.findIndex((unit) => unit.id === id);
+    const next = { ...rows };
+    units.slice(start, start + lines.length).forEach((unit, index) => (next[unit.id] = lines[index]));
+    setRows(next);
+    commit(next);
+    return true;
+  };
+  return (
+    <div className="grid gap-2" role="group" aria-label={label}>
+      <p className="text-xs font-semibold text-muted-foreground">
+        Endereços: {chosen.length} · Estados ({states.length}) · Cidades: {cities} · Itens: {total.toLocaleString('pt-BR')}
+      </p>
+      {states.length ? (
+        <span className="flex flex-wrap gap-1" aria-label="Estados">
+          {states.map((state) => (
+            <span key={state} className="rounded-full bg-navy px-2 py-0.5 text-[0.6875rem] font-bold text-white dark:bg-steel-dark">
+              {state}
+            </span>
+          ))}
+        </span>
+      ) : null}
+      <ul className="grid gap-1.5">
+        {units.map((unit) => {
+          const on = unit.id in rows;
+          const quantity = Number(rows[unit.id] || 0);
+          return (
+            <li key={unit.id} className={cn('grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-md border px-2 py-1.5', on ? 'bg-card' : 'opacity-70')}>
+              <input type="checkbox" aria-label={`Incluir ${unit.name}`} disabled={busy} checked={on} onChange={() => toggle(unit.id)} />
+              <span className="min-w-0 text-xs">
+                <span className="block truncate font-semibold">{unit.name}</span>
+                <span className="block truncate text-muted-foreground">{unit.address || 'Endereço não informado'}</span>
+              </span>
+              <input
+                aria-label={`Qtde de itens: ${unit.name}`}
+                inputMode="numeric"
+                disabled={busy || !on}
+                className={cn(control, 'w-24 text-right tabular-nums')}
+                value={on ? rows[unit.id] : ''}
+                onChange={(e) => setRows({ ...rows, [unit.id]: e.target.value.replace(/\D/g, '') })}
+                onBlur={() => commit(rows)}
+                onPaste={(e) => {
+                  if (paste(unit.id, e.clipboardData.getData('text'))) e.preventDefault();
+                }}
+              />
+              <span className="w-14 text-right text-xs font-semibold tabular-nums text-muted-foreground" title="Participação: qtde ÷ total">
+                {on && total ? `${((quantity / total) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : '—'}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}

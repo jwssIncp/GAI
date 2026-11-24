@@ -395,6 +395,11 @@ export class PreparationService {
       address: [unit.address, unit.number, unit.city, unit.state]
         .filter(Boolean)
         .join(', '),
+      // Cidade e UF separadas: contagem de estados/cidades e resumo por UF (endereços do kick-off).
+      city: unit.city?.trim() || null,
+      state: /^[A-Za-z]{2}$/.test(unit.state?.trim() ?? '')
+        ? unit.state!.trim().toUpperCase()
+        : null,
     }));
   }
   async context(projectId: number, actor: ProjectActorContext) {

@@ -20,7 +20,7 @@ import type {
 } from './preparationTypes';
 import { questionGroupTags, requestAtKickoff } from './referenceTemplates';
 import { answerText, inlineChildren, isPercent, optionLabel, payloadOf, situationOf } from './answerHelpers';
-import { ChipsEditor, ContactEditor, DateRangeEditor, ScheduleEditor, SequenceListEditor, StepperEditor } from './CompositeEditors';
+import { ChipsEditor, ContactEditor, DateRangeEditor, ScheduleEditor, SequenceListEditor, StepperEditor, UnitAllocationsEditor } from './CompositeEditors';
 
 const SAVE_KEY = ['preparation-answer'] as const;
 
@@ -171,14 +171,14 @@ export function QuestionTable({
                       </span>
                     ) : (
                       <div className="grid gap-2">
-                        <AnswerEditor key={`${q.id}-${instance.revision}`} question={q} answer={a} stepper={stepperIds.has(q.id)} quantity={quantityOf(q)} context={context} editable={canChange} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(q.id)} />
+                        <AnswerEditor key={`${q.id}-${instance.revision}`} question={q} answer={a} stepper={stepperIds.has(q.id)} quantity={quantityOf(q)} context={context} editable={canChange} busy={saver.busy} onSave={(payload) => saver.save(payload)} />
                         {inlineChildren(questions, q).map((child) => {
                           const childAnswer = answerOf(child);
                           if (!childAnswer.applicable) return null;
                           return (
                             <label key={child.id} className="grid gap-1 rounded-md border border-dashed border-sky-300 bg-sky-50/60 p-2 text-xs font-semibold text-sky-900 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100">
                               {child.label}
-                              <AnswerEditor key={`${child.id}-${instance.revision}`} question={child} answer={childAnswer} quantity={quantityOf(child)} context={context} editable={editable} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(child.id)} />
+                              <AnswerEditor key={`${child.id}-${instance.revision}`} question={child} answer={childAnswer} quantity={quantityOf(child)} context={context} editable={editable} busy={saver.busy} onSave={(payload) => saver.save(payload)} />
                             </label>
                           );
                         })}
@@ -276,7 +276,6 @@ function AnswerEditor({
   editable,
   busy,
   onSave,
-  onEdit,
   stepper = false,
   quantity,
 }: {
@@ -286,7 +285,6 @@ function AnswerEditor({
   editable: boolean;
   busy: boolean;
   onSave: (payload: AnswerPayload) => void;
-  onEdit: () => void;
   /** Número exibido como contador − / + (quantidade de uma lista de sequências). */
   stepper?: boolean;
   /** Lista de sequências: quantas (vem de outra pergunta) e o nome dela. */
@@ -295,15 +293,20 @@ function AnswerEditor({
   const save = (value: AnswerValue | null) =>
     onSave(payloadOf(a, { state: value === null ? 'pending' : 'completed', value }));
   const shown = answerText(q, a, context);
+  if (editable && a.state !== 'not_applicable' && q.type === 'unit_allocations')
+    return (
+      <UnitAllocationsEditor
+        label={`Endereços: ${q.label}`}
+        units={context.units}
+        value={Array.isArray(a.value) && a.state === 'completed' ? (a.value as Array<{ unit_id: number; quantity: number }>) : []}
+        busy={busy}
+        onCommit={(value) => save(value)}
+      />
+    );
   if (!editable || a.state === 'not_applicable' || q.type === 'unit_allocations')
     return (
       <span className="flex flex-wrap items-center gap-2">
         <span className="whitespace-pre-wrap">{shown || <span className="text-muted-foreground">—</span>}</span>
-        {editable && q.type === 'unit_allocations' ? (
-          <Button size="sm" variant="secondary" onClick={onEdit}>
-            Editar unidades
-          </Button>
-        ) : null}
       </span>
     );
   if (q.type === 'none')

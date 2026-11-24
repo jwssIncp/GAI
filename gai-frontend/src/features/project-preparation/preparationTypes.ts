@@ -144,7 +144,8 @@ export interface PreparationContext {
   /** Organização dona do projeto: nome exibido na opção ORGANIZATION_OPTION. */
   organization?: { id: number; name: string } | null;
   company: { id: number; name: string } | null;
-  units: Array<{ id: number; name: string; address: string }>;
+  /** Unidades vinculadas ao projeto (endereços do kick-off), com cidade e UF. */
+  units: Array<{ id: number; name: string; address: string; city?: string | null; state?: string | null }>;
   responsible_users: Array<{ id: number; label: string }>;
 }
 export interface PreparationMetadata {

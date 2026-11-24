@@ -491,3 +491,34 @@ export function formatAnswerValue(
   if (typeof value === 'string') return option(value);
   return typeof value === 'number' ? String(value) : JSON.stringify(value);
 }
+
+/**
+ * Resumo dos endereços (unidades) de uma resposta de alocação: quantidade de endereços, de
+ * cidades e de estados, e endereços por UF (maior quantidade primeiro, depois alfabética).
+ */
+export function addressSummary(
+  value: PreparationValue,
+  units: Array<{ id: number; city: string | null; state: string | null }>,
+) {
+  const rows = allocations(value);
+  const chosen = rows
+    .map((row) => units.find((unit) => unit.id === row.unit_id))
+    .filter((unit): unit is NonNullable<typeof unit> => Boolean(unit));
+  const byState = new Map<string, number>();
+  for (const unit of chosen)
+    if (unit.state) byState.set(unit.state, (byState.get(unit.state) ?? 0) + 1);
+  return {
+    addresses: rows.length,
+    cities: new Set(
+      chosen.flatMap((unit) =>
+        unit.city
+          ? [`${unit.city.toLocaleLowerCase('pt-BR')}|${unit.state ?? ''}`]
+          : [],
+      ),
+    ).size,
+    states: [...byState.entries()]
+      .map(([state, count]) => ({ state, count }))
+      .sort((a, b) => b.count - a.count || a.state.localeCompare(b.state)),
+    without_state: chosen.filter((unit) => !unit.state).length,
+  };
+}

@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   applicability,
+  addressSummary,
   allocations,
   progress,
   validateAnswer,
@@ -288,5 +289,27 @@ describe('Tipos de resposta do kick-off do sistema anterior', () => {
     expect(
       applicability([chips, other], answer(['MÓVEIS'])).get('outros'),
     ).toBe(false);
+  });
+});
+
+describe('Resumo dos endereços do kick-off (unidades do projeto)', () => {
+  it('conta endereços, cidades e estados e ordena por quantidade', () => {
+    const units = [
+      { id: 1, city: 'São Paulo', state: 'SP' },
+      { id: 2, city: 'Campinas', state: 'SP' },
+      { id: 3, city: 'Belo Horizonte', state: 'MG' },
+      { id: 4, city: null, state: null },
+    ];
+    const value = [1, 2, 3, 4].map((unit_id) => ({ unit_id, quantity: 10 }));
+    expect(addressSummary(value, units)).toEqual({
+      addresses: 4,
+      cities: 3,
+      states: [
+        { state: 'SP', count: 2 },
+        { state: 'MG', count: 1 },
+      ],
+      without_state: 1,
+    });
+    expect(addressSummary(null, units).addresses).toBe(0);
   });
 });
