@@ -267,7 +267,7 @@ export function ProjectsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Projetos"
+        title="Painel Geral"
         description="Planejamento e acompanhamento dos projetos por empresa e operação."
         action={
           hasPermission("projects:create") ? (

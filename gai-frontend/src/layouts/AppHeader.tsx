@@ -10,7 +10,7 @@ import { usePermissions } from '@/features/auth/usePermissions';
 import { navigationContext, navigationHref } from '@/features/projects/navigationContext';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/utils/cn';
-import { Breadcrumbs } from './Breadcrumbs';
+import { activeProjectAreaTab, projectAreaTabs } from '@/features/projects/projectArea';
 import { organizationLabel } from './organizationLabel';
 
 /** Altura real do cabeçalho (muda no mobile): barras fixas abaixo dele usam a variável. */
@@ -22,8 +22,8 @@ const ghostButton = 'inline-flex min-h-9 shrink-0 items-center justify-center ga
  * Menu superior em duas linhas, no padrão do sistema anterior:
  * - linha 1: logo (leva à Visão geral), áreas (Projetos, Comercial, Financeiro e, à
  *   direita, ⚙ Administração) e o usuário;
- * - linha 2: telas da área escolhida, em pílulas. Dentro de um projeto, a linha 2 mostra
- *   a trilha (Projetos › projeto › grupo › aba) e a navegação do projeto vem logo abaixo.
+ * - linha 2: telas da área escolhida, em pílulas. Em Projetos, são as sub-abas do sistema
+ *   anterior (Painel Geral, Kick-off, ...), também dentro de um projeto (com a barra do projeto abaixo).
  * Clicar numa área só troca a linha 2 (não navega). Itens e permissões vêm de
  * `constants/navigation.ts`; área sem item permitido não aparece.
  */
@@ -58,6 +58,10 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
     item.to.startsWith('/app/budgets') || item.to.startsWith('/app/finance') || item.to === '/app/projects' ? navigationHref(item.to, context) : item.to;
   const subItems = shown ? items.filter((item) => item.section === shown && item.section !== 'overview') : [];
   const areaLabel = shown ? navigationSections.find(([key]) => key === shown)?.[1] : undefined;
+  // Área Projetos no padrão do sistema anterior: as sub-abas (Painel Geral, Kick-off, ...) valem
+  // para todos os projetos e continuam visíveis dentro de um projeto, com a aba dele ativa.
+  const projectTabs = shown === 'projects' ? projectAreaTabs.filter((tab) => canAccess(tab.permissions)) : [];
+  const activeAreaTab = activeProjectAreaTab(location.pathname, location.hash);
 
   return (
     <header ref={header} className="sticky top-0 z-30 font-nav">
@@ -94,10 +98,25 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
         </div>
         <UserArea onFullscreen={onFullscreen} />
       </div>
-      {insideProject ? (
-        <div className="flex min-h-11 items-center border-b border-nav-border bg-subnav px-6 max-md:px-3">
-          <Breadcrumbs />
-        </div>
+      {projectTabs.length ? (
+        <nav aria-label="Telas de Projetos" className="flex min-h-11 items-center gap-1 overflow-x-auto overflow-y-hidden border-b border-nav-border bg-subnav px-6 max-md:px-3">
+          {projectTabs.map((tab) => {
+            const active = tab.id === activeAreaTab?.id;
+            return (
+              <Link
+                key={tab.id}
+                to={tab.id === 'overview' ? navigationHref(tab.to, context) : tab.to}
+                aria-current={active ? (insideProject ? 'true' : 'page') : undefined}
+                className={cn(
+                  'inline-flex min-h-8 shrink-0 items-center whitespace-nowrap rounded-full px-[13px] text-[0.78125rem] font-semibold transition-colors max-md:min-h-10',
+                  active ? 'bg-[#0A1F44] text-white dark:bg-steel-dark' : 'text-nav-muted hover:bg-subnav-hover hover:text-nav-ink',
+                )}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+        </nav>
       ) : subItems.length ? (
         <nav aria-label={`Telas de ${areaLabel}`} className="flex min-h-11 items-center gap-1 overflow-x-auto overflow-y-hidden border-b border-nav-border bg-subnav px-6 max-md:px-3">
           {subItems.map((item) => (
