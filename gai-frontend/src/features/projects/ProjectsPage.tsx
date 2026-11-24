@@ -4,7 +4,6 @@ import { normalizePage } from "@/api/pagination";
 import { DataPanel } from "@/components/base/DataPanel";
 import { DataTable } from "@/components/base/DataTable";
 import { FilterPanel } from "@/components/base/FilterPanel";
-import { MetricCard } from "@/components/base/Cards";
 import { PageContainer } from "@/components/base/PageContainer";
 import { PageHeader } from "@/components/base/PageHeader";
 import { Pagination } from "@/components/base/Pagination";
@@ -26,6 +25,7 @@ import type {
 import { ProjectForm } from "./ProjectForm";
 import { ProjectCreatePage } from "./ProjectCreatePage";
 import { ProjectLifecycleActions } from "./ProjectLifecycleActions";
+import { ProjectsDashboard, ProjectsKpis } from "./ProjectsDashboard";
 import { ProjectRegistrationSelect } from "./ProjectRegistrationSelect";
 import { OrganizationSelect } from "./ProjectSelectors";
 import { canMutateProjectOperations } from "./projectLifecycle";
@@ -89,6 +89,14 @@ export function ProjectsPage() {
     sort_by: sortBy,
     sort_order: sortOrder,
   });
+  // Mesmo recorte da lista para os KPIs e o Dashboard (filtros aceitos pela visão geral).
+  const overviewFilters = Object.fromEntries(
+    Object.entries({
+      search: search || undefined,
+      status,
+      company_id: companyId ? String(companyId) : undefined,
+    }).filter((entry): entry is [string, string] => Boolean(entry[1])),
+  );
   const editId = positiveInt(searchParams.get("edit"));
   const editing = useProject(editId);
   const updateProject = useUpdateProject(editId ?? 0);
@@ -272,24 +280,20 @@ export function ProjectsPage() {
           ) : null
         }
       />
-      {projects.data?.status_counts ? (
-        <div
-          className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3"
-          aria-label="Indicadores dos projetos filtrados"
-        >
-          <MetricCard
-            label="Total filtrado"
-            value={projects.data.total_items}
-          />
-          {(["draft", "active", "paused", "finished"] as const).map((value) => (
-            <MetricCard
-              key={value}
-              label={statusLabel(value)}
-              value={projects.data?.status_counts?.[value] ?? 0}
-            />
-          ))}
-        </div>
-      ) : null}
+      <ProjectsKpis
+        filters={overviewFilters}
+        total={projects.data?.total_items}
+        open={
+          projects.data
+            ? (projects.data.status_counts?.active ?? 0)
+            : undefined
+        }
+      />
+      <ProjectsDashboard
+        filters={overviewFilters}
+        status={status}
+        onStatus={(value) => updateParams({ status: value, page: 1 })}
+      />
       <FilterPanel>
         <div className="grid w-full min-w-0 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
           <SearchInput
