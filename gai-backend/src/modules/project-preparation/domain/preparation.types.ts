@@ -9,17 +9,37 @@ export const QUESTION_TYPES = [
   'select',
   'sequence',
   'unit_allocations',
+  /** Escolha múltipla em chips (ex.: Escopo, Perfil dos bens). Valor: lista de opções. */
+  'multi_select',
+  /** Contato: { name, phone }. Dado pessoal (LGPD): só para quem acessa o projeto. */
+  'contact',
+  /** Intervalo de datas civis: { start, end }. */
+  'date_range',
+  /** Horário especial: { start: 'HH:MM', end: 'HH:MM', weekends }. */
+  'schedule',
+  /** Lista de sequências { start, end }, na quantidade da pergunta numérica indicada. */
+  'sequence_list',
+  /** Item sem resposta: só o "Realizado" e as observações. */
+  'none',
 ] as const;
+/** Opção que mostra o nome da organização (ex.: fornecedor das etiquetas). Valor estável. */
+export const ORGANIZATION_OPTION = '@organizacao';
 export type QuestionType = (typeof QUESTION_TYPES)[number];
 export type Scalar = string | number | boolean;
 export type PreparationValue =
   | Scalar
   | null
   | { start: number; end: number }
-  | Array<{ unit_id: number; quantity: number }>;
+  | Array<{ unit_id: number; quantity: number }>
+  | string[]
+  | { name: string; phone: string | null }
+  | { start: string; end: string }
+  | { start: string; end: string; weekends: boolean }
+  | Array<{ start: number; end: number }>;
 export interface QuestionCondition {
   question_id: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'answered';
+  /** "contains": a escolha múltipla da pergunta de origem inclui o valor. */
+  operator: 'equals' | 'not_equals' | 'in' | 'answered' | 'contains';
   value?: Scalar | Scalar[];
 }
 export interface PreparationQuestion {

@@ -39,6 +39,7 @@ import {
 import {
   allocations,
   applicability,
+  formatAnswerValue,
   invalid,
   progress,
   validateAnswer,
@@ -404,6 +405,9 @@ export class PreparationService {
           organizationId: project.organizationId,
         })
       : null;
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
     const users = await this.repo.manager.getRepository(UserEntity).find({
       where: {
         organizationId: project.organizationId,
@@ -420,6 +424,13 @@ export class PreparationService {
         organization_id: project.organizationId,
         status: project.status,
       },
+      // Nome da organização dona do projeto: aparece no lugar da opção ORGANIZATION_OPTION.
+      organization: organization
+        ? {
+            id: organization.id,
+            name: organization.tradeName ?? organization.legalName,
+          }
+        : null,
       company: company ? { id: company.id, name: company.name } : null,
       units: await this.units(project),
       responsible_users: users.map((user) => ({
@@ -703,7 +714,9 @@ export class PreparationService {
       if (
         q.type === 'unit_allocations' &&
         Array.isArray(answer.value) &&
-        answer.value.some((row) => !unitIds.has(row.unit_id))
+        (answer.value as Array<{ unit_id: number }>).some(
+          (row) => !unitIds.has(row.unit_id),
+        )
       )
         invalid('Unidade não vinculada à empresa e ao projeto deste escopo');
     }
@@ -969,20 +982,12 @@ export class PreparationService {
       const value =
         answer.state === 'not_applicable'
           ? 'Não aplicável'
-          : typeof answer.value === 'boolean'
-            ? answer.value
-              ? 'Sim'
-              : 'Não'
-            : Array.isArray(answer.value)
-              ? answer.allocations
-                  .map(
-                    (allocation) =>
-                      `${context.units.find((unit) => unit.id === allocation.unit_id)?.name ?? 'Unidade desvinculada'}: ${allocation.quantity} itens (${allocation.participation_percent}%)`,
-                  )
-                  .join('; ')
-              : answer.value && typeof answer.value === 'object'
-                ? `${answer.value.start} a ${answer.value.end}`
-                : String(answer.value);
+          : formatAnswerValue(question, answer.value, {
+              organizationName: context.organization?.name ?? '',
+              unitName: (unitId) =>
+                context.units.find((unit) => unit.id === unitId)?.name ??
+                'Unidade desvinculada',
+            });
       lines.push(
         `[${question.category}] ${question.label}: ${value}`,
         ...(answer.notes ? [`Observações: ${answer.notes}`] : []),

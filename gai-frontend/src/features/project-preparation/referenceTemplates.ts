@@ -5,7 +5,7 @@ import type {
   QuestionType,
   TemplatePayload,
 } from './preparationTypes';
-import { kindLabels } from './preparationTypes';
+import { kindLabels, ORGANIZATION_OPTION } from './preparationTypes';
 
 // Perguntas, grupos e opções do kick-off do sistema anterior (kickoff.html).
 // Não importa identidades, respostas, credenciais nem cria semente automática em produção.
@@ -29,6 +29,7 @@ export const requestAtKickoff = new Set([
 /** Complementos exibidos na linha do item-pai ("QUAIS ERROS…", "QUAL SISTEMA?", ...). */
 const inlineFollowUps = new Set([
   'prior-lessons',
+  'asset-profile-other',
   'system-name',
   'plate-match-percent',
   'audit-firm',
@@ -78,7 +79,8 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     { question_id, operator: 'equals', value },
   ];
 
-  add('participants', 'APRESENTAÇÃO PARTICIPANTES CALL');
+  // Sem resposta, como no sistema anterior: só "Realizado" e observações.
+  add('participants', 'APRESENTAÇÃO PARTICIPANTES CALL', 'none');
   select('client-origin', 'ORIGEM CLIENTE', [
     'CURSO',
     'INBOUND',
@@ -93,10 +95,16 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     'REGULATÓRIO',
     'OUTROS',
   ]);
-  add(
-    'scope',
-    'ESCOPO (VISTORIA, INVENTÁRIO, CONCILIAÇÃO, VIDA ÚTIL, VALOR JUSTO, IMPAIRMENT)',
-  );
+  add('scope', 'ESCOPO', 'multi_select', {
+    options: [
+      'VISTORIA',
+      'INVENTÁRIO',
+      'CONCILIAÇÃO',
+      'VIDA ÚTIL',
+      'VALOR JUSTO',
+      'IMPAIRMENT',
+    ],
+  });
   select('prior-inventory', 'JÁ FOI REALIZADO ANTERIORMENTE?', YES_NO);
   add('prior-lessons', 'QUAIS ERROS OCORRERAM? LAUDO ANTERIOR?', 'long_text', {
     enabled_when: when('prior-inventory', 'SIM'),
@@ -115,10 +123,23 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
   });
   select('cost-centers', 'CENTROS DE CUSTO', ['SIM', 'N/A']);
   select('serial-number', 'Nº SÉRIE', ['SIM', 'N/A']);
-  add(
-    'asset-profile',
-    'PERFIL DOS BENS (MÁQUINAS E EQUIPAMENTOS, MÓVEIS E UTENSÍLIOS, INFORMÁTICA, VEÍCULOS, FERRAMENTAS, OUTROS)',
-  );
+  add('asset-profile', 'PERFIL DOS BENS', 'multi_select', {
+    options: [
+      'MÁQUINAS E EQUIPAMENTOS',
+      'MÓVEIS E UTENSÍLIOS',
+      'EQUIPAMENTOS DE INFORMÁTICA',
+      'VEÍCULOS',
+      'FERRAMENTAS',
+      'OUTROS',
+    ],
+  });
+  // OUTROS exige dizer quais (correção do sistema anterior, que usava uma caixa de diálogo).
+  add('asset-profile-other', 'QUAIS OUTROS BENS?', 'text', {
+    required: true,
+    enabled_when: [
+      { question_id: 'asset-profile', operator: 'contains', value: 'OUTROS' },
+    ],
+  });
   select('vehicles', 'VEÍCULOS', YES_NO);
   add('reference-date', 'DATA-BASE', 'date');
   select('accounting-base', 'BASE CONTÁBIL COMPLETA', [
@@ -153,29 +174,28 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
   });
 
   category = 'ETIQUETAS';
+  // A opção da organização mostra o nome da empresa dona do projeto (ex.: INVESTOR).
   select('label-supplier', 'ETIQUETAS NOVAS - FORNECEDOR', [
-    'GAI',
+    ORGANIZATION_OPTION,
     'CLIENTE',
     'N/A',
   ]);
-  // Como no sistema anterior: fornecedor "N/A" bloqueia toda a seção e "CLIENTE" bloqueia
-  // quantidade, sequência e modelo das etiquetas novas.
-  const newLabels = when('label-supplier', 'GAI');
+  // Como no sistema anterior: só o fornecedor "N/A" bloqueia os itens das etiquetas.
   const anyLabels: Condition[] = [
     { question_id: 'label-supplier', operator: 'not_equals', value: 'N/A' },
   ];
   add('label-quantity', 'ETIQUETAS NOVAS - QUANTIDADE', 'number', {
-    enabled_when: newLabels,
+    enabled_when: anyLabels,
   });
   add('label-sequence', 'ETIQUETAS NOVAS - SEQUÊNCIA', 'sequence', {
-    enabled_when: newLabels,
+    enabled_when: anyLabels,
     quantity_question_id: 'label-quantity',
   });
   select(
     'label-model',
     'ETIQUETAS NOVAS - MODELO',
     ['AÇO', 'ALUMÍNIO', 'POLICARBONATO', 'OUTROS'],
-    { enabled_when: newLabels },
+    { enabled_when: anyLabels },
   );
   add('label-model-other', 'QUAL MODELO?', 'text', {
     enabled_when: when('label-model', 'OUTROS'),
@@ -186,11 +206,12 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     'number',
     { enabled_when: anyLabels },
   );
+  // Uma sequência por modelo informado acima (contador − / +).
   add(
     'old-label-sequences',
     'ETIQUETAS ANTIGAS - SEQUÊNCIAS ANTERIORES',
-    'long_text',
-    { enabled_when: anyLabels },
+    'sequence_list',
+    { enabled_when: anyLabels, quantity_question_id: 'old-label-models' },
   );
   select('remove-labels', 'SERÃO RETIRADAS?', YES_NO_NA, {
     enabled_when: anyLabels,
@@ -203,26 +224,25 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     YES_NO_NA,
   );
   if (kind === 'kickoff') {
-    add('field-start', 'PRAZO CAMPO - INÍCIO', 'date');
-    add('field-end', 'PRAZO CAMPO - FIM', 'date');
+    add('field-period', 'PRAZO CAMPO', 'date_range');
   }
   add('project-deadline', 'PRAZO PROJETO', 'date');
   select('field-hours', 'HORÁRIO CAMPO', ['COMERCIAL', 'ESPECIAL']);
-  add('field-hours-detail', 'QUAL HORÁRIO?', 'text', {
+  add('field-hours-detail', 'QUAL HORÁRIO?', 'schedule', {
     enabled_when: when('field-hours', 'ESPECIAL'),
   });
   select(
     'travel-guidance',
     'DESPESAS HOSPEDAGEM, ALIMENTAÇÃO, TRANSLADO, TRANSPORTE',
-    ['GAI', 'CLIENTE', 'N/A'],
+    [ORGANIZATION_OPTION, 'CLIENTE', 'N/A'],
   );
   select('weekly-report', 'REUNIÕES DE REPORTE SEMANAL', YES_NO_NA);
-  add('project-contact', 'FOCAL PROJETO (NOME E TELEFONE)', 'text');
-  add('field-contact', 'FOCAL CAMPO (NOME E TELEFONE)', 'text');
+  add('project-contact', 'FOCAL PROJETO', 'contact');
+  add('field-contact', 'FOCAL CAMPO', 'contact');
   select('escort', 'ACOMPANHANTE COM EXPERIÊNCIA EM ATIVOS', YES_NO);
   // Excluído da lista no sistema anterior.
   add('schedule', 'CRONOGRAMA', 'long_text', { visible: false });
-  select('site-plan', 'PLANTA DO LOCAL', ['SOLICITADO']);
+  select('site-plan', 'PLANTA DO LOCAL', ['N/A', 'SOLICITADO', 'RECEBIDO']);
   add('additional-info', 'OUTRAS INFORMAÇÕES IMPORTANTES');
 
   category = 'VIDA ÚTIL';

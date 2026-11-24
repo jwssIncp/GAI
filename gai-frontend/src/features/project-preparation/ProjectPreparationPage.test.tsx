@@ -7,10 +7,11 @@ import { AuthContext, type AuthState } from '@/features/auth/AuthContext';
 import type { CurrentUser } from '@/types/api';
 import { ProjectPreparationPage } from './ProjectPreparationPage';
 import { preparationApi } from './preparationQueries';
-import type {
-  Preparation,
-  PreparationContext,
-  PreparationTemplate,
+import {
+  ORGANIZATION_OPTION,
+  type Preparation,
+  type PreparationContext,
+  type PreparationTemplate,
 } from './preparationTypes';
 import { referenceTemplate } from './referenceTemplates';
 
@@ -503,13 +504,26 @@ describe('Audited reference model suggestions', () => {
     );
     const sequence = kickoff.questions.find((q) => q.id === 'label-sequence')!;
     expect(sequence.quantity_question_id).toBe('label-quantity');
+    // Só o fornecedor N/A bloqueia as etiquetas (como no sistema anterior).
     expect(sequence.enabled_when).toEqual([
-      {
-        question_id: 'label-supplier',
-        operator: 'equals',
-        value: 'GAI',
-      },
+      { question_id: 'label-supplier', operator: 'not_equals', value: 'N/A' },
     ]);
+    // Fornecedor e despesas mostram o nome da organização (valor estável no modelo).
+    expect(kickoff.questions.find((q) => q.id === 'label-supplier')!.options).toEqual([ORGANIZATION_OPTION, 'CLIENTE', 'N/A']);
+    const byId = (id: string) => kickoff.questions.find((q) => q.id === id)!;
+    expect(byId('scope').type).toBe('multi_select');
+    expect(byId('asset-profile-other')).toMatchObject({
+      type: 'text',
+      required: true,
+      display: 'inline',
+      enabled_when: [{ question_id: 'asset-profile', operator: 'contains', value: 'OUTROS' }],
+    });
+    expect(byId('field-period').type).toBe('date_range');
+    expect(byId('field-hours-detail').type).toBe('schedule');
+    expect(byId('project-contact').type).toBe('contact');
+    expect(byId('old-label-sequences')).toMatchObject({ type: 'sequence_list', quantity_question_id: 'old-label-models' });
+    expect(byId('participants').type).toBe('none');
+    expect(byId('site-plan').options).toEqual(['N/A', 'SOLICITADO', 'RECEBIDO']);
     expect(client.questions.some((q) => q.type === 'unit_allocations')).toBe(
       true,
     );

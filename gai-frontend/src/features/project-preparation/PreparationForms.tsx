@@ -16,6 +16,7 @@ import type {
   PreparationQuestion,
   PreparationKind,
   PreparationTemplate,
+  SequenceValue,
 } from './preparationTypes';
 
 const control =
@@ -347,9 +348,9 @@ export function AnswerValueInput({
       </select>
     );
   if (question.type === 'sequence') {
-    const sequence =
+    const sequence: SequenceValue =
       value && typeof value === 'object' && !Array.isArray(value)
-        ? value
+        ? (value as SequenceValue)
         : { start: 0, end: 0 };
     return (
       <div className="grid gap-3 sm:grid-cols-2">
@@ -386,8 +387,22 @@ export function AnswerValueInput({
       </div>
     );
   }
+  // Tipos compostos são respondidos direto na linha da tabela (chips, contato, período...).
+  if (
+    ['multi_select', 'contact', 'date_range', 'schedule', 'sequence_list', 'none'].includes(
+      question.type,
+    )
+  )
+    return (
+      <p className="text-sm text-muted-foreground">
+        Responda direto na linha da tabela.
+      </p>
+    );
   if (question.type === 'unit_allocations') {
-    const entries = Array.isArray(value) ? value : [];
+    const entries = (Array.isArray(value) ? value : []) as Array<{
+      unit_id: number;
+      quantity: number;
+    }>;
     const total = entries.reduce((sum, row) => sum + row.quantity, 0);
     return (
       <div className="grid gap-3">

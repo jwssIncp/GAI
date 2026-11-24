@@ -1,9 +1,14 @@
 import { formatDate } from '@/utils/format';
-import type {
-  AnswerPayload,
-  PreparationAnswer,
-  PreparationContext,
-  PreparationQuestion,
+import {
+  ORGANIZATION_OPTION,
+  type AnswerPayload,
+  type ContactValue,
+  type DateRangeValue,
+  type ScheduleValue,
+  type SequenceValue,
+  type PreparationAnswer,
+  type PreparationContext,
+  type PreparationQuestion,
 } from './preparationTypes';
 
 /** Texto da resposta para a tabela, a impressão e a planilha. */
@@ -16,20 +21,56 @@ export function answerText(
   if (answer.state === 'not_applicable') return 'N/A';
   if (answer.state !== 'completed') return '';
   const value = answer.value;
+  if (value === null) return '';
   if (typeof value === 'boolean') return value ? 'SIM' : 'NÃO';
-  if (Array.isArray(value))
-    return answer.allocations
-      .map(
-        (row) =>
-          `${context.units.find((unit) => unit.id === row.unit_id)?.name ?? `Unidade #${row.unit_id}`}: ${row.quantity} itens (${row.participation_percent}%)`,
-      )
-      .join('; ');
-  if (value && typeof value === 'object') return `${value.start} a ${value.end}`;
-  if (question.type === 'date') return formatDate(String(value));
-  if (question.type === 'number' && typeof value === 'number')
-    return `${value.toLocaleString('pt-BR')}${isPercent(question) ? '%' : ''}`;
-  return value == null ? '' : String(value);
+  switch (question.type) {
+    case 'unit_allocations':
+      return answer.allocations
+        .map(
+          (row) =>
+            `${context.units.find((unit) => unit.id === row.unit_id)?.name ?? `Unidade #${row.unit_id}`}: ${row.quantity} itens (${row.participation_percent}%)`,
+        )
+        .join('; ');
+    case 'multi_select':
+      return (value as string[]).map((option) => optionLabel(option, context)).join(' / ');
+    case 'contact': {
+      const contact = value as ContactValue;
+      return contact.phone ? `${contact.name} - ${contact.phone}` : contact.name;
+    }
+    case 'date_range': {
+      const range = value as DateRangeValue;
+      return `${formatDate(range.start)} a ${formatDate(range.end)}`;
+    }
+    case 'schedule': {
+      const hours = value as ScheduleValue;
+      return `Entrada ${hours.start} · Saída ${hours.end}${hours.weekends ? ' · Inclui finais de semana' : ''}`;
+    }
+    case 'sequence_list':
+      return (value as SequenceValue[])
+        .map((seq, index) => `Sequência ${index + 1}: ${seq.start} a ${seq.end}`)
+        .join('; ');
+    case 'sequence': {
+      const seq = value as SequenceValue;
+      return `${seq.start} a ${seq.end}`;
+    }
+    case 'date':
+      return formatDate(String(value));
+    case 'number':
+      return typeof value === 'number'
+        ? `${value.toLocaleString('pt-BR')}${isPercent(question) ? '%' : ''}`
+        : String(value);
+    default:
+      return typeof value === 'string' ? optionLabel(value, context) : String(value);
+  }
 }
+
+/** Rótulo de uma opção: ORGANIZATION_OPTION mostra o nome da organização dona do projeto. */
+export function optionLabel(option: string, context: PreparationContext) {
+  return option === ORGANIZATION_OPTION
+    ? (context.organization?.name ?? 'Organização').toUpperCase()
+    : option;
+}
+
 
 /**
  * Situação da linha no padrão do sistema anterior. O "Realizado" é independente da resposta:

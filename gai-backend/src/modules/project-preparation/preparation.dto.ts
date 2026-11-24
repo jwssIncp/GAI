@@ -32,8 +32,8 @@ import {
 
 export class ConditionDto implements QuestionCondition {
   @ApiProperty() @IsString() @MaxLength(80) question_id!: string;
-  @ApiProperty({ enum: ['equals', 'not_equals', 'in', 'answered'] })
-  @IsIn(['equals', 'not_equals', 'in', 'answered'])
+  @ApiProperty({ enum: ['equals', 'not_equals', 'in', 'answered', 'contains'] })
+  @IsIn(['equals', 'not_equals', 'in', 'answered', 'contains'])
   operator!: QuestionCondition['operator'];
   @ApiPropertyOptional() @Allow() value?: Scalar | Scalar[];
 }

@@ -13,9 +13,14 @@ import type {
   PreparationAnswer,
   PreparationContext,
   PreparationQuestion,
+  ContactValue,
+  DateRangeValue,
+  ScheduleValue,
+  SequenceValue,
 } from './preparationTypes';
 import { questionGroupTags, requestAtKickoff } from './referenceTemplates';
-import { answerText, inlineChildren, isPercent, payloadOf, situationOf } from './answerHelpers';
+import { answerText, inlineChildren, isPercent, optionLabel, payloadOf, situationOf } from './answerHelpers';
+import { ChipsEditor, ContactEditor, DateRangeEditor, ScheduleEditor, SequenceListEditor, StepperEditor } from './CompositeEditors';
 
 const SAVE_KEY = ['preparation-answer'] as const;
 
@@ -74,6 +79,19 @@ export function QuestionTable({
   onEdit: (id: string) => void;
 }) {
   const saver = useAnswerSaver(projectId, instance);
+  // Pergunta numérica que define quantas sequências uma lista terá: vira contador − / +.
+  const stepperIds = new Set(
+    questions.flatMap((x) => (x.type === 'sequence_list' && x.quantity_question_id ? [x.quantity_question_id] : [])),
+  );
+  const quantityOf = (x: PreparationQuestion) => {
+    if (x.type !== 'sequence_list' || !x.quantity_question_id) return undefined;
+    const source = questions.find((other) => other.id === x.quantity_question_id);
+    const value = source ? answerOf(source) : undefined;
+    return {
+      count: value?.state === 'completed' && typeof value.value === 'number' ? value.value : 0,
+      label: source?.label ?? '',
+    };
+  };
   return (
     <div className="grid">
       {saver.error ? (
@@ -153,14 +171,14 @@ export function QuestionTable({
                       </span>
                     ) : (
                       <div className="grid gap-2">
-                        <AnswerEditor key={`${q.id}-${instance.revision}`} question={q} answer={a} context={context} editable={canChange} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(q.id)} />
+                        <AnswerEditor key={`${q.id}-${instance.revision}`} question={q} answer={a} stepper={stepperIds.has(q.id)} quantity={quantityOf(q)} context={context} editable={canChange} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(q.id)} />
                         {inlineChildren(questions, q).map((child) => {
                           const childAnswer = answerOf(child);
                           if (!childAnswer.applicable) return null;
                           return (
                             <label key={child.id} className="grid gap-1 rounded-md border border-dashed border-sky-300 bg-sky-50/60 p-2 text-xs font-semibold text-sky-900 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100">
                               {child.label}
-                              <AnswerEditor key={`${child.id}-${instance.revision}`} question={child} answer={childAnswer} context={context} editable={editable} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(child.id)} />
+                              <AnswerEditor key={`${child.id}-${instance.revision}`} question={child} answer={childAnswer} quantity={quantityOf(child)} context={context} editable={editable} busy={saver.busy} onSave={(payload) => saver.save(payload)} onEdit={() => onEdit(child.id)} />
                             </label>
                           );
                         })}
@@ -259,6 +277,8 @@ function AnswerEditor({
   busy,
   onSave,
   onEdit,
+  stepper = false,
+  quantity,
 }: {
   question: PreparationQuestion;
   answer: PreparationAnswer;
@@ -267,6 +287,10 @@ function AnswerEditor({
   busy: boolean;
   onSave: (payload: AnswerPayload) => void;
   onEdit: () => void;
+  /** Número exibido como contador − / + (quantidade de uma lista de sequências). */
+  stepper?: boolean;
+  /** Lista de sequências: quantas (vem de outra pergunta) e o nome dela. */
+  quantity?: { count: number; label: string };
 }) {
   const save = (value: AnswerValue | null) =>
     onSave(payloadOf(a, { state: value === null ? 'pending' : 'completed', value }));
@@ -282,8 +306,45 @@ function AnswerEditor({
         ) : null}
       </span>
     );
+  if (q.type === 'none')
+    return (
+      <span className="inline-flex rounded-md border border-dashed px-2 py-1 text-xs text-muted-foreground">
+        Sem resposta — marque “Realizado” quando tratado
+      </span>
+    );
   const current = a.state === 'completed' ? a.value : null;
   const label = `Resposta: ${q.label}`;
+  if (q.type === 'multi_select')
+    return (
+      <ChipsEditor
+        label={label}
+        options={q.options ?? []}
+        value={Array.isArray(current) ? (current as string[]) : []}
+        optionLabel={(option) => optionLabel(option, context)}
+        busy={busy}
+        onCommit={(value) => save(value)}
+      />
+    );
+  if (q.type === 'contact')
+    return <ContactEditor label={q.label} value={(current as ContactValue | null) ?? null} busy={busy} onCommit={(value) => save(value)} />;
+  if (q.type === 'date_range')
+    return <DateRangeEditor label={q.label} value={(current as DateRangeValue | null) ?? null} busy={busy} onCommit={(value) => save(value)} />;
+  if (q.type === 'schedule')
+    return <ScheduleEditor label={q.label} value={(current as ScheduleValue | null) ?? null} busy={busy} onCommit={(value) => save(value)} />;
+  if (q.type === 'sequence_list')
+    return (
+      <SequenceListEditor
+        key={quantity?.count ?? 0}
+        label={q.label}
+        count={quantity?.count ?? 0}
+        sourceLabel={quantity?.label ?? ''}
+        value={Array.isArray(current) ? (current as SequenceValue[]) : []}
+        busy={busy}
+        onCommit={(value) => save(value)}
+      />
+    );
+  if (q.type === 'number' && stepper)
+    return <StepperEditor label={label} value={typeof current === 'number' ? current : 0} busy={busy} onCommit={(value) => save(value)} />;
   if (q.type === 'select' || q.type === 'boolean')
     return (
       <select
@@ -303,7 +364,11 @@ function AnswerEditor({
             <option value="false">NÃO</option>
           </>
         ) : (
-          q.options?.map((option) => <option key={option}>{option}</option>)
+          q.options?.map((option) => (
+            <option key={option} value={option}>
+              {optionLabel(option, context)}
+            </option>
+          ))
         )}
       </select>
     );
@@ -338,7 +403,7 @@ function AnswerEditor({
       </Suffixed>
     );
   if (q.type === 'sequence') {
-    const seq = current && typeof current === 'object' && !Array.isArray(current) ? current : null;
+    const seq = current && typeof current === 'object' && !Array.isArray(current) ? (current as SequenceValue) : null;
     return <SequenceEditor label={q.label} start={seq?.start ?? null} end={seq?.end ?? null} busy={busy} onCommit={(value) => save(value)} />;
   }
   const long = q.type === 'long_text';

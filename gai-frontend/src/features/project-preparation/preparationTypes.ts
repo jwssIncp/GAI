@@ -8,16 +8,33 @@ export type QuestionType =
   | 'date'
   | 'select'
   | 'sequence'
-  | 'unit_allocations';
+  | 'unit_allocations'
+  | 'multi_select'
+  | 'contact'
+  | 'date_range'
+  | 'schedule'
+  | 'sequence_list'
+  | 'none';
+/** Opção que mostra o nome da organização dona do projeto (valor estável). */
+export const ORGANIZATION_OPTION = '@organizacao';
+export type ContactValue = { name: string; phone: string | null };
+export type DateRangeValue = { start: string; end: string };
+export type ScheduleValue = { start: string; end: string; weekends: boolean };
+export type SequenceValue = { start: number; end: number };
 export type Scalar = string | number | boolean;
 export type AnswerValue =
   | Scalar
   | null
-  | { start: number; end: number }
-  | Array<{ unit_id: number; quantity: number }>;
+  | SequenceValue
+  | Array<{ unit_id: number; quantity: number }>
+  | string[]
+  | ContactValue
+  | DateRangeValue
+  | ScheduleValue
+  | SequenceValue[];
 export interface Condition {
   question_id: string;
-  operator: 'equals' | 'not_equals' | 'in' | 'answered';
+  operator: 'equals' | 'not_equals' | 'in' | 'answered' | 'contains';
   value?: Scalar | Scalar[];
 }
 export interface PreparationQuestion {
@@ -124,6 +141,8 @@ export interface PreparationContext {
     name: string;
     status: ProjectStatus;
   };
+  /** Organização dona do projeto: nome exibido na opção ORGANIZATION_OPTION. */
+  organization?: { id: number; name: string } | null;
   company: { id: number; name: string } | null;
   units: Array<{ id: number; name: string; address: string }>;
   responsible_users: Array<{ id: number; label: string }>;
@@ -172,4 +191,10 @@ export const questionTypeLabels: Record<QuestionType, string> = {
   select: 'Seleção',
   sequence: 'Sequência de etiquetas',
   unit_allocations: 'Itens por unidade',
+  multi_select: 'Escolha múltipla (chips)',
+  contact: 'Contato (nome e telefone)',
+  date_range: 'Período (início e fim)',
+  schedule: 'Horário (entrada, saída, fins de semana)',
+  sequence_list: 'Sequências por modelo',
+  none: 'Sem resposta (só Realizado)',
 };
