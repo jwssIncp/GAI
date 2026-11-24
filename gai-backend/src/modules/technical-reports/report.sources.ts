@@ -1,3 +1,4 @@
+import { cents, money } from '../contracts/contract.policy';
 import {
   Injectable,
   Inject,
@@ -512,12 +513,17 @@ export class ReportSourcesService {
           ]),
           batch ? [...rs, batch] : rs,
         );
+        // Soma exata (centavos) dos valores usados conhecidos. A moeda continua não
+        // informada na avaliação: o total vale para o quadro do laudo, com esse aviso.
+        const used = selected.filter((r) => r.usedValue !== null);
         metrics['valuation.count'] = selected.length;
-        metrics['valuation.used_total'] = null;
+        metrics['valuation.used_total'] = used.length
+          ? money(used.reduce((s, r) => s + cents(String(r.usedValue)), 0n))
+          : null;
+        metrics['valuation.used_missing'] = selected.length - used.length;
         if (selected.length) missing.push('valuation.currency');
         if (!selected.length) missing.push('valuation');
-        if (selected.some((r) => r.usedValue === null))
-          missing.push('valuation.used_total');
+        if (used.length < selected.length) missing.push('valuation.used_total');
       }
       if (f === 'issues') {
         const rs = await scoped(InventoryPendingIssueEntity);

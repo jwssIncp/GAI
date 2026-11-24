@@ -445,7 +445,7 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
       platform,
     ).expect(400);
   });
-  it('captures valuation rows without treating unknown currency as a trustworthy monetary total', async () => {
+  it('sums the used valuation values exactly and keeps the currency flagged as unknown', async () => {
     await api('post', `/projects/${p}/inventory-items/${item}/valuations`, {
       source: 'SINTETICO fonte documental',
       valuation_date: '2026-01-01',
@@ -462,7 +462,9 @@ describe('Technical reports real HTTP and disposable MySQL', () => {
       }).expect(201)
     ).body;
     expect(c.data.sources.metrics['valuation.count']).toBe(1);
-    expect(c.data.sources.metrics['valuation.used_total']).toBeNull();
+    expect(c.data.sources.metrics['valuation.used_total']).toBe('100.01');
+    expect(c.data.sources.metrics['valuation.used_missing']).toBe(0);
+    expect(c.data.sources.fields['valuation.used_total']).toBe('100.01');
     expect(c.data.sources.missing).toContain('valuation.currency');
     expect(await ds.getRepository(AssetValuationEntity).count()).toBe(1);
   });

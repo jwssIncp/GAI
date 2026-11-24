@@ -13,6 +13,7 @@ const metricLabels: Record<string, string> = {
   "reconciliation.unresolved": "Divergências sem consolidação válida",
   "valuation.count": "Avaliações consideradas",
   "valuation.used_total": "Total avaliado usado (moeda não informada)",
+  "valuation.used_missing": "Avaliações sem valor usado",
   "issues.open_count": "Pendências em aberto",
 };
 function reportText(text: string, fields: Content["fields"]) {
