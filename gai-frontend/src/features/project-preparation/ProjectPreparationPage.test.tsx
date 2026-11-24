@@ -201,7 +201,7 @@ describe('Project preparation UI', () => {
     expect(
       screen.getByText('BLOQUEADO'),
     ).toBeInTheDocument();
-    expect(screen.getByText(/0 não aplicáveis/)).toBeInTheDocument();
+    expect(screen.getByText(/não aplicáveis: 0/)).toBeInTheDocument();
   });
   it('lista kick-offs no painel azul, filtra por situação e responde listas na linha como no sistema anterior', async () => {
     const ui = userEvent.setup();
@@ -461,7 +461,8 @@ describe('Preparation on closed projects', () => {
     await ui.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Concluir' }));
     await waitFor(() => expect(transition).toHaveBeenCalledWith(10, seed.id, seed.revision, 'approve', undefined));
     // Excluir (arquiva) exige motivo de pelo menos 5 caracteres.
-    await ui.click(screen.getByRole('button', { name: 'Excluir' }));
+    // Excluir da barra da lista (o detalhe também tem o botão).
+    await ui.click(within(table).getByRole('button', { name: 'Excluir' }));
     const dialog = await screen.findByRole('dialog');
     const confirm = within(dialog).getByRole('button', { name: 'Excluir' });
     expect(confirm).toBeDisabled();

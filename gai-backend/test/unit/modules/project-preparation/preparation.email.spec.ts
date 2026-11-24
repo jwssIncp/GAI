@@ -215,6 +215,7 @@ describe('E-mail ao cliente (modelo da organização)', () => {
         'Att,',
         '',
         'PENDÊNCIAS:',
+        '',
         '01- Base contábil – 27/11 - (CLIENTE ALFA)',
         '02- Compra de etiquetas "PRESTADORA EXEMPLO"',
         '03- Escopo com conciliação',

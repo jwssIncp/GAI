@@ -164,14 +164,19 @@ export function validateEmailTemplate(
       };
     });
   };
+  // Assunto e título das pendências também só aceitam marcadores conhecidos.
+  const subject = text(raw.subject, 'subject', LIMITS.short)!;
+  checkText(subject, 'subject');
+  const pendingTitle = text(raw.pending_title, 'pending_title', LIMITS.short)!;
+  checkText(pendingTitle, 'pending_title');
   if (!Array.isArray(raw.pendings) || raw.pendings.length > LIMITS.pendings)
     invalid('E-mail do modelo: pendências inválidas');
   return {
-    subject: text(raw.subject, 'subject', LIMITS.short)!,
+    subject,
     header: blocks(raw.header, 'header'),
     topics: blocks(raw.topics, 'topics'),
     footer: blocks(raw.footer, 'footer'),
-    pending_title: text(raw.pending_title, 'pending_title', LIMITS.short)!,
+    pending_title: pendingTitle,
     pendings: raw.pendings.map((l, i) => line(l, `pendings[${i + 1}]`)),
   };
 }

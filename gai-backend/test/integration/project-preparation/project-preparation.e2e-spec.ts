@@ -1002,7 +1002,7 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     // Prazo: primeira sexta depois da data da reunião (29/02/2028 → 03/03).
     expect(email.body.text).toContain('01- Quantidade: 1.500 bens');
     expect(email.body.text).toContain(
-      'PENDÊNCIAS:\n01- Base – 03/03 - (PREPARAÇÃO SINTÉTICA)',
+      'PENDÊNCIAS:\n\n01- Base – 03/03 - (PREPARAÇÃO SINTÉTICA)',
     );
     expect(email.body.text).not.toContain('Detalhes');
 

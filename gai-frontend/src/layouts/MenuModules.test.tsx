@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { navigation } from "@/constants/navigation";
 import { AppHeader } from "./AppHeader";
+import { preparationApi } from "@/features/project-preparation/preparationQueries";
 import type { CurrentUser, SystemRoleKey } from "@/types/api";
 
 function user(options: { roles?: SystemRoleKey[]; permissions?: string[]; organization?: number | null }): CurrentUser {
@@ -32,6 +33,8 @@ function user(options: { roles?: SystemRoleKey[]; permissions?: string[]; organi
  * Para listar todos os itens, abre cada área e lê as telas da linha 2.
  */
 function renderMenu(current: CurrentUser) {
+  // Alerta ⚠ da sub-aba Kick-off: sem requisição real.
+  vi.spyOn(preparationApi, "openSummary").mockResolvedValue({ open: 0 });
   render(
     <AuthContext.Provider value={{ user: current } as AuthState}>
       <MemoryRouter initialEntries={["/app/projects"]}>

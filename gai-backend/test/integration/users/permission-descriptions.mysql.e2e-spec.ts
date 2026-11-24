@@ -38,14 +38,24 @@ mysqlSuite('Migration das descrições de permissões (pt-BR)', () => {
       ),
     );
   // Tudo o que não é texto: ids, chaves, escopos, perfis, vínculos e atribuições.
-  const structure = async () =>
-    JSON.stringify([
+  // Com `keys`, considera só essas permissões (e seus vínculos): permissões novas de
+  // migrations posteriores, reaplicadas por runMigrations, não contam como mudança.
+  const structure = async (keys?: Set<string>) => {
+    const permissions: Array<{ id: number; key: string }> = (
       await db.query(
         'SELECT id, `key`, resource, action, scope FROM permissions ORDER BY id',
+      )
+    ).filter((p: { key: string }) => !keys || keys.has(p.key));
+    const ids = new Set(permissions.map((p) => String(p.id)));
+    return JSON.stringify([
+      permissions,
+      (await db.query('SELECT * FROM role_permissions ORDER BY 1, 2')).filter(
+        (rp: { permission_id: number }) =>
+          !keys || ids.has(String(rp.permission_id)),
       ),
-      await db.query('SELECT * FROM role_permissions ORDER BY 1, 2'),
       await db.query('SELECT id, `key` FROM roles ORDER BY id'),
     ]);
+  };
 
   // Reverte até esta migration sair da lista (as posteriores saem antes;
   // runMigrations as reaplica).
@@ -120,13 +130,18 @@ mysqlSuite('Migration das descrições de permissões (pt-BR)', () => {
       manualKey,
     ]);
     const before = await structure();
+    const keysBefore = new Set<string>(
+      (await db.query('SELECT `key` FROM permissions')).map(
+        (p: { key: string }) => p.key,
+      ),
+    );
 
     await db.runMigrations();
     const after = await descriptions();
     for (const [key, , to] of PERMISSION_DESCRIPTIONS_PT_BR)
       if (key !== manualKey) expect(after.get(key)).toBe(to);
     expect(after.get(manualKey)).toBe('Texto ajustado pela organização');
-    expect(await structure()).toBe(before);
+    expect(await structure(keysBefore)).toBe(before);
 
     // Rodar de novo: nada pendente, nada muda.
     expect(await db.runMigrations()).toEqual([]);

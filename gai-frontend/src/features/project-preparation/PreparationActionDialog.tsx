@@ -74,6 +74,7 @@ export function PreparationActionDialog({
           <label className="grid gap-1.5 text-sm font-medium">
             Motivo
             <textarea
+              aria-label="Motivo"
               required
               minLength={5}
               maxLength={500}
