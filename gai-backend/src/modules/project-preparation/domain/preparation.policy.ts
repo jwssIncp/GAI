@@ -78,6 +78,18 @@ export function validateQuestions(
       invalid(
         `Complemento na linha exige uma única condição sobre pergunta da mesma seção: ${q.id}`,
       );
+    if (q.prefill !== undefined) {
+      const expected: Record<string, string> = {
+        'contract.scope': 'multi_select',
+        'contract.estimated_assets': 'number',
+        'contract.expenses_paid_by': 'select',
+        'project.units': 'unit_allocations',
+      };
+      if (!expected[q.prefill] || expected[q.prefill] !== q.type)
+        invalid(
+          `Pré-preenchimento incompatível com o tipo da pergunta: ${q.id}`,
+        );
+    }
     if ((q.enabled_when?.length ?? 0) > 10)
       invalid('Máximo de dez condições por pergunta');
     for (const condition of q.enabled_when ?? []) {
@@ -521,4 +533,98 @@ export function addressSummary(
       .sort((a, b) => b.count - a.count || a.state.localeCompare(b.state)),
     without_state: chosen.filter((unit) => !unit.state).length,
   };
+}
+
+const plain = (text: string) =>
+  text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+/** Serviços do contrato → opções do escopo (padrão do sistema anterior: CPC 27/46/01). */
+const SCOPE_ALIASES: Array<[RegExp, string]> = [
+  [/vistoria/, 'vistoria'],
+  [/inventari/, 'inventario'],
+  [/concilia/, 'conciliacao'],
+  [/vida util|cpc ?27/, 'vida util'],
+  [/valor justo|cpc ?46/, 'valor justo'],
+  [/impairment|recuperavel|cpc ?0?1\b/, 'impairment'],
+];
+export interface PrefillData {
+  /** Nulo quando o usuário não pode ler contratos: nada do contrato é aplicado. */
+  contract: {
+    services: string[];
+    estimatedAssets: number | null;
+    expensesPaidBy: 'client' | 'company' | null;
+  } | null;
+  unitIds: number[];
+}
+/**
+ * Valores de pré-preenchimento das perguntas marcadas com "prefill". Só para perguntas
+ * visíveis, habilitadas e ainda sem resposta (pendente e sem valor): nunca sobrescreve.
+ * Valores que não passariam na validação do tipo são descartados.
+ */
+export function prefillValues(
+  questions: PreparationQuestion[],
+  answers: PolicyAnswer[],
+  data: PrefillData,
+): Array<{ questionId: string; source: string; value: PreparationValue }> {
+  const enabled = applicability(questions, answers);
+  const byId = new Map(answers.map((a) => [a.questionId, a]));
+  const result: Array<{
+    questionId: string;
+    source: string;
+    value: PreparationValue;
+  }> = [];
+  for (const q of questions) {
+    if (!q.prefill || !q.visible || !enabled.get(q.id)) continue;
+    const current = byId.get(q.id);
+    if (current && (current.state !== 'pending' || current.value !== null))
+      continue;
+    let value: PreparationValue = null;
+    if (q.prefill === 'contract.scope' && data.contract) {
+      const wanted = new Set(
+        data.contract.services.flatMap((service) =>
+          SCOPE_ALIASES.filter(([pattern]) => pattern.test(plain(service))).map(
+            ([, target]) => target,
+          ),
+        ),
+      );
+      const options = (q.options ?? []).filter(
+        (option) =>
+          wanted.has(plain(option)) ||
+          data.contract!.services.some((s) => plain(s) === plain(option)),
+      );
+      value = options.length ? options : null;
+    } else if (
+      q.prefill === 'contract.estimated_assets' &&
+      data.contract?.estimatedAssets != null
+    )
+      value = data.contract.estimatedAssets;
+    else if (
+      q.prefill === 'contract.expenses_paid_by' &&
+      data.contract?.expensesPaidBy
+    ) {
+      const option =
+        data.contract.expensesPaidBy === 'client'
+          ? 'CLIENTE'
+          : ORGANIZATION_OPTION;
+      value = q.options?.includes(option) ? option : null;
+    } else if (q.prefill === 'project.units' && data.unitIds.length)
+      value = data.unitIds.map((unit_id) => ({
+        unit_id,
+        // Com uma unidade só, ela recebe todos os bens estimados; com várias, a quantidade
+        // de cada endereço fica para quem preenche (participação calculada depois).
+        quantity:
+          data.unitIds.length === 1 ? (data.contract?.estimatedAssets ?? 0) : 0,
+      }));
+    if (value === null) continue;
+    try {
+      validateAnswer(
+        q,
+        { questionId: q.id, state: 'completed', value, notes: null },
+        answers,
+      );
+      result.push({ questionId: q.id, source: q.prefill, value });
+    } catch {
+      // Dado do projeto incompatível com o modelo: não aplica.
+    }
+  }
+  return result;
 }

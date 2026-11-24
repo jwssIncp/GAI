@@ -1,10 +1,17 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { EntityManager, In, IsNull, LessThan } from 'typeorm';
+import { hasAllPermissions } from '../auth/application/services/permission-access';
+import {
+  PERMISSION_RESOLVER,
+  type PermissionResolver,
+} from '../auth/domain/ports/permission-resolver.port';
+import { ContractEntity } from '../contracts/contract.entity';
 import {
   ProjectActorContext,
   ProjectScopeService,
@@ -40,6 +47,7 @@ import {
   allocations,
   applicability,
   formatAnswerValue,
+  prefillValues,
   invalid,
   progress,
   validateAnswer,
@@ -53,6 +61,8 @@ export class PreparationService {
   constructor(
     private readonly repo: PreparationRepository,
     private readonly scope: ProjectScopeService,
+    @Inject(PERMISSION_RESOLVER)
+    private readonly permissions: PermissionResolver,
   ) {}
   private missing(): never {
     throw new NotFoundException({
@@ -532,9 +542,113 @@ export class PreparationService {
         row.id,
         template.id,
       );
+      // Pré-preenchimento na criação (uma vez), a partir do contrato e das unidades.
+      await this.applyPrefill(manager, project, row, 1, actor);
       return row.id;
     });
     return this.get(projectId, id, actor);
+  }
+  /**
+   * "Aplicar dados do projeto": preenche, sem sobrescrever, as perguntas ainda sem
+   * resposta a partir do contrato e das unidades. Retorna quantas foram preenchidas.
+   */
+  async prefill(
+    projectId: number,
+    id: number,
+    revision: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    const applied = await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      if (row.revision !== revision) this.conflict();
+      this.editable(row);
+      return this.applyPrefill(manager, project, row, revision, actor);
+    });
+    return { ...(await this.get(projectId, id, actor)), prefilled: applied };
+  }
+  private async applyPrefill(
+    manager: EntityManager,
+    project: ProjectEntity,
+    row: ProjectPreparationEntity,
+    revision: number,
+    actor: ProjectActorContext,
+  ) {
+    if (!row.snapshot.questions.some((q) => q.prefill)) return 0;
+    // Dados do contrato só para quem pode lê-los (princípio: uma permissão por dado).
+    const canReadContracts = await hasAllPermissions(
+      actor,
+      ['contracts:read'],
+      this.permissions,
+    );
+    const contracts = canReadContracts
+      ? (
+          await manager.getRepository(ContractEntity).find({
+            where: {
+              organizationId: project.organizationId,
+              projectId: project.id,
+            },
+          })
+        ).filter((c) => c.data.status !== 'cancelled')
+      : [];
+    const assets = contracts.filter((c) => c.data.estimated_assets != null);
+    const payers = [
+      ...new Set(contracts.flatMap((c) => c.data.expenses_paid_by ?? [])),
+    ];
+    const units = await this.units(project, manager);
+    const existing = await this.repo.answers(row, manager);
+    const values = prefillValues(row.snapshot.questions, existing, {
+      contract: canReadContracts
+        ? {
+            services: contracts.flatMap((c) => c.data.services ?? []),
+            estimatedAssets: assets.length
+              ? assets.reduce((s, c) => s + Number(c.data.estimated_assets), 0)
+              : null,
+            // Só quando todos os contratos concordam.
+            expensesPaidBy: payers.length === 1 ? payers[0] : null,
+          }
+        : null,
+      unitIds: units.map((unit) => unit.id),
+    });
+    if (!values.length) return 0;
+    for (const item of values) {
+      const before = existing.find((a) => a.questionId === item.questionId);
+      await manager.getRepository(PreparationAnswerEntity).save({
+        id: before?.id,
+        organizationId: project.organizationId,
+        projectId: project.id,
+        preparationId: row.id,
+        questionId: item.questionId,
+        state: 'completed',
+        value: item.value,
+        notes: before?.notes ?? null,
+        responsibleUserId: before?.responsibleUserId ?? null,
+        dueDate: before?.dueDate ?? null,
+        answeredById: actor.id,
+        answeredAt: new Date(),
+        realized: before?.realized ?? false,
+        realizedAt: before?.realizedAt ?? null,
+        realizedById: before?.realizedById ?? null,
+      });
+    }
+    await this.claim(manager, row, revision);
+    await this.audit(
+      manager,
+      actor,
+      project.organizationId,
+      'ANSWERS_PREFILLED',
+      {
+        applied: values.map((item) => ({
+          question_id: item.questionId,
+          source: item.source,
+          value: item.value,
+        })),
+        revision: revision + 1,
+      },
+      project.id,
+      row.id,
+    );
+    return values.length;
   }
   private async scopedInstance(
     project: ProjectEntity,

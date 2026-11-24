@@ -20,6 +20,8 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ANSWER_STATES,
+  PREFILL_SOURCES,
+  type PrefillSource,
   type AnswerState,
   PREPARATION_KINDS,
   type PreparationKind,
@@ -72,6 +74,10 @@ export class QuestionDto {
   @IsOptional()
   @IsIn(['row', 'inline'])
   display?: 'row' | 'inline';
+  @ApiPropertyOptional({ enum: PREFILL_SOURCES })
+  @IsOptional()
+  @IsIn(PREFILL_SOURCES)
+  prefill?: PrefillSource;
 }
 export class TemplateContentDto {
   @ApiProperty() @IsString() @MaxLength(200) name!: string;

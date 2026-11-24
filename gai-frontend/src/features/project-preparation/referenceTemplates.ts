@@ -96,6 +96,7 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     'OUTROS',
   ]);
   add('scope', 'ESCOPO', 'multi_select', {
+    prefill: 'contract.scope',
     options: [
       'VISTORIA',
       'INVENTÁRIO',
@@ -109,8 +110,13 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
   add('prior-lessons', 'QUAIS ERROS OCORRERAM? LAUDO ANTERIOR?', 'long_text', {
     enabled_when: when('prior-inventory', 'SIM'),
   });
-  add('item-count', 'QUANTIDADE DE ITENS. COBRANÇA ITEM ADICIONAL.', 'number');
-  add('unit-allocation', 'ENDEREÇOS', 'unit_allocations');
+  // Pré-preenchidos a partir do contrato e das unidades do projeto (sem sobrescrever).
+  add('item-count', 'QUANTIDADE DE ITENS. COBRANÇA ITEM ADICIONAL.', 'number', {
+    prefill: 'contract.estimated_assets',
+  });
+  add('unit-allocation', 'ENDEREÇOS', 'unit_allocations', {
+    prefill: 'project.units',
+  });
   select('valuation-purpose', 'AVALIAÇÃO - FINALIDADE', [
     'CONTÁBIL',
     'GERENCIAL',
@@ -235,6 +241,7 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     'travel-guidance',
     'DESPESAS HOSPEDAGEM, ALIMENTAÇÃO, TRANSLADO, TRANSPORTE',
     [ORGANIZATION_OPTION, 'CLIENTE', 'N/A'],
+    { prefill: 'contract.expenses_paid_by' },
   );
   select('weekly-report', 'REUNIÕES DE REPORTE SEMANAL', YES_NO_NA);
   add('project-contact', 'FOCAL PROJETO', 'contact');

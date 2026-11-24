@@ -32,6 +32,7 @@ import {
   preparationKeys,
   usePreparation,
   usePreparationContext,
+  usePreparationMutation,
   usePreparations,
   usePreparationTemplates,
 } from './preparationQueries';
@@ -467,6 +468,9 @@ function PreparationDetail({
   const [filter, setFilter] = useState<SituationFilter>('all');
   const [hiddenGroups, setHiddenGroups] = useState<string[]>([]);
   const [action, setAction] = useState<PreparationAction>();
+  const prefill = usePreparationMutation(projectId, () =>
+    preparationApi.prefill(projectId, instance.id, instance.revision),
+  );
   const question = instance.snapshot.questions.find((q) => q.id === questionId);
   const answer = instance.answers.find((a) => a.question_id === questionId);
   const visible = instance.snapshot.questions
@@ -568,6 +572,25 @@ function PreparationDetail({
             Responsáveis e datas
           </Button>
         ) : null}
+        {canEdit && instance.snapshot.questions.some((q) => q.prefill) ? (
+          <Button
+            variant="secondary"
+            disabled={prefill.isPending}
+            title="Preenche as perguntas ainda sem resposta com dados do contrato e das unidades. Não altera respostas existentes."
+            onClick={() =>
+              prefill.mutate(undefined, {
+                onSuccess: (result) =>
+                  onMessage(
+                    result.prefilled
+                      ? `${result.prefilled} resposta(s) preenchida(s) a partir do contrato e das unidades. Respostas existentes não foram alteradas.`
+                      : 'Nada a preencher: as perguntas com dados do projeto já têm resposta ou o contrato não informa esses dados.',
+                  ),
+              })
+            }
+          >
+            Aplicar dados do projeto
+          </Button>
+        ) : null}
         <Button variant="secondary" onClick={() => setHistoryOpen(true)}>
           Histórico
         </Button>
@@ -597,6 +620,7 @@ function PreparationDetail({
           </Button>
         ) : null}
       </div>
+      {prefill.isError ? <ErrorState message={(prefill.error as Error).message} /> : null}
       {instance.progress.missing_required.length ? (
         <p className="text-sm text-muted-foreground print:hidden">
           {instance.progress.missing_required.length} pergunta(s) obrigatória(s)
@@ -752,6 +776,7 @@ function HistoryPanel({
     INSTANCE_REOPEN: 'Preparação reaberta',
     INSTANCE_ARCHIVE: 'Preparação arquivada',
     COMMUNICATION_PREVIEW: 'Prévia de comunicação gerada',
+    ANSWERS_PREFILLED: 'Respostas preenchidas com dados do projeto',
   };
   return (
     <DrawerForm

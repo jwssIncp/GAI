@@ -3,6 +3,7 @@ import {
   applicability,
   addressSummary,
   allocations,
+  prefillValues,
   progress,
   validateAnswer,
   validateQuestions,
@@ -311,5 +312,81 @@ describe('Resumo dos endereços do kick-off (unidades do projeto)', () => {
       without_state: 1,
     });
     expect(addressSummary(null, units).addresses).toBe(0);
+  });
+});
+
+describe('Pré-preenchimento do kick-off (contrato e unidades)', () => {
+  const questions = [
+    q('scope', {
+      type: 'multi_select',
+      options: [
+        'VISTORIA',
+        'INVENTÁRIO',
+        'CONCILIAÇÃO',
+        'VIDA ÚTIL',
+        'VALOR JUSTO',
+        'IMPAIRMENT',
+      ],
+      prefill: 'contract.scope',
+    }),
+    q('items', { type: 'number', prefill: 'contract.estimated_assets' }),
+    q('expenses', {
+      type: 'select',
+      options: ['@organizacao', 'CLIENTE', 'N/A'],
+      prefill: 'contract.expenses_paid_by',
+    }),
+    q('units', { type: 'unit_allocations', prefill: 'project.units' }),
+  ];
+  const contract = {
+    services: ['Inventário patrimonial', 'Conciliação', 'Laudo CPC 27'],
+    estimatedAssets: 1200,
+    expensesPaidBy: 'company' as const,
+  };
+
+  it('mapeia serviços, bens, despesas e unidades sem sobrescrever respostas', () => {
+    validateQuestions(questions);
+    const values = prefillValues(questions, [a('items', 50)], {
+      contract,
+      unitIds: [7],
+    });
+    expect(values).toEqual([
+      {
+        questionId: 'scope',
+        source: 'contract.scope',
+        value: ['INVENTÁRIO', 'CONCILIAÇÃO', 'VIDA ÚTIL'],
+      },
+      {
+        questionId: 'expenses',
+        source: 'contract.expenses_paid_by',
+        value: '@organizacao',
+      },
+      // Uma unidade só recebe todos os bens estimados.
+      {
+        questionId: 'units',
+        source: 'project.units',
+        value: [{ unit_id: 7, quantity: 1200 }],
+      },
+    ]);
+  });
+  it('sem permissão de contratos só aplica as unidades; com várias unidades a quantidade fica zerada', () => {
+    const values = prefillValues(questions, [], {
+      contract: null,
+      unitIds: [1, 2],
+    });
+    expect(values).toEqual([
+      {
+        questionId: 'units',
+        source: 'project.units',
+        value: [
+          { unit_id: 1, quantity: 0 },
+          { unit_id: 2, quantity: 0 },
+        ],
+      },
+    ]);
+  });
+  it('rejeita origem incompatível com o tipo da pergunta', () => {
+    expect(() =>
+      validateQuestions([q('x', { type: 'text', prefill: 'project.units' })]),
+    ).toThrow(BadRequestException);
   });
 });

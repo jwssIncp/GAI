@@ -51,6 +51,8 @@ export interface PreparationQuestion {
   quantity_question_id?: string;
   /** "inline": complemento exibido na linha da pergunta da qual depende. */
   display?: 'row' | 'inline';
+  /** Origem do pré-preenchimento (contrato ou unidades), aplicado sem sobrescrever. */
+  prefill?: 'contract.scope' | 'contract.estimated_assets' | 'contract.expenses_paid_by' | 'project.units';
 }
 export interface PreparationTemplate {
   id: number;

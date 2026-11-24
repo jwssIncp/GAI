@@ -523,6 +523,13 @@ describe('Audited reference model suggestions', () => {
     expect(byId('project-contact').type).toBe('contact');
     expect(byId('old-label-sequences')).toMatchObject({ type: 'sequence_list', quantity_question_id: 'old-label-models' });
     expect(byId('participants').type).toBe('none');
+    // Pré-preenchimento a partir do contrato e das unidades (sem sobrescrever).
+    expect(['scope', 'item-count', 'unit-allocation', 'travel-guidance'].map((id) => byId(id).prefill)).toEqual([
+      'contract.scope',
+      'contract.estimated_assets',
+      'project.units',
+      'contract.expenses_paid_by',
+    ]);
     expect(byId('site-plan').options).toEqual(['N/A', 'SOLICITADO', 'RECEBIDO']);
     expect(client.questions.some((q) => q.type === 'unit_allocations')).toBe(
       true,

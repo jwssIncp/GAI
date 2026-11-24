@@ -22,6 +22,20 @@ export const QUESTION_TYPES = [
   /** Item sem resposta: só o "Realizado" e as observações. */
   'none',
 ] as const;
+/**
+ * Origem do pré-preenchimento de uma pergunta (aplicado uma vez, sem sobrescrever):
+ * - contract.scope: serviços do contrato → opções do escopo (escolha múltipla);
+ * - contract.estimated_assets: soma dos bens estimados nos contratos (número);
+ * - contract.expenses_paid_by: despesas por conta do cliente ou da organização (seleção);
+ * - project.units: unidades vinculadas ao projeto (endereços).
+ */
+export const PREFILL_SOURCES = [
+  'contract.scope',
+  'contract.estimated_assets',
+  'contract.expenses_paid_by',
+  'project.units',
+] as const;
+export type PrefillSource = (typeof PREFILL_SOURCES)[number];
 /** Opção que mostra o nome da organização (ex.: fornecedor das etiquetas). Valor estável. */
 export const ORGANIZATION_OPTION = '@organizacao';
 export type QuestionType = (typeof QUESTION_TYPES)[number];
@@ -56,6 +70,8 @@ export interface PreparationQuestion {
   quantity_question_id?: string;
   /** "inline": complemento exibido na linha da pergunta da qual depende. Padrão: linha própria. */
   display?: 'row' | 'inline';
+  /** De onde vem o pré-preenchimento (ver PREFILL_SOURCES). */
+  prefill?: PrefillSource;
 }
 export interface PreparationSnapshot {
   name: string;

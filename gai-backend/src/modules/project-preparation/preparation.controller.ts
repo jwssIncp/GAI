@@ -213,6 +213,21 @@ export class ProjectPreparationController {
   ) {
     return this.service.saveAnswers(projectId, id, dto, actor(req));
   }
+  @Post(':id/prefill')
+  @HttpCode(200)
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({
+    summary:
+      'Preencher, sem sobrescrever, perguntas sem resposta a partir do contrato e das unidades',
+  })
+  prefill(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RevisionDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.prefill(projectId, id, dto.revision, actor(req));
+  }
   @Post(':id/approve')
   @HttpCode(200)
   @RequirePermissions('project-preparation:read', 'project-preparation:approve')

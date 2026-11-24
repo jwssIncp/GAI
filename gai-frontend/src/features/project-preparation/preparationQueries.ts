@@ -73,6 +73,11 @@ export const preparationApi = {
             ...(reason ? { reason } : {}),
           })
           .then((r) => r.data),
+  /** Preenche, sem sobrescrever, as perguntas sem resposta a partir do contrato e das unidades. */
+  prefill: (id: number, instance: number, revision: number) =>
+    api
+      .post<Preparation & { prefilled: number }>(`${projectPath(id)}/${instance}/prefill`, { revision })
+      .then((r) => r.data),
   history: (id: number, instance: number, before_id?: number) =>
     api
       .get<PreparationHistory>(`${projectPath(id)}/${instance}/history`, {
