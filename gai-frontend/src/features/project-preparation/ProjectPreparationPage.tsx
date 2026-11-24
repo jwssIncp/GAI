@@ -1,16 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, Printer } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { navigationHref } from '@/features/projects/navigationContext';
+import { DataPanel, DataPanelFilters, ViewToggle } from '@/components/base/DataPanel';
+import { DataTable } from '@/components/base/DataTable';
 import { PageContainer } from '@/components/base/PageContainer';
 import { PageHeader } from '@/components/base/PageHeader';
 import { EmptyState, ErrorState, LoadingState } from '@/components/base/States';
+import { StatusBadge } from '@/components/base/StatusBadge';
 import { ProgressCard } from '@/components/base/Cards';
 import { Tabs } from '@/components/base/Tabs';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog, DrawerForm, ModalForm } from '@/components/ui/dialog';
 import { usePermissions } from '@/features/auth/usePermissions';
+import { saveBlob } from '@/features/expenses/expensesApi';
 import { canMutateProjectOperations } from '@/features/projects/projectLifecycle';
+import { cn } from '@/utils/cn';
 import { formatDate, formatDateTime } from '@/utils/format';
 import { userLabel } from '@/utils/userName';
 import {
@@ -31,17 +37,49 @@ import {
 import {
   kindLabels,
   statusLabels,
+  type AnswerPayload,
   type Preparation,
   type PreparationAnswer,
   type PreparationContext,
+  type PreparationKind,
   type PreparationQuestion,
 } from './preparationTypes';
+import { questionGroupTags, requestAtKickoff } from './referenceTemplates';
+import './preparation.css';
+
+const listTitles: Record<PreparationKind, string> = {
+  kickoff: 'Kick-offs',
+  client_checklist: 'Checklists do cliente',
+};
+const newLabels: Record<PreparationKind, string> = {
+  kickoff: 'Novo kick-off',
+  client_checklist: 'Novo checklist',
+};
+/** Em andamento primeiro, como no sistema anterior; depois concluídos e arquivados. */
+const statusOrder: Record<Preparation['status'], number> = {
+  in_progress: 0,
+  draft: 1,
+  approved: 2,
+  archived: 3,
+};
+const statusBadge: Record<Preparation['status'], string> = {
+  draft: 'draft',
+  in_progress: 'in_progress',
+  approved: 'completed',
+  archived: 'archived',
+};
+
+/** "X de Y (Z%)": respondidas (concluídas + não aplicáveis) sobre as perguntas habilitadas. */
+function progressLabel(item: Preparation) {
+  const done = item.progress.completed + item.progress.not_applicable;
+  return `${done} de ${item.progress.total} (${item.progress.percent}%)`;
+}
 
 export function ProjectPreparationPage() {
   const location = useLocation();
   const params = useParams();
   const projectId = Number(params.projectId);
-  const kind =
+  const kind: PreparationKind =
     params.kind === 'client-checklist' ? 'client_checklist' : 'kickoff';
   const permissions = usePermissions();
   const context = usePreparationContext(projectId);
@@ -52,13 +90,26 @@ export function ProjectPreparationPage() {
   const [selected, setSelected] = useState<number>();
   const [createOpen, setCreateOpen] = useState(false);
   const [modelsOpen, setModelsOpen] = useState(false);
+  const [listHidden, setListHidden] = useState(false);
   const [message, setMessage] = useState('');
-  const items = list.data?.items.filter((item) => item.kind === kind) ?? [];
+  const items = (list.data?.items.filter((item) => item.kind === kind) ?? [])
+    .slice()
+    .sort(
+      (a, b) =>
+        statusOrder[a.status] - statusOrder[b.status] ||
+        String(b.scheduled_date ?? b.created_at).localeCompare(
+          String(a.scheduled_date ?? a.created_at),
+        ),
+    );
   const selection = items.some((item) => item.id === selected)
     ? selected
     : items[0]?.id;
   const detail = usePreparation(projectId, selection);
   const title = `${kindLabels[kind]} · ${context.data?.project.name ?? 'Preparação do projeto'}`;
+  const canCreate =
+    permissions.hasPermission('project-preparation:edit') &&
+    Boolean(context.data) &&
+    canMutateProjectOperations(context.data!.project.status);
   return (
     <PageContainer>
       <PageHeader
@@ -97,7 +148,7 @@ export function ProjectPreparationPage() {
         />
       ) : context.data ? (
         <>
-          <section className="premium-panel grid gap-4 p-5 sm:grid-cols-2">
+          <section className="premium-panel grid gap-4 p-5 sm:grid-cols-2 print:hidden">
             <div>
               <p className="eyebrow">Empresa</p>
               <p className="mt-2 font-semibold">
@@ -125,54 +176,114 @@ export function ProjectPreparationPage() {
               )}
             </div>
           </section>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <label className="grid min-w-56 gap-2 text-sm font-semibold">
-              Preparações de {kindLabels[kind]}
-              <select
-                className="h-10 rounded-lg border bg-background px-3"
-                value={selection ?? ''}
-                onChange={(e) => {
-                  setSelected(Number(e.target.value));
-                  setMessage('');
-                }}
-              >
-                <option value="" disabled>
-                  Selecione
-                </option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.title} · {statusLabels[item.status]} · v
-                    {item.snapshot.version}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="secondary" onClick={() => setModelsOpen(true)}>
-                Modelos da organização
-              </Button>
-              {permissions.hasPermission('project-preparation:edit') &&
-              canMutateProjectOperations(context.data.project.status) ? (
-                <Button onClick={() => setCreateOpen(true)}>
-                  Nova preparação
+          <DataPanel
+            className="print:hidden"
+            title={listTitles[kind]}
+            titleId="preparation-list-title"
+            count={items.length}
+            hidden={listHidden}
+            onToggle={() => setListHidden((value) => !value)}
+            contentId="preparation-list"
+            extra={
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setModelsOpen(true)}
+                >
+                  Modelos da organização
                 </Button>
-              ) : null}
-            </div>
-          </div>
+                {canCreate ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setCreateOpen(true)}
+                  >
+                    {newLabels[kind]}
+                  </Button>
+                ) : null}
+              </>
+            }
+          >
+            {items.length ? (
+              <DataTable
+                bare
+                caption={listTitles[kind]}
+                items={items}
+                getKey={(item) => item.id}
+                columns={[
+                  {
+                    header: 'Título',
+                    cell: (item) => (
+                      <button
+                        type="button"
+                        aria-pressed={item.id === selection}
+                        onClick={() => {
+                          setSelected(item.id);
+                          setMessage('');
+                        }}
+                        className={cn(
+                          'text-left font-semibold hover:underline',
+                          item.id === selection
+                            ? 'text-primary'
+                            : 'text-foreground',
+                        )}
+                      >
+                        {item.title}
+                        {item.id === selection ? (
+                          <span className="ml-2 text-xs font-normal text-muted-foreground">
+                            (aberto)
+                          </span>
+                        ) : null}
+                      </button>
+                    ),
+                  },
+                  {
+                    header: 'Data',
+                    cell: (item) => formatDate(item.scheduled_date),
+                  },
+                  {
+                    header: 'Progresso',
+                    numeric: true,
+                    cell: (item) => progressLabel(item),
+                  },
+                  {
+                    header: 'Situação',
+                    cell: (item) => (
+                      <StatusBadge
+                        value={statusBadge[item.status]}
+                        label={statusLabels[item.status]}
+                      />
+                    ),
+                  },
+                  {
+                    header: 'Modelo',
+                    cell: (item) => (
+                      <span className="text-xs text-muted-foreground">
+                        {item.snapshot.name} · v{item.snapshot.version}
+                      </span>
+                    ),
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState
+                title={`Nenhum ${kindLabels[kind]} criado`}
+                description="Cadastre ou escolha um modelo da organização e crie uma preparação independente para este projeto."
+              />
+            )}
+          </DataPanel>
           {message ? (
             <p
               role="status"
-              className="rounded-lg border border-primary/20 bg-primary-subtle p-3 text-sm text-primary"
+              className="rounded-lg border border-primary/20 bg-primary-subtle p-3 text-sm text-primary print:hidden"
             >
               {message}
             </p>
           ) : null}
-          {!items.length ? (
-            <EmptyState
-              title={`Nenhum ${kindLabels[kind]} criado`}
-              description="Cadastre ou escolha um modelo da organização e crie uma preparação independente para este projeto."
-            />
-          ) : detail.isLoading ? (
+          {!items.length ? null : detail.isLoading ? (
             <LoadingState label="Carregando respostas" />
           ) : detail.isError ? (
             <ErrorState
@@ -241,6 +352,42 @@ export function ProjectPreparationPage() {
   );
 }
 
+type SituationFilter = 'all' | 'pending' | 'done';
+
+/** Texto da resposta para a tabela, a impressão e a planilha. */
+function answerText(
+  question: PreparationQuestion,
+  answer: PreparationAnswer,
+  context: PreparationContext,
+): string {
+  if (!answer.applicable) return 'Bloqueado pelas respostas atuais';
+  if (answer.state === 'not_applicable') return 'N/A';
+  if (answer.state !== 'completed') return '';
+  const value = answer.value;
+  if (typeof value === 'boolean') return value ? 'SIM' : 'NÃO';
+  if (Array.isArray(value))
+    return answer.allocations
+      .map(
+        (row) =>
+          `${context.units.find((unit) => unit.id === row.unit_id)?.name ?? `Unidade #${row.unit_id}`}: ${row.quantity} itens (${row.participation_percent}%)`,
+      )
+      .join('; ');
+  if (value && typeof value === 'object') return `${value.start} a ${value.end}`;
+  if (question.type === 'date') return formatDate(String(value));
+  return value == null ? '' : String(value);
+}
+
+/** Situação da linha no padrão do sistema anterior: PENDENTE / REALIZADO. */
+function situationOf(answer: PreparationAnswer) {
+  if (!answer.applicable) return 'BLOQUEADO';
+  if (answer.state === 'completed') return 'REALIZADO';
+  if (answer.state === 'not_applicable') return 'N/A';
+  return 'PENDENTE';
+}
+
+const csvCell = (value: string | number) =>
+  `"${String(value).replace(/"/g, '""')}"`;
+
 function PreparationDetail({
   projectId,
   instance,
@@ -261,6 +408,8 @@ function PreparationDetail({
   const [edit, setEdit] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [filter, setFilter] = useState<SituationFilter>('all');
+  const [hiddenGroups, setHiddenGroups] = useState<string[]>([]);
   const [action, setAction] = useState<'approve' | 'reopen' | 'archive'>();
   const transition = usePreparationMutation(
     projectId,
@@ -274,19 +423,48 @@ function PreparationDetail({
   );
   const question = instance.snapshot.questions.find((q) => q.id === questionId);
   const answer = instance.answers.find((a) => a.question_id === questionId);
-  const categories = [
-    ...new Set(
-      instance.snapshot.questions
-        .filter((q) => q.visible)
-        .map((q) => q.category),
-    ),
-  ];
+  const visible = instance.snapshot.questions
+    .filter((q) => q.visible)
+    .slice()
+    .sort((a, b) => a.order - b.order);
+  const answerOf = (q: PreparationQuestion) =>
+    instance.answers.find((a) => a.question_id === q.id)!;
+  const number = new Map(visible.map((q, index) => [q.id, index + 1]));
+  const categories = [...new Set(visible.map((q) => q.category))];
+  const matches = (q: PreparationQuestion) => {
+    const a = answerOf(q);
+    if (filter === 'pending') return a.applicable && a.state === 'pending';
+    if (filter === 'done') return a.state !== 'pending';
+    return true;
+  };
+  function exportSheet() {
+    const header = ['Nº', 'Seção', 'Item', 'Situação', 'Resposta', 'Observações'];
+    const rows = visible.map((q) => {
+      const a = answerOf(q);
+      return [
+        number.get(q.id)!,
+        q.category,
+        q.label,
+        situationOf(a),
+        answerText(q, a, context),
+        a.notes ?? '',
+      ];
+    });
+    // Separador ";" e BOM para o Excel em português abrir com acentos e colunas certas.
+    const csv = [header, ...rows]
+      .map((row) => row.map(csvCell).join(';'))
+      .join('\r\n');
+    saveBlob(
+      new Blob([String.fromCharCode(0xfeff) + csv], { type: 'text/csv;charset=utf-8' }),
+      `${instance.title}.csv`,
+    );
+  }
   return (
-    <div className="grid gap-5">
+    <div className="preparation-print grid gap-5">
       {!canMutateProjectOperations(context.project.status) ? (
         <p
           role="status"
-          className="rounded-lg border bg-muted p-3 text-sm text-muted-foreground"
+          className="rounded-lg border bg-muted p-3 text-sm text-muted-foreground print:hidden"
         >
           O status atual do projeto permite apenas consulta da preparação.
         </p>
@@ -317,7 +495,7 @@ function PreparationDetail({
           </p>
           {instance.approved_at ? (
             <p>
-              Aprovação: {formatDateTime(instance.approved_at)} ·{' '}
+              Conclusão: {formatDateTime(instance.approved_at)} ·{' '}
               {userLabel(instance.approved_by_name)}
             </p>
           ) : null}
@@ -334,9 +512,9 @@ function PreparationDetail({
         {instance.progress.pending} pendentes de {instance.progress.total}{' '}
         perguntas visíveis e habilitadas. Fora do denominador:{' '}
         {instance.progress.hidden} ocultas e{' '}
-        {instance.progress.conditionally_disabled} desabilitadas por condição.
+        {instance.progress.conditionally_disabled} bloqueadas por condição.
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 print:hidden">
         {canEdit ? (
           <Button variant="secondary" onClick={() => setEdit(true)}>
             Responsáveis e datas
@@ -348,6 +526,12 @@ function PreparationDetail({
         <Button variant="secondary" onClick={() => setPreviewOpen(true)}>
           Prévia de comunicação
         </Button>
+        <Button variant="secondary" onClick={() => window.print()}>
+          <Printer size={15} /> Imprimir
+        </Button>
+        <Button variant="secondary" onClick={exportSheet}>
+          <Download size={15} /> Exportar (Excel)
+        </Button>
         {permissions.hasPermission('project-preparation:approve') &&
         instance.status !== 'archived' &&
         canMutateProjectOperations(context.project.status) ? (
@@ -356,14 +540,12 @@ function PreparationDetail({
               setAction(instance.status === 'approved' ? 'reopen' : 'approve')
             }
           >
-            {instance.status === 'approved'
-              ? 'Reabrir preparação'
-              : 'Aprovar preparação'}
+            {instance.status === 'approved' ? 'Reabrir' : 'Concluir'}
           </Button>
         ) : null}
         {canEdit ? (
           <Button variant="ghost" onClick={() => setAction('archive')}>
-            Arquivar preparação
+            Arquivar
           </Button>
         ) : null}
       </div>
@@ -371,29 +553,74 @@ function PreparationDetail({
         <ErrorState message={(transition.error as Error).message} />
       ) : null}
       {instance.progress.missing_required.length ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground print:hidden">
           {instance.progress.missing_required.length} pergunta(s) obrigatória(s)
-          ainda pendente(s). A aprovação exige resolver todas as obrigatórias
+          ainda pendente(s). A conclusão exige resolver todas as obrigatórias
           aplicáveis.
         </p>
       ) : null}
-      {categories.map((category) => (
-        <section key={category} className="grid gap-3">
-          <h2 className="text-lg font-bold">{category}</h2>
-          {instance.snapshot.questions
-            .filter((q) => q.visible && q.category === category)
-            .map((q) => (
-              <QuestionCard
-                key={q.id}
-                question={q}
-                answer={instance.answers.find((a) => a.question_id === q.id)!}
+      <div className="rounded-lg border bg-card print:hidden">
+        <DataPanelFilters label="Filtrar por situação">
+          <span className="text-sm font-semibold">Situação:</span>
+          <ViewToggle on={filter === 'all'} onClick={() => setFilter('all')}>
+            Todos
+          </ViewToggle>
+          <ViewToggle
+            on={filter === 'pending'}
+            onClick={() => setFilter('pending')}
+          >
+            Pendentes
+          </ViewToggle>
+          <ViewToggle on={filter === 'done'} onClick={() => setFilter('done')}>
+            Realizados
+          </ViewToggle>
+        </DataPanelFilters>
+      </div>
+      {categories.map((category, index) => {
+        const all = visible.filter((q) => q.category === category);
+        const applicable = all.filter((q) => answerOf(q).applicable);
+        const done = applicable.filter(
+          (q) => answerOf(q).state !== 'pending',
+        ).length;
+        const rows = all.filter(matches);
+        const hidden = hiddenGroups.includes(category);
+        return (
+          <DataPanel
+            key={category}
+            title={category}
+            titleId={`preparation-group-${index}`}
+            count={`${done} de ${applicable.length} verificado(s)`}
+            hidden={hidden}
+            onToggle={() =>
+              setHiddenGroups((current) =>
+                hidden
+                  ? current.filter((name) => name !== category)
+                  : [...current, category],
+              )
+            }
+            contentId={`preparation-group-${index}-content`}
+          >
+            {rows.length ? (
+              <QuestionTable
+                caption={category}
+                rows={rows}
+                number={number}
+                answerOf={answerOf}
                 context={context}
                 editable={canEdit}
-                onEdit={() => setQuestionId(q.id)}
+                projectId={projectId}
+                instance={instance}
+                onEdit={setQuestionId}
+                onMessage={onMessage}
               />
-            ))}
-        </section>
-      ))}
+            ) : (
+              <p className="px-5 py-4 text-sm text-muted-foreground">
+                Nenhum item nesta situação.
+              </p>
+            )}
+          </DataPanel>
+        );
+      })}
       {question && answer ? (
         <AnswerForm
           key={`${instance.id}-${question.id}`}
@@ -442,7 +669,7 @@ function PreparationDetail({
         onOpenChange={(open) => !open && setAction(undefined)}
         title={
           action === 'approve'
-            ? 'Aprovar preparação'
+            ? 'Concluir preparação'
             : action === 'reopen'
               ? 'Reabrir preparação'
               : 'Arquivar preparação'
@@ -451,7 +678,7 @@ function PreparationDetail({
           action === 'approve'
             ? 'As respostas serão bloqueadas para edição. Perguntas obrigatórias aplicáveis precisam estar resolvidas.'
             : action === 'reopen'
-              ? 'A aprovação será encerrada e as respostas poderão ser editadas. O histórico será preservado.'
+              ? 'A conclusão será desfeita e as respostas poderão ser editadas. O histórico será preservado.'
               : 'A preparação ficará somente para consulta, sem excluir respostas ou histórico.'
         }
         busy={transition.isPending}
@@ -468,96 +695,246 @@ function PreparationDetail({
     </div>
   );
 }
-function QuestionCard({
-  question,
-  answer,
+
+const rowTone: Record<string, string> = {
+  PENDENTE: 'bg-rose-50 dark:bg-rose-950/30',
+  REALIZADO: 'bg-emerald-50 dark:bg-emerald-950/30',
+  'N/A': 'bg-muted/40',
+  BLOQUEADO: 'opacity-60',
+};
+const situationTone: Record<string, string> = {
+  PENDENTE: 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-100',
+  REALIZADO:
+    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100',
+  'N/A': 'bg-muted text-muted-foreground',
+  BLOQUEADO: 'bg-muted text-muted-foreground',
+};
+
+/** Tabela de um grupo no padrão do sistema anterior: Nº, Realizado, Item, Grupo, Resposta, Observações. */
+function QuestionTable({
+  caption,
+  rows,
+  number,
+  answerOf,
   context,
   editable,
+  projectId,
+  instance,
   onEdit,
+  onMessage,
+}: {
+  caption: string;
+  rows: PreparationQuestion[];
+  number: Map<string, number>;
+  answerOf: (q: PreparationQuestion) => PreparationAnswer;
+  context: PreparationContext;
+  editable: boolean;
+  projectId: number;
+  instance: Preparation;
+  onEdit: (id: string) => void;
+  onMessage: (message: string) => void;
+}) {
+  return (
+    <div
+      className="overflow-x-auto"
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
+    >
+      <table className="data-table w-full min-w-[860px] border-separate border-spacing-0 text-left text-sm">
+        <caption className="sr-only">{caption}</caption>
+        <thead className="bg-muted text-xs text-muted-foreground">
+          <tr>
+            {['Nº', 'Realizado', 'Item', 'Grupo', 'Resposta', 'Observações', 'Ações'].map(
+              (header) => (
+                <th
+                  key={header}
+                  scope="col"
+                  className={cn(
+                    'border-b border-border px-4 py-3 font-semibold first:pl-5 last:pr-5',
+                    header === 'Ações' && 'print:hidden',
+                  )}
+                >
+                  {header}
+                </th>
+              ),
+            )}
+          </tr>
+        </thead>
+        <tbody className="[&>tr:last-child>td]:border-b-0">
+          {rows.map((q) => {
+            const a = answerOf(q);
+            const situation = situationOf(a);
+            const tag = questionGroupTags[q.id];
+            const cell =
+              'border-b border-border/55 px-4 py-3 align-top first:pl-5 last:pr-5';
+            return (
+              <tr key={q.id} className={rowTone[situation]}>
+                <td className={cn(cell, 'numeric w-12')}>
+                  {String(number.get(q.id)).padStart(2, '0')}
+                </td>
+                <td className={cn(cell, 'w-28')}>
+                  <span
+                    className={cn(
+                      'inline-flex rounded-md px-2 py-0.5 text-xs font-bold',
+                      situationTone[situation],
+                    )}
+                    title={
+                      situation === 'BLOQUEADO'
+                        ? 'Desabilitada pelas respostas atuais; histórico preservado'
+                        : undefined
+                    }
+                  >
+                    {situation}
+                  </span>
+                </td>
+                <td className={cell}>
+                  <span
+                    className={cn(
+                      'font-semibold',
+                      situation === 'REALIZADO' && 'line-through decoration-1 opacity-80',
+                    )}
+                  >
+                    {q.label}
+                  </span>
+                  {q.required ? (
+                    <span className="ml-2 text-xs text-primary">Obrigatória</span>
+                  ) : null}
+                  {a.responsible_user_id || a.due_date ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Responsável:{' '}
+                      {context.responsible_users.find(
+                        (user) => user.id === a.responsible_user_id,
+                      )?.label ??
+                        (a.responsible_user_id
+                          ? userLabel(a.responsible_user_name)
+                          : 'Não definido')}{' '}
+                      · Prazo: {formatDate(a.due_date)}
+                    </p>
+                  ) : null}
+                </td>
+                <td className={cn(cell, 'w-32 text-xs')}>
+                  {requestAtKickoff.has(q.id) ? (
+                    <span className="inline-flex rounded-md bg-sky-100 px-2 py-0.5 font-semibold text-sky-800 dark:bg-sky-900/50 dark:text-sky-100">
+                      Solicitar no kick-off
+                    </span>
+                  ) : tag ? (
+                    <span className="font-semibold text-muted-foreground">{tag}</span>
+                  ) : null}
+                </td>
+                <td className={cell}>
+                  {editable && a.applicable && (q.type === 'select' || q.type === 'boolean') ? (
+                    <InlineChoice
+                      question={q}
+                      answer={a}
+                      projectId={projectId}
+                      instance={instance}
+                      onMessage={onMessage}
+                    />
+                  ) : (
+                    <span className="whitespace-pre-wrap">
+                      {answerText(q, a, context) || (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </span>
+                  )}
+                </td>
+                <td className={cn(cell, 'whitespace-pre-wrap text-muted-foreground')}>
+                  {a.applicable ? a.notes : null}
+                </td>
+                <td className={cn(cell, 'print:hidden')}>
+                  {editable && a.applicable ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      aria-label={`Responder: ${q.label}`}
+                      onClick={() => onEdit(q.id)}
+                    >
+                      Responder
+                    </Button>
+                  ) : null}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
+ * Resposta de lista direto na linha, como no sistema anterior: escolher uma opção marca o
+ * item como REALIZADO; voltar para "Selecione" o devolve a PENDENTE.
+ */
+function InlineChoice({
+  question,
+  answer,
+  projectId,
+  instance,
+  onMessage,
 }: {
   question: PreparationQuestion;
   answer: PreparationAnswer;
-  context: PreparationContext;
-  editable: boolean;
-  onEdit: () => void;
+  projectId: number;
+  instance: Preparation;
+  onMessage: (message: string) => void;
 }) {
-  let value = 'Sem resposta';
-  if (answer.state === 'not_applicable') value = 'Não aplicável';
-  else if (answer.state === 'completed')
-    value =
-      typeof answer.value === 'boolean'
-        ? answer.value
-          ? 'Sim'
-          : 'Não'
-        : Array.isArray(answer.value)
-          ? answer.allocations
-              .map(
-                (row) =>
-                  `${context.units.find((unit) => unit.id === row.unit_id)?.name ?? `Unidade #${row.unit_id}`}: ${row.quantity} itens (${row.participation_percent}%)`,
-              )
-              .join('; ')
-          : answer.value && typeof answer.value === 'object'
-            ? `${answer.value.start} a ${answer.value.end}`
-            : question.type === 'date'
-              ? formatDate(String(answer.value))
-              : String(answer.value);
+  const mutation = usePreparationMutation(projectId, (payload: AnswerPayload) =>
+    preparationApi.answers(projectId, instance.id, instance.revision, [payload]),
+  );
+  const current =
+    answer.state === 'completed'
+      ? typeof answer.value === 'boolean'
+        ? String(answer.value)
+        : typeof answer.value === 'string'
+          ? answer.value
+          : ''
+      : '';
+  function change(raw: string) {
+    const value =
+      raw === ''
+        ? null
+        : question.type === 'boolean'
+          ? raw === 'true'
+          : raw;
+    mutation.mutate(
+      {
+        question_id: question.id,
+        state: value === null ? 'pending' : 'completed',
+        value,
+        notes: answer.notes,
+        responsible_user_id: answer.responsible_user_id,
+        due_date: answer.due_date,
+      },
+      { onSuccess: () => onMessage('Resposta salva.') },
+    );
+  }
   return (
-    <article
-      className={`premium-panel grid gap-3 p-4 sm:p-5 ${!answer.applicable ? 'opacity-65' : ''}`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold">
-            {question.label}
-            {question.required ? (
-              <span className="ml-2 text-xs text-primary">Obrigatória</span>
-            ) : null}
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {!answer.applicable
-              ? 'Desabilitada pelas respostas atuais; histórico preservado'
-              : answer.state === 'pending'
-                ? 'Pendente'
-                : answer.state === 'completed'
-                  ? 'Concluído'
-                  : 'Não aplicável'}
-          </p>
-        </div>
-        {editable && answer.applicable ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            aria-label={`Responder: ${question.label}`}
-            onClick={onEdit}
-          >
-            Responder
-          </Button>
-        ) : null}
-      </div>
-      {answer.applicable ? (
-        <>
-          <p className="whitespace-pre-wrap text-sm">{value}</p>
-          {answer.notes ? (
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {answer.notes}
-            </p>
-          ) : null}
-          <p className="text-xs text-muted-foreground">
-            Responsável:{' '}
-            {context.responsible_users.find(
-              (user) => user.id === answer.responsible_user_id,
-            )?.label ??
-              (answer.responsible_user_id
-                ? userLabel(answer.responsible_user_name)
-                : 'Não definido')}{' '}
-            · Prazo: {formatDate(answer.due_date)}
-            {answer.answered_at
-              ? ` · Respondido em ${formatDateTime(answer.answered_at)} por ${userLabel(answer.answered_by_name)}`
-              : ''}
-          </p>
-        </>
+    <div className="grid gap-1">
+      <select
+        aria-label={`Resposta: ${question.label}`}
+        className="h-9 w-full min-w-40 rounded-md border bg-background px-2 text-sm"
+        value={current}
+        disabled={mutation.isPending}
+        onChange={(e) => change(e.target.value)}
+      >
+        <option value="">{answer.state === 'not_applicable' ? 'N/A' : 'Selecione'}</option>
+        {question.type === 'boolean' ? (
+          <>
+            <option value="true">SIM</option>
+            <option value="false">NÃO</option>
+          </>
+        ) : (
+          question.options?.map((option) => <option key={option}>{option}</option>)
+        )}
+      </select>
+      {mutation.isError ? (
+        <span role="alert" className="text-xs text-destructive">
+          {(mutation.error as Error).message}
+        </span>
       ) : null}
-    </article>
+    </div>
   );
 }
 function HistoryPanel({

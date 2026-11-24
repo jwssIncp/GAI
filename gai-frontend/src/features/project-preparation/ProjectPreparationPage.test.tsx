@@ -198,9 +198,37 @@ describe('Project preparation UI', () => {
       screen.queryByRole('button', { name: 'Responder: Lições anteriores' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/Desabilitada pelas respostas atuais/),
+      screen.getByText('BLOQUEADO'),
     ).toBeInTheDocument();
     expect(screen.getByText(/0 não aplicáveis/)).toBeInTheDocument();
+  });
+  it('lista kick-offs no painel azul, filtra por situação e responde listas na linha como no sistema anterior', async () => {
+    const ui = userEvent.setup();
+    vi.spyOn(preparationApi, 'answers').mockResolvedValue(structuredClone(seed));
+    renderPage();
+    const [list] = await screen.findAllByRole('region', { name: 'Kick-offs' });
+    expect(list).toHaveTextContent('Reunião inicial');
+    expect(list).toHaveTextContent('0 de 1 (0%)');
+    expect(list).toHaveTextContent('Rascunho');
+    const [group] = await screen.findAllByRole('region', { name: 'Escopo' });
+    expect(group).toHaveTextContent('PENDENTE');
+    expect(screen.getByText('0 de 1 verificado(s)')).toBeInTheDocument();
+    await ui.click(screen.getByRole('button', { name: 'Realizados' }));
+    expect(screen.getByText('Nenhum item nesta situação.')).toBeInTheDocument();
+    await ui.click(screen.getByRole('button', { name: 'Todos' }));
+    await ui.selectOptions(
+      screen.getByLabelText('Resposta: Já houve inventário?'),
+      'true',
+    );
+    await waitFor(() =>
+      expect(preparationApi.answers).toHaveBeenCalledWith(10, 20, 1, [
+        expect.objectContaining({
+          question_id: 'flag',
+          state: 'completed',
+          value: true,
+        }),
+      ]),
+    );
   });
   it('persists a typed answer with revision and refreshes enablement from the backend', async () => {
     const ui = userEvent.setup();
@@ -260,7 +288,7 @@ describe('Project preparation UI', () => {
       screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Nova preparação' }),
+      screen.queryByRole('button', { name: 'Novo checklist' }),
     ).not.toBeInTheDocument();
   });
   it('shows API errors with retry and does not show protected content', async () => {
@@ -281,7 +309,7 @@ describe('Project preparation UI', () => {
     renderPage(['read']);
     await screen.findByText('Reunião inicial', { selector: 'h2' });
     expect(
-      screen.queryByRole('button', { name: 'Aprovar preparação' }),
+      screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
@@ -297,7 +325,7 @@ describe('Project preparation UI', () => {
     vi.spyOn(preparationApi, 'create').mockResolvedValue({ ...seed, id: 21 });
     renderPage();
     await ui.click(
-      await screen.findByRole('button', { name: 'Nova preparação' }),
+      await screen.findByRole('button', { name: 'Novo kick-off' }),
     );
     await ui.type(screen.getByLabelText('Título'), 'Nova reunião');
     await ui.type(screen.getByLabelText('Data da preparação'), '2028-02-29');
@@ -405,10 +433,10 @@ describe('Preparation on closed projects', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Nova preparação' }),
+      screen.queryByRole('button', { name: 'Novo kick-off' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Aprovar preparação' }),
+      screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
@@ -431,8 +459,8 @@ describe('Audited reference model suggestions', () => {
     expect(sequence.enabled_when).toEqual([
       {
         question_id: 'label-supplier',
-        operator: 'not_equals',
-        value: 'Não aplicável',
+        operator: 'equals',
+        value: 'GAI',
       },
     ]);
     expect(client.questions.some((q) => q.type === 'unit_allocations')).toBe(

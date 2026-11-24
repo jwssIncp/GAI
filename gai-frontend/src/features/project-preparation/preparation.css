@@ -1,0 +1,24 @@
+/* Impressão do kick-off/checklist: só o conteúdo da preparação aberta, sem menus. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .preparation-print,
+  .preparation-print * {
+    visibility: visible;
+  }
+  .preparation-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-size: 9pt;
+  }
+  .preparation-print tr {
+    break-inside: avoid;
+  }
+}
