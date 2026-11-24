@@ -58,6 +58,7 @@ export function ProjectAccountingItemsPage() {
     { header: 'Localização', cell: (item) => item.location ?? '-' },
     { header: 'Aquisição', cell: (item) => formatDate(item.acquisition_date) },
     { header: 'Valor', cell: (item) => formatMoney(item.acquisition_value), numeric: true },
+    { header: 'Valor residual', cell: (item) => (item.residual_value == null ? '-' : formatMoney(item.residual_value)), numeric: true },
     { header: 'Cod. base', cell: (item) => item.base_code ?? '-' },
     { header: 'Investor', cell: (item) => item.investor_code ?? '-' },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },

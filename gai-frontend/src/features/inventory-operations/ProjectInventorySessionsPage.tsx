@@ -15,8 +15,8 @@ import { StatusBadge } from '@/components/base/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { DrawerForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
-import { formatDateTime } from '@/utils/format';
-import type { InventorySession, InventorySessionStatus } from '@/types/api';
+import { formatDateTime, formatMoney } from '@/utils/format';
+import type { InventorySession, InventorySessionStatus, ProjectAccountingSummary } from '@/types/api';
 import { useCreateInventorySession, useInventorySessions } from './inventoryOperationsQueries';
 
 export function ProjectInventorySessionsPage() {
@@ -55,8 +55,7 @@ const percent = (part: number, whole: number) => (whole > 0 ? `${Math.round((par
 
 /**
  * Indicadores da conciliação no padrão do sistema anterior (quantidade de itens), com os
- * números da última execução que o resumo do projeto já devolve. Valores em R$ (valor
- * residual) dependem de backend e ficam para a fase 2.
+ * números da última execução que o resumo do projeto já devolve, e em valor residual.
  */
 function ReconciliationIndicators({ projectId }: { projectId: number }) {
   const accounting = useProjectDashboard(projectId).data?.accounting;
@@ -78,7 +77,35 @@ function ReconciliationIndicators({ projectId }: { projectId: number }) {
         <Kpi group="indicators" label="Sobra física" value={physicalSurplus} hint="Encontrados em campo sem registro contábil." tone={physicalSurplus ? 'warning' : 'default'} />
         <Kpi group="indicators" label="Duplicidades" value={duplicates} hint="Bloqueiam a consolidação até a revisão." tone={duplicates ? 'danger' : 'default'} />
       </KpiGrid>
+      <ResidualValueIndicators accounting={accounting} />
     </section>
+  );
+}
+
+/**
+ * Indicadores em valor residual, como no sistema anterior: saldo da base contábil, valor
+ * conciliado e sobra contábil da última execução. Sem valor residual na base, mostra o aviso.
+ */
+function ResidualValueIndicators({ accounting }: { accounting: ProjectAccountingSummary }) {
+  const total = accounting.total_residual_value ?? null;
+  const missing = accounting.residual_missing_items ?? 0;
+  if (total === null)
+    return (
+      <p className="rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+        Indicadores em valor indisponíveis: a base contábil não tem valor residual. Informe a coluna “Valor residual” na importação ou no cadastro do item.
+      </p>
+    );
+  const reconciled = accounting.reconciled_residual_value ?? null;
+  const surplus = accounting.accounting_surplus_residual_value ?? null;
+  const share = (value: string | null) => (value === null || Number(total) === 0 ? '—' : `${((Number(value) / Number(total)) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`);
+  const money = (value: string | null) => (value === null ? 'Não informado' : formatMoney(value));
+  return (
+    <KpiGrid label="Indicadores da conciliação em valor residual">
+      <Kpi group="next" tinted label="Saldo contábil (valor residual)" value={money(total)} hint={missing ? `${missing} linha(s) da base sem valor residual não entram na soma.` : 'Soma do valor residual da base contábil.'} note={missing ? 'Base incompleta' : undefined} />
+      <Kpi group="next" label="Conciliado (R$)" value={money(reconciled)} hint="Valor residual das linhas contábeis conciliadas." />
+      <Kpi group="next" label="% conciliado contábil (valor)" value={share(reconciled)} hint="Conciliado ÷ saldo contábil." />
+      <Kpi group="next" label="Sobra contábil (R$)" value={money(surplus)} hint="Valor residual do que está só na contabilidade." tone={surplus !== null && Number(surplus) > 0 ? 'warning' : 'default'} />
+    </KpiGrid>
   );
 }
 

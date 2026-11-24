@@ -51,6 +51,12 @@ export class UpdateInventoryAccountingItemDto {
   @Matches(MONEY_PATTERN)
   acquisition_value?: string | null;
 
+  @ApiPropertyOptional({ pattern: MONEY_PATTERN.source, nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(MONEY_PATTERN)
+  residual_value?: string | null;
+
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()

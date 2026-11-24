@@ -30,6 +30,21 @@ describe('ProjectInventorySessionsPage · indicadores da conciliação', () => {
     expect(group).toHaveTextContent('Sobra física25');
     expect(group).toHaveTextContent('Duplicidades1');
   });
+  it('mostra os indicadores em valor residual: saldo, conciliado, % e sobra contábil', async () => {
+    mocks.dashboard.mockResolvedValue({ accounting: { latest_reconciliation_run: 3, reconciled_items: 1, accounting_surplus_items: 1, total_residual_value: '1000.00', residual_missing_items: 2, reconciled_residual_value: '750.00', accounting_surplus_residual_value: '250.00' } });
+    renderPage();
+    const group = await screen.findByRole('group', { name: 'Indicadores da conciliação em valor residual' });
+    expect(group).toHaveTextContent(/Saldo contábil \(valor residual\)R\$\s1\.000,00/);
+    expect(group).toHaveTextContent(/Conciliado \(R\$\)R\$\s750,00/);
+    expect(group).toHaveTextContent('% conciliado contábil (valor)75%');
+    expect(group).toHaveTextContent(/Sobra contábil \(R\$\)R\$\s250,00/);
+    expect(group).toHaveTextContent('2 linha(s) da base sem valor residual');
+  });
+  it('avisa quando a base contábil não tem valor residual', async () => {
+    mocks.dashboard.mockResolvedValue({ accounting: { latest_reconciliation_run: 3, reconciled_items: 1, total_residual_value: null } });
+    renderPage();
+    expect(await screen.findByText(/Indicadores em valor indisponíveis/)).toBeInTheDocument();
+  });
   it('explica quando ainda não houve conciliação', async () => {
     mocks.dashboard.mockResolvedValue({ accounting: { latest_reconciliation_run: null } });
     renderPage();

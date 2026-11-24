@@ -432,6 +432,11 @@ export type ProjectAccountingSummary = {
   accounting_surplus_items?: number;
   duplicate_items?: number;
   consolidated_items?: number;
+  /** Valor residual (texto decimal); nulo quando nenhuma linha informa. */
+  total_residual_value?: string | null;
+  residual_missing_items?: number;
+  reconciled_residual_value?: string | null;
+  accounting_surplus_residual_value?: string | null;
 };
 export type ProjectPendingIssuesSummary = {
   total_pending_issues: number;
@@ -831,6 +836,8 @@ export type InventoryAccountingItemInput = {
   location?: string | null;
   acquisition_date?: string | null;
   acquisition_value?: string | null;
+  /** Valor residual (líquido contábil). */
+  residual_value?: string | null;
   base_code?: string | null;
   status?: InventoryAccountingItemStatus;
   investor_code?: string | null;

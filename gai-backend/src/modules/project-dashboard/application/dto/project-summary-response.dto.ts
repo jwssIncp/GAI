@@ -78,6 +78,15 @@ export class ProjectAccountingSummaryDto {
   @ApiProperty() accounting_surplus_items!: number;
   @ApiProperty() duplicate_items!: number;
   @ApiProperty() consolidated_items!: number;
+  /** Soma do valor residual da base contábil; nula se nenhuma linha informa. */
+  @ApiProperty({ nullable: true }) total_residual_value!: string | null;
+  /** Linhas contábeis sem valor residual. */
+  @ApiProperty() residual_missing_items!: number;
+  /** Valor residual das linhas conciliadas na última execução. */
+  @ApiProperty({ nullable: true }) reconciled_residual_value!: string | null;
+  /** Valor residual da sobra contábil na última execução. */
+  @ApiProperty({ nullable: true })
+  accounting_surplus_residual_value!: string | null;
 }
 
 export class ProjectPendingIssuesSummaryDto {

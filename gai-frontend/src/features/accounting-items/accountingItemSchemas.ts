@@ -17,6 +17,7 @@ export const accountingItemFormSchema = z.object({
   location: optionalText,
   acquisition_date: optionalText,
   acquisition_value: optionalMoney,
+  residual_value: optionalMoney,
   base_code: optionalText,
   status: z.enum(accountingItemStatuses).optional(),
   investor_code: optionalText,

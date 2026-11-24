@@ -19,6 +19,7 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
       location: initial.location ?? '',
       acquisition_date: initial.acquisition_date ?? '',
       acquisition_value: initial.acquisition_value ?? '',
+      residual_value: initial.residual_value ?? '',
       base_code: initial.base_code ?? '',
       status: initial.status ?? 'pending',
       investor_code: initial.investor_code ?? '',
@@ -41,7 +42,7 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
       </div>
       <FormField label="Descrição"><Input {...form.register('description')} /></FormField>
       <FormField label="Conta contábil"><Input {...form.register('accounting_account_description')} /></FormField>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <FormField label="Data de aquisição"><DateInput {...form.register('acquisition_date')} /></FormField>
         <Controller
           control={form.control}
@@ -56,6 +57,23 @@ export function AccountingItemForm({ initial, busy, onSubmit }: { initial: Inven
                   field.onBlur();
                   // texto que não é valor chega vazio: avisa no próprio campo
                   if (event.currentTarget.validity.customError) form.setError('acquisition_value', { message: 'Valor inválido. Use o formato 50.000,00.' });
+                }}
+              />
+            </FormField>
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="residual_value"
+          render={({ field, fieldState }) => (
+            <FormField label="Valor residual (R$)" error={fieldState.error?.message}>
+              <MoneyInput
+                ref={field.ref}
+                value={field.value ?? ''}
+                onValueChange={field.onChange}
+                onBlur={(event) => {
+                  field.onBlur();
+                  if (event.currentTarget.validity.customError) form.setError('residual_value', { message: 'Valor inválido. Use o formato 50.000,00.' });
                 }}
               />
             </FormField>

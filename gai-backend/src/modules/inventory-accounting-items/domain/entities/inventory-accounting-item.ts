@@ -13,6 +13,8 @@ export interface InventoryAccountingItemProps {
   location: string | null;
   acquisitionDate: Date | null;
   acquisitionValue: string | null;
+  /** Valor residual (líquido contábil) da linha; base dos indicadores de valor da conciliação. */
+  residualValue?: string | null;
   baseCode: string | null;
   status: InventoryAccountingItemStatus;
   investorCode: string | null;
@@ -32,6 +34,7 @@ export interface InventoryAccountingItemProps {
 export class InventoryAccountingItem {
   constructor(private readonly props: InventoryAccountingItemProps) {
     this.assertMoney(props.acquisitionValue);
+    this.assertMoney(props.residualValue ?? null);
     this.assertDate(props.acquisitionDate);
   }
 
@@ -66,6 +69,7 @@ export class InventoryAccountingItem {
         | 'location'
         | 'acquisitionDate'
         | 'acquisitionValue'
+        | 'residualValue'
         | 'baseCode'
         | 'status'
         | 'investorCode'
@@ -81,6 +85,7 @@ export class InventoryAccountingItem {
     >,
   ): Record<string, { before: unknown; after: unknown }> {
     this.assertMoney(fields.acquisitionValue);
+    this.assertMoney(fields.residualValue ?? null);
     this.assertDate(fields.acquisitionDate);
 
     const changes: Record<string, { before: unknown; after: unknown }> = {};
@@ -146,6 +151,7 @@ export class InventoryAccountingItem {
       location: 'location',
       acquisitionDate: 'acquisition_date',
       acquisitionValue: 'acquisition_value',
+      residualValue: 'residual_value',
       baseCode: 'base_code',
       status: 'status',
       investorCode: 'investor_code',
