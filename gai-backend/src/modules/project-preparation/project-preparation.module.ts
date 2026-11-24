@@ -6,6 +6,7 @@ import { PREPARATION_ENTITIES } from './preparation.entity';
 import { PreparationRepository } from './preparation.repository';
 import { PreparationService } from './preparation.service';
 import {
+  PreparationSummaryController,
   PreparationTemplatesController,
   ProjectPreparationController,
 } from './preparation.controller';
@@ -15,7 +16,11 @@ import {
     ProjectsModule,
     TypeOrmModule.forFeature(PREPARATION_ENTITIES),
   ],
-  controllers: [PreparationTemplatesController, ProjectPreparationController],
+  controllers: [
+    PreparationTemplatesController,
+    ProjectPreparationController,
+    PreparationSummaryController,
+  ],
   providers: [PreparationRepository, PreparationService],
 })
 export class ProjectPreparationModule {}

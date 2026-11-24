@@ -154,6 +154,11 @@ export const PREPARATION_PERMISSIONS = [
     description: 'Gerenciar modelos e preencher preparação dos projetos',
   },
   {
+    key: 'project-preparation:export',
+    action: 'export',
+    description: 'Exportar o kick-off em planilha (inclui contatos dos focais)',
+  },
+  {
     key: 'project-preparation:approve',
     action: 'approve',
     description: 'Aprovar e reabrir preparação dos projetos',

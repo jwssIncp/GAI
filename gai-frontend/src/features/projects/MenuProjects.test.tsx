@@ -1,8 +1,10 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { AuthContext, type AuthState } from "@/features/auth/AuthContext";
 import { AppHeader } from "@/layouts/AppHeader";
+import { preparationApi } from "@/features/project-preparation/preparationQueries";
 import type { CurrentUser } from "@/types/api";
 
 function renderMenu(keys: string[]) {
@@ -18,7 +20,9 @@ function renderMenu(keys: string[]) {
   render(
     <AuthContext.Provider value={{ user } as AuthState}>
       <MemoryRouter initialEntries={["/app/projects"]}>
-        <AppHeader />
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <AppHeader />
+        </QueryClientProvider>
       </MemoryRouter>
     </AuthContext.Provider>,
   );
@@ -55,6 +59,18 @@ describe("Project navigation with specific permissions", () => {
     expect(
       screen.queryByRole("link", { name: "Novo projeto" }),
     ).not.toBeInTheDocument();
+  });
+  it("marks the Kick-off sub-tab with ⚠ while there are open kick-offs", async () => {
+    vi.spyOn(preparationApi, "openSummary").mockResolvedValue({ open: 2 });
+    renderMenu(["projects:read", "project-preparation:read"]);
+    const tab = await screen.findByTitle("2 kick-off(s) não concluído(s)");
+    expect(tab).toHaveTextContent("Kick-off⚠");
+  });
+  it("shows no alert when every kick-off is concluded", async () => {
+    const summary = vi.spyOn(preparationApi, "openSummary").mockResolvedValue({ open: 0 });
+    renderMenu(["projects:read", "project-preparation:read"]);
+    await vi.waitFor(() => expect(summary).toHaveBeenCalled());
+    expect(screen.getByRole("link", { name: "Kick-off" })).not.toHaveTextContent("⚠");
   });
   it("does not expose project entries without a project permission", () => {
     renderMenu([]);

@@ -11,10 +11,13 @@ import {
   Put,
   Query,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
+import * as XLSX from 'xlsx';
+import { safeSpreadsheetText } from '../project-dashboard/presentation/organization-overview.controller';
 import { RequirePermissions } from '../auth/presentation/decorators/require-permissions.decorator';
 import { PermissionsGuard } from '../auth/presentation/guards/permissions.guard';
 import {
@@ -302,6 +305,35 @@ export class ProjectPreparationController {
   ) {
     return this.service.history(projectId, id, actor(req), query.before_id);
   }
+  @Get(':id/export')
+  @RequirePermissions('project-preparation:read', 'project-preparation:export')
+  @ApiOperation({
+    summary:
+      'Exportar o kick-off (.xlsx): só o visível, na numeração da tela, com observações',
+  })
+  async exportWorkbook(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: PreparationRequest,
+    @Res() res: Response,
+  ) {
+    const { rows, fileName } = await this.service.exportWorkbook(
+      projectId,
+      id,
+      actor(req),
+    );
+    const sheet = XLSX.utils.aoa_to_sheet(
+      rows.map((row) => row.map((cell) => safeSpreadsheetText(cell))),
+    );
+    sheet['!cols'] = [6, 10, 56, 13, 70, 50].map((wch) => ({ wch }));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Kick-off');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res
+      .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .send(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  }
   @Get(':id/email')
   @RequirePermissions('project-preparation:read')
   @ApiOperation({
@@ -356,5 +388,22 @@ export class ProjectPreparationController {
     @Req() req: PreparationRequest,
   ) {
     return this.service.communication(projectId, id, actor(req), query.channel);
+  }
+}
+/** Resumo da organização do usuário (alerta da sub-aba Kick-off). */
+@ApiTags('Project Preparation')
+@ApiBearerAuth()
+@Controller('project-preparations')
+@UseGuards(SessionAuthGuard, PermissionsGuard)
+export class PreparationSummaryController {
+  constructor(private readonly service: PreparationService) {}
+  @Get('open-summary')
+  @RequirePermissions('project-preparation:read')
+  @ApiOperation({
+    summary:
+      'Quantidade de kick-offs não concluídos em projetos em operação da organização',
+  })
+  openSummary(@Req() req: PreparationRequest) {
+    return this.service.openSummary(actor(req));
   }
 }

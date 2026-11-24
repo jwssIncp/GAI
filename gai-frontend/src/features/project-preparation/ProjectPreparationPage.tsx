@@ -26,7 +26,6 @@ import {
 import { TemplateManager } from './TemplateManager';
 import { ClientEmailPanel } from './ClientEmailPanel';
 import { QuestionTable } from './QuestionRows';
-import { answerText, situationOf } from './answerHelpers';
 import { PreparationActionDialog, type PreparationAction } from './PreparationActionDialog';
 import {
   preparationApi,
@@ -443,8 +442,18 @@ export function ProjectPreparationPage() {
 
 type SituationFilter = 'all' | 'pending' | 'done';
 
-const csvCell = (value: string | number) =>
-  `"${String(value).replace(/"/g, '""')}"`;
+/** Mesmo nome de arquivo do servidor (ASCII). */
+const exportFileName = (title: string) =>
+  `kick-off-${
+    title
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^\w -]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .toLowerCase()
+      .slice(0, 80) || 'sem-nome'
+  }.xlsx`;
 
 function PreparationDetail({
   projectId,
@@ -491,28 +500,11 @@ function PreparationDetail({
     if (filter === 'done') return Boolean(a.realized);
     return true;
   };
-  function exportSheet() {
-    const header = ['Nº', 'Seção', 'Item', 'Situação', 'Resposta', 'Observações'];
-    const rows = rowsOnly.map((q) => {
-      const a = answerOf(q);
-      return [
-        number.get(q.id)!,
-        q.category,
-        q.label,
-        situationOf(a),
-        answerText(q, a, context),
-        a.notes ?? '',
-      ];
-    });
-    // Separador ";" e BOM para o Excel em português abrir com acentos e colunas certas.
-    const csv = [header, ...rows]
-      .map((row) => row.map(csvCell).join(';'))
-      .join('\r\n');
-    saveBlob(
-      new Blob([String.fromCharCode(0xfeff) + csv], { type: 'text/csv;charset=utf-8' }),
-      `${instance.title}.csv`,
-    );
-  }
+  // Planilha gerada no servidor (permissão própria, histórico e mesma numeração da tela).
+  const exporting = useMutation({
+    mutationFn: () => preparationApi.exportWorkbook(projectId, instance.id),
+    onSuccess: (blob) => saveBlob(blob, exportFileName(instance.title)),
+  });
   return (
     <div className="preparation-print grid gap-5">
       {!canMutateProjectOperations(context.project.status) ? (
@@ -607,9 +599,16 @@ function PreparationDetail({
         <Button variant="secondary" onClick={() => window.print()}>
           <Printer size={15} /> Imprimir
         </Button>
-        <Button variant="secondary" onClick={exportSheet}>
-          <Download size={15} /> Exportar (Excel)
-        </Button>
+        {permissions.hasPermission('project-preparation:export') ? (
+          <Button
+            variant="secondary"
+            loading={exporting.isPending}
+            disabled={exporting.isPending}
+            onClick={() => exporting.mutate()}
+          >
+            <Download size={15} /> Exportar (Excel)
+          </Button>
+        ) : null}
         {permissions.hasPermission('project-preparation:approve') &&
         instance.status !== 'archived' &&
         canMutateProjectOperations(context.project.status) ? (
@@ -628,6 +627,9 @@ function PreparationDetail({
         ) : null}
       </div>
       {prefill.isError ? <ErrorState message={(prefill.error as Error).message} /> : null}
+      {exporting.isError ? (
+        <ErrorState message={`Não foi possível exportar: ${(exporting.error as Error).message}`} />
+      ) : null}
       {instance.progress.missing_required.length ? (
         <p className="text-sm text-muted-foreground print:hidden">
           {instance.progress.missing_required.length} pergunta(s) obrigatória(s)

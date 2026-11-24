@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import * as XLSX from 'xlsx';
 import { DataSource } from 'typeorm';
 import {
   createTestApp,
@@ -166,7 +167,7 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     await app?.close();
   });
 
-  it('registers all three organizational permissions in the live catalog', async () => {
+  it('registers all four organizational permissions in the live catalog', async () => {
     const permissions = await app
       .get(DataSource)
       .getRepository(PermissionEntity)
@@ -179,6 +180,7 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     ).toEqual([
       ['approve', 'ORGANIZATION'],
       ['edit', 'ORGANIZATION'],
+      ['export', 'ORGANIZATION'],
       ['read', 'ORGANIZATION'],
     ]);
   });
@@ -798,6 +800,65 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
           row.operation === 'COMMUNICATION_PREVIEW',
       ),
     ).toHaveLength(2);
+  });
+  it('exports the visible items as xlsx with its own permission and audit', async () => {
+    const item = await create();
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [
+        answer('flag', true, 'completed', 'Observação exportada'),
+        answer('details', '=HYPERLINK("http://x")'),
+      ],
+    });
+    const file = await request(app.getHttpServer())
+      .get(`${base()}/${item.id}/export`)
+      .set(auth())
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    expect(file.headers['content-type']).toContain('spreadsheetml');
+    expect(file.headers['content-disposition']).toContain(
+      'kick-off-preparacao-sintetica.xlsx',
+    );
+    const sheet = XLSX.read(file.body as Buffer).Sheets['Kick-off'];
+    const rows = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
+    const flat = JSON.stringify(rows);
+    expect(flat).toContain('Observação exportada');
+    // Fórmulas vindas de respostas não são executadas pela planilha.
+    expect(flat).toContain("'=HYPERLINK");
+    // Item oculto no modelo não sai.
+    expect(rows.some((row) => row[2] === 'hidden')).toBe(false);
+    const history = await get(`${base()}/${item.id}/history`);
+    expect(
+      history.body.items.some(
+        (row: { operation: string }) => row.operation === 'EXPORTED',
+      ),
+    ).toBe(true);
+    // Leitura sem a permissão de exportar: recusado.
+    await grant(['project-preparation:read']);
+    await get(`${base()}/${item.id}/export`, user, 403);
+    await grant(['project-preparation:read', 'project-preparation:export']);
+    await get(`${base()}/${item.id}/export`, user, 200);
+  });
+  it('counts open kick-offs only of the user organization and of operating projects', async () => {
+    const before = (await get('/api/v1/project-preparations/open-summary')).body
+      .open as number;
+    const item = await create();
+    expect(
+      (await get('/api/v1/project-preparations/open-summary')).body.open,
+    ).toBe(before + 1);
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [answer('flag', false)],
+    });
+    await post(`${base()}/${item.id}/approve`, { revision: 2 }, admin, 200);
+    expect(
+      (await get('/api/v1/project-preparations/open-summary')).body.open,
+    ).toBe(before);
   });
   it('generates the client e-mail from the model, saves edits with their own version, warns when stale and restores', async () => {
     const emailTemplate = (

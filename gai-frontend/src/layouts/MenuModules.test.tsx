@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -34,7 +35,9 @@ function renderMenu(current: CurrentUser) {
   render(
     <AuthContext.Provider value={{ user: current } as AuthState}>
       <MemoryRouter initialEntries={["/app/projects"]}>
-        <AppHeader />
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <AppHeader />
+        </QueryClientProvider>
       </MemoryRouter>
     </AuthContext.Provider>,
   );

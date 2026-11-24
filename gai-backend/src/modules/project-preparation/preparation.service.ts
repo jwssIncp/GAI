@@ -56,6 +56,7 @@ import {
   validDate,
 } from './domain/preparation.policy';
 import { renderEmail, validateEmailTemplate } from './domain/preparation.email';
+import { exportFileName, exportRows } from './domain/preparation.export';
 import { PolicyAnswer, PreparationQuestion } from './domain/preparation.types';
 
 @Injectable()
@@ -1082,6 +1083,85 @@ export class PreparationService {
         changes: row.changes,
       })),
       next_before_id: rows.length === 50 ? rows.at(-1)!.id : null,
+    };
+  }
+  /**
+   * Planilha (.xlsx) do kick-off: só o visível, na numeração da tela, com observações.
+   * Exige permissão própria de exportação (dados pessoais dos focais) e fica no histórico.
+   */
+  async exportWorkbook(
+    projectId: number,
+    id: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor);
+    const row = await this.scopedInstance(project, id);
+    const answers = await this.repo.answers(row);
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
+    const summary = progress(row.snapshot.questions, answers);
+    const rows = exportRows({
+      title: row.title,
+      status: row.status,
+      scheduledDate: row.scheduledDate,
+      templateName: row.snapshot.name,
+      templateVersion: row.snapshot.version,
+      questions: row.snapshot.questions,
+      answers,
+      applicable: applicability(row.snapshot.questions, answers),
+      realized: {
+        done: summary.realized,
+        total: summary.total,
+        percent: summary.realized_percent,
+      },
+      organizationName: organization
+        ? (organization.tradeName ?? organization.legalName)
+        : '',
+      units: await this.units(project),
+    });
+    await this.audit(
+      this.repo.manager,
+      actor,
+      project.organizationId,
+      'EXPORTED',
+      { revision: row.revision, format: 'xlsx', rows: rows.length },
+      projectId,
+      id,
+    );
+    return { rows, fileName: exportFileName(row.title) };
+  }
+  /**
+   * Kick-offs não concluídos da organização do usuário, em projetos que ainda aceitam
+   * operação (alerta ⚠ da sub-aba Kick-off, como no sistema anterior).
+   */
+  async openSummary(actor: ProjectActorContext) {
+    if (!actor.organizationId) return { open: 0 };
+    const rows = await this.repo.manager
+      .getRepository(ProjectPreparationEntity)
+      .createQueryBuilder('preparation')
+      .innerJoin(
+        ProjectEntity,
+        'project',
+        'project.id = preparation.projectId AND project.organizationId = preparation.organizationId',
+      )
+      .select('project.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('preparation.organizationId = :organization', {
+        organization: actor.organizationId,
+      })
+      .andWhere('preparation.kind = :kind', { kind: 'kickoff' })
+      .andWhere('preparation.status IN (:...statuses)', {
+        statuses: ['draft', 'in_progress'],
+      })
+      .groupBy('project.status')
+      .getRawMany<{ status: ProjectEntity['status']; count: string }>();
+    return {
+      open: rows
+        .filter((r) =>
+          ProjectStatusTransitionPolicy.allowsOperationalMutation(r.status),
+        )
+        .reduce((sum, r) => sum + Number(r.count), 0),
     };
   }
   /**

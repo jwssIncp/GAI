@@ -11,6 +11,7 @@ import { navigationContext, navigationHref } from '@/features/projects/navigatio
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/utils/cn';
 import { activeProjectAreaTab, projectAreaTabs } from '@/features/projects/projectArea';
+import { useOpenKickoffs } from '@/features/project-preparation/preparationQueries';
 import { organizationLabel } from './organizationLabel';
 
 /** Altura real do cabeçalho (muda no mobile): barras fixas abaixo dele usam a variável. */
@@ -60,6 +61,7 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
   // Área Projetos no padrão do sistema anterior: as sub-abas (Painel Geral, Kick-off, ...) valem
   // para todos os projetos e continuam visíveis dentro de um projeto, com a aba dele ativa.
   const projectTabs = shown === 'projects' ? projectAreaTabs.filter((tab) => canAccess(tab.permissions)) : [];
+  const openKickoffs = useOpenKickoffs(projectTabs.some((tab) => tab.id === 'kickoff')).data?.open ?? 0;
   const activeAreaTab = activeProjectAreaTab(location.pathname, location.hash);
 
   return (
@@ -101,6 +103,8 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
         <nav aria-label="Telas de Projetos" className="flex min-h-11 items-center gap-1 overflow-x-auto overflow-y-hidden border-b border-nav-border bg-subnav px-6 max-md:px-3">
           {projectTabs.map((tab) => {
             const active = tab.id === activeAreaTab?.id;
+            // ⚠ enquanto houver kick-off não concluído (como no sistema anterior).
+            const alert = tab.id === 'kickoff' && openKickoffs > 0;
             return (
               <Link
                 key={tab.id}
@@ -110,8 +114,14 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
                   'inline-flex min-h-8 shrink-0 items-center whitespace-nowrap rounded-full px-[13px] text-[0.78125rem] font-semibold transition-colors max-md:min-h-10',
                   active ? 'bg-[#0A1F44] text-white dark:bg-steel-dark' : 'text-nav-muted hover:bg-subnav-hover hover:text-nav-ink',
                 )}
+                title={alert ? `${openKickoffs} kick-off(s) não concluído(s)` : undefined}
               >
                 {tab.label}
+                {alert ? (
+                  <span className={cn('ml-1', active ? 'text-white' : 'text-destructive')} aria-label={`, ${openKickoffs} kick-off(s) não concluído(s)`}>
+                    ⚠
+                  </span>
+                ) : null}
               </Link>
             );
           })}
