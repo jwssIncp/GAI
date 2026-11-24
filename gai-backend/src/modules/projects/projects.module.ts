@@ -11,6 +11,7 @@ import { ListProjectsUseCase } from './application/use-cases/list-projects.use-c
 import { UpdateProjectStatusUseCase } from './application/use-cases/update-project-status.use-case';
 import { UpdateProjectUseCase } from './application/use-cases/update-project.use-case';
 import { ProjectScopeService } from './application/services/project-scope.service';
+import { ProjectActivationHooks } from './application/services/project-activation-hooks';
 import { PROJECT_REPOSITORY } from './domain/ports/project.repository.port';
 import { ProjectAuditLogEntity } from './infrastructure/persistence/project-audit-log.entity';
 import { ProjectEntity } from './infrastructure/persistence/project.entity';
@@ -31,6 +32,7 @@ import { ProjectsController } from './presentation/projects.controller';
   controllers: [ProjectsController],
   providers: [
     ProjectScopeService,
+    ProjectActivationHooks,
     ProjectRegistrationService,
     CreateProjectUseCase,
     ListProjectsUseCase,
@@ -42,6 +44,11 @@ import { ProjectsController } from './presentation/projects.controller';
       useClass: TypeOrmProjectRepository,
     },
   ],
-  exports: [PROJECT_REPOSITORY, ProjectScopeService, TypeOrmModule],
+  exports: [
+    PROJECT_REPOSITORY,
+    ProjectScopeService,
+    ProjectActivationHooks,
+    TypeOrmModule,
+  ],
 })
 export class ProjectsModule {}

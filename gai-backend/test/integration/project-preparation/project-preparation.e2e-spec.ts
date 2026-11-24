@@ -844,6 +844,69 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
     await grant(['project-preparation:read', 'project-preparation:export']);
     await get(`${base()}/${item.id}/export`, user, 200);
   });
+  it('creates the kick-off once when the project is activated, with the latest kick-off model', async () => {
+    const latest = (
+      await post(templates, {
+        name: 'Modelo mais recente',
+        kind: 'kickoff',
+        questions: questions(),
+      })
+    ).body.id as number;
+    const fresh = (
+      await post('/api/v1/projects', {
+        organization_id: 1,
+        company_id: 1,
+        name: 'Projeto ativado',
+      })
+    ).body.id as number;
+    const list = async () =>
+      (await get(`/api/v1/projects/${fresh}/preparations`)).body
+        .items as Array<{
+        id: number;
+        kind: string;
+        status: string;
+        title: string;
+        template_version_id: number;
+      }>;
+    expect(await list()).toHaveLength(0);
+    await post(`/api/v1/projects/${fresh}/activate`, {}, admin, 200);
+    const created = await list();
+    expect(created).toHaveLength(1);
+    expect(created[0]).toMatchObject({ kind: 'kickoff', status: 'draft' });
+    const detail = await get(
+      `/api/v1/projects/${fresh}/preparations/${created[0].id}`,
+    );
+    expect(detail.body.snapshot.name).toBe('Modelo mais recente');
+    const history = await get(
+      `/api/v1/projects/${fresh}/preparations/${created[0].id}/history`,
+    );
+    expect(
+      history.body.items.find(
+        (row: { operation: string }) => row.operation === 'INSTANCE_CREATED',
+      ).changes.origin,
+    ).toBe('project_activation');
+    // Idempotente: inativar e reativar não criam outro.
+    await post(`/api/v1/projects/${fresh}/deactivate`, {}, admin, 200);
+    await post(`/api/v1/projects/${fresh}/reactivate`, {}, admin, 200);
+    expect(await list()).toHaveLength(1);
+    // Sem kick-off ativo (excluído), a reativação cria um novo.
+    await request(app.getHttpServer())
+      .delete(`/api/v1/projects/${fresh}/preparations/${created[0].id}`)
+      .set(auth())
+      .send({ revision: detail.body.revision, reason: 'Criado por engano' })
+      .expect(200);
+    await post(`/api/v1/projects/${fresh}/deactivate`, {}, admin, 200);
+    await post(`/api/v1/projects/${fresh}/reactivate`, {}, admin, 200);
+    expect(
+      (await list()).filter((item) => item.status !== 'archived'),
+    ).toHaveLength(1);
+    // Limpeza: arquiva o modelo criado aqui.
+    await request(app.getHttpServer())
+      .delete(`${templates}/${latest}`)
+      .set(auth())
+      .send({ revision: 1 })
+      .expect(200);
+  });
   it('counts open kick-offs only of the user organization and of operating projects', async () => {
     const before = (await get('/api/v1/project-preparations/open-summary')).body
       .open as number;

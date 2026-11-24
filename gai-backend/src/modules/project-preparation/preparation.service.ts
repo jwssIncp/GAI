@@ -4,8 +4,10 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
-import { EntityManager, In, IsNull, LessThan } from 'typeorm';
+import { EntityManager, In, IsNull, LessThan, Not } from 'typeorm';
+import { ProjectActivationHooks } from '../projects/application/services/project-activation-hooks';
 import { hasAllPermissions } from '../auth/application/services/permission-access';
 import {
   PERMISSION_RESOLVER,
@@ -60,13 +62,67 @@ import { exportFileName, exportRows } from './domain/preparation.export';
 import { PolicyAnswer, PreparationQuestion } from './domain/preparation.types';
 
 @Injectable()
-export class PreparationService {
+export class PreparationService implements OnModuleInit {
   constructor(
     private readonly repo: PreparationRepository,
     private readonly scope: ProjectScopeService,
     @Inject(PERMISSION_RESOLVER)
     private readonly permissions: PermissionResolver,
+    private readonly activation: ProjectActivationHooks,
   ) {}
+  onModuleInit() {
+    // Kick-off automático quando o projeto é ativado (decisão de 24/11/2026).
+    this.activation.register('kickoff', (event) =>
+      this.ensureKickoff(event.projectId, event.actor).then(() => undefined),
+    );
+  }
+  /**
+   * Cria o kick-off do projeto, se ainda não houver um ativo (idempotente; vínculo pelo ID do
+   * projeto, nunca pelo nome — I1/I2). Usa o modelo de kick-off mais recente não arquivado da
+   * organização, como a tela; sem modelo, não cria nada. Retorna o ID criado ou null.
+   */
+  async ensureKickoff(projectId: number, actor: ProjectActorContext) {
+    const project = await this.project(projectId, actor);
+    const existing = await this.repo.manager
+      .getRepository(ProjectPreparationEntity)
+      .count({
+        where: {
+          organizationId: project.organizationId,
+          projectId,
+          kind: 'kickoff',
+          status: Not('archived'),
+        },
+      });
+    if (existing) return null;
+    const template = await this.repo.manager
+      .getRepository(PreparationTemplateEntity)
+      .findOne({
+        where: {
+          organizationId: project.organizationId,
+          kind: 'kickoff',
+          archivedAt: IsNull(),
+        },
+        order: { id: 'DESC' },
+      });
+    if (!template) return null;
+    const company = project.companyId
+      ? await this.repo.manager.getRepository(CompanyEntity).findOneBy({
+          id: project.companyId,
+          organizationId: project.organizationId,
+        })
+      : null;
+    const created = await this.create(
+      projectId,
+      {
+        template_id: template.id,
+        // Nome do cliente, como no "Novo kick-off" da tela.
+        title: (company?.name ?? project.name).slice(0, 200),
+      },
+      actor,
+      'project_activation',
+    );
+    return created.id;
+  }
   private missing(): never {
     throw new NotFoundException({
       code: 'NOT_FOUND',
@@ -496,6 +552,8 @@ export class PreparationService {
     projectId: number,
     dto: CreatePreparationDto,
     actor: ProjectActorContext,
+    /** Origem registrada no histórico: tela ou ativação do projeto. */
+    origin: 'manual' | 'project_activation' = 'manual',
   ) {
     const project = await this.project(projectId, actor, true);
     validDate(dto.scheduled_date);
@@ -554,6 +612,7 @@ export class PreparationService {
           responsible_user_id: row.responsibleUserId,
           scheduled_date: row.scheduledDate,
           due_date: row.dueDate,
+          origin,
         },
         projectId,
         row.id,
