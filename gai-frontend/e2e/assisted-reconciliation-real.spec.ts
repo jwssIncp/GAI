@@ -129,7 +129,7 @@ test("ORG_ADMIN reviews and persists assisted reconciliation while retaining pro
     .getByRole("button", { name: "Gerar sugestões · primeiros 20 itens" })
     .click();
   await panel.getByRole("button", { name: "Comparar e revisar" }).click();
-  await expect(page.getByRole("dialog")).toContainText("Série exata");
+  await expect(page.getByRole("dialog")).toContainText("02 · Série");
   await expect(page.getByRole("dialog")).toContainText("placas divergem");
   await page
     .getByLabel("Justificativa")

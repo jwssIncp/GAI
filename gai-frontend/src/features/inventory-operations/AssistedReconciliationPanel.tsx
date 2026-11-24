@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ModalForm } from "@/components/ui/dialog";
+import { SectionTitle } from "@/components/base/SectionTitle";
 import { DataTable, type Column } from "@/components/base/DataTable";
 import { Pagination } from "@/components/base/Pagination";
 import { ErrorState, LoadingState } from "@/components/base/States";
@@ -17,10 +18,11 @@ import {
 import { createIdempotencyKey } from "./idempotency";
 import { getInventoryOperationErrorMessage } from "./inventoryOperationErrors";
 const rules: Record<string, string> = {
-  exact_plate: "Placa exata",
-  exact_serial: "Série exata",
-  description_location: "Descrição e localização",
-  description: "Descrição semelhante",
+  // Regras numeradas na ordem de aplicação, como no sistema anterior.
+  exact_plate: "01 · Placa",
+  exact_serial: "02 · Série",
+  description_location: "03 · Descrição + local",
+  description: "04 · Descrição",
 };
 const states: Record<string, string> = {
   pending: "Pendente",
@@ -172,16 +174,21 @@ export function AssistedReconciliationPanel({
   const data = candidates.data;
   return (
     <section className="grid gap-4" aria-label="Conciliação assistida">
-      <div>
-        <p className="eyebrow">Revisão humana</p>
-        <h2 className="mt-2 text-lg font-bold">
-          Conciliação físico-contábil assistida
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Sugestões preservam os dados originais. Aprovar registra uma nova
-          conciliação e seu snapshot consolidado. Nenhuma placa mestre é
-          alterada.
+      <div className="grid gap-1">
+        <SectionTitle title="Conciliação automática" />
+        <p className="text-xs leading-5 text-muted-foreground">
+          Sugestões pelas regras abaixo, em ordem; nada é gravado antes da sua
+          aprovação. Aprovar registra uma nova conciliação e seu snapshot
+          consolidado. Nenhuma placa mestre é alterada.
         </p>
+        <ol
+          aria-label="Regras da conciliação automática"
+          className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"
+        >
+          {Object.values(rules).map((rule) => (
+            <li key={rule}>{rule}</li>
+          ))}
+        </ol>
       </div>
       <PermissionGate permissions={["assisted-reconciliation:generate"]}>
         <details className="premium-panel p-4">
@@ -198,25 +205,29 @@ export function AssistedReconciliationPanel({
             ).map((key) => (
               <label className="grid gap-1 text-sm" key={key}>
                 {key === "textThreshold"
-                  ? "Similaridade textual mínima"
+                  ? "Semelhança mínima da descrição (%) · regra 04"
                   : key === "localTextThreshold"
-                    ? "Similaridade com localização igual"
-                    : "Alerta abaixo de"}
+                    ? "Semelhança com o mesmo local (%) · regra 03"
+                    : "Alertar semelhança abaixo de (%)"}
+                {/* Em % como no sistema anterior; a API continua recebendo a fração (0,92). */}
                 <input
                   className="h-10 rounded-md border bg-background px-3"
                   type="number"
                   min={
                     key === "textThreshold"
-                      ? 0.8
+                      ? 80
                       : key === "localTextThreshold"
-                        ? 0.75
+                        ? 75
                         : 0
                   }
-                  max={key === "descriptionAlertThreshold" ? 0.5 : 1}
-                  step="0.01"
-                  value={config[key]}
+                  max={key === "descriptionAlertThreshold" ? 50 : 100}
+                  step="1"
+                  value={Math.round(config[key] * 100)}
                   onChange={(e) =>
-                    setConfig({ ...config, [key]: Number(e.target.value) })
+                    setConfig({
+                      ...config,
+                      [key]: Number(e.target.value) / 100,
+                    })
                   }
                 />
               </label>

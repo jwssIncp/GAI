@@ -410,6 +410,13 @@ export type ProjectAccountingSummary = {
   divergent_accounting_items: number;
   not_found_accounting_items: number;
   ignored_accounting_items: number;
+  /** Última execução da conciliação do projeto (nulo: nunca executada) e contagens dela. */
+  latest_reconciliation_run?: number | null;
+  reconciled_items?: number;
+  physical_surplus_items?: number;
+  accounting_surplus_items?: number;
+  duplicate_items?: number;
+  consolidated_items?: number;
 };
 export type ProjectPendingIssuesSummary = {
   total_pending_issues: number;
