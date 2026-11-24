@@ -31,7 +31,10 @@ import {
   AuthenticatedUser,
   SessionAuthGuard,
 } from '../../auth/presentation/guards/session-auth.guard';
-import { UpdateInventoryAccountingItemDto } from '../application/dto/inventory-accounting-item-inputs';
+import {
+  ClassifyAccountingItemsDto,
+  UpdateInventoryAccountingItemDto,
+} from '../application/dto/inventory-accounting-item-inputs';
 import {
   AccountingImportBatchListResponseDto,
   AccountingImportBatchResponseDto,
@@ -137,6 +140,21 @@ export class InventoryAccountingItemsController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.service.getItem(projectId, id, this.toActor(req));
+  }
+
+  @Post('inventory-accounting-items/classification')
+  @HttpCode(200)
+  @RequirePermissions('inventory-accounting-items:update')
+  @ApiOperation({
+    summary:
+      'Classificar a sobra contábil dos itens selecionados (NPI, ABRIR NF...)',
+  })
+  async classifyItems(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Body() dto: ClassifyAccountingItemsDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.service.classifyItems(projectId, dto, this.toActor(req));
   }
 
   @Patch('inventory-accounting-items/:id')

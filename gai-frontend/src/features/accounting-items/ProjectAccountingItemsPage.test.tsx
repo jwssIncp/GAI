@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   importFile: vi.fn(),
   listImports: vi.fn(),
   errors: vi.fn(),
+  classify: vi.fn(),
 }));
 
 vi.mock('@/api/endpoints', () => ({
@@ -25,6 +26,7 @@ vi.mock('@/api/endpoints', () => ({
     update: mocks.update,
     deactivate: mocks.deactivate,
     reactivate: mocks.reactivate,
+    classify: mocks.classify,
   },
   accountingImportsApi: {
     importFile: mocks.importFile,
@@ -205,5 +207,42 @@ describe('ProjectAccountingItemsPage', () => {
     await userEvent.click(screen.getByLabelText('Visualizar erros da importação'));
     expect(await screen.findByText('Linha 3')).toBeInTheDocument();
     expect(screen.getByText('Placa obrigatoria')).toBeInTheDocument();
+  });
+});
+
+describe('Base contábil: Alterar status (classificação da sobra)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.list.mockResolvedValue(page([item, { ...item, id: 22, plate: 'PAT-002', status: 'matched' }, { ...item, id: 23, plate: 'PAT-003', surplus_classification: 'ABRIR NF' }]));
+    mocks.listImports.mockResolvedValue(page([batch], { page_size: 5 }));
+    mocks.classify.mockResolvedValue({ updated: 1, classification: 'NPI - SOFTWARE' });
+  });
+  it('mostra a classificação e só deixa selecionar itens não conciliados', async () => {
+    renderPage();
+    expect(await screen.findByText('ABRIR NF')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Selecionar item contábil PAT-002' })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: 'Selecionar item contábil PAT-001' })).toBeEnabled();
+  });
+  it('aplica uma classificação fixa aos selecionados e limpa a seleção', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Selecionar item contábil PAT-001' }));
+    expect(screen.getByText('Selec. contábil: 1')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Alterar status ▾' }));
+    await userEvent.click(screen.getByRole('menuitem', { name: 'NPI - SOFTWARE' }));
+    await waitFor(() => expect(mocks.classify).toHaveBeenCalledWith(10, [21], 'NPI - SOFTWARE'));
+    await waitFor(() => expect(screen.getByText('Selec. contábil: 0')).toBeInTheDocument());
+  });
+  it('aceita status livre e "Limpar classificação"', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Selecionar a sobra contábil desta página' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Alterar status ▾' }));
+    await userEvent.type(screen.getByLabelText('Outra classificação'), 'BAIXA FISCAL');
+    await userEvent.click(screen.getByRole('button', { name: 'Aplicar' }));
+    await waitFor(() => expect(mocks.classify).toHaveBeenCalledWith(10, [21, 23], 'BAIXA FISCAL'));
+  });
+  it('esconde a seleção para quem não pode editar', async () => {
+    renderPage(noPermissions);
+    await screen.findByText('ABRIR NF');
+    expect(screen.queryByRole('button', { name: 'Alterar status ▾' })).not.toBeInTheDocument();
   });
 });

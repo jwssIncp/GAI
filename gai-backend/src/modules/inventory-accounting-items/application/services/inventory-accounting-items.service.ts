@@ -22,7 +22,10 @@ import {
   INVENTORY_ACCOUNTING_ITEM_REPOSITORY,
   type InventoryAccountingItemRepository,
 } from '../../domain/ports/inventory-accounting-item.repository.port';
-import { UpdateInventoryAccountingItemDto } from '../dto/inventory-accounting-item-inputs';
+import {
+  ClassifyAccountingItemsDto,
+  UpdateInventoryAccountingItemDto,
+} from '../dto/inventory-accounting-item-inputs';
 import {
   AccountingImportBatchListResponseDto,
   AccountingImportBatchResponseDto,
@@ -263,6 +266,58 @@ export class InventoryAccountingItemsService {
       changes,
     });
     return InventoryAccountingItemResponseDto.fromDomain(saved);
+  }
+
+  /**
+   * Classifica (ou limpa) a sobra contábil dos itens selecionados. Só vale para itens não
+   * conciliados, como no sistema anterior; valida todos antes de gravar qualquer um.
+   */
+  async classifyItems(
+    projectId: number,
+    dto: ClassifyAccountingItemsDto,
+    actor: InventoryAccountingItemActorContext,
+  ): Promise<{ updated: number; classification: string | null }> {
+    await this.getAuthorizedProject(projectId, actor, true);
+    const classification = this.scope.cleanText(dto.classification) ?? null;
+    const items = [];
+    for (const id of dto.ids) {
+      const item = await this.repository.findById(id);
+      if (!item || item.projectId !== projectId)
+        throw new NotFoundException({
+          code: 'NOT_FOUND',
+          message: `Item contábil #${id} não encontrado neste projeto.`,
+        });
+      this.scope.assertCanAccessOrganization(actor, item.organizationId);
+      items.push(item);
+    }
+    const blocked = items.filter((item) =>
+      [
+        InventoryAccountingItemStatus.MATCHED,
+        InventoryAccountingItemStatus.INACTIVE,
+      ].includes(item.status),
+    );
+    if (blocked.length)
+      throw new ConflictException({
+        code: 'CONFLICT',
+        message: `Só itens não conciliados e ativos podem ser classificados (${blocked.length} selecionado(s) não podem).`,
+      });
+    let updated = 0;
+    for (const item of items) {
+      const changes = item.updateFields({
+        surplusClassification: classification,
+      });
+      if (!Object.keys(changes).length) continue;
+      await this.repository.saveWithAudit(item, {
+        inventoryAccountingItemId: item.id,
+        organizationId: item.organizationId,
+        projectId: item.projectId,
+        operation: InventoryAccountingItemAuditOperation.UPDATE,
+        performedBy: actor.id,
+        changes,
+      });
+      updated += 1;
+    }
+    return { updated, classification };
   }
 
   async changeStatus(

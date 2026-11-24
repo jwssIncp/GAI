@@ -851,6 +851,8 @@ export type InventoryAccountingItemInput = {
 
 export type InventoryAccountingItem = InventoryAccountingItemInput & {
   id: number;
+  /** Classificação manual da sobra contábil (NPI, ABRIR NF ou texto livre). */
+  surplus_classification?: string | null;
   organization_id: number;
   project_id: number;
   status: InventoryAccountingItemStatus;

@@ -38,3 +38,6 @@ export function validateAccountingImportFile(file: File) {
   if (file.size > 20 * 1024 * 1024) return 'Arquivo deve ter no máximo 20 MB.';
   return null;
 }
+
+/** Classificações fixas da sobra contábil ("Alterar status ▾" do sistema anterior); sempre no topo do menu. */
+export const fixedSurplusClassifications = ['NPI - COMPLEMENTO', 'NPI - SOFTWARE', 'NPI - EDIFICAÇÕES E TERRENOS', 'ABRIR NF'] as const;

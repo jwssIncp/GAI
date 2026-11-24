@@ -15,6 +15,8 @@ export interface InventoryAccountingItemProps {
   acquisitionValue: string | null;
   /** Valor residual (líquido contábil) da linha; base dos indicadores de valor da conciliação. */
   residualValue?: string | null;
+  /** Classificação manual da sobra contábil (NPI, ABRIR NF ou texto livre). */
+  surplusClassification?: string | null;
   baseCode: string | null;
   status: InventoryAccountingItemStatus;
   investorCode: string | null;
@@ -70,6 +72,7 @@ export class InventoryAccountingItem {
         | 'acquisitionDate'
         | 'acquisitionValue'
         | 'residualValue'
+        | 'surplusClassification'
         | 'baseCode'
         | 'status'
         | 'investorCode'
@@ -152,6 +155,7 @@ export class InventoryAccountingItem {
       acquisitionDate: 'acquisition_date',
       acquisitionValue: 'acquisition_value',
       residualValue: 'residual_value',
+      surplusClassification: 'surplus_classification',
       baseCode: 'base_code',
       status: 'status',
       investorCode: 'investor_code',
