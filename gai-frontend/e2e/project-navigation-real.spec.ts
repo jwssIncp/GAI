@@ -48,23 +48,23 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   const handle = await nav.elementHandle();
   // Navegação em dois níveis: grupo › aba. A aba "Imagens" foi removida (abria a mesma tela de Itens).
   const transitions: Array<[string, string, string]> = [
-    ["Inventário", "Itens e avaliação", "inventory-items"],
+    ["Inventário", "Itens inventariados", "inventory-items"],
     ["Financeiro", "Remuneração", "finance/remuneration"],
     ["Financeiro", "Despesas", "finance"],
-    ["Inventário", "Pendências", "pending-issues"],
-    ["Visão geral", "Dashboard", "dashboard"],
-    ["Contábil e laudo", "Base contábil", "accounting-items"],
-    ["Visão geral", "Unidades", "summary#unidades"],
-    ["Visão geral", "Configurações", "summary#configuracoes"],
-    ["Visão geral", "Resumo", "summary"],
-    ["Campo", "Preparação", "preparation/kickoff"],
-    ["Inventário", "Itens e avaliação", "inventory-items"],
-    ["Inventário", "Sessões e conciliação", "inventory/sessions"],
-    ["Campo", "Equipe de campo", "summary#inventariantes"],
+    ["Conciliação Físico-Contábil", "Pendências patrimoniais", "pending-issues"],
+    ["Painel", "Dashboard", "dashboard"],
+    ["Conciliação Físico-Contábil", "Base contábil", "accounting-items"],
+    ["Painel", "Unidades", "summary#unidades"],
+    ["Painel", "Configurações", "summary#configuracoes"],
+    ["Painel", "Resumo", "summary"],
+    ["Kick-off", "Kick-off", "preparation/kickoff"],
+    ["Inventário", "Itens inventariados", "inventory-items"],
+    ["Conciliação Físico-Contábil", "Sessões e conciliação", "inventory/sessions"],
+    ["Pendências - Campo", "Equipe de campo", "summary#inventariantes"],
     ["Financeiro", "Prestações", "finance/accountabilities"],
-    ["Visão geral", "Importações", "import-sessions"],
-    ["Visão geral", "Exportações", "export-jobs"],
-    ["Campo", "Preparação", "preparation/kickoff"],
+    ["Inventário", "Importações", "import-sessions"],
+    ["Painel", "Exportações", "export-jobs"],
+    ["Kick-off", "Kick-off", "preparation/kickoff"],
   ];
   for (const [group, label, suffix] of transitions) {
     await openProjectTab(page, group, label);
@@ -100,9 +100,9 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   }
   // A URL antiga da aba Imagens continua válida e abre Itens.
   await page.goto(root + "inventory-items?view=images");
-  await expect(projectTabLink(page, "Inventário", "Itens e avaliação")).toHaveAttribute("aria-current", "page");
+  await expect(projectTabLink(page, "Inventário", "Itens inventariados")).toHaveAttribute("aria-current", "page");
   await expect(nav.getByRole("link", { name: "Imagens", exact: true })).toHaveCount(0);
-  await openProjectTab(page, "Campo", "Preparação");
+  await openProjectTab(page, "Kick-off", "Kick-off");
   await page
     .getByRole("link", { name: "Checklist do cliente", exact: true })
     .click();
@@ -116,7 +116,7 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
   await page.reload();
   await expect(nav).toBeVisible();
   await expect(
-    nav.getByRole("link", { name: "Preparação", exact: true }),
+    nav.getByRole("link", { name: "Kick-off", exact: true }),
   ).toHaveAttribute("aria-current", "page");
   await page.goto(root + "preparation");
   await expect(page).toHaveURL(/preparation\/kickoff$/);
@@ -130,11 +130,11 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
 
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [group, label, suffix] of [
-    ["Visão geral", "Unidades", "summary#unidades"],
-    ["Visão geral", "Configurações", "summary#configuracoes"],
-    ["Inventário", "Itens e avaliação", "inventory-items"],
-    ["Campo", "Preparação", "preparation/kickoff"],
-    ["Visão geral", "Dashboard", "dashboard"],
+    ["Painel", "Unidades", "summary#unidades"],
+    ["Painel", "Configurações", "summary#configuracoes"],
+    ["Inventário", "Itens inventariados", "inventory-items"],
+    ["Kick-off", "Kick-off", "preparation/kickoff"],
+    ["Painel", "Dashboard", "dashboard"],
   ]) {
     await openProjectTab(page, group, label);
     await expect(page).toHaveURL((process.env.GAI_E2E_BASE_URL ?? "http://localhost:5173") + root + suffix);
@@ -165,7 +165,7 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
     "data-project-id",
     secondary,
   );
-  await openProjectTab(page, "Inventário", "Itens e avaliação");
+  await openProjectTab(page, "Inventário", "Itens inventariados");
   await expect(page).toHaveURL(
     new RegExp(`/projects/${secondary}/inventory-items$`),
   );

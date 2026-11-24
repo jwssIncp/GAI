@@ -151,21 +151,21 @@ describe("Exibição dos alertas no grupo e na aba", () => {
 
   it("mostra ⚠ no grupo (1º nível) e na aba (2º nível), sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user([...everything, "payments:approve"]));
-    const tab = await nav.findByRole("link", { name: "Pendências" });
+    const tab = await nav.findByRole("link", { name: "Pendências patrimoniais" });
     await waitFor(() => expect(tab).toHaveAttribute("aria-describedby"));
     expect(description(tab)).toBe("Atenção: 5 pendências abertas ou em revisão, 1 crítica ou alta");
-    const group = nav.getByRole("link", { name: "Inventário" });
-    expect(description(group)).toBe("Atenção: Pendências: 5 pendências abertas ou em revisão, 1 crítica ou alta");
+    const group = nav.getByRole("link", { name: "Conciliação Físico-Contábil" });
+    expect(description(group)).toBe("Atenção: Pendências patrimoniais: 5 pendências abertas ou em revisão, 1 crítica ou alta");
     expect(description(nav.getByRole("link", { name: "Financeiro" }))).toBe("Atenção: Remuneração: 1 diária aguardando sua aprovação");
-    expect(nav.getByRole("link", { name: "Campo" })).toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Contábil e laudo" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Pendências - Campo" })).toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Laudo" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Itens e avaliação" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Base contábil" })).not.toHaveAttribute("aria-describedby");
   });
 
   it("sem permissão de aprovar, o grupo Financeiro não alerta", async () => {
     const nav = renderAt("/app/projects/10/finance", user(everything));
-    await waitFor(() => expect(nav.getByRole("link", { name: "Inventário" })).toHaveAttribute("aria-describedby"));
+    await waitFor(() => expect(nav.getByRole("link", { name: "Conciliação Físico-Contábil" })).toHaveAttribute("aria-describedby"));
     expect(nav.getByRole("link", { name: "Financeiro" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Remuneração" }).textContent).toBe("Remuneração");
     expect(nav.getByRole("link", { name: "Despesas" }).textContent).toBe("Despesas");
@@ -173,31 +173,34 @@ describe("Exibição dos alertas no grupo e na aba", () => {
 
   it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user(everything));
-    const tab = await nav.findByRole("link", { name: "Pendências" });
-    await waitFor(() => expect(tab.textContent).toBe("Pendências5"));
-    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação");
-    expect(nav.getByRole("link", { name: "Inventário" }).textContent).toBe("Inventário");
+    const tab = await nav.findByRole("link", { name: "Pendências patrimoniais" });
+    await waitFor(() => expect(tab.textContent).toBe("Pendências patrimoniais5"));
+    expect(nav.getByRole("link", { name: "Sessões e conciliação" }).textContent).toBe("Sessões e conciliação");
+    expect(nav.getByRole("link", { name: "Conciliação Físico-Contábil" }).textContent).toBe("Conciliação Físico-Contábil");
   });
 
   it("não revela dados de abas sem permissão: perfil de campo não vê alerta financeiro nem contábil", async () => {
     dashboard.mockResolvedValue({ ...divergentWithoutIssues, financial: { ...clean.financial!, pending_payments: 4 } });
     renderAt("/app/projects/10/inventory-items", user(["projects:read", "inventory-items:read", "inventory-sessions:read", "field-coordination:read"]));
-    await screen.findByRole("link", { name: "Itens e avaliação" });
+    await screen.findByRole("link", { name: "Itens inventariados" });
     const nav = within(screen.getByRole("navigation", { name: "Abas do projeto" }));
-    await waitFor(() => expect(nav.getByRole("link", { name: "Itens e avaliação" })).toHaveAttribute("aria-describedby"));
-    expect(nav.getByRole("link", { name: "Itens e avaliação" }).textContent).toBe("Itens e avaliação2");
-    expect(description(nav.getByRole("link", { name: "Inventário" }))).toBe("Atenção: Itens e avaliação: 2 itens divergentes, sem pendência gerada");
-    const hidden = document.querySelector('[aria-label="Abas do projeto"] [hidden]')?.textContent ?? "";
-    const navText = (screen.getByRole("navigation", { name: "Abas do projeto" }).textContent ?? "") + hidden;
-    expect(navText).not.toMatch(/pagamento|despesa|contábil|importaç|exportaç|inventariante vinculado/i);
-    expect(nav.getByRole("link", { name: "Campo" })).not.toHaveAttribute("aria-describedby");
+    await waitFor(() => expect(nav.getByRole("link", { name: "Itens inventariados" })).toHaveAttribute("aria-describedby"));
+    expect(nav.getByRole("link", { name: "Itens inventariados" }).textContent).toBe("Itens inventariados2");
+    expect(description(nav.getByRole("link", { name: "Inventário" }))).toBe("Atenção: Itens inventariados: 2 itens divergentes, sem pendência gerada");
+    // O texto dos alertas fica nas descrições ocultas e nos títulos; o nome do grupo
+    // "Conciliação Físico-Contábil" é rótulo de navegação, não dado de alerta.
+    const nav$ = screen.getByRole("navigation", { name: "Abas do projeto" });
+    const hidden = nav$.querySelector("[hidden]")?.textContent ?? "";
+    const titles = Array.from(nav$.querySelectorAll("[title]")).map((element) => element.getAttribute("title")).join(" ");
+    expect(hidden + " " + titles).not.toMatch(/pagamento|despesa|contábil|importaç|exportaç|inventariante vinculado/i);
+    expect(nav.getByRole("link", { name: "Pendências - Campo" })).not.toHaveAttribute("aria-describedby");
   });
 
   it("faz uma única chamada ao dashboard ao navegar entre abas e nenhuma sem projects:read", async () => {
     const nav = renderAt("/app/projects/10/summary", user(everything));
     await waitFor(() => expect(dashboard).toHaveBeenCalledTimes(1));
-    await userEvent.click(nav.getByRole("link", { name: "Inventário" }));
-    await userEvent.click(await nav.findByRole("link", { name: "Pendências" }));
+    await userEvent.click(nav.getByRole("link", { name: "Conciliação Físico-Contábil" }));
+    await userEvent.click(await nav.findByRole("link", { name: "Pendências patrimoniais" }));
     await userEvent.click(nav.getByRole("link", { name: "Financeiro" }));
     expect(dashboard).toHaveBeenCalledTimes(1);
     expect(dashboard).toHaveBeenCalledWith(10);
@@ -205,7 +208,7 @@ describe("Exibição dos alertas no grupo e na aba", () => {
 
   it("sem projects:read não consulta o dashboard e não mostra alerta", async () => {
     const nav = renderAt("/app/projects/10/field-coordination", user(["field-coordination:read"]));
-    expect(nav.getByRole("link", { name: "Campo" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Pendências - Campo" })).not.toHaveAttribute("aria-describedby");
     expect(dashboard).not.toHaveBeenCalled();
   });
 });

@@ -258,8 +258,8 @@ test.describe('redesign behaviour', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('#main-content')).toBeFocused();
     await expect(page).toHaveURL(root + 'summary' + context);
-    await expect(projectNav(page).getByRole('link', { name: 'Visão geral', exact: true })).toHaveAttribute('aria-current', 'true');
-    await expect(projectTabLink(page, 'Visão geral', 'Resumo')).toHaveAttribute('aria-current', 'page');
+    await expect(projectNav(page).getByRole('link', { name: 'Painel', exact: true })).toHaveAttribute('aria-current', 'true');
+    await expect(projectTabLink(page, 'Painel', 'Resumo')).toHaveAttribute('aria-current', 'page');
     await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Projetos', exact: true }).click();
     await expect(page).toHaveURL(/\/app\/projects/);
     await page.goBack();

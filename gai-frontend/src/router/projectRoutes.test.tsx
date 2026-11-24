@@ -145,9 +145,10 @@ describe("Production project route tree: persistent navigation", () => {
     }),
   );
   afterAll(() => vi.unstubAllGlobals());
-  async function go(nav: HTMLElement, group: string, tab: string) {
+  // tab null: grupo de uma aba só (Kick-off, Avaliação, Laudo), sem a segunda linha.
+  async function go(nav: HTMLElement, group: string, tab: string | null) {
     await ui.click(within(nav).getByRole("link", { name: group }));
-    await ui.click(await within(nav).findByRole("link", { name: tab }));
+    if (tab) await ui.click(await within(nav).findByRole("link", { name: tab }));
   }
 
   it("o endereço antigo /area (Project Area, sem tela) abre o resumo do projeto mantendo o contexto", async () => {
@@ -164,19 +165,19 @@ describe("Production project route tree: persistent navigation", () => {
     });
     const wrapper = nav.closest("[data-project-id]");
     for (const [group, label, suffix, heading] of [
-      ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
+      ["Inventário", "Itens inventariados", "inventory-items", "Itens"],
       ["Financeiro", "Remuneração", "finance/remuneration", "Remuneração"],
       ["Financeiro", "Despesas", "finance", "Financeiro"],
-      ["Inventário", "Pendências", "pending-issues", "Pendências"],
-      ["Visão geral", "Dashboard", "dashboard", "Dashboard"],
-      ["Contábil e laudo", "Base contábil", "accounting-items", "Contábil"],
-      ["Visão geral", "Unidades", "summary#unidades", "Resumo"],
-      ["Visão geral", "Configurações", "summary#configuracoes", "Resumo"],
-      ["Campo", "Equipe de campo", "summary#inventariantes", "Resumo"],
-      ["Visão geral", "Resumo", "summary", "Resumo"],
-      ["Campo", "Preparação", "preparation/kickoff", "Preparação"],
-      ["Inventário", "Itens e avaliação", "inventory-items", "Itens"],
-    ]) {
+      ["Conciliação Físico-Contábil", "Pendências patrimoniais", "pending-issues", "Pendências"],
+      ["Painel", "Dashboard", "dashboard", "Dashboard"],
+      ["Conciliação Físico-Contábil", "Base contábil", "accounting-items", "Contábil"],
+      ["Painel", "Unidades", "summary#unidades", "Resumo"],
+      ["Painel", "Configurações", "summary#configuracoes", "Resumo"],
+      ["Pendências - Campo", "Equipe de campo", "summary#inventariantes", "Resumo"],
+      ["Painel", "Resumo", "summary", "Resumo"],
+      ["Kick-off", null, "preparation/kickoff", "Preparação"],
+      ["Inventário", "Itens inventariados", "inventory-items", "Itens"],
+    ] as const) {
       await go(nav, group, label);
       expect(
         await screen.findByRole("heading", { name: heading + " · 31" }),
@@ -184,13 +185,15 @@ describe("Production project route tree: persistent navigation", () => {
       expect(router.state.location.pathname + router.state.location.hash).toBe(
         "/app/projects/31/" + suffix,
       );
-      expect(within(nav).getByRole("link", { name: label })).toHaveAttribute(
-        "aria-current",
-        "page",
-      );
+      if (label) {
+        expect(within(nav).getByRole("link", { name: label })).toHaveAttribute(
+          "aria-current",
+          "page",
+        );
+      }
       expect(within(nav).getByRole("link", { name: group })).toHaveAttribute(
         "aria-current",
-        "true",
+        label ? "true" : "page",
       );
       expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
         nav,
@@ -201,9 +204,9 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       await screen.findByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
       "aria-current",
-      "true",
+      "page",
     );
     await act(() => router.navigate(1));
     expect(
@@ -217,7 +220,7 @@ describe("Production project route tree: persistent navigation", () => {
       "data-project-id",
       "32",
     );
-    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
       "href",
       "/app/projects/32/preparation/kickoff",
     );
@@ -226,14 +229,13 @@ describe("Production project route tree: persistent navigation", () => {
   it("supports direct checklist links, keeps preparation selected and opens the former image URL on items without an image tab", async () => {
     const router = setup("/app/projects/31/preparation/client-checklist");
     const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
-    expect(within(nav).getByRole("link", { name: "Campo" })).toHaveAttribute(
+    // Kick-off é grupo de uma aba só: o próprio grupo fica como página atual.
+    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
       "aria-current",
-      "true",
+      "page",
     );
-    expect(
-      within(nav).getByRole("link", { name: "Preparação" }),
-    ).toHaveAttribute("aria-current", "page");
-    await ui.click(screen.getByRole("link", { name: "Kick-off" }));
+    // Link "Kick-off" da própria tela (o da navegação tem o mesmo nome).
+    await ui.click(screen.getAllByRole("link", { name: "Kick-off" }).find((link) => !nav.contains(link))!);
     expect(
       screen.getByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
@@ -242,7 +244,7 @@ describe("Production project route tree: persistent navigation", () => {
       await screen.findByRole("heading", { name: "Itens · 31" }),
     ).toBeInTheDocument();
     expect(
-      within(nav).getByRole("link", { name: "Itens e avaliação" }),
+      within(nav).getByRole("link", { name: "Itens inventariados" }),
     ).toHaveAttribute("aria-current", "page");
     expect(
       within(nav).queryByRole("link", { name: "Imagens" }),
@@ -279,7 +281,7 @@ describe("Production project route tree: persistent navigation", () => {
     await act(() => router.navigate("/app/projects/31/dashboard"));
     expect(await screen.findByRole("heading", { name: "Dashboard · 31" })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: "Financeiro" })).toHaveAttribute("aria-expanded", "false");
-    expect(within(nav).getByRole("group", { name: "Abas de Visão geral" })).toBeInTheDocument();
+    expect(within(nav).getByRole("group", { name: "Abas de Painel" })).toBeInTheDocument();
   });
 
   it("hides unauthorized tabs and guards direct navigation even for an administrative label with incomplete effective grants", async () => {
@@ -292,7 +294,7 @@ describe("Production project route tree: persistent navigation", () => {
     const router = setup("/app/projects/31/inventory-items", user);
     const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
     expect(
-      within(nav).queryByRole("link", { name: "Preparação" }),
+      within(nav).queryByRole("link", { name: "Kick-off" }),
     ).not.toBeInTheDocument();
     expect(
       within(nav).queryByRole("link", { name: "Financeiro" }),

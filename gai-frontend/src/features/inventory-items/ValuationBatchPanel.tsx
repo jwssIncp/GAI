@@ -233,7 +233,7 @@ export function ValuationBatchPanel({
     },
   ];
   return (
-    <section className="grid gap-3" aria-label="Avaliação patrimonial em lote">
+    <section id="avaliacao" className="grid scroll-mt-[calc(var(--app-header-height,103px)+5.5rem)] gap-3" aria-label="Avaliação patrimonial em lote">
       <div>
         <h2 className="text-lg font-bold">Avaliação patrimonial em lote</h2>
         <p className="text-sm text-muted-foreground">

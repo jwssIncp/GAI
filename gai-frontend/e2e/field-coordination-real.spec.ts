@@ -48,7 +48,7 @@ test("ORG_ADMIN creates a versioned field model, assigns and approves a task, co
   const root = `/app/projects/${project.id}/`;
   await page.goto(root + "summary");
   const nav = projectNav(page);
-  await openProjectTab(page, "Campo", "Coordenação de campo");
+  await openProjectTab(page, "Pendências - Campo", "Check list - Campo");
   await expect(page).toHaveURL(/field-coordination$/);
   await page
     .getByRole("button", { name: "Modelos de campo", exact: true })
@@ -207,14 +207,14 @@ test("ORG_ADMIN creates a versioned field model, assigns and approves a task, co
     .getByRole("dialog")
     .getByRole("button", { name: "Fechar", exact: true })
     .click();
-  await openProjectTab(page, "Inventário", "Itens e avaliação");
+  await openProjectTab(page, "Inventário", "Itens inventariados");
   await expect(page).toHaveURL(new RegExp(root + "inventory-items$"));
-  await openProjectTab(page, "Campo", "Coordenação de campo");
+  await openProjectTab(page, "Pendências - Campo", "Check list - Campo");
   await expect(
     page.getByText("SINTETICO Verificação técnica", { exact: true }),
   ).toBeVisible();
   await page.waitForLoadState("networkidle");
-  await expect(projectTabLink(page, "Campo", "Coordenação de campo")).toHaveAttribute('aria-current','page');
+  await expect(projectTabLink(page, "Pendências - Campo", "Check list - Campo")).toHaveAttribute('aria-current','page');
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({
     path: info.outputPath("field-desktop.png"),
@@ -223,7 +223,7 @@ test("ORG_ADMIN creates a versioned field model, assigns and approves a task, co
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
   await expect(
-    projectTabLink(page, "Campo", "Coordenação de campo"),
+    projectTabLink(page, "Pendências - Campo", "Check list - Campo"),
   ).toHaveAttribute("aria-current", "page");
   await expect(nav).toBeVisible();
   await expect(

@@ -152,7 +152,7 @@ test("ORG_ADMIN reviews and persists assisted reconciliation while retaining pro
     .click();
   await panel.scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath("assisted-desktop.png") });
-  await openProjectTab(page, "Inventário", "Itens e avaliação");
+  await openProjectTab(page, "Inventário", "Itens inventariados");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/inventory-items$`));
   await page.goBack();
   await expect(panel.getByRole("cell", { name: /Aprovada/ })).toBeVisible();

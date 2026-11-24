@@ -47,8 +47,10 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
   const root = `/app/projects/${projectId}/`;
   const href = (tab: ProjectTab) => navigationHref(tab.path.startsWith("/") ? tab.path : root + tab.path, location.search);
 
+  // single: grupo definido com uma aba só (Kick-off, Avaliação, Laudo) — vale pela definição,
+  // não pelas abas que o usuário vê, para um grupo parcialmente visível manter a segunda linha.
   const groups = projectTabGroups(projectId)
-    .map((group) => ({ ...group, tabs: group.tabs.filter((tab) => canAccess(tab.permissions)) }))
+    .map((group) => ({ ...group, single: group.tabs.length === 1, tabs: group.tabs.filter((tab) => canAccess(tab.permissions)) }))
     .filter((group) => group.tabs.length > 0);
   const activeTabId = activeProjectTabId(projectId, location.pathname, location.hash);
   const activeGroup = groupOfTab(groups, activeTabId);
@@ -131,7 +133,8 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
               <Link
                 key={group.id}
                 to={href(group.tabs[0])}
-                aria-current={active ? "true" : undefined}
+                // Grupo de uma aba só: o link do grupo é a própria tela (aria-current="page").
+                aria-current={active ? (group.single ? "page" : "true") : undefined}
                 className={className}
                 aria-describedby={descriptionId}
                 title={alert ? `Atenção: ${alert.description}` : undefined}
@@ -141,7 +144,8 @@ export function ProjectNavigation({ projectId }: { projectId: string }) {
             );
           })}
         </div>
-        {shownGroup ? (
+        {/* Grupo de uma aba só (Kick-off, Avaliação, Laudo): o próprio grupo já leva à tela. */}
+        {shownGroup && !(groups.find((group) => group.id === shownGroup.id)?.single && !shownGroup.tabs[0].external) ? (
           <div
             ref={tabStrip}
             id="project-group-tabs"

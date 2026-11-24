@@ -238,9 +238,9 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByRole("dialog")
     .getByRole("button", { name: "Fechar", exact: true })
     .click();
-  await openProjectTab(page, "Visão geral", "Resumo");
+  await openProjectTab(page, "Painel", "Resumo");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/summary$`));
-  await openProjectTab(page, "Inventário", "Itens e avaliação");
+  await openProjectTab(page, "Inventário", "Itens inventariados");
   await expect(page).toHaveURL(new RegExp(`/projects/${p}/inventory-items$`));
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();

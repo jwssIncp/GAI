@@ -154,7 +154,7 @@ describe('ProjectSummaryPage workspace', () => {
     renderPage();
     const nav = await screen.findByRole('navigation', { name: 'Abas do projeto' });
     await userEvent.click(within(nav).getByRole('link', { name: 'Inventário' }));
-    await userEvent.click(await within(nav).findByRole('link', { name: 'Itens e avaliação' }));
+    await userEvent.click(await within(nav).findByRole('link', { name: 'Itens inventariados' }));
     expect(await screen.findByRole('heading', { name: 'Itens do projeto' })).toBeInTheDocument();
   });
 

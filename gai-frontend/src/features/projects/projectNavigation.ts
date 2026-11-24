@@ -23,24 +23,32 @@ export type ProjectTabGroup = {
 
 export function projectTabGroups(projectId: string): ProjectTabGroup[] {
   return [
+    // Ordem e nomes do menu "Projetos" do sistema anterior (Netlify): Painel Geral, Kick-off,
+    // Pendências - Campo, Inventário, Conciliação Físico-Contábil, Avaliação e Laudo.
+    // Comercial e Financeiro (não existem no Netlify) ficam por último.
     {
       id: "overview",
-      label: "Visão geral",
+      label: "Painel",
       tabs: [
         { id: "summary", label: "Resumo", path: "summary", permissions: ["projects:read"] },
         { id: "dashboard", label: "Dashboard", path: "dashboard", permissions: ["projects:read"] },
         { id: "units", label: "Unidades", path: "summary#unidades", permissions: ["projects:read", "project-units:read"] },
         { id: "settings", label: "Configurações", path: "summary#configuracoes", permissions: ["projects:read"] },
-        { id: "imports", label: "Importações", path: "import-sessions", permissions: ["import-sessions:read"] },
         { id: "exports", label: "Exportações", path: "export-jobs", permissions: ["export-jobs:read"] },
       ],
     },
     {
-      id: "field",
-      label: "Campo",
+      id: "kickoff",
+      label: "Kick-off",
       tabs: [
-        { id: "preparation", label: "Preparação", path: "preparation/kickoff", permissions: ["project-preparation:read"], hint: "Kick-off e checklist do cliente." },
-        { id: "field-coordination", label: "Coordenação de campo", path: "field-coordination", permissions: ["field-coordination:read"], hint: "Checklist operacional, tarefas e prontidão de campo." },
+        { id: "preparation", label: "Kick-off", path: "preparation/kickoff", permissions: ["project-preparation:read"], hint: "Kick-off e checklist do cliente." },
+      ],
+    },
+    {
+      id: "field",
+      label: "Pendências - Campo",
+      tabs: [
+        { id: "field-coordination", label: "Check list - Campo", path: "field-coordination", permissions: ["field-coordination:read"], hint: "Checklist operacional, tarefas e prontidão de campo." },
         { id: "field-team", label: "Equipe de campo", path: "summary#inventariantes", permissions: ["projects:read", "project-field-agents:read"], hint: "Inventariantes vinculados a este projeto." },
       ],
     },
@@ -48,16 +56,30 @@ export function projectTabGroups(projectId: string): ProjectTabGroup[] {
       id: "inventory",
       label: "Inventário",
       tabs: [
-        { id: "inventory-sessions", label: "Sessões e conciliação", path: "inventory/sessions", permissions: ["inventory-sessions:read"], hint: "Sessões, rodadas, observações, conciliações e conciliação assistida." },
-        { id: "inventory-items", label: "Itens e avaliação", path: "inventory-items", permissions: ["inventory-items:read"], hint: "Itens, imagens (no detalhe do item) e avaliação manual ou em lote." },
-        { id: "pending-issues", label: "Pendências", path: "pending-issues", permissions: ["inventory-pending-issues:read"], hint: "Ocorrências do inventário: divergências, não encontrados e duplicidades." },
+        { id: "inventory-items", label: "Itens inventariados", path: "inventory-items", permissions: ["inventory-items:read"], hint: "Itens do inventário físico e imagens (no detalhe do item)." },
+        { id: "imports", label: "Importações", path: "import-sessions", permissions: ["import-sessions:read"] },
       ],
     },
     {
-      id: "accounting",
-      label: "Contábil e laudo",
+      id: "reconciliation",
+      label: "Conciliação Físico-Contábil",
       tabs: [
+        { id: "inventory-sessions", label: "Sessões e conciliação", path: "inventory/sessions", permissions: ["inventory-sessions:read"], hint: "Sessões, rodadas, observações, conciliações e conciliação assistida." },
         { id: "accounting-items", label: "Base contábil", path: "accounting-items", permissions: ["inventory-accounting-items:read"] },
+        { id: "pending-issues", label: "Pendências patrimoniais", path: "pending-issues", permissions: ["inventory-pending-issues:read"], hint: "Ocorrências do inventário: divergências, não encontrados e duplicidades." },
+      ],
+    },
+    {
+      id: "valuation",
+      label: "Avaliação",
+      tabs: [
+        { id: "valuation", label: "Avaliação", path: "inventory-items#avaliacao", permissions: ["inventory-items:read", "asset-valuations:read"], hint: "Avaliação dos itens: fonte de consulta, valor novo e valor usado." },
+      ],
+    },
+    {
+      id: "reports",
+      label: "Laudo",
+      tabs: [
         { id: "technical-reports", label: "Laudos", path: "technical-reports", permissions: ["technical-reports:read"] },
       ],
     },
@@ -101,6 +123,7 @@ export function activeProjectTabId(projectId: string, pathname: string, hash: st
     if (anchor === "inventariantes") return "field-team";
     return "summary";
   }
+  if (rest === "inventory-items" && anchor === "avaliacao") return "valuation";
   const exact: Record<string, string> = {
     dashboard: "dashboard",
     "import-sessions": "imports",
@@ -161,6 +184,8 @@ export function projectBreadcrumbSteps(projectId: string, pathname: string, hash
     }
   }
   const tabPath = tab.path.split("#")[0];
+  // Grupo de uma aba só (Kick-off, Avaliação, Laudo): a trilha mostra só a aba, sem repetir o grupo.
+  if (group.tabs.length === 1) return [{ label: tab.label, to: details.length ? tabPath : undefined }, ...details];
   return [{ label: group.label }, { label: tab.label, to: details.length ? tabPath : undefined }, ...details];
 }
 

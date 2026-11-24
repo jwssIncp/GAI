@@ -307,7 +307,7 @@ describe("Batch valuation integrated item workspace", () => {
     expect(
       screen.queryByRole("button", { name: "Avaliar selecionados" }),
     ).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("link", { name: "Visão geral" }));
+    await userEvent.click(screen.getByRole("link", { name: "Painel" }));
     await waitFor(() =>
       expect(screen.getByText("Resumo do mesmo projeto")).toBeInTheDocument(),
     );

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Camera, Eye, Pencil, Plus, RotateCcw, XCircle } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
 import { DataTable, type Column } from '@/components/base/DataTable';
 import { FilterPanel } from '@/components/base/FilterPanel';
@@ -50,6 +50,12 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
     description: description || undefined,
   }), [description, newPlate, oldPlate, page, search, status]);
   const query = useProjectInventoryItems(projectId, params);
+  // Aba "Avaliação" do projeto: abre esta tela já no painel de avaliação (#avaliacao).
+  const { hash } = useLocation();
+  const itemsLoaded = Boolean(query.data);
+  useEffect(() => {
+    if (hash === '#avaliacao' && itemsLoaded) document.getElementById('avaliacao')?.scrollIntoView?.({ block: 'start' });
+  }, [hash, itemsLoaded]);
   const create = useCreateInventoryItem(projectId);
   const update = useUpdateInventoryItem(projectId);
   const deactivate = useChangeInventoryItemStatus(projectId, 'deactivate');

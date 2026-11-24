@@ -6,7 +6,13 @@ export function projectNav(page: Page): Locator {
   return page.getByRole("navigation", { name: "Abas do projeto" });
 }
 
+/** Grupos de uma aba só (sem a segunda linha): o próprio link do grupo é a aba. */
+const SINGLE_TAB_GROUPS = new Set(["Kick-off", "Avaliação", "Laudo"]);
+
 export function projectTabLink(page: Page, group: string, tab: string): Locator {
+  if (SINGLE_TAB_GROUPS.has(group)) {
+    return projectNav(page).getByRole("group", { name: "Grupos do projeto" }).getByRole("link", { name: group, exact: true });
+  }
   return projectNav(page)
     .getByRole("group", { name: `Abas de ${group}` })
     .getByRole("link", { name: tab, exact: true });
@@ -19,5 +25,5 @@ export async function openProjectTab(page: Page, group: string, tab: string) {
     .getByRole("group", { name: "Grupos do projeto" })
     .getByText(group, { exact: true })
     .click();
-  await projectTabLink(page, group, tab).click();
+  if (!SINGLE_TAB_GROUPS.has(group)) await projectTabLink(page, group, tab).click();
 }

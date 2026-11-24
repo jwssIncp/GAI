@@ -33,13 +33,15 @@ const previousTabs: Array<[path: string, permissions: string[]]> = [
   ["export-jobs", ["export-jobs:read"]],
   ["summary#unidades", ["projects:read", "project-units:read"]],
   ["summary#configuracoes", ["projects:read"]],
+  // Menu no padrão Netlify: aba "Avaliação" própria, que abre Itens no painel de avaliação.
+  ["inventory-items#avaliacao", ["inventory-items:read", "asset-valuations:read"]],
 ];
 
 describe("Navegação do projeto em dois níveis", () => {
   const groups = projectTabGroups("7");
   const tabs = groups.flatMap((group) => group.tabs);
 
-  it("preserva destino e permissões de todas as abas anteriores (exceto Imagens)", () => {
+  it("preserva destino e permissões de todas as abas anteriores (exceto Imagens) e inclui Avaliação", () => {
     expect(tabs).toHaveLength(previousTabs.length);
     for (const [path, permissions] of previousTabs) {
       const tab = tabs.find((candidate) => candidate.path === path);
@@ -49,12 +51,15 @@ describe("Navegação do projeto em dois níveis", () => {
     expect(tabs.some((tab) => tab.path.includes("view=images"))).toBe(false);
   });
 
-  it("organiza os grupos aprovados e marca as telas globais como externas", () => {
+  it("organiza os grupos na ordem do menu Projetos do Netlify e marca as telas globais como externas", () => {
     expect(groups.map((group) => group.label)).toEqual([
-      "Visão geral",
-      "Campo",
+      "Painel",
+      "Kick-off",
+      "Pendências - Campo",
       "Inventário",
-      "Contábil e laudo",
+      "Conciliação Físico-Contábil",
+      "Avaliação",
+      "Laudo",
       "Comercial",
       "Financeiro",
     ]);
@@ -74,14 +79,17 @@ describe("Navegação do projeto em dois níveis", () => {
     ["/app/projects/7/summary", "#unidades", "units", "overview"],
     ["/app/projects/7/summary", "#configuracoes", "settings", "overview"],
     ["/app/projects/7/summary", "#inventariantes", "field-team", "field"],
-    ["/app/projects/7/preparation/client-checklist", "", "preparation", "field"],
-    ["/app/projects/7/inventory/sessions/12", "", "inventory-sessions", "inventory"],
+    ["/app/projects/7/preparation/client-checklist", "", "preparation", "kickoff"],
+    ["/app/projects/7/inventory/sessions/12", "", "inventory-sessions", "reconciliation"],
+    ["/app/projects/7/accounting-items", "", "accounting-items", "reconciliation"],
+    ["/app/projects/7/pending-issues", "", "pending-issues", "reconciliation"],
     ["/app/projects/7/inventory-items", "", "inventory-items", "inventory"],
-    ["/app/projects/7/technical-reports/templates/3", "", "technical-reports", "accounting"],
+    ["/app/projects/7/inventory-items", "#avaliacao", "valuation", "valuation"],
+    ["/app/projects/7/technical-reports/templates/3", "", "technical-reports", "reports"],
     ["/app/projects/7/finance", "", "finance", "finance"],
     ["/app/projects/7/finance/remuneration", "", "remuneration", "finance"],
     ["/app/projects/7/finance/accountabilities", "", "accountabilities", "finance"],
-    ["/app/projects/7/import-sessions", "", "imports", "overview"],
+    ["/app/projects/7/import-sessions", "", "imports", "inventory"],
     ["/app/projects/7/export-jobs", "", "exports", "overview"],
     ["/app/projects/7/contracts", "", "contracts", "commercial"],
   ])("%s%s ativa a aba %s no grupo %s", (pathname, hash, tabId, groupId) => {
