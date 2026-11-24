@@ -189,7 +189,7 @@ describe('Exportações da conciliação e dos itens com avaliação (e2e)', () 
       'inventory_items_valuation_xlsx',
     );
     expect(rowsOf(workbook, 'Itens inventariados')[0]).toMatchObject({
-      'Placa antiga': 'V-1',
+      'Placa antiga': 'V1',
       'Avaliação: fonte de consulta': 'Cotação',
       'Avaliação: valor usado': 25.5,
     });
