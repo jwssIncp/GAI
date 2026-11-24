@@ -157,7 +157,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   await nav
     .getByRole("link", { name: "Laudos do projeto", exact: true })
     .click();
-  await page.getByRole("button", { name: "Criar laudo", exact: true }).click();
+  await page.getByRole("button", { name: "＋ Novo laudo", exact: true }).click();
   await dialog.getByLabel("Título do laudo").fill(name);
   await dialog
     .getByRole("combobox", { name: /Modelo publicado/ })
@@ -248,7 +248,7 @@ test("ORG_ADMIN creates model, drafts, validates, approves and preserves histori
   ).toBeVisible();
   const download = page.waitForEvent("download");
   await page
-    .getByRole("button", { name: "Exportar snapshot aprovado", exact: true })
+    .getByRole("button", { name: "Exportar dados (JSON)", exact: true })
     .click();
   await (await download).saveAs(info.outputPath("laudo-aprovado.json"));
   await page.screenshot({

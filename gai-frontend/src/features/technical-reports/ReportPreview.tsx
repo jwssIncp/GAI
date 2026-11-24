@@ -233,7 +233,43 @@ export function ReportPreview({
         ) : (
           <p>Nenhum responsável vinculado.</p>
         )}
-        <p className="mt-4 text-xs">
+        <div
+          className="report-signatures mt-12 grid gap-10 sm:grid-cols-2"
+          aria-label="Assinaturas"
+        >
+          {(data.responsibles.length
+            ? data.responsibles.map((r) => ({
+                key: String(r.id),
+                name: r.display_name,
+                role: r.function,
+                registration: r.professional_registration,
+              }))
+            : [
+                {
+                  key: "tecnico",
+                  name: "",
+                  role: "Responsável técnico",
+                  registration: "CREA / ART",
+                },
+                {
+                  key: "contador",
+                  name: "",
+                  role: "Contador responsável",
+                  registration: "CRC",
+                },
+              ]
+          ).map((s) => (
+            <div key={s.key} className="text-center text-sm">
+              <div className="mx-auto mb-2 h-10 w-4/5 border-b border-slate-700" />
+              <p className="font-semibold">{s.name || "[nome do responsável]"}</p>
+              <p>{s.role}</p>
+              <p className="text-xs text-slate-600">
+                {s.registration || "Registro não informado"}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-xs">
           Identificação declarada e autorização interna de cadastro. Este
           documento não contém assinatura digital, ART/RRT emitida nem atestado
           automático de conformidade normativa.

@@ -34,6 +34,8 @@ export const systemFields = [
   "valuation.used_total",
   "issues.open_count",
 ];
+/** Código do laudo na lista, como no sistema anterior (ex.: LAU-0007). */
+export const reportCode = (id: number) => `LAU-${String(id).padStart(4, "0")}`;
 export const reportStatuses: Record<string, string> = {
   draft: "Rascunho",
   in_review: "Em revisão",

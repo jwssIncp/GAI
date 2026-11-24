@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -194,7 +194,7 @@ describe("Project technical report navigation and editing", () => {
     mount("/app/projects/25/technical-reports");
     await screen.findByRole("link", { name: "SINTETICO Laudo" });
     expect(
-      screen.queryByRole("button", { name: "Criar laudo" }),
+      screen.queryByRole("button", { name: "＋ Novo laudo" }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "Responsáveis cadastrados" }),
@@ -229,6 +229,43 @@ describe("Project technical report navigation and editing", () => {
         ]),
       }),
     );
+  });
+  it("lista no padrão do sistema anterior: código, status, busca e filtro", async () => {
+    vi.mocked(reportApi.list).mockResolvedValue([
+      { id: 7, projectId: 25, revision: 2, status: "draft", approvedVersionId: null, title: "SINTETICO Laudo", report_type: "Relatório patrimonial" },
+      { id: 8, projectId: 25, revision: 5, status: "approved", approvedVersionId: 3, title: "SINTETICO Emitido", report_type: "Relatório patrimonial" },
+    ]);
+    mount("/app/projects/25/technical-reports");
+    await screen.findByRole("link", { name: "SINTETICO Laudo" });
+    expect(screen.getByText("LAU-0007")).toBeVisible();
+    expect(screen.getByText("2 de 2")).toBeVisible();
+    expect(screen.queryByText(/Versão aprovada ID/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Aprovado" }));
+    expect(screen.queryByRole("link", { name: "SINTETICO Laudo" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "SINTETICO Emitido" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Todos" }));
+    fireEvent.change(screen.getByRole("searchbox", { name: "Buscar laudo" }), { target: { value: "lau-0007" } });
+    expect(screen.getByText("1 de 2")).toBeVisible();
+    expect(screen.getByRole("link", { name: "SINTETICO Laudo" })).toBeVisible();
+  });
+  it("editor em 2 colunas: prévia ao vivo, pendências no formulário e assinaturas", async () => {
+    vi.mocked(reportApi.validate).mockResolvedValue({
+      engine: "technical-report-v1",
+      valid: false,
+      source_hash: "source-hash",
+      issues: [{ code: "RESPONSIBLE_REQUIRED", severity: "block", message: "Vincule ao menos um responsável." }],
+    });
+    mount("/app/projects/25/technical-reports/7");
+    const field = await screen.findByRole("textbox", { name: "Seção: Objetivo e escopo" });
+    expect(await screen.findByText("Vincule ao menos um responsável.")).toBeVisible();
+    expect(screen.getByRole("heading", { name: /Pendências antes de emitir · 1 bloqueio/ })).toBeVisible();
+    expect(screen.getByText("1 pendência(s) antes de emitir")).toBeVisible();
+    const preview = screen.getByRole("region", { name: "Prévia ao vivo do laudo" });
+    fireEvent.change(field, { target: { value: "SINTETICO texto digitado agora" } });
+    expect(within(preview).getByText("SINTETICO texto digitado agora")).toBeVisible();
+    expect(within(preview).getByText("Responsável técnico")).toBeVisible();
+    expect(within(preview).getByText("CRC")).toBeVisible();
+    expect(screen.getByLabelText("Justificativa")).toHaveValue("Atualização do rascunho do laudo");
   });
   it("loads structured server validation through the actual route view", async () => {
     mount("/app/projects/25/technical-reports/7");
