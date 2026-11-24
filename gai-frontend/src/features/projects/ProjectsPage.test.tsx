@@ -360,7 +360,7 @@ describe("Project registration and management", () => {
     await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     await userEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     expect(
-      await screen.findByRole("heading", { name: "Projetos" }),
+      await screen.findByRole("heading", { name: "Painel Geral" }),
     ).toBeInTheDocument();
     expect(mocks.create).not.toHaveBeenCalled();
   });

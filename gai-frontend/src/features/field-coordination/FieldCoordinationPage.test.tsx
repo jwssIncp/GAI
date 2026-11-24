@@ -121,7 +121,7 @@ const dashboard: Dashboard = {
     denominator: "Todas as tarefas aplicáveis; bloqueadas não concluem.",
   },
 };
-function setup(keys = ["read", "edit", "coordinate"]) {
+function setup(keys = ["read", "edit", "coordinate"], extra: string[] = []) {
   const user: CurrentUser = {
     id: 2,
     login: "org.admin",
@@ -136,6 +136,7 @@ function setup(keys = ["read", "edit", "coordinate"]) {
       })),
       { key: "projects:read", scope: "ORGANIZATION" },
       { key: "inventory-items:read", scope: "ORGANIZATION" },
+      ...extra.map((key) => ({ key, scope: "ORGANIZATION" as const })),
     ],
   };
   const auth: AuthState = {
@@ -167,8 +168,8 @@ function setup(keys = ["read", "edit", "coordinate"]) {
                 element={<FieldCoordinationPage />}
               />
               <Route
-                path="inventory-items"
-                element={<h1>Itens do mesmo projeto</h1>}
+                path="summary"
+                element={<h1>Resumo do mesmo projeto</h1>}
               />
             </Route>
           </Routes>
@@ -306,25 +307,43 @@ describe("Field coordination UI", () => {
     ]);
     expect(payload.definition.tasks).toHaveLength(23);
   });
-  it("uses server KPIs, renders all stages and navigates back to another workspace area without losing the bar", async () => {
-    setup();
+  it("uses server KPIs, renders all stages and navigates to another screen of the area without losing the bar", async () => {
+    setup(undefined, ["project-field-agents:read"]);
     expect(
       (await screen.findAllByText("1 · Terceira etapa")).length,
     ).toBeGreaterThan(0);
     expect(screen.getByText("Verificar campo")).toBeInTheDocument();
     expect(screen.getByText(/Todas as tarefas aplicáveis/)).toBeInTheDocument();
     const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
-    // Navegação em dois níveis: o grupo Inventário abre sua primeira aba visível (Itens inventariados).
-    await userEvent.click(within(nav).getByRole("link", { name: "Inventário" }));
+    // A barra do projeto lista só as telas da sub-aba Pendências - Campo.
+    const screens = within(nav).getByRole("group", {
+      name: "Telas de Pendências - Campo",
+    });
     expect(
-      await screen.findByRole("heading", { name: "Itens do mesmo projeto" }),
-    ).toBeInTheDocument();
-    expect(
-      within(nav).getByRole("link", { name: "Itens inventariados" }),
+      within(screens).getByRole("link", { name: "Check list - Campo" }),
     ).toHaveAttribute("aria-current", "page");
     expect(
-      screen.getByRole("heading", { name: "Itens do mesmo projeto" }),
+      within(nav).queryByRole("link", { name: "Itens inventariados" }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: "Trocar projeto" }),
+    ).toHaveAttribute("href", "/app/projects/field?escolher=1");
+    await userEvent.click(
+      within(screens).getByRole("link", { name: "Equipe de campo" }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "Resumo do mesmo projeto" }),
     ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: "Equipe de campo" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
+      nav,
+    );
+    await userEvent.click(
+      within(nav).getByRole("link", { name: "Check list - Campo" }),
+    );
+    expect(await screen.findByText("Verificar campo")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
       nav,
     );

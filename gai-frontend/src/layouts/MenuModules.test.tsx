@@ -57,12 +57,15 @@ describe("Menu superior por área", () => {
 
   // Itens visíveis antes da Etapa 2 (ordem antiga), por perfil. O conjunto deve ser o mesmo,
   // mais os itens novos acrescentados depois (paridade financeira, etapa 1: Parâmetros financeiros).
+  // "Projetos" virou as sub-abas da área no padrão do sistema anterior (mesma rota /app/projects
+  // para o Painel Geral); cada sub-aba aparece conforme as permissões do perfil.
+  const allProjectTabs = ["Painel Geral", "Kick-off", "Pendências - Campo", "Inventário", "Conciliação Físico-Contábil", "Avaliação", "Laudo"];
   const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes", "Despesas", "Placas de patrimônio", "Comissões"];
   it.each([
-    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", "Projetos", "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
-    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
-    ["operador de campo", user({ permissions: ["projects:read", "field-agents:read", "inventory-items:read"] }), ["Visão geral", "Projetos", "Inventariantes"]],
-    ["financeiro", user({ permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read", "budgets:read", "companies:read"] }), ["Visão geral", "Projetos", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Empresas"]],
+    ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", ...allProjectTabs, "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
+    ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", ...allProjectTabs, "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
+    ["operador de campo", user({ permissions: ["projects:read", "field-agents:read", "inventory-items:read"] }), ["Visão geral", "Painel Geral", "Inventário", "Inventariantes"]],
+    ["financeiro", user({ permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read", "budgets:read", "companies:read"] }), ["Visão geral", "Painel Geral", "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Empresas"]],
   ])("%s vê exatamente os mesmos itens de antes, agrupados por módulo", (_label, current, before) => {
     const { items } = renderMenu(current);
     const renamed = before.map((label) => (label === "Contas a receber" ? "Recebíveis" : label));
@@ -74,7 +77,7 @@ describe("Menu superior por área", () => {
     expect(titles).toEqual(["Projetos", "Comercial", "Financeiro", "Administração"]);
     expect(items).toEqual([
       "Visão geral",
-      "Projetos",
+      ...allProjectTabs,
       "Orçamentos",
       "Empresas",
       "Fluxo de caixa",

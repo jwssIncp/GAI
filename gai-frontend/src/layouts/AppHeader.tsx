@@ -39,7 +39,6 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
   const [picked, setPicked] = useState<{ section: NavigationSection; at: string } | null>(null);
   const shown = picked && picked.at === locationKey ? picked.section : routeSection;
   const project = location.pathname.match(/^\/app\/projects\/([1-9]\d*)(?:\/|$)/)?.[1];
-  const insideProject = Boolean(project) && shown === 'projects';
 
   useLayoutEffect(() => {
     const element = header.current;
@@ -106,7 +105,7 @@ export function AppHeader({ onFullscreen }: { onFullscreen?: () => void }) {
               <Link
                 key={tab.id}
                 to={tab.id === 'overview' ? navigationHref(tab.to, context) : tab.to}
-                aria-current={active ? (insideProject ? 'true' : 'page') : undefined}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'inline-flex min-h-8 shrink-0 items-center whitespace-nowrap rounded-full px-[13px] text-[0.78125rem] font-semibold transition-colors max-md:min-h-10',
                   active ? 'bg-[#0A1F44] text-white dark:bg-steel-dark' : 'text-nav-muted hover:bg-subnav-hover hover:text-nav-ink',

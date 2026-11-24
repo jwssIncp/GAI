@@ -65,6 +65,8 @@ vi.mock("@/features/project-preparation/ProjectPreparationPage", () => ({
 vi.mock("@/features/projects/projectQueries", async (original) => ({
   ...(await original<object>()),
   useProjectDashboard: () => ({ data: undefined }),
+  // Nome do projeto na barra (GET /projects/:id): sem dados, mostra "Projeto #id".
+  useProject: () => ({ data: undefined }),
 }));
 
 const grants = [
@@ -145,69 +147,95 @@ describe("Production project route tree: persistent navigation", () => {
     }),
   );
   afterAll(() => vi.unstubAllGlobals());
-  // tab null: grupo de uma aba só (Kick-off, Avaliação, Laudo), sem a segunda linha.
-  async function go(nav: HTMLElement, group: string, tab: string | null) {
-    await ui.click(within(nav).getByRole("link", { name: group }));
-    if (tab) await ui.click(await within(nav).findByRole("link", { name: tab }));
-  }
+  const bar = () => screen.getByRole("navigation", { name: "Abas do projeto" });
+  const linkNames = (element: HTMLElement) =>
+    within(element)
+      .getAllByRole("link")
+      .map((link) => link.textContent?.trim());
+  const withGrants = (...keys: string[]) => ({
+    ...admin,
+    permissions: keys.map((key) => ({ key, scope: "ORGANIZATION" as const })),
+  });
 
   it("o endereço antigo /area (Project Area, sem tela) abre o resumo do projeto mantendo o contexto", async () => {
     const router = setup("/app/projects/31/area?return_to=%2Fapp%2Fdashboard");
     expect(await screen.findByRole("heading", { name: "Resumo · 31" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/app/projects/31/summary");
     expect(router.state.location.search).toBe("?return_to=%2Fapp%2Fdashboard");
+    expect(within(bar()).getByRole("link", { name: "Resumo" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("navigates continuously across groups, tabs, anchors, preparation and browser history without remounting navigation", async () => {
+  it("navigates continuously across tabs, anchors, areas, preparation and browser history without remounting navigation", async () => {
     const router = setup();
     const nav = await screen.findByRole("navigation", {
       name: "Abas do projeto",
     });
     const wrapper = nav.closest("[data-project-id]");
-    for (const [group, label, suffix, heading] of [
-      ["Inventário", "Itens inventariados", "inventory-items", "Itens"],
-      ["Financeiro", "Remuneração", "finance/remuneration", "Remuneração"],
-      ["Financeiro", "Despesas", "finance", "Financeiro"],
-      ["Conciliação Físico-Contábil", "Pendências patrimoniais", "pending-issues", "Pendências"],
-      ["Painel", "Dashboard", "dashboard", "Dashboard"],
-      ["Conciliação Físico-Contábil", "Base contábil", "accounting-items", "Contábil"],
-      ["Painel", "Unidades", "summary#unidades", "Resumo"],
-      ["Painel", "Configurações", "summary#configuracoes", "Resumo"],
-      ["Pendências - Campo", "Equipe de campo", "summary#inventariantes", "Resumo"],
-      ["Painel", "Resumo", "summary", "Resumo"],
-      ["Kick-off", null, "preparation/kickoff", "Preparação"],
-      ["Inventário", "Itens inventariados", "inventory-items", "Itens"],
+    const keepsBar = () => {
+      expect(bar()).toBe(nav);
+      expect(nav.closest("[data-project-id]")).toBe(wrapper);
+    };
+    // Painel Geral: telas do projeto (Painel) e Financeiro na mesma barra.
+    expect(
+      linkNames(within(nav).getByRole("group", { name: "Telas de Painel Geral" })),
+    ).toEqual(["Resumo", "Dashboard", "Unidades", "Configurações", "Remuneração", "Despesas"]);
+    for (const [label, suffix, heading] of [
+      ["Remuneração", "finance/remuneration", "Remuneração"],
+      ["Despesas", "finance", "Financeiro"],
+      ["Dashboard", "dashboard", "Dashboard"],
+      ["Unidades", "summary#unidades", "Resumo"],
+      ["Configurações", "summary#configuracoes", "Resumo"],
+      ["Resumo", "summary", "Resumo"],
     ] as const) {
-      await go(nav, group, label);
+      await ui.click(within(nav).getByRole("link", { name: label }));
       expect(
         await screen.findByRole("heading", { name: heading + " · 31" }),
       ).toBeInTheDocument();
       expect(router.state.location.pathname + router.state.location.hash).toBe(
         "/app/projects/31/" + suffix,
       );
-      if (label) {
-        expect(within(nav).getByRole("link", { name: label })).toHaveAttribute(
-          "aria-current",
-          "page",
-        );
-      }
-      expect(within(nav).getByRole("link", { name: group })).toHaveAttribute(
+      expect(within(nav).getByRole("link", { name: label })).toHaveAttribute(
         "aria-current",
-        label ? "true" : "page",
+        "page",
       );
-      expect(screen.getByRole("navigation", { name: "Abas do projeto" })).toBe(
-        nav,
-      );
-      expect(nav.closest("[data-project-id]")).toBe(wrapper);
+      keepsBar();
     }
+    // Conciliação Físico-Contábil: a barra passa a listar só as telas dessa sub-aba.
+    await act(() => router.navigate("/app/projects/31/pending-issues"));
+    expect(await screen.findByRole("heading", { name: "Pendências · 31" })).toBeInTheDocument();
+    const reconciliation = within(nav).getByRole("group", {
+      name: "Telas de Conciliação Físico-Contábil",
+    });
+    expect(linkNames(reconciliation)).toEqual(["Base contábil", "Pendências patrimoniais"]);
+    expect(within(nav).queryByRole("link", { name: "Resumo" })).not.toBeInTheDocument();
+    await ui.click(within(reconciliation).getByRole("link", { name: "Base contábil" }));
+    expect(await screen.findByRole("heading", { name: "Contábil · 31" })).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "Base contábil" })).toHaveAttribute("aria-current", "page");
+    keepsBar();
+    // Sub-abas com uma tela só (Kick-off, Pendências - Campo sem checklist, Inventário sem
+    // importações): só o projeto e "Trocar projeto", que volta à lista da sub-aba.
+    for (const [suffix, heading, area] of [
+      ["preparation/kickoff", "Preparação", "kickoff"],
+      ["summary#inventariantes", "Resumo", "field"],
+      ["inventory-items", "Itens", "inventory"],
+    ] as const) {
+      await act(() => router.navigate("/app/projects/31/" + suffix));
+      expect(await screen.findByRole("heading", { name: heading + " · 31" })).toBeInTheDocument();
+      expect(within(nav).queryByRole("group")).not.toBeInTheDocument();
+      expect(within(nav).getByRole("link", { name: "Trocar projeto" })).toHaveAttribute(
+        "href",
+        `/app/projects/${area}?escolher=1`,
+      );
+      keepsBar();
+    }
+    await act(() => router.navigate(-1));
+    expect(await screen.findByRole("heading", { name: "Resumo · 31" })).toBeInTheDocument();
+    expect(router.state.location.hash).toBe("#inventariantes");
     await act(() => router.navigate(-1));
     expect(
       await screen.findByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
-    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    await act(() => router.navigate(1));
     await act(() => router.navigate(1));
     expect(
       await screen.findByRole("heading", { name: "Itens · 31" }),
@@ -220,22 +248,29 @@ describe("Production project route tree: persistent navigation", () => {
       "data-project-id",
       "32",
     );
-    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "href",
-      "/app/projects/32/preparation/kickoff",
+      "/app/projects/32/dashboard",
     );
+    expect(within(nav).getByRole("link", { name: "Trocar projeto" })).toHaveAttribute("href", "/app/projects");
   });
 
   it("supports direct checklist links, keeps preparation selected and opens the former image URL on items without an image tab", async () => {
-    const router = setup("/app/projects/31/preparation/client-checklist");
-    const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
-    // Kick-off é grupo de uma aba só: o próprio grupo fica como página atual.
-    expect(within(nav).getByRole("link", { name: "Kick-off" })).toHaveAttribute(
-      "aria-current",
-      "page",
+    const router = setup(
+      "/app/projects/31/preparation/client-checklist",
+      withGrants(...grants, "import-sessions:read"),
     );
-    // Link "Kick-off" da própria tela (o da navegação tem o mesmo nome).
-    await ui.click(screen.getAllByRole("link", { name: "Kick-off" }).find((link) => !nav.contains(link))!);
+    const nav = bar();
+    // Kick-off tem uma tela só: a barra mostra o projeto e "Trocar projeto" da sub-aba Kick-off.
+    expect(within(nav).queryByRole("group")).not.toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "Trocar projeto" })).toHaveAttribute(
+      "href",
+      "/app/projects/kickoff?escolher=1",
+    );
+    expect(screen.getByRole("heading", { name: "Preparação · 31" })).toBeInTheDocument();
+    // Link "Kick-off" da própria tela.
+    await ui.click(screen.getByRole("link", { name: "Kick-off" }));
+    expect(router.state.location.pathname).toBe("/app/projects/31/preparation/kickoff");
     expect(
       screen.getByRole("heading", { name: "Preparação · 31" }),
     ).toBeInTheDocument();
@@ -243,72 +278,65 @@ describe("Production project route tree: persistent navigation", () => {
     expect(
       await screen.findByRole("heading", { name: "Itens · 31" }),
     ).toBeInTheDocument();
+    const inventory = within(nav).getByRole("group", { name: "Telas de Inventário" });
+    expect(linkNames(inventory)).toEqual(["Itens inventariados", "Importações"]);
     expect(
-      within(nav).getByRole("link", { name: "Itens inventariados" }),
+      within(inventory).getByRole("link", { name: "Itens inventariados" }),
     ).toHaveAttribute("aria-current", "page");
     expect(
       within(nav).queryByRole("link", { name: "Imagens" }),
     ).not.toBeInTheDocument();
   });
 
-  it("selects a group whose first visible tab leaves the workspace without navigating", async () => {
-    const finance = {
-      ...admin,
-      // Sem payments:read/expenses:read: as abas internas (Remuneração, Despesas) ficam ocultas
-      // e a primeira aba visível do grupo é externa.
-      permissions: ["projects:read", "receivables:read", "cash-flow:read", "dre:read"].map(
-        (key) => ({ key, scope: "ORGANIZATION" as const }),
-      ),
-    };
-    const router = setup("/app/projects/31/summary", finance);
+  it("lists external finance screens directly in Painel Geral when internal finance tabs are hidden", async () => {
+    // Sem payments:read/expenses:read: Remuneração e Despesas ficam ocultas e o Financeiro
+    // mostra só as telas globais (fora do projeto), filtradas pelo projeto.
+    const router = setup(
+      "/app/projects/31/summary",
+      withGrants("projects:read", "receivables:read", "cash-flow:read", "dre:read"),
+    );
     const nav = await screen.findByRole("navigation", { name: "Abas do projeto" });
-    const group = within(nav).getByRole("button", { name: "Financeiro" });
-    expect(group).toHaveAttribute("aria-expanded", "false");
-    expect(within(nav).queryByRole("link", { name: "Remuneração" })).not.toBeInTheDocument();
-    await ui.click(group);
-    expect(router.state.location.pathname).toBe("/app/projects/31/summary");
-    expect(group).toHaveAttribute("aria-expanded", "true");
-    const tabs = within(nav).getByRole("group", { name: "Abas de Financeiro" });
-    expect(within(tabs).getAllByRole("link").map((link) => link.textContent)).toEqual([
+    const screens = within(nav).getByRole("group", { name: "Telas de Painel Geral" });
+    expect(linkNames(screens)).toEqual([
+      "Resumo",
+      "Dashboard",
+      "Configurações",
       "Recebíveis",
       "Fluxo de caixa",
       "DRE gerencial",
     ]);
-    expect(within(tabs).getByRole("link", { name: "Recebíveis" })).toHaveAttribute(
+    expect(within(screens).getByText("Financeiro")).toBeInTheDocument();
+    expect(within(screens).queryByText("Comercial")).not.toBeInTheDocument();
+    expect(within(nav).queryByRole("link", { name: "Remuneração" })).not.toBeInTheDocument();
+    expect(within(screens).getByRole("link", { name: "Recebíveis" })).toHaveAttribute(
       "href",
       "/app/finance/receivables?project_id=31",
     );
-    await act(() => router.navigate("/app/projects/31/dashboard"));
-    expect(await screen.findByRole("heading", { name: "Dashboard · 31" })).toBeInTheDocument();
-    expect(within(nav).getByRole("button", { name: "Financeiro" })).toHaveAttribute("aria-expanded", "false");
-    expect(within(nav).getByRole("group", { name: "Abas de Painel" })).toBeInTheDocument();
+    expect(within(screens).getByRole("link", { name: "DRE gerencial" })).toHaveAttribute(
+      "href",
+      "/app/finance/dre?project_id=31",
+    );
+    // Abas externas nunca ficam como página atual.
+    expect(within(screens).getByRole("link", { name: "Resumo" })).toHaveAttribute("aria-current", "page");
+    expect(within(screens).getByRole("link", { name: "Recebíveis" })).not.toHaveAttribute("aria-current");
+    expect(router.state.location.pathname).toBe("/app/projects/31/summary");
   });
 
   it("hides unauthorized tabs and guards direct navigation even for an administrative label with incomplete effective grants", async () => {
-    const user = {
-      ...admin,
-      permissions: [
-        { key: "inventory-items:read", scope: "ORGANIZATION" as const },
-      ],
-    };
+    const user = withGrants("inventory-items:read", "payments:read", "expenses:read");
     const router = setup("/app/projects/31/inventory-items", user);
-    const nav = screen.getByRole("navigation", { name: "Abas do projeto" });
+    const nav = bar();
+    // Inventário sem importações: nenhuma lista de telas, só "Trocar projeto".
+    expect(within(nav).queryByRole("group")).not.toBeInTheDocument();
+    expect(linkNames(nav)).toEqual(["Trocar projeto"]);
+    await act(() => router.navigate("/app/projects/31/finance/remuneration"));
+    expect(await screen.findByRole("heading", { name: "Remuneração · 31" })).toBeInTheDocument();
+    // Painel Geral sem projects:read: Resumo, Dashboard, Unidades e Configurações ficam ocultas.
     expect(
-      within(nav).queryByRole("link", { name: "Kick-off" }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(nav).queryByRole("link", { name: "Financeiro" }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(nav).queryByRole("link", { name: "Unidades" }),
-    ).not.toBeInTheDocument();
-    expect(
-      within(
-        within(nav).getByRole("group", { name: "Grupos do projeto" }),
-      )
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual(["Inventário"]);
+      linkNames(within(nav).getByRole("group", { name: "Telas de Painel Geral" })),
+    ).toEqual(["Remuneração", "Despesas"]);
+    expect(within(nav).queryByRole("link", { name: "Kick-off" })).not.toBeInTheDocument();
+    expect(within(nav).queryByRole("link", { name: "Unidades" })).not.toBeInTheDocument();
     await act(() => router.navigate("/app/projects/31/preparation/kickoff"));
     await waitFor(() =>
       expect(

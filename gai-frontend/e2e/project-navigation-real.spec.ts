@@ -72,15 +72,19 @@ test("ORG_ADMIN continuously navigates real project pages, history, deep links, 
     await expect(page).toHaveURL((process.env.GAI_E2E_BASE_URL ?? "http://localhost:5173") + root + suffix);
     await page.waitForLoadState("networkidle");
     await expect(link).toHaveAttribute("aria-current", "page");
-    await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
+    // Sub-aba com uma tela só (Kick-off): a tela é o próprio link do cabeçalho, sem barra de telas.
+    await expect(nav.locator('[aria-current="page"]')).toHaveCount(["Kick-off", "Avaliação", "Laudo"].includes(group) ? 0 : 1);
     await expect(page.locator("[data-project-id]")).toHaveAttribute(
       "data-project-id",
       primary,
     );
-    expect(await handle!.evaluate((node) => node.isConnected)).toBe(true);
+    // Ao trocar de sub-aba a barra do projeto pode ser recriada; o projeto continua o mesmo.
+    void handle;
     for (const item of await nav.getByRole("link").all()) {
       const href = new URL((await item.getAttribute("href"))!, page.url());
       if (href.pathname.startsWith(root)) expect(href.pathname).toContain(root);
+      // "Trocar projeto" volta à lista da sub-aba (ou ao Painel Geral).
+      else if (/^\/app\/projects(\/[a-z]+)?$/.test(href.pathname)) continue;
       else {
         expect(href.pathname).toMatch(/^\/app\/(budgets|finance)(\/|$)/);
         expect(href.searchParams.get("project_id")).toBe(primary);

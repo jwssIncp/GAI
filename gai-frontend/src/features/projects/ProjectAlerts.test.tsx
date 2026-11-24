@@ -11,7 +11,8 @@ import { projectTabAlerts } from "./projectNavigation";
 const dashboard = vi.fn();
 vi.mock("@/api/endpoints", async (original) => ({
   ...(await original<typeof import("@/api/endpoints")>()),
-  projectsApi: { dashboard: (id: number) => dashboard(id) },
+  // Nome do projeto na barra (mesma consulta de GET /projects/:id).
+  projectsApi: { dashboard: (id: number) => dashboard(id), get: async () => clean.project },
 }));
 
 const zeroIssues = { total_pending_issues: 0, open_pending_issues: 0, in_review_pending_issues: 0, resolved_pending_issues: 0, ignored_pending_issues: 0, cancelled_pending_issues: 0, critical_pending_issues: 0, high_pending_issues: 0, medium_pending_issues: 0, low_pending_issues: 0 };
@@ -143,72 +144,96 @@ describe("Regras dos alertas ⚠ v1 revisadas (somente dados de /projects/:id/da
   });
 });
 
-describe("Exibição dos alertas no grupo e na aba", () => {
+describe("Exibição dos alertas nas telas da sub-aba ativa", () => {
   beforeEach(() => {
     dashboard.mockReset();
     dashboard.mockResolvedValue(withProblems);
   });
 
-  it("mostra ⚠ no grupo (1º nível) e na aba (2º nível), sem mudar o nome acessível", async () => {
+  it("mostra ⚠ só nas telas da sub-aba ativa, sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user([...everything, "payments:approve"]));
-    const tab = await nav.findByRole("link", { name: "Pendências patrimoniais" });
-    await waitFor(() => expect(tab).toHaveAttribute("aria-describedby"));
+    const screens = within(nav.getByRole("group", { name: "Telas de Conciliação Físico-Contábil" }));
+    expect(screens.getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual([
+      "/app/projects/10/inventory/sessions",
+      "/app/projects/10/accounting-items",
+      "/app/projects/10/pending-issues",
+    ]);
+    const tab = screens.getByRole("link", { name: "Pendências patrimoniais" });
+    await waitFor(() => expect(tab).toHaveAttribute("aria-describedby", "project-tab-alert-pending-issues"));
     expect(description(tab)).toBe("Atenção: 5 pendências abertas ou em revisão, 1 crítica ou alta");
-    const group = nav.getByRole("link", { name: "Conciliação Físico-Contábil" });
-    expect(description(group)).toBe("Atenção: Pendências patrimoniais: 5 pendências abertas ou em revisão, 1 crítica ou alta");
-    expect(description(nav.getByRole("link", { name: "Financeiro" }))).toBe("Atenção: Remuneração: 1 diária aguardando sua aprovação");
-    expect(nav.getByRole("link", { name: "Pendências - Campo" })).toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Laudo" })).not.toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
-    expect(nav.getByRole("link", { name: "Base contábil" })).not.toHaveAttribute("aria-describedby");
+    expect(screens.getByRole("link", { name: "Sessões e conciliação" })).not.toHaveAttribute("aria-describedby");
+    expect(screens.getByRole("link", { name: "Base contábil" })).not.toHaveAttribute("aria-describedby");
+    // Alertas de telas de outras sub-abas (Remuneração, Equipe de campo, Importações, Exportações) não aparecem aqui.
+    const ids = Array.from(document.querySelectorAll("[id^='project-tab-alert-']")).map((element) => element.id);
+    expect(ids).toEqual(["project-tab-alert-pending-issues"]);
   });
 
-  it("sem permissão de aprovar, o grupo Financeiro não alerta", async () => {
-    const nav = renderAt("/app/projects/10/finance", user(everything));
-    await waitFor(() => expect(nav.getByRole("link", { name: "Conciliação Físico-Contábil" })).toHaveAttribute("aria-describedby"));
-    expect(nav.getByRole("link", { name: "Financeiro" })).not.toHaveAttribute("aria-describedby");
+  it("no Painel Geral (Painel, Comercial, Financeiro), Remuneração alerta para quem aprova diárias", async () => {
+    const nav = renderAt("/app/projects/10/finance", user([...everything, "payments:approve"]));
+    const screens = nav.getByRole("group", { name: "Telas de Painel Geral" });
+    expect(within(screens).getByText("Painel")).toBeInTheDocument();
+    expect(within(screens).getByText("Comercial")).toBeInTheDocument();
+    expect(within(screens).getByText("Financeiro")).toBeInTheDocument();
+    const remuneration = nav.getByRole("link", { name: "Remuneração" });
+    await waitFor(() => expect(remuneration).toHaveAttribute("aria-describedby"));
+    expect(description(remuneration)).toBe("Atenção: 1 diária aguardando sua aprovação");
+    expect(nav.getByRole("link", { name: "Despesas" })).not.toHaveAttribute("aria-describedby");
+  });
+
+  it("sem permissão de aprovar, Remuneração e Despesas não alertam", async () => {
+    const nav = renderAt("/app/projects/10/finance", user([...everything, "export-jobs:read"]));
+    // Exportações com falha alertam no Painel Geral: a consulta já respondeu.
+    await waitFor(() => expect(nav.getByRole("link", { name: "Exportações" })).toHaveAttribute("aria-describedby"));
+    expect(nav.getByRole("link", { name: "Remuneração" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Despesas" })).not.toHaveAttribute("aria-describedby");
     expect(nav.getByRole("link", { name: "Remuneração" }).textContent).toBe("Remuneração");
     expect(nav.getByRole("link", { name: "Despesas" }).textContent).toBe("Despesas");
   });
 
-  it("mostra a quantidade ao lado do ⚠ na aba, mas não no grupo, sem mudar o nome acessível", async () => {
+  it("mostra a quantidade ao lado do ⚠ na aba, sem mudar o nome acessível", async () => {
     const nav = renderAt("/app/projects/10/pending-issues", user(everything));
-    const tab = await nav.findByRole("link", { name: "Pendências patrimoniais" });
+    const tab = nav.getByRole("link", { name: "Pendências patrimoniais" });
     await waitFor(() => expect(tab.textContent).toBe("Pendências patrimoniais5"));
     expect(nav.getByRole("link", { name: "Sessões e conciliação" }).textContent).toBe("Sessões e conciliação");
-    expect(nav.getByRole("link", { name: "Conciliação Físico-Contábil" }).textContent).toBe("Conciliação Físico-Contábil");
+    expect(nav.getByRole("link", { name: "Base contábil" }).textContent).toBe("Base contábil");
   });
 
   it("não revela dados de abas sem permissão: perfil de campo não vê alerta financeiro nem contábil", async () => {
-    dashboard.mockResolvedValue({ ...divergentWithoutIssues, financial: { ...clean.financial!, pending_payments: 4 } });
-    renderAt("/app/projects/10/inventory-items", user(["projects:read", "inventory-items:read", "inventory-sessions:read", "field-coordination:read"]));
-    await screen.findByRole("link", { name: "Itens inventariados" });
-    const nav = within(screen.getByRole("navigation", { name: "Abas do projeto" }));
-    await waitFor(() => expect(nav.getByRole("link", { name: "Itens inventariados" })).toHaveAttribute("aria-describedby"));
-    expect(nav.getByRole("link", { name: "Itens inventariados" }).textContent).toBe("Itens inventariados2");
-    expect(description(nav.getByRole("link", { name: "Inventário" }))).toBe("Atenção: Itens inventariados: 2 itens divergentes, sem pendência gerada");
-    // O texto dos alertas fica nas descrições ocultas e nos títulos; o nome do grupo
-    // "Conciliação Físico-Contábil" é rótulo de navegação, não dado de alerta.
-    const nav$ = screen.getByRole("navigation", { name: "Abas do projeto" });
-    const hidden = nav$.querySelector("[hidden]")?.textContent ?? "";
-    const titles = Array.from(nav$.querySelectorAll("[title]")).map((element) => element.getAttribute("title")).join(" ");
-    expect(hidden + " " + titles).not.toMatch(/pagamento|despesa|contábil|importaç|exportaç|inventariante vinculado/i);
-    expect(nav.getByRole("link", { name: "Pendências - Campo" })).not.toHaveAttribute("aria-describedby");
+    dashboard.mockResolvedValue({
+      ...divergentWithoutIssues,
+      financial: { ...clean.financial!, pending_payments: 4 },
+      exports: { ...clean.exports!, failed_export_jobs: 2 },
+      field_agents: { ...clean.field_agents, active_field_agents: 0 },
+    });
+    const nav = renderAt("/app/projects/10/inventory-items", user(["projects:read", "inventory-items:read", "import-sessions:read", "inventory-sessions:read", "field-coordination:read"]));
+    const items = nav.getByRole("link", { name: "Itens inventariados" });
+    await waitFor(() => expect(items).toHaveAttribute("aria-describedby"));
+    expect(items.textContent).toBe("Itens inventariados2");
+    expect(description(items)).toBe("Atenção: 2 itens divergentes, sem pendência gerada");
+    expect(nav.getByRole("link", { name: "Importações" })).not.toHaveAttribute("aria-describedby");
+    // O texto dos alertas fica nas descrições ocultas e nos títulos.
+    const bar = screen.getByRole("navigation", { name: "Abas do projeto" });
+    const hidden = bar.querySelector("[hidden]")?.textContent ?? "";
+    const titles = Array.from(bar.querySelectorAll("[title]")).map((element) => element.getAttribute("title")).join(" ");
+    expect(hidden + " " + titles).not.toMatch(/pagamento|diária|despesa|contábe?is|importaç|exportaç|inventariante vinculado/i);
   });
 
-  it("faz uma única chamada ao dashboard ao navegar entre abas e nenhuma sem projects:read", async () => {
+  it("faz uma única chamada ao dashboard ao navegar entre abas", async () => {
     const nav = renderAt("/app/projects/10/summary", user(everything));
     await waitFor(() => expect(dashboard).toHaveBeenCalledTimes(1));
-    await userEvent.click(nav.getByRole("link", { name: "Conciliação Físico-Contábil" }));
-    await userEvent.click(await nav.findByRole("link", { name: "Pendências patrimoniais" }));
-    await userEvent.click(nav.getByRole("link", { name: "Financeiro" }));
+    await userEvent.click(nav.getByRole("link", { name: "Dashboard" }));
+    await userEvent.click(nav.getByRole("link", { name: "Unidades" }));
+    await userEvent.click(nav.getByRole("link", { name: "Remuneração" }));
+    expect(nav.getByRole("link", { name: "Remuneração" })).toHaveAttribute("aria-current", "page");
     expect(dashboard).toHaveBeenCalledTimes(1);
     expect(dashboard).toHaveBeenCalledWith(10);
   });
 
-  it("sem projects:read não consulta o dashboard e não mostra alerta", async () => {
-    const nav = renderAt("/app/projects/10/field-coordination", user(["field-coordination:read"]));
-    expect(nav.getByRole("link", { name: "Pendências - Campo" })).not.toHaveAttribute("aria-describedby");
+  it("sem projects:read não consulta o dashboard e não mostra alerta", () => {
+    const nav = renderAt("/app/projects/10/finance", user(["payments:read", "expenses:read", "payments:approve", "expenses:approve"]));
+    expect(nav.getByRole("link", { name: "Remuneração" })).not.toHaveAttribute("aria-describedby");
+    expect(nav.getByRole("link", { name: "Despesas" })).not.toHaveAttribute("aria-describedby");
+    expect(document.querySelector("[id^='project-tab-alert-']")).toBeNull();
     expect(dashboard).not.toHaveBeenCalled();
   });
 });

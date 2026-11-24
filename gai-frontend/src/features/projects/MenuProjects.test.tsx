@@ -48,8 +48,9 @@ describe("Project navigation with specific permissions", () => {
   });
   it("keeps the existing list entry for project readers", () => {
     renderMenu(["projects:create", "projects:read"]);
+    // A lista de projetos é a sub-aba "Painel Geral" da área Projetos (mesma rota).
     expect(
-      screen.getByRole("link", { name: "Projetos" }),
+      screen.getByRole("link", { name: "Painel Geral" }),
     ).toHaveAttribute("href", "/app/projects");
     expect(
       screen.queryByRole("link", { name: "Novo projeto" }),
