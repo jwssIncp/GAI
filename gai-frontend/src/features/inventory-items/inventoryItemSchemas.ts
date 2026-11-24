@@ -35,3 +35,14 @@ export const inventoryItemFormSchema = z.object({
 
 export type InventoryItemFormValues = z.input<typeof inventoryItemFormSchema>;
 export const inventoryItemStatuses = ['pending', 'evaluated', 'divergent', 'not_found', 'duplicated', 'removed', 'inactive'] as const;
+
+/** Rótulos em português dos status do item (filtro, formulário e tabela). */
+export const inventoryItemStatusLabels: Record<(typeof inventoryItemStatuses)[number], string> = {
+  pending: 'Pendente',
+  evaluated: 'Avaliado',
+  divergent: 'Divergente',
+  not_found: 'Não encontrado',
+  duplicated: 'Duplicado',
+  removed: 'Removido',
+  inactive: 'Inativo',
+};

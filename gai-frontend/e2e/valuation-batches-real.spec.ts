@@ -90,16 +90,16 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     page.getByText("2 itens selecionados", { exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Avaliar selecionados", exact: true })
+    .getByRole("button", { name: "Avaliar", exact: true })
     .click();
   await page
-    .getByLabel("Fonte da avaliação em lote", { exact: true })
+    .getByLabel("Fonte de consulta", { exact: true })
     .fill("SINTETICO Catalogo comum documentado");
   await page
-    .getByLabel("Data da avaliação em lote", { exact: true })
+    .getByLabel("Data da avaliação", { exact: true })
     .fill("2026-10-27");
-  await page.getByLabel("Valor novo comum (R$)", { exact: true }).fill("150.00");
-  await page.getByLabel("Valor usado comum (R$)", { exact: true }).fill("75.00");
+  await page.getByLabel("Valor novo (R$)", { exact: true }).fill("150.00");
+  await page.getByLabel("Valor usado (R$)", { exact: true }).fill("75.00");
   const previewResponse = page.waitForResponse(
     (r) =>
       r.url().endsWith("/valuation-batches/preview") &&
@@ -167,16 +167,16 @@ test("ORG_ADMIN selects between pages, previews and applies common/individual va
     .getByRole("checkbox", { name: `Selecionar item ${ids[21]}`, exact: true })
     .check();
   await page
-    .getByRole("button", { name: "Avaliar selecionados", exact: true })
+    .getByRole("button", { name: "Avaliar", exact: true })
     .click();
   await page
     .getByLabel("Modo de valores", { exact: true })
     .selectOption("individual");
   await page
-    .getByLabel("Fonte da avaliação em lote", { exact: true })
+    .getByLabel("Fonte de consulta", { exact: true })
     .fill("SINTETICO Catalogo individual documentado");
   await page
-    .getByLabel("Data da avaliação em lote", { exact: true })
+    .getByLabel("Data da avaliação", { exact: true })
     .fill("2026-10-27");
   await page
     .getByLabel(`Valor usado do item ${ids[22]} (R$)`, { exact: true })

@@ -14,10 +14,10 @@ import { Button } from '@/components/ui/button';
 import { ConfirmDialog, DrawerForm } from '@/components/ui/dialog';
 import { PermissionGate } from '@/features/auth/PermissionGate';
 import { usePermissions } from '@/features/auth/usePermissions';
-import { formatDateTime } from '@/utils/format';
+import { formatDateTime, formatMoney } from '@/utils/format';
 import { InventoryItemDetailDrawer } from './InventoryItemDetailDrawer';
 import { InventoryItemForm } from './InventoryItemForm';
-import { inventoryItemStatuses } from './inventoryItemSchemas';
+import { inventoryItemStatusLabels, inventoryItemStatuses } from './inventoryItemSchemas';
 import { useChangeInventoryItemStatus, useCreateInventoryItem, useProjectInventoryItems, useUpdateInventoryItem } from './inventoryItemsQueries';
 import type { InventoryItem, InventoryItemStatus } from '@/types/api';
 import { ValuationBatchPanel,type BatchSelectionState } from './ValuationBatchPanel';
@@ -72,6 +72,10 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
     { header: 'Marca', cell: (item) => item.brand ?? '-' },
     { header: 'Modelo', cell: (item) => item.model ?? '-' },
     { header: 'Localização', cell: (item) => item.location_text ?? item.unit_text ?? '-' },
+    // Colunas da Avaliação do sistema anterior: fonte de consulta, valor novo e valor usado.
+    { header: 'Fonte de consulta', cell: (item) => item.source || '-' },
+    { header: 'Valor novo', cell: (item) => (item.new_value ? formatMoney(item.new_value) : '-'), numeric: true },
+    { header: 'Valor usado', cell: (item) => (item.used_value ? formatMoney(item.used_value) : '-'), numeric: true },
     { header: 'Status', cell: (item) => <StatusBadge value={item.status} /> },
     { header: 'Atualizado em', cell: (item) => formatDateTime(item.updated_at) },
     {
@@ -114,7 +118,7 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
         <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Buscar item" />
         <select className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={status} onChange={(event) => { setStatus(event.target.value as InventoryItemStatus | ''); setPage(1); }} aria-label="Filtrar por status">
           <option value="">Todos os status</option>
-          {inventoryItemStatuses.map((itemStatus) => <option key={itemStatus} value={itemStatus}>{itemStatus}</option>)}
+          {inventoryItemStatuses.map((itemStatus) => <option key={itemStatus} value={itemStatus}>{inventoryItemStatusLabels[itemStatus]}</option>)}
         </select>
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={oldPlate} onChange={(event) => { setOldPlate(event.target.value); setPage(1); }} placeholder="Placa antiga" />
         <input className="h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" value={newPlate} onChange={(event) => { setNewPlate(event.target.value); setPage(1); }} placeholder="Placa nova" />

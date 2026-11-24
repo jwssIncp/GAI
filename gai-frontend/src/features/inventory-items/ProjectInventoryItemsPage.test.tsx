@@ -102,6 +102,12 @@ describe('ProjectInventoryItemsPage', () => {
     renderPage();
     expect(await screen.findByText('Notebook Dell')).toBeInTheDocument();
     expect(screen.getByText('OLD-1')).toBeInTheDocument();
+    // Colunas da Avaliação e status em português, como no sistema anterior.
+    for (const header of ['Fonte de consulta', 'Valor novo', 'Valor usado']) expect(screen.getByRole('columnheader', { name: header })).toBeInTheDocument();
+    expect(screen.getByText('manual')).toBeInTheDocument();
+    expect(screen.getByText(/3\.500,00/)).toBeInTheDocument();
+    expect(screen.getByText(/1\.200,00/)).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Avaliado' })).toBeInTheDocument();
   });
 
   it('renderiza loading', () => {

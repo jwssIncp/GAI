@@ -214,22 +214,31 @@ describe("Batch valuation integrated item workspace", () => {
     );
     expect(screen.getByText("2 itens selecionados")).toBeInTheDocument();
     await userEvent.click(
-      screen.getByRole("button", { name: "Avaliar selecionados" }),
+      screen.getByRole("button", { name: "Avaliar" }),
     );
-    await screen.findByLabelText("Fonte da avaliação em lote");
+    await screen.findByLabelText("Fonte de consulta");
     expect(valuationBatchApi.selection).toHaveBeenCalledWith(7, {
       kind: "ids",
       ids: [1, 21],
     });
     await userEvent.type(
-      screen.getByLabelText("Fonte da avaliação em lote"),
+      screen.getByLabelText("Fonte de consulta"),
       "Catalogo sintetico",
     );
+    // Como no sistema anterior: abre com a data de hoje e aplica os campos a todos.
+    const today = new Date();
+    expect(screen.getByLabelText("Data da avaliação")).toHaveValue(
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`,
+    );
+    expect(
+      screen.getByText(/os campos preenchidos serão aplicados a todos/),
+    ).toBeInTheDocument();
+    await userEvent.clear(screen.getByLabelText("Data da avaliação"));
     await userEvent.type(
-      screen.getByLabelText("Data da avaliação em lote"),
+      screen.getByLabelText("Data da avaliação"),
       "2026-10-27",
     );
-    await userEvent.type(screen.getByLabelText("Valor novo comum (R$)"), "150.00");
+    await userEvent.type(screen.getByLabelText("Valor novo (R$)"), "150.00");
     await userEvent.click(
       screen.getByRole("button", { name: "Gerar prévia da avaliação" }),
     );
@@ -291,7 +300,7 @@ describe("Batch valuation integrated item workspace", () => {
       }),
     );
     await userEvent.click(
-      screen.getByRole("button", { name: "Avaliar selecionados" }),
+      screen.getByRole("button", { name: "Avaliar" }),
     );
     await userEvent.selectOptions(
       await screen.findByLabelText("Modo de valores"),
@@ -305,7 +314,7 @@ describe("Batch valuation integrated item workspace", () => {
     await screen.findByText("Item sintetico 1");
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Avaliar selecionados" }),
+      screen.queryByRole("button", { name: "Avaliar" }),
     ).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("link", { name: "Painel" }));
     await waitFor(() =>
