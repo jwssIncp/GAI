@@ -15,7 +15,8 @@ import { useToast } from "@/components/ui/toast-context";
 import { useAuth } from "@/features/auth/AuthContext";
 import { PermissionGate } from "@/features/auth/PermissionGate";
 import { usePermissions } from "@/features/auth/usePermissions";
-import { formatDate } from "@/utils/format";
+import { formatDate, formatInteger } from "@/utils/format";
+import { contractDate, contractMoney } from "@/features/contracts/contractsApi";
 import type {
   Project,
   ProjectStatus,
@@ -217,6 +218,9 @@ export function ProjectsPage() {
       header: "Status",
       cell: (item: Project) => <StatusBadge value={item.status} />,
     },
+    ...(pageData?.items.some((item) => item.contract !== undefined)
+      ? contractColumns
+      : []),
     {
       header: "Responsável",
       cell: (item: Project) => item.responsible_user_name || "Não definido",
@@ -451,3 +455,53 @@ function ProjectsListPanel({ total, children }: { total: number; children: React
     </DataPanel>
   );
 }
+
+const noContract = (
+  <span className="text-xs text-muted-foreground">Sem contrato</span>
+);
+/** Colunas do contrato na lista (valor vigente, itens, segmento e data), como no sistema anterior. */
+const contractColumns = [
+  {
+    header: "Valor",
+    className: "text-right",
+    cell: (item: Project) =>
+      !item.contract ? (
+        noContract
+      ) : item.contract.current_value == null ? (
+        <span className="text-xs text-muted-foreground">
+          {item.contract.currency ? "Não informado" : "Moedas diferentes"}
+        </span>
+      ) : (
+        <span className="tabular-nums">
+          {contractMoney(item.contract.current_value, item.contract.currency!)}
+          {item.contract.missing_value ? (
+            <span className="block text-xs text-muted-foreground">
+              {item.contract.missing_value} contrato(s) sem valor
+            </span>
+          ) : null}
+        </span>
+      ),
+  },
+  {
+    header: "Itens",
+    className: "text-right",
+    cell: (item: Project) =>
+      !item.contract
+        ? "—"
+        : item.contract.estimated_assets == null
+          ? "—"
+          : formatInteger(item.contract.estimated_assets),
+  },
+  {
+    header: "Segmento",
+    cell: (item: Project) =>
+      !item.contract
+        ? "—"
+        : item.contract.segments.join(", ") || "—",
+  },
+  {
+    header: "Data do contrato",
+    cell: (item: Project) =>
+      !item.contract ? "—" : contractDate(item.contract.contracted_on),
+  },
+];

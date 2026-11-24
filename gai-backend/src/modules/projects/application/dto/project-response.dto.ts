@@ -1,5 +1,6 @@
 import { ProjectType } from '../../domain/enums/project-type.enum';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { ProjectContractSummary } from '../../../contracts/contract-summary';
 import { JsonRecord, Project } from '../../domain/entities/project';
 import { ProjectStatus } from '../../domain/enums/project-status.enum';
 import { ProjectStatusTransitionPolicy } from '../../domain/services/project-status-transition.policy';
@@ -52,6 +53,14 @@ export class ProjectResponseDto {
 
   @ApiPropertyOptional({ nullable: true })
   description!: string | null;
+
+  /** Só na listagem e só para quem lê contratos: resumo comercial do projeto. */
+  @ApiPropertyOptional({
+    type: 'object',
+    nullable: true,
+    additionalProperties: true,
+  })
+  contract?: ProjectContractSummary | null;
 
   @ApiProperty({ enum: ProjectStatus })
   status!: ProjectStatus;

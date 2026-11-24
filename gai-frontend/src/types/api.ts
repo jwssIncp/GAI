@@ -267,7 +267,22 @@ export type ProjectHistoryEntry = {
   created_at: string;
   changes: Record<string, { before: unknown; after: unknown }>;
 };
+/** Resumo comercial do projeto na listagem (só para quem lê contratos). */
+export type ProjectContractSummary = {
+  count: number;
+  numbers: string[];
+  contracted_on: string | null;
+  segments: string[];
+  currency: string | null;
+  current_value: string | null;
+  missing_value: number;
+  estimated_assets: number | null;
+  recurring: boolean | null;
+  services: string[];
+};
 export type Project = ProjectRegistrationFields & {
+  /** Ausente quando o perfil não lê contratos; nulo quando o projeto não tem contrato. */
+  contract?: ProjectContractSummary | null;
   company_name?: string | null;
   responsible_user_name?: string | null;
   planning_responsible_user_name?: string | null;
