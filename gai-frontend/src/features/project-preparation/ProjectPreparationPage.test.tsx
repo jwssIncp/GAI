@@ -192,10 +192,10 @@ describe('Project preparation UI', () => {
     renderPage();
     await screen.findByText('Reunião inicial', { selector: 'h2' });
     expect(
-      screen.getByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.getByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Lições anteriores' }),
+      screen.queryByRole('button', { name: 'Detalhes: Lições anteriores' }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByText('BLOQUEADO'),
@@ -209,7 +209,7 @@ describe('Project preparation UI', () => {
     const [list] = await screen.findAllByRole('region', { name: 'Kick-offs' });
     expect(list).toHaveTextContent('Reunião inicial');
     expect(list).toHaveTextContent('0 de 1 (0%)');
-    expect(list).toHaveTextContent('Rascunho');
+    expect(list).toHaveTextContent('Em andamento');
     const [group] = await screen.findAllByRole('region', { name: 'Escopo' });
     expect(group).toHaveTextContent('PENDENTE');
     expect(screen.getByText('0 de 1 verificado(s)')).toBeInTheDocument();
@@ -227,6 +227,14 @@ describe('Project preparation UI', () => {
           state: 'completed',
           value: true,
         }),
+      ]),
+    );
+    // Responder não conclui: o "Realizado" é um botão à parte, como no sistema anterior.
+    expect(vi.mocked(preparationApi.answers).mock.calls[0][3][0]).not.toHaveProperty('realized');
+    await ui.click(screen.getByRole('button', { name: 'Realizado: Já houve inventário?' }));
+    await waitFor(() =>
+      expect(preparationApi.answers).toHaveBeenLastCalledWith(10, 20, 1, [
+        expect.objectContaining({ question_id: 'flag', realized: true }),
       ]),
     );
   });
@@ -257,7 +265,7 @@ describe('Project preparation UI', () => {
     renderPage();
     await ui.click(
       await screen.findByRole('button', {
-        name: 'Responder: Já houve inventário?',
+        name: 'Detalhes: Já houve inventário?',
       }),
     );
     await ui.selectOptions(screen.getByLabelText('Situação'), 'completed');
@@ -274,7 +282,7 @@ describe('Project preparation UI', () => {
     );
     expect(
       await screen.findByRole('button', {
-        name: 'Responder: Lições anteriores',
+        name: 'Detalhes: Lições anteriores',
       }),
     ).toBeInTheDocument();
     expect(await screen.findByText(/Resposta salva/)).toBeInTheDocument();
@@ -285,7 +293,7 @@ describe('Project preparation UI', () => {
       await screen.findByText('Nenhum Checklist do cliente criado'),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Novo checklist' }),
@@ -312,7 +320,7 @@ describe('Project preparation UI', () => {
       screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     await ui.click(screen.getByRole('button', { name: 'Histórico' }));
     expect(await screen.findByText('Preparação criada')).toBeInTheDocument();
@@ -415,7 +423,7 @@ describe('Project preparation UI', () => {
     renderPage();
     await ui.click(
       await screen.findByRole('button', {
-        name: 'Responder: Já houve inventário?',
+        name: 'Detalhes: Já houve inventário?',
       }),
     );
     await ui.click(screen.getByRole('button', { name: 'Salvar resposta' }));
@@ -478,7 +486,7 @@ describe('Preparation on closed projects', () => {
       screen.queryByRole('button', { name: 'Concluir' }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Responder: Já houve inventário?' }),
+      screen.queryByRole('button', { name: 'Detalhes: Já houve inventário?' }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Histórico' }),

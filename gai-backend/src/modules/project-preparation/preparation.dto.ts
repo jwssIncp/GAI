@@ -67,6 +67,11 @@ export class QuestionDto {
   @IsString()
   @MaxLength(80)
   quantity_question_id?: string;
+  /** "inline": complemento exibido na linha da pergunta da qual depende (ex.: "QUAL SISTEMA?"). */
+  @ApiPropertyOptional({ enum: ['row', 'inline'] })
+  @IsOptional()
+  @IsIn(['row', 'inline'])
+  display?: 'row' | 'inline';
 }
 export class TemplateContentDto {
   @ApiProperty() @IsString() @MaxLength(200) name!: string;
@@ -162,6 +167,11 @@ export class AnswerDto {
   @IsString()
   @MaxLength(10000)
   notes?: string | null;
+  /** Marca/desmarca o item como realizado. Omitido: mantém o valor atual. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  realized?: boolean;
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsInt()

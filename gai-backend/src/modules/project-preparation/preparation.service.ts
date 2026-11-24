@@ -571,7 +571,11 @@ export class PreparationService {
       loaded.flatMap(({ row, answers }) => [
         row.responsibleUserId,
         row.approvedById,
-        ...answers.flatMap((a) => [a.responsibleUserId, a.answeredById]),
+        ...answers.flatMap((a) => [
+          a.responsibleUserId,
+          a.answeredById,
+          a.realizedById,
+        ]),
       ]),
     );
   }
@@ -616,6 +620,9 @@ export class PreparationService {
           answered_by_id: a?.answeredById ?? null,
           answered_by_name: userNameOf(names, a?.answeredById),
           answered_at: a?.answeredAt ?? null,
+          realized: a?.realized ?? false,
+          realized_by_name: userNameOf(names, a?.realizedById ?? undefined),
+          realized_at: a?.realizedAt ?? null,
           allocations: allocations(a?.value ?? null),
         };
       }),
@@ -701,6 +708,23 @@ export class PreparationService {
         invalid('Unidade não vinculada à empresa e ao projeto deste escopo');
     }
   }
+  /** Quem marcou e quando: só muda quando o realizado muda; omitido mantém o atual. */
+  private realizedFields(
+    realized: boolean | undefined,
+    before: PreparationAnswerEntity | undefined,
+    actorId: number,
+  ) {
+    const current = before?.realized ?? false;
+    if (realized === undefined || realized === current)
+      return {
+        realized: current,
+        realizedAt: before?.realizedAt ?? null,
+        realizedById: before?.realizedById ?? null,
+      };
+    return realized
+      ? { realized: true, realizedAt: new Date(), realizedById: actorId }
+      : { realized: false, realizedAt: null, realizedById: null };
+  }
   async saveAnswers(
     projectId: number,
     id: number,
@@ -730,11 +754,13 @@ export class PreparationService {
           project.organizationId,
           manager,
         );
+        const previous = merged.get(answer.question_id);
         merged.set(answer.question_id, {
           questionId: answer.question_id,
           state: answer.state,
           value: answer.value,
           notes: answer.notes ?? null,
+          realized: answer.realized ?? previous?.realized ?? false,
         });
       }
       const answers = [...merged.values()];
@@ -777,6 +803,7 @@ export class PreparationService {
                 : answer.due_date,
             answeredById: actor.id,
             answeredAt: answer.state === 'pending' ? null : new Date(),
+            ...this.realizedFields(answer.realized, before, actor.id),
           });
         await this.audit(
           manager,

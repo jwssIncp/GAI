@@ -143,6 +143,17 @@ export class PreparationAnswerEntity extends OrganizationRecord {
     nullable: true,
   })
   answeredAt!: Date | null;
+  /** "Realizado" do sistema anterior: item tratado, independente da resposta. */
+  @Column({ type: 'boolean', default: false }) realized!: boolean;
+  @Column({
+    name: 'realized_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  realizedAt!: Date | null;
+  @Column({ name: 'realized_by_id', ...FOREIGN_KEY_COLUMN, nullable: true })
+  realizedById!: number | null;
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;
 }

@@ -523,6 +523,43 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       ),
     ).toBe(true);
   });
+  it('marca "Realizado" independente da resposta, com autor, e mantém quando omitido', async () => {
+    const item = await create();
+    // Realizado sem resposta (item tratado sem valor), como no sistema anterior.
+    let saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [{ ...answer('flag', null, 'pending'), realized: true }],
+    });
+    let flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({ state: 'pending', realized: true });
+    expect(flag.realized_at).toBeTruthy();
+    expect(saved.body.progress.realized).toBe(1);
+    // Responder sem enviar "realized" não desmarca.
+    saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 2,
+      answers: [answer('flag', true)],
+    });
+    flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({
+      state: 'completed',
+      value: true,
+      realized: true,
+    });
+    // Desmarcar limpa autor e data.
+    saved = await patch(`${base()}/${item.id}/answers`, {
+      revision: 3,
+      answers: [{ ...answer('flag', true), realized: false }],
+    });
+    flag = saved.body.answers.find(
+      (a: { question_id: string }) => a.question_id === 'flag',
+    );
+    expect(flag).toMatchObject({ realized: false, realized_at: null });
+    expect(saved.body.progress.realized).toBe(0);
+  });
   it('archives instances without losing answers or audit records', async () => {
     const item = await create();
     await patch(`${base()}/${item.id}/answers`, {

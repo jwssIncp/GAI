@@ -67,6 +67,16 @@ export function validateQuestions(
         q.quantity_question_id === q.id)
     )
       invalid('Sequência deve referenciar uma pergunta numérica distinta');
+    if (q.display !== undefined && !['row', 'inline'].includes(q.display))
+      invalid(`Exibição inválida: ${q.id}`);
+    if (
+      q.display === 'inline' &&
+      (q.enabled_when?.length !== 1 ||
+        byId.get(q.enabled_when[0].question_id)?.category !== q.category)
+    )
+      invalid(
+        `Complemento na linha exige uma única condição sobre pergunta da mesma seção: ${q.id}`,
+      );
     if ((q.enabled_when?.length ?? 0) > 10)
       invalid('Máximo de dez condições por pergunta');
     for (const condition of q.enabled_when ?? []) {
@@ -259,6 +269,7 @@ export function progress(
   const notApplicable = eligible.filter(
     (q) => byId.get(q.id)?.state === 'not_applicable',
   ).length;
+  const realized = eligible.filter((q) => byId.get(q.id)?.realized).length;
   const missingRequired = eligible
     .filter(
       (q) =>
@@ -278,6 +289,11 @@ export function progress(
       ? Math.round(((completed + notApplicable) * 1000) / eligible.length) / 10
       : 0,
     missing_required: missingRequired,
+    /** Itens marcados como realizados ("X de Y verificado(s)" do sistema anterior). */
+    realized,
+    realized_percent: eligible.length
+      ? Math.round((realized * 1000) / eligible.length) / 10
+      : 0,
   };
 }
 export function allocations(value: PreparationValue) {

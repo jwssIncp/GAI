@@ -32,6 +32,8 @@ export interface PreparationQuestion {
   options?: string[];
   enabled_when?: Condition[];
   quantity_question_id?: string;
+  /** "inline": complemento exibido na linha da pergunta da qual depende. */
+  display?: 'row' | 'inline';
 }
 export interface PreparationTemplate {
   id: number;
@@ -61,8 +63,12 @@ export interface AnswerPayload {
   notes: string | null;
   responsible_user_id: number | null;
   due_date: string | null;
+  /** "Realizado" (item tratado), independente da resposta. Omitido: mantém. */
+  realized?: boolean;
 }
 export interface PreparationAnswer extends AnswerPayload {
+  realized_by_name?: string | null;
+  realized_at?: string | null;
   applicable: boolean;
   answered_by_id: number | null;
   /** Nomes para exibição (nulo = usuário removido). */
@@ -105,6 +111,9 @@ export interface Preparation {
     conditionally_disabled: number;
     percent: number;
     missing_required: string[];
+    /** Itens realizados ("X de Y verificado(s)"). */
+    realized?: number;
+    realized_percent?: number;
   };
   answers: PreparationAnswer[];
 }

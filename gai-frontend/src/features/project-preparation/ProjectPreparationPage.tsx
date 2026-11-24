@@ -24,27 +24,25 @@ import {
   EditPreparationForm,
 } from './PreparationForms';
 import { TemplateManager } from './TemplateManager';
+import { QuestionTable } from './QuestionRows';
+import { answerText, situationOf } from './answerHelpers';
 import { PreparationActionDialog, type PreparationAction } from './PreparationActionDialog';
 import {
   preparationApi,
   preparationKeys,
   usePreparation,
   usePreparationContext,
-  usePreparationMutation,
   usePreparations,
   usePreparationTemplates,
 } from './preparationQueries';
 import {
   kindLabels,
   statusLabels,
-  type AnswerPayload,
   type Preparation,
-  type PreparationAnswer,
   type PreparationContext,
   type PreparationKind,
   type PreparationQuestion,
 } from './preparationTypes';
-import { questionGroupTags, requestAtKickoff } from './referenceTemplates';
 import './preparation.css';
 
 const listTitles: Record<PreparationKind, string> = {
@@ -75,10 +73,9 @@ const listSituation: Record<Preparation['status'], { label: string; tone: string
 const normalize = (value: string) =>
   value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR');
 
-/** "X de Y (Z%)": respondidas (concluídas + não aplicáveis) sobre as perguntas habilitadas. */
+/** "X de Y (Z%)": itens realizados sobre os itens visíveis e habilitados (sistema anterior). */
 function progressLabel(item: Preparation) {
-  const done = item.progress.completed + item.progress.not_applicable;
-  return `${done} de ${item.progress.total} (${item.progress.percent}%)`;
+  return `${item.progress.realized ?? 0} de ${item.progress.total} (${item.progress.realized_percent ?? 0}%)`;
 }
 
 export function ProjectPreparationPage() {
@@ -444,37 +441,6 @@ export function ProjectPreparationPage() {
 
 type SituationFilter = 'all' | 'pending' | 'done';
 
-/** Texto da resposta para a tabela, a impressão e a planilha. */
-function answerText(
-  question: PreparationQuestion,
-  answer: PreparationAnswer,
-  context: PreparationContext,
-): string {
-  if (!answer.applicable) return 'Bloqueado pelas respostas atuais';
-  if (answer.state === 'not_applicable') return 'N/A';
-  if (answer.state !== 'completed') return '';
-  const value = answer.value;
-  if (typeof value === 'boolean') return value ? 'SIM' : 'NÃO';
-  if (Array.isArray(value))
-    return answer.allocations
-      .map(
-        (row) =>
-          `${context.units.find((unit) => unit.id === row.unit_id)?.name ?? `Unidade #${row.unit_id}`}: ${row.quantity} itens (${row.participation_percent}%)`,
-      )
-      .join('; ');
-  if (value && typeof value === 'object') return `${value.start} a ${value.end}`;
-  if (question.type === 'date') return formatDate(String(value));
-  return value == null ? '' : String(value);
-}
-
-/** Situação da linha no padrão do sistema anterior: PENDENTE / REALIZADO. */
-function situationOf(answer: PreparationAnswer) {
-  if (!answer.applicable) return 'BLOQUEADO';
-  if (answer.state === 'completed') return 'REALIZADO';
-  if (answer.state === 'not_applicable') return 'N/A';
-  return 'PENDENTE';
-}
-
 const csvCell = (value: string | number) =>
   `"${String(value).replace(/"/g, '""')}"`;
 
@@ -509,17 +475,19 @@ function PreparationDetail({
     .sort((a, b) => a.order - b.order);
   const answerOf = (q: PreparationQuestion) =>
     instance.answers.find((a) => a.question_id === q.id)!;
-  const number = new Map(visible.map((q, index) => [q.id, index + 1]));
-  const categories = [...new Set(visible.map((q) => q.category))];
+  // Complementos (display "inline") aparecem na linha do item-pai e não recebem número.
+  const rowsOnly = visible.filter((q) => q.display !== 'inline');
+  const number = new Map(rowsOnly.map((q, index) => [q.id, index + 1]));
+  const categories = [...new Set(rowsOnly.map((q) => q.category))];
   const matches = (q: PreparationQuestion) => {
     const a = answerOf(q);
-    if (filter === 'pending') return a.applicable && a.state === 'pending';
-    if (filter === 'done') return a.state !== 'pending';
+    if (filter === 'pending') return a.applicable && !a.realized;
+    if (filter === 'done') return Boolean(a.realized);
     return true;
   };
   function exportSheet() {
     const header = ['Nº', 'Seção', 'Item', 'Situação', 'Resposta', 'Observações'];
-    const rows = visible.map((q) => {
+    const rows = rowsOnly.map((q) => {
       const a = answerOf(q);
       return [
         number.get(q.id)!,
@@ -551,8 +519,8 @@ function PreparationDetail({
       ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <ProgressCard
-          label="Progresso de preenchimento"
-          value={instance.progress.percent}
+          label="Itens realizados"
+          value={instance.progress.realized_percent ?? 0}
         />
         <section className="premium-panel grid gap-2 p-5 text-sm">
           <h2 className="text-lg font-bold">{instance.title}</h2>
@@ -587,10 +555,10 @@ function PreparationDetail({
         </section>
       </div>
       <p className="text-sm text-muted-foreground">
-        {instance.progress.completed} concluídas ·{' '}
-        {instance.progress.not_applicable} não aplicáveis ·{' '}
-        {instance.progress.pending} pendentes de {instance.progress.total}{' '}
-        perguntas visíveis e habilitadas. Fora do denominador:{' '}
+        {instance.progress.realized ?? 0} de {instance.progress.total} itens realizados.
+        Respondidas: {instance.progress.completed} · não aplicáveis:{' '}
+        {instance.progress.not_applicable} · sem resposta: {instance.progress.pending}. Responder não
+        conclui o item; use PENDENTE ⇄ REALIZADO. Fora do denominador:{' '}
         {instance.progress.hidden} ocultas e{' '}
         {instance.progress.conditionally_disabled} bloqueadas por condição.
       </p>
@@ -654,11 +622,9 @@ function PreparationDetail({
         </DataPanelFilters>
       </div>
       {categories.map((category, index) => {
-        const all = visible.filter((q) => q.category === category);
+        const all = rowsOnly.filter((q) => q.category === category);
         const applicable = all.filter((q) => answerOf(q).applicable);
-        const done = applicable.filter(
-          (q) => answerOf(q).state !== 'pending',
-        ).length;
+        const done = applicable.filter((q) => answerOf(q).realized).length;
         const rows = all.filter(matches);
         const hidden = hiddenGroups.includes(category);
         return (
@@ -681,6 +647,7 @@ function PreparationDetail({
               <QuestionTable
                 caption={category}
                 rows={rows}
+                questions={instance.snapshot.questions}
                 number={number}
                 answerOf={answerOf}
                 context={context}
@@ -688,7 +655,6 @@ function PreparationDetail({
                 projectId={projectId}
                 instance={instance}
                 onEdit={setQuestionId}
-                onMessage={onMessage}
               />
             ) : (
               <p className="px-5 py-4 text-sm text-muted-foreground">
@@ -758,247 +724,6 @@ function PreparationDetail({
   );
 }
 
-const rowTone: Record<string, string> = {
-  PENDENTE: 'bg-rose-50 dark:bg-rose-950/30',
-  REALIZADO: 'bg-emerald-50 dark:bg-emerald-950/30',
-  'N/A': 'bg-muted/40',
-  BLOQUEADO: 'opacity-60',
-};
-const situationTone: Record<string, string> = {
-  PENDENTE: 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-100',
-  REALIZADO:
-    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-100',
-  'N/A': 'bg-muted text-muted-foreground',
-  BLOQUEADO: 'bg-muted text-muted-foreground',
-};
-
-/** Tabela de um grupo no padrão do sistema anterior: Nº, Realizado, Item, Grupo, Resposta, Observações. */
-function QuestionTable({
-  caption,
-  rows,
-  number,
-  answerOf,
-  context,
-  editable,
-  projectId,
-  instance,
-  onEdit,
-  onMessage,
-}: {
-  caption: string;
-  rows: PreparationQuestion[];
-  number: Map<string, number>;
-  answerOf: (q: PreparationQuestion) => PreparationAnswer;
-  context: PreparationContext;
-  editable: boolean;
-  projectId: number;
-  instance: Preparation;
-  onEdit: (id: string) => void;
-  onMessage: (message: string) => void;
-}) {
-  return (
-    <div
-      className="overflow-x-auto"
-      role="region"
-      aria-label={caption}
-      tabIndex={0}
-    >
-      <table className="data-table w-full min-w-[860px] border-separate border-spacing-0 text-left text-sm">
-        <caption className="sr-only">{caption}</caption>
-        <thead className="bg-muted text-xs text-muted-foreground">
-          <tr>
-            {['Nº', 'Realizado', 'Item', 'Grupo', 'Resposta', 'Observações', 'Ações'].map(
-              (header) => (
-                <th
-                  key={header}
-                  scope="col"
-                  className={cn(
-                    'border-b border-border px-4 py-3 font-semibold first:pl-5 last:pr-5',
-                    header === 'Ações' && 'print:hidden',
-                  )}
-                >
-                  {header}
-                </th>
-              ),
-            )}
-          </tr>
-        </thead>
-        <tbody className="[&>tr:last-child>td]:border-b-0">
-          {rows.map((q) => {
-            const a = answerOf(q);
-            const situation = situationOf(a);
-            const tag = questionGroupTags[q.id];
-            const cell =
-              'border-b border-border/55 px-4 py-3 align-top first:pl-5 last:pr-5';
-            return (
-              <tr key={q.id} className={rowTone[situation]}>
-                <td className={cn(cell, 'numeric w-12')}>
-                  {String(number.get(q.id)).padStart(2, '0')}
-                </td>
-                <td className={cn(cell, 'w-28')}>
-                  <span
-                    className={cn(
-                      'inline-flex rounded-md px-2 py-0.5 text-xs font-bold',
-                      situationTone[situation],
-                    )}
-                    title={
-                      situation === 'BLOQUEADO'
-                        ? 'Desabilitada pelas respostas atuais; histórico preservado'
-                        : undefined
-                    }
-                  >
-                    {situation}
-                  </span>
-                </td>
-                <td className={cell}>
-                  <span
-                    className={cn(
-                      'font-semibold',
-                      situation === 'REALIZADO' && 'line-through decoration-1 opacity-80',
-                    )}
-                  >
-                    {q.label}
-                  </span>
-                  {q.required ? (
-                    <span className="ml-2 text-xs text-primary">Obrigatória</span>
-                  ) : null}
-                  {a.responsible_user_id || a.due_date ? (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Responsável:{' '}
-                      {context.responsible_users.find(
-                        (user) => user.id === a.responsible_user_id,
-                      )?.label ??
-                        (a.responsible_user_id
-                          ? userLabel(a.responsible_user_name)
-                          : 'Não definido')}{' '}
-                      · Prazo: {formatDate(a.due_date)}
-                    </p>
-                  ) : null}
-                </td>
-                <td className={cn(cell, 'w-32 text-xs')}>
-                  {requestAtKickoff.has(q.id) ? (
-                    <span className="inline-flex rounded-md bg-sky-100 px-2 py-0.5 font-semibold text-sky-800 dark:bg-sky-900/50 dark:text-sky-100">
-                      Solicitar no kick-off
-                    </span>
-                  ) : tag ? (
-                    <span className="font-semibold text-muted-foreground">{tag}</span>
-                  ) : null}
-                </td>
-                <td className={cell}>
-                  {editable && a.applicable && (q.type === 'select' || q.type === 'boolean') ? (
-                    <InlineChoice
-                      question={q}
-                      answer={a}
-                      projectId={projectId}
-                      instance={instance}
-                      onMessage={onMessage}
-                    />
-                  ) : (
-                    <span className="whitespace-pre-wrap">
-                      {answerText(q, a, context) || (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </span>
-                  )}
-                </td>
-                <td className={cn(cell, 'whitespace-pre-wrap text-muted-foreground')}>
-                  {a.applicable ? a.notes : null}
-                </td>
-                <td className={cn(cell, 'print:hidden')}>
-                  {editable && a.applicable ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      aria-label={`Responder: ${q.label}`}
-                      onClick={() => onEdit(q.id)}
-                    >
-                      Responder
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/**
- * Resposta de lista direto na linha, como no sistema anterior: escolher uma opção marca o
- * item como REALIZADO; voltar para "Selecione" o devolve a PENDENTE.
- */
-function InlineChoice({
-  question,
-  answer,
-  projectId,
-  instance,
-  onMessage,
-}: {
-  question: PreparationQuestion;
-  answer: PreparationAnswer;
-  projectId: number;
-  instance: Preparation;
-  onMessage: (message: string) => void;
-}) {
-  const mutation = usePreparationMutation(projectId, (payload: AnswerPayload) =>
-    preparationApi.answers(projectId, instance.id, instance.revision, [payload]),
-  );
-  const current =
-    answer.state === 'completed'
-      ? typeof answer.value === 'boolean'
-        ? String(answer.value)
-        : typeof answer.value === 'string'
-          ? answer.value
-          : ''
-      : '';
-  function change(raw: string) {
-    const value =
-      raw === ''
-        ? null
-        : question.type === 'boolean'
-          ? raw === 'true'
-          : raw;
-    mutation.mutate(
-      {
-        question_id: question.id,
-        state: value === null ? 'pending' : 'completed',
-        value,
-        notes: answer.notes,
-        responsible_user_id: answer.responsible_user_id,
-        due_date: answer.due_date,
-      },
-      { onSuccess: () => onMessage('Resposta salva.') },
-    );
-  }
-  return (
-    <div className="grid gap-1">
-      <select
-        aria-label={`Resposta: ${question.label}`}
-        className="h-9 w-full min-w-40 rounded-md border bg-background px-2 text-sm"
-        value={current}
-        disabled={mutation.isPending}
-        onChange={(e) => change(e.target.value)}
-      >
-        <option value="">{answer.state === 'not_applicable' ? 'N/A' : 'Selecione'}</option>
-        {question.type === 'boolean' ? (
-          <>
-            <option value="true">SIM</option>
-            <option value="false">NÃO</option>
-          </>
-        ) : (
-          question.options?.map((option) => <option key={option}>{option}</option>)
-        )}
-      </select>
-      {mutation.isError ? (
-        <span role="alert" className="text-xs text-destructive">
-          {(mutation.error as Error).message}
-        </span>
-      ) : null}
-    </div>
-  );
-}
 function HistoryPanel({
   projectId,
   instance,

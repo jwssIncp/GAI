@@ -26,6 +26,16 @@ export const requestAtKickoff = new Set([
   'site-plan',
 ]);
 
+/** Complementos exibidos na linha do item-pai ("QUAIS ERROS…", "QUAL SISTEMA?", ...). */
+const inlineFollowUps = new Set([
+  'prior-lessons',
+  'system-name',
+  'plate-match-percent',
+  'audit-firm',
+  'label-model-other',
+  'field-hours-detail',
+]);
+
 /** Grupo de cada atividade da seção VIDA ÚTIL, como na coluna "Grupo" do sistema anterior. */
 export const questionGroupTags: Record<string, string> = {
   'production-calendar': 'TURNOS',
@@ -233,6 +243,9 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
   return {
     name: `${kindLabels[kind]} — referência revisável`,
     kind,
-    questions,
+    // Complementos que o sistema anterior mostra dentro da linha do item de que dependem.
+    questions: questions.map((q) =>
+      inlineFollowUps.has(q.id) ? { ...q, display: 'inline' as const } : q,
+    ),
   };
 }

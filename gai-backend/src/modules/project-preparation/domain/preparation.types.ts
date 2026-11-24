@@ -34,6 +34,8 @@ export interface PreparationQuestion {
   options?: string[];
   enabled_when?: QuestionCondition[];
   quantity_question_id?: string;
+  /** "inline": complemento exibido na linha da pergunta da qual depende. Padrão: linha própria. */
+  display?: 'row' | 'inline';
 }
 export interface PreparationSnapshot {
   name: string;
@@ -51,6 +53,8 @@ export interface PolicyAnswer {
   state: AnswerState;
   value: PreparationValue;
   notes: string | null;
+  /** Item tratado ("Realizado"), independente da resposta. */
+  realized?: boolean;
 }
 export type PreparationStatus =
   | 'draft'
