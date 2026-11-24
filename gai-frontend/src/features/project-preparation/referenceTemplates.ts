@@ -6,6 +6,7 @@ import type {
   TemplatePayload,
 } from './preparationTypes';
 import { kindLabels, ORGANIZATION_OPTION } from './preparationTypes';
+import { kickoffEmail } from './referenceEmail';
 
 // Perguntas, grupos e opções do kick-off do sistema anterior (kickoff.html).
 // Não importa identidades, respostas, credenciais nem cria semente automática em produção.
@@ -274,5 +275,7 @@ export function referenceTemplate(kind: PreparationKind): TemplatePayload {
     questions: questions.map((q) =>
       inlineFollowUps.has(q.id) ? { ...q, display: 'inline' as const } : q,
     ),
+    // E-mail ao cliente (só no kick-off): textos no modelo, revisáveis por organização.
+    email: kind === 'kickoff' ? kickoffEmail() : null,
   };
 }

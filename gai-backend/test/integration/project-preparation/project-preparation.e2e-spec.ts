@@ -799,6 +799,174 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       ),
     ).toHaveLength(2);
   });
+  it('generates the client e-mail from the model, saves edits with their own version, warns when stale and restores', async () => {
+    const emailTemplate = (
+      await post(templates, {
+        name: 'Modelo com e-mail',
+        kind: 'kickoff',
+        questions: questions(),
+        email: {
+          subject: 'Kick-off {client}',
+          header: [{ lines: [{ text: 'Prezados, {greeting}.' }] }],
+          topics: [
+            {
+              title: 'Quantidade',
+              inline: true,
+              empty: '—',
+              lines: [{ text: '{q:quantity} bens' }],
+            },
+            {
+              lines: [
+                {
+                  text: 'Detalhes: {q:details}',
+                  when: [
+                    { question_id: 'flag', operator: 'equals', value: true },
+                  ],
+                },
+              ],
+            },
+          ],
+          footer: [],
+          pending_title: 'PENDÊNCIAS:',
+          pendings: [
+            {
+              text: 'Base – {deadline} - ({client})',
+              unless_realized: 'flag',
+            },
+          ],
+        },
+      })
+    ).body as { id: number; email: unknown };
+    expect(emailTemplate.email).toBeTruthy();
+    // Marcador desconhecido é recusado pelo servidor.
+    await post(
+      templates,
+      {
+        name: 'Modelo inválido',
+        kind: 'kickoff',
+        questions: questions(),
+        email: {
+          subject: '{senha}',
+          header: [],
+          topics: [],
+          footer: [],
+          pending_title: 'P',
+          pendings: [],
+        },
+      },
+      admin,
+      400,
+    );
+    // Modelo sem e-mail: a tela própria não se aplica.
+    const plain = await create();
+    await get(`${base()}/${plain.id}/email`, admin, 409);
+
+    const item = await create(emailTemplate.id);
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 1,
+      answers: [answer('quantity', 1500)],
+    });
+    let email = await get(`${base()}/${item.id}/email`);
+    expect(email.body).toMatchObject({
+      subject: 'Kick-off PREPARAÇÃO SINTÉTICA',
+      edited: false,
+      stale: false,
+      revision: 2,
+      email_version: 0,
+      pendings: 1,
+    });
+    // Prazo: primeira sexta depois da data da reunião (29/02/2028 → 03/03).
+    expect(email.body.text).toContain('01- Quantidade: 1.500 bens');
+    expect(email.body.text).toContain(
+      'PENDÊNCIAS:\n01- Base – 03/03 - (PREPARAÇÃO SINTÉTICA)',
+    );
+    expect(email.body.text).not.toContain('Detalhes');
+
+    // Edição: concorrência própria do e-mail, sem disputar a revisão das respostas.
+    const put = (body: object, status = 200, token = admin) =>
+      request(app.getHttpServer())
+        .put(`${base()}/${item.id}/email`)
+        .set(auth(token))
+        .send(body)
+        .expect(status);
+    email = await put({
+      email_version: 0,
+      source_revision: 2,
+      text: 'Texto revisado com dados pessoais',
+    });
+    expect(email.body).toMatchObject({
+      edited: true,
+      stale: false,
+      email_version: 1,
+      revision: 2,
+      text: 'Texto revisado com dados pessoais',
+    });
+    await put(
+      { email_version: 0, source_revision: 2, text: 'Conflitante' },
+      409,
+    );
+    await put({ email_version: 1, source_revision: 99, text: 'x' }, 400);
+    await put({ email_version: 1, source_revision: 2, text: '' }, 400);
+
+    // Respostas mudaram depois da edição: aviso de desatualizado.
+    await patch(`${base()}/${item.id}/answers`, {
+      revision: 2,
+      answers: [{ ...answer('flag', true), realized: true }],
+    });
+    email = await get(`${base()}/${item.id}/email`);
+    expect(email.body).toMatchObject({ edited: true, stale: true });
+    expect(email.body.original).not.toContain('PENDÊNCIAS');
+    // Editar um texto desatualizado não o torna atual.
+    email = await put({
+      email_version: 1,
+      source_revision: 3,
+      text: 'Ainda antigo',
+    });
+    expect(email.body.stale).toBe(true);
+
+    // Restaurar descarta a edição e volta ao gerado com as respostas atuais.
+    const restored = await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}/email`)
+      .set(auth())
+      .send({ email_version: 2 })
+      .expect(200);
+    expect(restored.body).toMatchObject({
+      edited: false,
+      stale: false,
+      email_version: 3,
+    });
+    expect(restored.body.text).toBe(restored.body.original);
+    await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}/email`)
+      .set(auth())
+      .send({ email_version: 3 })
+      .expect(409);
+
+    // Histórico sem o texto do e-mail (dados pessoais).
+    const history = await get(`${base()}/${item.id}/history`);
+    const operations = history.body.items.map(
+      (row: { operation: string }) => row.operation,
+    );
+    expect(operations).toEqual(
+      expect.arrayContaining([
+        'EMAIL_GENERATED',
+        'EMAIL_EDITED',
+        'EMAIL_RESTORED',
+      ]),
+    );
+    expect(JSON.stringify(history.body)).not.toContain('dados pessoais');
+
+    // Só leitura: gera, mas não edita.
+    await grant(['project-preparation:read']);
+    await get(`${base()}/${item.id}/email`, user);
+    await put({ email_version: 3, source_revision: 3, text: 'x' }, 403, user);
+    // Projeto de outra organização na URL: recusado.
+    await get(
+      `/api/v1/projects/${otherProject}/preparations/${item.id}/email`,
+      user,
+      403,
+    );
+  });
   it.each([
     ProjectStatus.FINISHED,
     ProjectStatus.ARCHIVED,

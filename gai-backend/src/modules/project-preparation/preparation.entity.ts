@@ -13,6 +13,7 @@ import {
 } from '../../common/persistence/entity-id.columns';
 import type {
   AnswerState,
+  EmailTemplate,
   PreparationKind,
   PreparationQuestion,
   PreparationSnapshot,
@@ -53,6 +54,8 @@ export class PreparationTemplateVersionEntity extends OrganizationRecord {
   @Column({ type: 'int' }) version!: number;
   @Column({ type: 'varchar', length: 200 }) name!: string;
   @Column({ type: 'json' }) questions!: PreparationQuestion[];
+  /** E-mail ao cliente desta versão do modelo (tópicos, textos e pendências). */
+  @Column({ type: 'json', nullable: true }) email!: EmailTemplate | null;
   @Column({ name: 'created_by_id', ...FOREIGN_KEY_COLUMN })
   createdById!: number;
 }
@@ -104,6 +107,28 @@ export class ProjectPreparationEntity extends OrganizationRecord {
     nullable: true,
   })
   approvedAt!: Date | null;
+  /** E-mail ao cliente editado (texto simples). Nulo: vale o gerado pelo modelo. */
+  @Column({ name: 'email_text', type: 'text', nullable: true })
+  emailText!: string | null;
+  /** Revisão das respostas em que o e-mail editado se baseia (aviso de desatualizado). */
+  @Column({ name: 'email_source_revision', type: 'int', nullable: true })
+  emailSourceRevision!: number | null;
+  /** Controle de concorrência próprio da edição do e-mail. */
+  @Column({ name: 'email_version', type: 'int', default: 0 })
+  emailVersion!: number;
+  @Column({
+    name: 'email_updated_by_id',
+    ...FOREIGN_KEY_COLUMN,
+    nullable: true,
+  })
+  emailUpdatedById!: number | null;
+  @Column({
+    name: 'email_updated_at',
+    type: 'datetime',
+    precision: 3,
+    nullable: true,
+  })
+  emailUpdatedAt!: Date | null;
   @UpdateDateColumn({ name: 'updated_at', type: 'datetime', precision: 3 })
   updatedAt!: Date;
 }

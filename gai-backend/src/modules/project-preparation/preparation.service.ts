@@ -33,6 +33,7 @@ import {
   CreatePreparationDto,
   CreateTemplateDto,
   SaveAnswersDto,
+  SaveEmailDto,
   UpdatePreparationDto,
   UpdateTemplateDto,
 } from './preparation.dto';
@@ -54,6 +55,7 @@ import {
   validateQuestions,
   validDate,
 } from './domain/preparation.policy';
+import { renderEmail, validateEmailTemplate } from './domain/preparation.email';
 import { PolicyAnswer, PreparationQuestion } from './domain/preparation.types';
 
 @Injectable()
@@ -181,6 +183,7 @@ export class PreparationService {
     return {
       ...this.templateSummary(item),
       questions: current.questions,
+      email: current.email ?? null,
       versions: versions.map((v) => ({
         version: v.version,
         name: v.name,
@@ -204,6 +207,7 @@ export class PreparationService {
       version: row.version,
       name: row.name,
       questions: row.questions,
+      email: row.email ?? null,
       created_at: row.createdAt,
       created_by_id: row.createdById,
     };
@@ -215,6 +219,7 @@ export class PreparationService {
   ) {
     await this.organization(organizationId, actor);
     const questions = validateQuestions(dto.questions);
+    const email = validateEmailTemplate(dto.email, questions);
     const id = await this.repo.transaction(async (manager) => {
       const item = await manager.getRepository(PreparationTemplateEntity).save({
         organizationId,
@@ -229,6 +234,7 @@ export class PreparationService {
         version: 1,
         name: item.name,
         questions,
+        email,
         createdById: actor.id,
       });
       await this.audit(
@@ -236,7 +242,7 @@ export class PreparationService {
         actor,
         organizationId,
         'TEMPLATE_CREATED',
-        { version: 1, name: item.name, questions },
+        { version: 1, name: item.name, questions, email },
         null,
         null,
         item.id,
@@ -269,6 +275,13 @@ export class PreparationService {
         invalid(
           'Mudança de tipo exige novo ID de pergunta; preserve a identidade das versões anteriores',
         );
+      // Sem o campo, a versão nova mantém o e-mail da anterior (revalidado com as perguntas novas).
+      const email = validateEmailTemplate(
+        dto.email === undefined
+          ? versions.find((v) => v.version === item.currentVersion)?.email
+          : dto.email,
+        questions,
+      );
       const name = this.text(dto.name);
       const changed = await manager
         .getRepository(PreparationTemplateEntity)
@@ -288,6 +301,7 @@ export class PreparationService {
         version: dto.expected_version + 1,
         name,
         questions,
+        email,
         createdById: actor.id,
       });
       await this.audit(
@@ -297,7 +311,7 @@ export class PreparationService {
         'TEMPLATE_VERSION_CREATED',
         {
           before: { version: item.currentVersion, name: item.name },
-          after: { version: dto.expected_version + 1, name, questions },
+          after: { version: dto.expected_version + 1, name, questions, email },
         },
         null,
         null,
@@ -353,6 +367,7 @@ export class PreparationService {
         name: `${original.name.slice(0, 185)} (cópia)`,
         kind: original.kind,
         questions: original.questions,
+        email: original.email as Record<string, unknown> | null,
       },
       actor,
     );
@@ -515,6 +530,7 @@ export class PreparationService {
           name: version.name,
           version: version.version,
           questions: version.questions,
+          email: version.email ?? null,
         },
         status: 'draft',
         revision: 1,
@@ -1066,6 +1082,179 @@ export class PreparationService {
         changes: row.changes,
       })),
       next_before_id: rows.length === 50 ? rows.at(-1)!.id : null,
+    };
+  }
+  /**
+   * E-mail ao cliente: gerado pelo modelo da organização (snapshot do kick-off) e, se houver,
+   * a versão editada, com aviso quando as respostas mudaram depois dela. Não envia nada.
+   */
+  async email(projectId: number, id: number, actor: ProjectActorContext) {
+    const project = await this.project(projectId, actor);
+    const row = await this.scopedInstance(project, id);
+    const view = await this.emailView(project, row);
+    await this.audit(
+      this.repo.manager,
+      actor,
+      project.organizationId,
+      'EMAIL_GENERATED',
+      {
+        revision: row.revision,
+        edited: view.edited,
+        stale: view.stale,
+        pendings: view.pendings,
+      },
+      projectId,
+      id,
+    );
+    return view;
+  }
+  async saveEmail(
+    projectId: number,
+    id: number,
+    dto: SaveEmailDto,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    const text = dto.text.replace(/\r\n?/g, '\n');
+    if (!text.trim()) invalid('O e-mail não pode ficar vazio');
+    await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      this.emailEditable(row);
+      if (dto.source_revision > row.revision)
+        invalid('Revisão de origem do e-mail inválida');
+      // Uma edição sobre texto já desatualizado continua desatualizada.
+      const source =
+        row.emailText !== null ? row.emailSourceRevision : dto.source_revision;
+      await this.claimEmail(manager, row, dto.email_version, {
+        emailText: text,
+        emailSourceRevision: source,
+        emailUpdatedById: actor.id,
+        emailUpdatedAt: new Date(),
+      });
+      // Sem o texto no histórico: o e-mail tem dados pessoais (focais) (LGPD).
+      await this.audit(
+        manager,
+        actor,
+        project.organizationId,
+        'EMAIL_EDITED',
+        {
+          email_version: dto.email_version + 1,
+          characters: text.length,
+          source_revision: source,
+          stale: (source ?? 0) < row.revision,
+        },
+        projectId,
+        id,
+      );
+    });
+    return this.emailView(project, await this.scopedInstance(project, id));
+  }
+  async restoreEmail(
+    projectId: number,
+    id: number,
+    emailVersion: number,
+    actor: ProjectActorContext,
+  ) {
+    const project = await this.project(projectId, actor, true);
+    await this.repo.transaction(async (manager) => {
+      const row = await this.scopedInstance(project, id, manager);
+      this.emailEditable(row);
+      if (row.emailText === null)
+        this.conflict('Não há versão editada do e-mail para restaurar');
+      await this.claimEmail(manager, row, emailVersion, {
+        emailText: null,
+        emailSourceRevision: null,
+        emailUpdatedById: actor.id,
+        emailUpdatedAt: new Date(),
+      });
+      await this.audit(
+        manager,
+        actor,
+        project.organizationId,
+        'EMAIL_RESTORED',
+        { email_version: emailVersion + 1 },
+        projectId,
+        id,
+      );
+    });
+    return this.emailView(project, await this.scopedInstance(project, id));
+  }
+  private emailEditable(row: ProjectPreparationEntity) {
+    // Concluído pode ter o e-mail editado (é enviado depois da reunião); arquivado não.
+    if (row.status === 'archived')
+      this.conflict('Kick-off excluído não pode ter o e-mail editado');
+    if (!row.snapshot.email)
+      this.conflict('O modelo deste kick-off não tem e-mail ao cliente');
+  }
+  /** Concorrência própria do e-mail: não disputa a revisão com quem responde o kick-off. */
+  private async claimEmail(
+    manager: EntityManager,
+    row: ProjectPreparationEntity,
+    emailVersion: number,
+    changes: Partial<ProjectPreparationEntity>,
+  ) {
+    const changed = await manager
+      .getRepository(ProjectPreparationEntity)
+      .update(
+        {
+          id: row.id,
+          organizationId: row.organizationId,
+          projectId: row.projectId,
+          emailVersion,
+        },
+        { ...changes, emailVersion: emailVersion + 1 },
+      );
+    if (changed.affected !== 1)
+      this.conflict(
+        'O e-mail foi alterado por outro usuário. Recarregue para ver a versão atual.',
+      );
+  }
+  private async emailView(
+    project: ProjectEntity,
+    row: ProjectPreparationEntity,
+  ) {
+    if (!row.snapshot.email)
+      this.conflict(
+        'O modelo deste kick-off não tem e-mail ao cliente. Use um kick-off criado a partir de um modelo com e-mail.',
+      );
+    const answers = await this.repo.answers(row);
+    const organization = await this.repo.manager
+      .getRepository(OrganizationEntity)
+      .findOneBy({ id: project.organizationId });
+    const created = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Sao_Paulo',
+    }).format(row.createdAt);
+    const generated = renderEmail(row.snapshot.email, {
+      questions: row.snapshot.questions,
+      answers,
+      applicable: applicability(row.snapshot.questions, answers),
+      organizationName: organization
+        ? (organization.tradeName ?? organization.legalName)
+        : '',
+      clientName: row.title,
+      // Prazo das pendências pela data da reunião; a de criação é a reserva.
+      meetingDate: row.scheduledDate ?? created,
+      now: new Date(),
+      units: await this.units(project),
+    });
+    const edited = row.emailText !== null;
+    const names = edited
+      ? await loadUserNames(this.repo.manager, [row.emailUpdatedById])
+      : new Map<number, string>();
+    return {
+      subject: generated.subject,
+      original: generated.text,
+      text: row.emailText ?? generated.text,
+      strong_lines: generated.strong_lines,
+      pending_title: row.snapshot.email.pending_title,
+      pendings: generated.pendings,
+      edited,
+      // Respostas mudaram depois da edição: avisar e oferecer gerar de novo.
+      stale: edited && (row.emailSourceRevision ?? 0) < row.revision,
+      revision: row.revision,
+      email_version: row.emailVersion,
+      updated_by_name: edited ? userNameOf(names, row.emailUpdatedById) : null,
+      updated_at: edited ? row.emailUpdatedAt : null,
     };
   }
   async communication(

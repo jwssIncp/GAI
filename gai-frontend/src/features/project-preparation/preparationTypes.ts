@@ -69,10 +69,59 @@ export interface PreparationTemplate {
     created_by_id: number;
   }>;
 }
+/** Condição de uma linha do e-mail: as da pergunta, mais "not_answered"; "contains" aceita lista. */
+export interface EmailCondition {
+  question_id: string;
+  operator: Condition['operator'] | 'not_answered';
+  value?: Scalar | Scalar[];
+}
+/**
+ * Linha do e-mail com marcadores {q:id}, {q:id.campo}, {notes:id}, {addresses:id},
+ * {organization}, {client}, {deadline} e {greeting}. Omitida se um marcador ficar vazio.
+ */
+export interface EmailLine {
+  text: string;
+  when?: EmailCondition[];
+  unless_realized?: string;
+}
+export interface EmailBlock {
+  title?: string;
+  lines: EmailLine[];
+  first?: boolean;
+  inline?: boolean;
+  empty?: string;
+  strong?: boolean;
+}
+/** E-mail ao cliente, no modelo versionado da organização. */
+export interface EmailTemplate {
+  subject: string;
+  header: EmailBlock[];
+  topics: EmailBlock[];
+  footer: EmailBlock[];
+  pending_title: string;
+  pendings: EmailLine[];
+}
 export interface TemplatePayload {
   name: string;
   kind: PreparationKind;
   questions: PreparationQuestion[];
+  email?: EmailTemplate | null;
+}
+/** E-mail ao cliente gerado no servidor (texto simples) e a versão editada, se houver. */
+export interface ClientEmail {
+  subject: string;
+  original: string;
+  text: string;
+  strong_lines: string[];
+  pending_title: string;
+  pendings: number;
+  edited: boolean;
+  /** As respostas mudaram depois da edição. */
+  stale: boolean;
+  revision: number;
+  email_version: number;
+  updated_by_name: string | null;
+  updated_at: string | null;
 }
 export type AnswerState = 'pending' | 'completed' | 'not_applicable';
 export interface AnswerPayload {
@@ -108,7 +157,12 @@ export interface Preparation {
   title: string;
   revision: number;
   template_version_id: number;
-  snapshot: { name: string; version: number; questions: PreparationQuestion[] };
+  snapshot: {
+    name: string;
+    version: number;
+    questions: PreparationQuestion[];
+    email?: EmailTemplate | null;
+  };
   status: 'draft' | 'in_progress' | 'approved' | 'archived';
   responsible_user_id: number | null;
   scheduled_date: string | null;

@@ -24,6 +24,7 @@ import {
   EditPreparationForm,
 } from './PreparationForms';
 import { TemplateManager } from './TemplateManager';
+import { ClientEmailPanel } from './ClientEmailPanel';
 import { QuestionTable } from './QuestionRows';
 import { answerText, situationOf } from './answerHelpers';
 import { PreparationActionDialog, type PreparationAction } from './PreparationActionDialog';
@@ -465,6 +466,7 @@ function PreparationDetail({
   const [edit, setEdit] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
   const [filter, setFilter] = useState<SituationFilter>('all');
   const [hiddenGroups, setHiddenGroups] = useState<string[]>([]);
   const [action, setAction] = useState<PreparationAction>();
@@ -594,8 +596,13 @@ function PreparationDetail({
         <Button variant="secondary" onClick={() => setHistoryOpen(true)}>
           Histórico
         </Button>
+        {instance.snapshot.email ? (
+          <Button variant="secondary" onClick={() => setEmailOpen(true)}>
+            Gerar e-mail cliente
+          </Button>
+        ) : null}
         <Button variant="secondary" onClick={() => setPreviewOpen(true)}>
-          Prévia de comunicação
+          Orientação técnica
         </Button>
         <Button variant="secondary" onClick={() => window.print()}>
           <Printer size={15} /> Imprimir
@@ -724,6 +731,18 @@ function PreparationDetail({
           onClose={() => setHistoryOpen(false)}
         />
       ) : null}
+      {emailOpen ? (
+        <ClientEmailPanel
+          projectId={projectId}
+          instance={instance.id}
+          canEdit={
+            permissions.hasPermission('project-preparation:edit') &&
+            instance.status !== 'archived' &&
+            canMutateProjectOperations(context.project.status)
+          }
+          onClose={() => setEmailOpen(false)}
+        />
+      ) : null}
       {previewOpen ? (
         <CommunicationPanel
           projectId={projectId}
@@ -776,6 +795,9 @@ function HistoryPanel({
     INSTANCE_REOPEN: 'Preparação reaberta',
     INSTANCE_ARCHIVE: 'Preparação arquivada',
     COMMUNICATION_PREVIEW: 'Prévia de comunicação gerada',
+    EMAIL_GENERATED: 'E-mail ao cliente gerado',
+    EMAIL_EDITED: 'E-mail ao cliente editado',
+    EMAIL_RESTORED: 'E-mail ao cliente restaurado ao original',
     ANSWERS_PREFILLED: 'Respostas preenchidas com dados do projeto',
   };
   return (
@@ -950,24 +972,15 @@ function CommunicationPanel({
     <ModalForm
       open
       onOpenChange={(open) => !open && onClose()}
-      title="Prévia de comunicação"
+      title="Orientação técnica"
     >
       <div className="grid gap-4">
         <p className="text-sm text-muted-foreground">
           Revise o conteúdo antes de copiar. Destinatário não definido; nenhuma
           mensagem será enviada por esta tela.
         </p>
+        {/* O e-mail ao cliente tem tela própria ("Gerar e-mail cliente"), pelo modelo da organização. */}
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            disabled={preview.isPending}
-            onClick={() => {
-              setCopyMessage('');
-              preview.mutate('email');
-            }}
-          >
-            Gerar prévia de e-mail
-          </Button>
           <Button
             variant="secondary"
             disabled={preview.isPending}

@@ -359,7 +359,7 @@ describe('Project preparation UI', () => {
     const ui = userEvent.setup();
     const copy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
     vi.spyOn(preparationApi, 'communication').mockResolvedValue({
-      channel: 'email',
+      channel: 'guidance',
       recipient: null,
       subject: 'Ata Alfa',
       body: 'Conteúdo autorizado da reunião',
@@ -367,14 +367,14 @@ describe('Project preparation UI', () => {
     });
     renderPage();
     await ui.click(
-      await screen.findByRole('button', { name: 'Prévia de comunicação' }),
+      await screen.findByRole('button', { name: 'Orientação técnica' }),
     );
     expect(preparationApi.communication).not.toHaveBeenCalled();
     expect(
       screen.queryByRole('button', { name: 'Copiar texto revisado' }),
     ).not.toBeInTheDocument();
     await ui.click(
-      screen.getByRole('button', { name: 'Gerar prévia de e-mail' }),
+      screen.getByRole('button', { name: 'Gerar orientação técnica' }),
     );
     expect(
       await screen.findByDisplayValue('Conteúdo autorizado da reunião'),
@@ -536,5 +536,21 @@ describe('Audited reference model suggestions', () => {
     );
     kickoff.questions[0].label = 'Alterado';
     expect(client.questions[0].label).not.toBe('Alterado');
+  });
+  it('keeps the client e-mail in the kick-off model, referencing only its own questions and no company name', () => {
+    const kickoff = referenceTemplate('kickoff');
+    expect(referenceTemplate('client_checklist').email).toBeNull();
+    const email = kickoff.email!;
+    const ids = new Set(kickoff.questions.map((q) => q.id));
+    const blocks = [...email.header, ...email.topics, ...email.footer];
+    const lines = [...blocks.flatMap((b) => b.lines), ...email.pendings];
+    const texts = [email.subject, ...lines.map((l) => l.text), ...blocks.flatMap((b) => (b.empty ? [b.empty] : []))];
+    const referenced = [
+      ...texts.flatMap((t) => [...t.matchAll(/\{(?:q|notes|addresses):([a-z0-9-]+)/g)].map((m) => m[1])),
+      ...lines.flatMap((l) => [...(l.when ?? []).map((c) => c.question_id), ...(l.unless_realized ? [l.unless_realized] : [])]),
+    ];
+    expect(referenced.filter((id) => !ids.has(id))).toEqual([]);
+    expect(email.topics).toHaveLength(15);
+    expect(texts.join('\n')).not.toMatch(/investor/i);
   });
 });

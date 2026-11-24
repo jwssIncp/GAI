@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -26,7 +27,9 @@ import {
   CreatePreparationDto,
   CreateTemplateDto,
   HistoryQueryDto,
+  RestoreEmailDto,
   RevisionDto,
+  SaveEmailDto,
   TransitionDto,
   SaveAnswersDto,
   UpdatePreparationDto,
@@ -298,6 +301,48 @@ export class ProjectPreparationController {
     @Req() req: PreparationRequest,
   ) {
     return this.service.history(projectId, id, actor(req), query.before_id);
+  }
+  @Get(':id/email')
+  @RequirePermissions('project-preparation:read')
+  @ApiOperation({
+    summary:
+      'E-mail ao cliente gerado pelo modelo da organização, com a versão editada (se houver) e aviso de desatualizado; não envia',
+  })
+  email(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.email(projectId, id, actor(req));
+  }
+  @Put(':id/email')
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({ summary: 'Salvar a versão editada do e-mail ao cliente' })
+  saveEmail(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SaveEmailDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.saveEmail(projectId, id, dto, actor(req));
+  }
+  @Delete(':id/email')
+  @RequirePermissions('project-preparation:read', 'project-preparation:edit')
+  @ApiOperation({
+    summary: 'Restaurar o e-mail original (descarta a versão editada)',
+  })
+  restoreEmail(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RestoreEmailDto,
+    @Req() req: PreparationRequest,
+  ) {
+    return this.service.restoreEmail(
+      projectId,
+      id,
+      dto.email_version,
+      actor(req),
+    );
   }
   @Get(':id/communication')
   @RequirePermissions('project-preparation:read')

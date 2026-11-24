@@ -8,6 +8,7 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -88,6 +89,14 @@ export class TemplateContentDto {
   @ValidateNested({ each: true })
   @Type(() => QuestionDto)
   questions!: QuestionDto[];
+  /**
+   * E-mail ao cliente (tópicos, textos e pendências), validado por completo no servidor.
+   * Ao editar o modelo sem enviar o campo, a versão nova mantém o e-mail da anterior; null remove.
+   */
+  @ApiPropertyOptional({ type: Object, nullable: true })
+  @IsOptional()
+  @IsObject()
+  email?: Record<string, unknown> | null;
 }
 export class CreateTemplateDto extends TemplateContentDto {
   @ApiProperty({ enum: PREPARATION_KINDS })
@@ -204,6 +213,29 @@ export class HistoryQueryDto {
   @IsInt()
   @Min(1)
   before_id?: number;
+}
+/** Versão editada do e-mail ao cliente (texto simples; a formatação é aplicada na tela). */
+export class SaveEmailDto {
+  @ApiProperty({
+    description: 'Versão do e-mail editado lida (0 quando não há edição)',
+  })
+  @IsInt()
+  @Min(0)
+  email_version!: number;
+  @ApiProperty({
+    description: 'Revisão das respostas em que o texto gerado se baseou',
+  })
+  @IsInt()
+  @Min(1)
+  source_revision!: number;
+  @ApiProperty({ maxLength: 15000 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(15000)
+  text!: string;
+}
+export class RestoreEmailDto {
+  @ApiProperty() @IsInt() @Min(1) email_version!: number;
 }
 export class CommunicationQueryDto {
   @ApiPropertyOptional({ enum: ['email', 'guidance'], default: 'email' })

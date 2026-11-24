@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/http';
 import type {
   AnswerPayload,
+  ClientEmail,
   CommunicationPreview,
   Preparation,
   PreparationContext,
@@ -82,6 +83,25 @@ export const preparationApi = {
     api
       .get<PreparationHistory>(`${projectPath(id)}/${instance}/history`, {
         params: { before_id },
+      })
+      .then((r) => r.data),
+  /** E-mail ao cliente (gerado e, se houver, editado). Fica registrado no histórico. */
+  email: (id: number, instance: number) =>
+    api
+      .get<ClientEmail>(`${projectPath(id)}/${instance}/email`)
+      .then((r) => r.data),
+  saveEmail: (
+    id: number,
+    instance: number,
+    payload: { email_version: number; source_revision: number; text: string },
+  ) =>
+    api
+      .put<ClientEmail>(`${projectPath(id)}/${instance}/email`, payload)
+      .then((r) => r.data),
+  restoreEmail: (id: number, instance: number, email_version: number) =>
+    api
+      .delete<ClientEmail>(`${projectPath(id)}/${instance}/email`, {
+        data: { email_version },
       })
       .then((r) => r.data),
   communication: (
