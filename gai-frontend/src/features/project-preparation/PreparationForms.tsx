@@ -14,6 +14,7 @@ import type {
   PreparationContext,
   PreparationMetadata,
   PreparationQuestion,
+  PreparationKind,
   PreparationTemplate,
 } from './preparationTypes';
 
@@ -59,22 +60,27 @@ function MetadataFields({
   onChange,
   context,
   responsibleName,
+  hideTitle = false,
 }: {
   value: PreparationMetadata;
   onChange: (value: PreparationMetadata) => void;
   context: PreparationContext;
   responsibleName?: string | null;
+  /** O título já é pedido fora (ex.: "Nome do cliente" no Novo kick-off). */
+  hideTitle?: boolean;
 }) {
   return (
     <>
-      <FormField label="Título">
-        <Input
-          required
-          maxLength={200}
-          value={value.title}
-          onChange={(e) => onChange({ ...value, title: e.target.value })}
-        />
-      </FormField>
+      {hideTitle ? null : (
+        <FormField label="Título">
+          <Input
+            required
+            maxLength={200}
+            value={value.title}
+            onChange={(e) => onChange({ ...value, title: e.target.value })}
+          />
+        </FormField>
+      )}
       <FormField label="Responsável" optional>
         <ResponsibleSelect
           users={context.responsible_users}
@@ -108,21 +114,27 @@ function MetadataFields({
 }
 export function CreatePreparationForm({
   projectId,
+  kind,
   context,
   templates,
   onCreated,
   onClose,
 }: {
   projectId: number;
+  kind: PreparationKind;
   context: PreparationContext;
   templates: PreparationTemplate[];
   onCreated: (id: number) => void;
   onClose: () => void;
 }) {
-  const [templateId, setTemplateId] = useState(templates[0]?.id ?? 0);
+  // Como no sistema anterior, basta o nome do cliente: o modelo mais recente da categoria
+  // já vem escolhido; modelo, versão, responsável e datas ficam em "Mais opções".
+  const [templateId, setTemplateId] = useState(
+    [...templates].sort((a, b) => b.id - a.id)[0]?.id ?? 0,
+  );
   const [version, setVersion] = useState('');
   const [metadata, setMetadata] = useState<PreparationMetadata>({
-    title: '',
+    title: context.company?.name ?? '',
     responsible_user_id: null,
     scheduled_date: null,
     due_date: null,
@@ -147,9 +159,27 @@ export function CreatePreparationForm({
     <ModalForm
       open
       onOpenChange={(open) => !open && onClose()}
-      title="Nova preparação"
+      title={kind === 'kickoff' ? 'Novo kick-off' : 'Novo checklist do cliente'}
     >
       <form onSubmit={submit} className="grid gap-4">
+        <p className="text-sm text-muted-foreground">Informe o nome do cliente que será cadastrado.</p>
+        <FormField label="Nome do cliente">
+          <Input
+            required
+            autoFocus
+            maxLength={200}
+            value={metadata.title}
+            onChange={(e) => setMetadata({ ...metadata, title: e.target.value })}
+          />
+        </FormField>
+        <details className="rounded-lg border px-3 py-2 text-sm">
+          <summary className="cursor-pointer font-semibold">
+            Mais opções
+            <span className="ml-2 font-normal text-muted-foreground">
+              Modelo: {template ? `${template.name} · v${version || template.current_version}` : 'nenhum'}
+            </span>
+          </summary>
+          <div className="mt-3 grid gap-4">
         <FormField label="Modelo">
           <select
             className={control}
@@ -187,7 +217,10 @@ export function CreatePreparationForm({
           context={context}
           value={metadata}
           onChange={setMetadata}
+          hideTitle
         />
+          </div>
+        </details>
         {!templates.length ? (
           <p role="status" className="text-sm text-muted-foreground">
             Crie um modelo desta categoria para começar.
@@ -199,7 +232,7 @@ export function CreatePreparationForm({
         <Button
           disabled={mutation.isPending || !templateId || !metadata.title.trim()}
         >
-          {mutation.isPending ? 'Criando…' : 'Criar preparação'}
+          {mutation.isPending ? 'Criando…' : 'Criar'}
         </Button>
       </form>
     </ModalForm>

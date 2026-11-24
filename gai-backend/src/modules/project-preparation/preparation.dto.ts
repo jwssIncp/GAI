@@ -13,6 +13,7 @@ import {
   Matches,
   Max,
   MaxLength,
+  MinLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -87,6 +88,15 @@ export class UpdateTemplateDto extends TemplateContentDto {
 }
 export class RevisionDto {
   @ApiProperty() @IsInt() @Min(1) revision!: number;
+}
+/** Concluir, reabrir ou excluir (arquivar). Reabrir e excluir exigem motivo, registrado no histórico. */
+export class TransitionDto extends RevisionDto {
+  @ApiPropertyOptional({ minLength: 5, maxLength: 500 })
+  @IsOptional()
+  @IsString()
+  @MinLength(5)
+  @MaxLength(500)
+  reason?: string;
 }
 export class CreatePreparationDto {
   @ApiProperty() @IsInt() @Min(1) template_id!: number;

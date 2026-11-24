@@ -325,11 +325,16 @@ describe('Project preparation UI', () => {
     vi.spyOn(preparationApi, 'create').mockResolvedValue({ ...seed, id: 21 });
     renderPage();
     await ui.click(
-      await screen.findByRole('button', { name: 'Novo kick-off' }),
+      await screen.findByRole('button', { name: '+ Novo kick-off' }),
     );
-    await ui.type(screen.getByLabelText('Título'), 'Nova reunião');
+    // Como no sistema anterior, basta o nome do cliente (já vem com a empresa do projeto).
+    const name = screen.getByLabelText('Nome do cliente');
+    expect(name).toHaveValue(context.company!.name);
+    await ui.clear(name);
+    await ui.type(name, 'Nova reunião');
+    await ui.click(screen.getByText('Mais opções'));
     await ui.type(screen.getByLabelText('Data da preparação'), '2028-02-29');
-    await ui.click(screen.getByRole('button', { name: 'Criar preparação' }));
+    await ui.click(screen.getByRole('button', { name: 'Criar' }));
     await waitFor(() =>
       expect(preparationApi.create).toHaveBeenCalledWith(
         10,
@@ -421,6 +426,40 @@ describe('Project preparation UI', () => {
   });
 });
 describe('Preparation on closed projects', () => {
+  it('lista no padrão do sistema anterior: busca sem acento, Concluir na linha e Excluir com motivo', async () => {
+    const ui = userEvent.setup();
+    vi.spyOn(preparationApi, 'list').mockResolvedValue({
+      items: [
+        { ...structuredClone(seed), title: 'São Paulo Indústria' },
+        { ...structuredClone(seed), id: 12, title: 'Arquivado antigo', status: 'archived' },
+        { ...structuredClone(seed), id: 13, title: 'Concluído', status: 'approved' },
+      ],
+    });
+    vi.spyOn(preparationApi, 'get').mockResolvedValue({ ...structuredClone(seed), title: 'São Paulo Indústria' });
+    const transition = vi.spyOn(preparationApi, 'transition').mockResolvedValue(structuredClone(seed));
+    renderPage();
+    const table = (await screen.findAllByRole('region', { name: 'Kick-offs' }))[0];
+    expect(within(table).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['Cliente', 'Data', 'Check list', 'Situação', 'Ações']);
+    // Arquivados ficam fora da lista até "Mostrar arquivados".
+    expect(within(table).queryByText('Arquivado antigo')).not.toBeInTheDocument();
+    expect(within(table).getByText('Em andamento')).toBeInTheDocument();
+    expect(within(table).getByText('Concluída')).toBeInTheDocument();
+    expect(within(table).getByRole('button', { name: 'Reabrir Concluído' })).toBeInTheDocument();
+    await ui.type(screen.getByRole('searchbox', { name: 'Buscar cliente' }), 'sao paulo');
+    expect(within(table).queryByText('Concluído')).not.toBeInTheDocument();
+    expect(within(table).getByText('São Paulo Indústria')).toBeInTheDocument();
+    await ui.click(within(table).getByRole('button', { name: 'Concluir São Paulo Indústria' }));
+    await ui.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Concluir' }));
+    await waitFor(() => expect(transition).toHaveBeenCalledWith(10, seed.id, seed.revision, 'approve', undefined));
+    // Excluir (arquiva) exige motivo de pelo menos 5 caracteres.
+    await ui.click(screen.getByRole('button', { name: 'Excluir' }));
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', { name: 'Excluir' });
+    expect(confirm).toBeDisabled();
+    await ui.type(within(dialog).getByLabelText('Motivo'), 'Criado por engano');
+    await ui.click(confirm);
+    await waitFor(() => expect(transition).toHaveBeenCalledWith(10, seed.id, seed.revision, 'archive', 'Criado por engano'));
+  });
   it('preserves consultation while hiding instance mutations and approval on finished projects', async () => {
     vi.spyOn(preparationApi, 'context').mockResolvedValue({
       ...context,
@@ -433,7 +472,7 @@ describe('Preparation on closed projects', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: 'Novo kick-off' }),
+      screen.queryByRole('button', { name: /Novo kick-off/ }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Concluir' }),

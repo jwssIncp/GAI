@@ -58,16 +58,19 @@ export const preparationApi = {
     instance: number,
     revision: number,
     action: 'approve' | 'reopen' | 'archive',
+    /** Obrigatório ao reabrir e ao excluir (arquivar); fica no histórico. */
+    reason?: string,
   ) =>
     action === 'archive'
       ? api
           .delete<Preparation>(`${projectPath(id)}/${instance}`, {
-            data: { revision },
+            data: { revision, reason },
           })
           .then((r) => r.data)
       : api
           .post<Preparation>(`${projectPath(id)}/${instance}/${action}`, {
             revision,
+            ...(reason ? { reason } : {}),
           })
           .then((r) => r.data),
   history: (id: number, instance: number, before_id?: number) =>

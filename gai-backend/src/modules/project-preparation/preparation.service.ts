@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -804,7 +805,17 @@ export class PreparationService {
     revision: number,
     action: 'approve' | 'reopen' | 'archive',
     actor: ProjectActorContext,
+    reason?: string,
   ) {
+    const why = reason?.trim() ?? '';
+    if (action !== 'approve' && why.length < 5)
+      throw new BadRequestException({
+        code: 'VALIDATION_ERROR',
+        message:
+          action === 'reopen'
+            ? 'Informe o motivo da reabertura (mínimo de 5 caracteres).'
+            : 'Informe o motivo da exclusão (mínimo de 5 caracteres).',
+      });
     const project = await this.project(projectId, actor, true);
     await this.repo.transaction(async (manager) => {
       const row = await this.scopedInstance(project, id, manager);
@@ -850,7 +861,12 @@ export class PreparationService {
         actor,
         project.organizationId,
         `INSTANCE_${action.toUpperCase()}`,
-        { before: row.status, after: changes, revision: revision + 1 },
+        {
+          before: row.status,
+          after: changes,
+          revision: revision + 1,
+          ...(why ? { reason: why } : {}),
+        },
         projectId,
         id,
       );

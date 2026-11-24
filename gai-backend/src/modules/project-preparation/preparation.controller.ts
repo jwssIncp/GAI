@@ -27,6 +27,7 @@ import {
   CreateTemplateDto,
   HistoryQueryDto,
   RevisionDto,
+  TransitionDto,
   SaveAnswersDto,
   UpdatePreparationDto,
   UpdateTemplateDto,
@@ -221,7 +222,7 @@ export class ProjectPreparationController {
   approve(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -230,6 +231,7 @@ export class ProjectPreparationController {
       dto.revision,
       'approve',
       actor(req),
+      dto.reason,
     );
   }
   @Post(':id/reopen')
@@ -239,7 +241,7 @@ export class ProjectPreparationController {
   reopen(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -248,6 +250,7 @@ export class ProjectPreparationController {
       dto.revision,
       'reopen',
       actor(req),
+      dto.reason,
     );
   }
   @Delete(':id')
@@ -256,7 +259,7 @@ export class ProjectPreparationController {
   archive(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RevisionDto,
+    @Body() dto: TransitionDto,
     @Req() req: PreparationRequest,
   ) {
     return this.service.transition(
@@ -265,6 +268,7 @@ export class ProjectPreparationController {
       dto.revision,
       'archive',
       actor(req),
+      dto.reason,
     );
   }
   @Get(':id/history')

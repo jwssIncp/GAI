@@ -416,7 +416,14 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       admin,
       409,
     );
-    await post(`${base()}/${item.id}/reopen`, { revision: 3 }, admin, 200);
+    // Reabrir exige motivo (registrado no histórico).
+    await post(`${base()}/${item.id}/reopen`, { revision: 3 }, admin, 400);
+    await post(
+      `${base()}/${item.id}/reopen`,
+      { revision: 3, reason: 'Cliente pediu ajuste' },
+      admin,
+      200,
+    );
     const pending = await patch(`${base()}/${item.id}/answers`, {
       revision: 4,
       answers: [answer('details', null, 'pending')],
@@ -526,6 +533,11 @@ describe('Project preparation: real HTTP persistence, RBAC and tenant isolation'
       .delete(`${base()}/${item.id}`)
       .set(auth())
       .send({ revision: 2 })
+      .expect(400);
+    await request(app.getHttpServer())
+      .delete(`${base()}/${item.id}`)
+      .set(auth())
+      .send({ revision: 2, reason: 'Criado por engano' })
       .expect(200);
     const archived = await get(`${base()}/${item.id}`);
     expect(archived.body.status).toBe('archived');
