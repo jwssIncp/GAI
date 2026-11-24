@@ -117,7 +117,7 @@ describe('ProjectInventoryItemsPage', () => {
     expect(screen.queryByRole('columnheader', { name: 'Marca' })).not.toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem('gai.inventory-items.hidden-columns') ?? '[]')).toEqual(['Marca']);
     await userEvent.click(screen.getByRole('button', { name: 'Exportar (Excel)' }));
-    await waitFor(() => expect(mocks.createExport).toHaveBeenCalledWith(10, 'inventory_items_xlsx'));
+    await waitFor(() => expect(mocks.createExport).toHaveBeenCalledWith(10, 'inventory_items_valuation_xlsx'));
     expect(await screen.findByRole('link', { name: 'Acompanhar e baixar em Exportações' })).toHaveAttribute('href', '/app/projects/10/export-jobs');
   });
 

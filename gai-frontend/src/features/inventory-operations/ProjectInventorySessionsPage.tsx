@@ -1,4 +1,8 @@
-import { Plus } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { exportJobsApi } from '@/api/endpoints';
+import { usePermissions } from '@/features/auth/usePermissions';
+import { canExportContent } from '@/features/export-jobs/exportContentPermissions';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { normalizePage } from '@/api/pagination';
@@ -68,7 +72,7 @@ function ReconciliationIndicators({ projectId }: { projectId: number }) {
   const duplicates = accounting.duplicate_items ?? 0;
   return (
     <section className="grid gap-3" aria-label="Indicadores da conciliação">
-      <SectionTitle title={`Indicadores da conciliação · execução #${run}`} />
+      <SectionTitle title={`Indicadores da conciliação · execução #${run}`} actions={<ExportReconciliationButton projectId={projectId} />} />
       <KpiGrid label="Indicadores da conciliação em quantidade">
         <Kpi group="indicators" tinted label="Conciliados" value={reconciled} hint="Itens físicos com par na base contábil." />
         <Kpi group="indicators" label="% conciliado contábil" value={percent(reconciled, reconciled + accountingSurplus)} hint="Conciliados ÷ (conciliados + sobra contábil)." />
@@ -119,4 +123,27 @@ function CreateSessionDrawer({ projectId, open, onOpenChange }: { projectId: num
     mutation.mutate({ name: value }, { onSuccess: () => { setName(''); onOpenChange(false); } });
   }
   return <DrawerForm open={open} onOpenChange={onOpenChange} title="Nova sessão de inventário"><form className="grid gap-4" onSubmit={submit}><label className="grid gap-1.5 text-sm font-medium">Nome<input required maxLength={255} className="h-10 rounded-md border bg-background px-3" value={name} onChange={(e) => setName(e.target.value)} /></label>{mutation.isError ? <ErrorState message={(mutation.error as Error).message} /> : null}<Button type="submit" disabled={mutation.isPending || !name.trim()}>{mutation.isPending ? 'Criando...' : 'Criar sessão'}</Button></form></DrawerForm>;
+}
+
+/**
+ * "Exportar conciliação (Excel)": abas Conciliados, Divergência de placa, Sobra física, Só na
+ * contabilidade, Duplicidades e Resumo da última execução. O arquivo sai em Exportações.
+ */
+function ExportReconciliationButton({ projectId }: { projectId: number }) {
+  const { hasPermission } = usePermissions();
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => exportJobsApi.create(projectId, 'reconciliation_xlsx'),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['export-jobs', projectId] }),
+  });
+  if (!hasPermission('export-jobs:create') || !canExportContent('reconciliation_xlsx', hasPermission)) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <Button type="button" size="sm" variant="secondary" disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+        <Download size={15} /> Exportar conciliação (Excel)
+      </Button>
+      {mutation.isSuccess ? <span role="status">Exportação #{mutation.data.id} solicitada. <Link className="font-semibold text-primary hover:underline" to={`/app/projects/${projectId}/export-jobs`}>Baixar em Exportações</Link></span> : null}
+      {mutation.isError ? <span role="alert" className="text-destructive">{(mutation.error as Error).message}</span> : null}
+    </div>
+  );
 }

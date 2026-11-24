@@ -358,6 +358,8 @@ export type ProjectUnitListResponse = {
 export type ExportJobType =
   | 'valuation_batches_xlsx'
   | 'inventory_items_xlsx'
+  | 'inventory_items_valuation_xlsx'
+  | 'reconciliation_xlsx'
   | 'inventory_accounting_items_xlsx'
   | 'pending_issues_xlsx'
   | 'payments_xlsx'

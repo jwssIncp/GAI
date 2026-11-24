@@ -120,9 +120,10 @@ function InventoryItemsWorkspace({projectId}:{projectId:number}) {
   const [panelHidden, setPanelHidden] = useState(false);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>(loadHiddenColumns);
   const queryClient = useQueryClient();
-  // "Exportar (Excel)" como no sistema anterior: dispara o export assíncrono de itens.
+  // "Exportar (Excel)" como no sistema anterior: dispara o export assíncrono de itens. Quem lê
+  // avaliações recebe também as colunas da avaliação mais recente de cada item.
   const exportItems = useMutation({
-    mutationFn: () => exportJobsApi.create(projectId, 'inventory_items_xlsx'),
+    mutationFn: () => exportJobsApi.create(projectId, hasPermission('asset-valuations:read') ? 'inventory_items_valuation_xlsx' : 'inventory_items_xlsx'),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['export-jobs', projectId] }),
   });
 

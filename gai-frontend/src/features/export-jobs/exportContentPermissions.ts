@@ -3,6 +3,8 @@ import type { ExportJobType } from '@/types/api';
 const reads: Record<ExportJobType, string[]> = {
   valuation_batches_xlsx: ['asset-valuations:read','inventory-items:read'],
   inventory_items_xlsx: ['inventory-items:read'],
+  inventory_items_valuation_xlsx: ['inventory-items:read', 'asset-valuations:read'],
+  reconciliation_xlsx: ['reconciliations:read', 'inventory-items:read', 'inventory-accounting-items:read'],
   inventory_accounting_items_xlsx: ['inventory-accounting-items:read'],
   pending_issues_xlsx: ['inventory-pending-issues:read'],
   payments_xlsx: ['payments:read'],
