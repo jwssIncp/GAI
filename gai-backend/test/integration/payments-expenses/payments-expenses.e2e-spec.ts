@@ -199,4 +199,108 @@ describe('Payments & Expenses (e2e)', () => {
     expect(expenseList.total_items).toBe(1);
     expect(expenseList.items[0].id).toBe(expense.id);
   });
+
+  it('conta só dias de segunda a sexta e recusa períodos sobrepostos do mesmo inventariante', async () => {
+    const { projectId, fieldAgentId } = await createProjectAndAgent();
+    const post = (start: string, end: string) =>
+      request(app.getHttpServer())
+        .post(`/api/v1/projects/${projectId}/payments`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          field_agent_id: fieldAgentId,
+          start_date: start,
+          end_date: end,
+          expected_payment_date: '2026-07-20',
+          daily_rate: '100.00',
+        });
+    // 01/07/2026 (quarta) a 14/07/2026 (terça): 14 dias corridos, 10 úteis.
+    const first = await post('2026-07-01', '2026-07-14').expect(201);
+    expect((first.body as { days: number }).days).toBe(10);
+    expect((first.body as PaymentBody).final_amount).toBe('1000.00');
+
+    // cruza 10–14/07: recusado
+    const overlap = await post('2026-07-10', '2026-07-20').expect(409);
+    expect((overlap.body as { message: string }).message).toContain(
+      '01/07/2026 a 14/07/2026',
+    );
+    // logo depois: aceito
+    const second = await post('2026-07-15', '2026-07-31').expect(201);
+
+    // editar o segundo para cruzar o primeiro: recusado
+    await request(app.getHttpServer())
+      .patch(
+        `/api/v1/projects/${projectId}/payments/${(second.body as IdBody).id}`,
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        field_agent_id: fieldAgentId,
+        start_date: '2026-07-14',
+        end_date: '2026-07-31',
+        expected_payment_date: '2026-07-20',
+        daily_rate: '100.00',
+      })
+      .expect(409);
+
+    // cancelado não bloqueia: cancela o primeiro e lança de novo no mesmo período
+    await request(app.getHttpServer())
+      .post(
+        `/api/v1/projects/${projectId}/payments/${(first.body as IdBody).id}/cancel`,
+      )
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    await post('2026-07-01', '2026-07-14').expect(201);
+
+    // período só de fim de semana: 0 dias
+    const weekend = await post('2026-06-27', '2026-06-28').expect(201);
+    expect((weekend.body as { days: number }).days).toBe(0);
+  });
+
+  it('resumo do dia: planilha dos pagamentos em aberto previstos para a data', async () => {
+    const { projectId, fieldAgentId } = await createProjectAndAgent();
+    await request(app.getHttpServer())
+      .post(`/api/v1/projects/${projectId}/payments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        field_agent_id: fieldAgentId,
+        start_date: '2026-07-01',
+        end_date: '2026-07-03',
+        expected_payment_date: '2026-07-10',
+        daily_rate: '100.00',
+      })
+      .expect(201);
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/field-agent-payments/day-summary?date=2026-07-10')
+      .set('Authorization', `Bearer ${token}`)
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    expect(response.headers['content-disposition']).toContain(
+      'pagamentos-previstos-2026-07-10.xlsx',
+    );
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const XLSX = require('xlsx') as typeof import('xlsx');
+    const book = XLSX.read(response.body as Buffer, { type: 'buffer' });
+    expect(book.SheetNames).toEqual(['Por inventariante', 'Lançamentos']);
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(
+      book.Sheets['Por inventariante'],
+      { header: 1 },
+    );
+    expect(rows[0]).toEqual(['Pagamentos previstos para 10/07/2026']);
+    expect(rows[3]).toEqual([
+      'Pagador Teste',
+      '',
+      'Financeiro inventario',
+      1,
+      300,
+    ]);
+
+    await request(app.getHttpServer())
+      .get('/api/v1/field-agent-payments/day-summary?date=10-07-2026')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400);
+  });
 });

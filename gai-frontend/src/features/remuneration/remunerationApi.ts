@@ -168,6 +168,20 @@ export function daysInclusive(start: string, end: string): number {
   return days > 0 ? days : 0;
 }
 
+/** Dias de segunda a sexta entre as datas, contando os dois extremos (feriados não saem); 0 se incompletas ou invertidas. */
+export function weekdaysInclusive(start: string, end: string): number {
+  const total = daysInclusive(start, end);
+  if (!total) return 0;
+  const fullWeeks = Math.floor(total / 7);
+  let days = fullWeeks * 5;
+  const first = new Date(`${start}T00:00:00Z`).getUTCDay();
+  for (let i = 0; i < total % 7; i += 1) {
+    const weekday = (first + i) % 7;
+    if (weekday !== 0 && weekday !== 6) days += 1;
+  }
+  return days;
+}
+
 /** total = dias × diária + adicional (ou o manual); final = total − descontos. */
 export function computeRemuneration(input: {
   days: number;

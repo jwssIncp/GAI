@@ -2,7 +2,8 @@
  * Fórmulas da remuneração do inventariante (doc 06 §2.3), em centavos inteiros
  * (BigInt): nada de ponto flutuante em dinheiro.
  *
- * - dias  = (data_final − data_inicial) + 1   (conta os dois extremos)
+ * - dias  = dias úteis (segunda a sexta) entre data_inicial e data_final,
+ *           contando os dois extremos; feriados não são descontados
  * - total = dias × diária + adicional          (ou o total informado à mão)
  * - final = total − descontos                  (não pode ser negativo)
  * - daily_total (dias × diária) continua sendo gravado por compatibilidade.
@@ -34,6 +35,22 @@ export function daysInclusive(start: Date, end: Date): number {
     throw new RemunerationRuleError(
       'A data final não pode ser anterior à data inicial.',
     );
+  return days;
+}
+
+/**
+ * Dias de segunda a sexta entre duas datas civis (UTC à meia-noite), contando os dois
+ * extremos. Período só de fim de semana dá 0.
+ */
+export function weekdaysInclusive(start: Date, end: Date): number {
+  const total = daysInclusive(start, end);
+  const fullWeeks = Math.floor(total / 7);
+  let days = fullWeeks * 5;
+  const firstWeekday = (start.getUTCDay() + fullWeeks * 7) % 7;
+  for (let i = 0; i < total % 7; i += 1) {
+    const weekday = (firstWeekday + i) % 7;
+    if (weekday !== 0 && weekday !== 6) days += 1;
+  }
   return days;
 }
 

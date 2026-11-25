@@ -29,7 +29,7 @@ import { Expense } from '../../domain/entities/expense';
 import { FieldAgentPayment } from '../../domain/entities/field-agent-payment';
 import { PaymentStateConflict } from '../../domain/entities/payment-state-conflict';
 import {
-  daysInclusive,
+  weekdaysInclusive,
   RemunerationRuleError,
 } from '../../domain/remuneration.formulas';
 import { FinanceSettingsService } from '../../../finance-settings/finance-settings.service';
@@ -118,7 +118,7 @@ export class PaymentsExpensesService {
           endDate,
           paymentDate: null,
           expectedPaymentDate: this.expectedDate(dto),
-          days: daysInclusive(startDate, endDate),
+          days: weekdaysInclusive(startDate, endDate),
           dailyRate: dto.daily_rate,
           additionalAmount: dto.additional_amount ?? '0.00',
           dailyTotal: '0.00',
@@ -147,14 +147,23 @@ export class PaymentsExpensesService {
       'Não é possível lançar a diária',
       [payment.toProps().expectedPaymentDate],
     );
-    const saved = await this.repo.savePaymentWithAudit(payment, {
-      organizationId: project.organizationId,
-      projectId,
-      operation: PaymentExpenseAuditOperation.CREATE_PAYMENT,
-      performedBy: actor.id,
-      changes: { status: { before: null, after: PaymentStatus.PENDING } },
-    });
-    return PaymentResponseDto.fromDomain(saved);
+    try {
+      const saved = await this.repo.savePaymentWithAudit(payment, {
+        organizationId: project.organizationId,
+        projectId,
+        operation: PaymentExpenseAuditOperation.CREATE_PAYMENT,
+        performedBy: actor.id,
+        changes: { status: { before: null, after: PaymentStatus.PENDING } },
+      });
+      return PaymentResponseDto.fromDomain(saved);
+    } catch (error) {
+      if (error instanceof PaymentStateConflict)
+        throw new ConflictException({
+          code: 'CONFLICT',
+          message: error.message,
+        });
+      throw error;
+    }
   }
   async listPayments(
     projectId: number,
@@ -217,7 +226,7 @@ export class PaymentsExpensesService {
           startDate,
           endDate,
           expectedPaymentDate: this.expectedDate(dto),
-          days: daysInclusive(startDate, endDate),
+          days: weekdaysInclusive(startDate, endDate),
           dailyRate: dto.daily_rate,
           additionalAmount: dto.additional_amount ?? '0.00',
           ...this.manualTotal(dto),

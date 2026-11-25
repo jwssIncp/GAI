@@ -255,19 +255,22 @@ describe('Fluxo de caixa: cenário de referência (MySQL)', () => {
       .expect(200);
     expect(r.body.done).toBe(1);
 
-    // Diárias: P1 em aberto (prevista 10/12), P2 paga em 10/11
-    const pay = (rate: string, expected: string) =>
+    // Diárias: P1 em aberto (prevista 10/12), P2 paga em 10/11. Cada uma com 5 dias úteis
+    // (segunda a sexta) e períodos que não se cruzam (o mesmo dia não é pago duas vezes).
+    const pay = (rate: string, expected: string, start: string, end: string) =>
       api('post', `/projects/${alfa}/payments`)
         .send({
           field_agent_id: agent,
-          start_date: '2026-11-01',
-          end_date: '2026-11-05',
+          start_date: start,
+          end_date: end,
           expected_payment_date: expected,
           daily_rate: rate,
         })
         .expect(201);
-    const p1 = (await pay('200.00', '2026-12-10')).body.id;
-    const p2 = (await pay('100.00', '2026-11-20')).body.id;
+    const p1 = (await pay('200.00', '2026-12-10', '2026-11-02', '2026-11-06'))
+      .body.id;
+    const p2 = (await pay('100.00', '2026-11-20', '2026-11-09', '2026-11-13'))
+      .body.id;
     for (const id of [p1, p2])
       await api('post', `/projects/${alfa}/payments/${id}/approve`).expect(200);
     await api('post', '/field-agent-payments/pay')

@@ -268,10 +268,11 @@ describe('Remuneração: criação valida tudo antes de gravar (nada de registro
     expect(res).toMatchObject({
       expected_payment_date: '2026-11-20',
       payment_date: null,
-      days: 5,
-      total_amount: '975.00',
+      // 03/11 (terça) a 07/11 (sábado): 4 dias de segunda a sexta
+      days: 4,
+      total_amount: '790.00',
       total_manual: false,
-      final_amount: '945.00',
+      final_amount: '760.00',
       status: 'pending',
     });
   });

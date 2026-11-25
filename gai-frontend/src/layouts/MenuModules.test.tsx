@@ -66,7 +66,7 @@ describe("Menu superior por área", () => {
   // "Projetos" virou as sub-abas da área no padrão do sistema anterior (mesma rota /app/projects
   // para o Painel Geral); cada sub-aba aparece conforme as permissões do perfil.
   const allProjectTabs = ["Painel Geral", "Kick-off", "Pendências - Campo", "Inventário", "Conciliação Físico-Contábil", "Avaliação", "Laudo"];
-  const added = ["Parâmetros financeiros", "Remuneração", "Pagamento de inventariantes", "Despesas", "Placas de patrimônio", "Comissões"];
+  const added = ["Parâmetros financeiros", "Remuneração por projeto", "Pagamento de inventariantes", "Despesas", "Placas de patrimônio", "Comissões"];
   it.each([
     ["ORG_ADMIN", user({ roles: ["ORG_ADMIN"] }), ["Visão geral", ...allProjectTabs, "Orçamentos", "Inventariantes", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Usuários", "Perfis e acessos", "Empresas", ...added]],
     ["PLATFORM_ADMIN", user({ roles: ["PLATFORM_ADMIN"], organization: null }), ["Visão geral", ...allProjectTabs, "Orçamentos", "Contas a receber", "Fluxo de caixa", "DRE gerencial", "Organizações", "Usuários", "Perfis e acessos", "Empresas", ...added]],
@@ -91,7 +91,7 @@ describe("Menu superior por área", () => {
       "DRE gerencial",
       // Inventariantes fica no Financeiro, como no sistema anterior (mesma URL e permissão).
       "Inventariantes",
-      "Remuneração",
+      "Remuneração por projeto",
       "Pagamento de inventariantes",
       "Despesas",
       "Placas de patrimônio",

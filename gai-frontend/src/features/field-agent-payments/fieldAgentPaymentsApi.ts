@@ -75,6 +75,9 @@ export type BatchResult = { done: number; failed: number; results: Array<{ id: n
 export const fieldAgentPaymentsApi = {
   list: (filters: ConsolidatedFilters) =>
     api.get<Consolidated>("/field-agent-payments", { params: filters }).then((r) => r.data),
+  /** Planilha dos pagamentos em aberto previstos para a data (AAAA-MM-DD). */
+  daySummaryFile: (date: string) =>
+    api.get<Blob>("/field-agent-payments/day-summary", { params: { date }, responseType: "blob" }).then((r) => r.data),
   exportFile: (filters: ConsolidatedFilters) =>
     api.get<Blob>("/field-agent-payments/export", { params: filters, responseType: "blob" }).then((r) => r.data),
   pay: (payload: { ids: number[]; date_mode: "today" | "chosen" | "individual"; payment_date?: string; dates?: Record<string, string> }) =>
