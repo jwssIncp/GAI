@@ -12,10 +12,10 @@ import { useExpenseAttachmentDownloadUrl, useExpenseAttachments, useRemoveExpens
 import type { Expense, ExpenseAttachment } from '@/types/api';
 import { reduceImage } from './reduceImage';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
-const MAX_SIZE_BYTES = 20 * 1024 * 1024;
+export const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
+export const MAX_SIZE_BYTES = 20 * 1024 * 1024;
 
-function formatBytes(value: number) {
+export function formatBytes(value: number) {
   if (!value) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
   const index = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);

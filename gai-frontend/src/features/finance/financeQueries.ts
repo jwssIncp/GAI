@@ -24,18 +24,26 @@ export function useExpenseAttachments(projectId: number, expenseId?: number) {
   });
 }
 
+/** Envia um comprovante: pede a URL assinada, sobe o arquivo e confirma no servidor. */
+export async function uploadExpenseAttachment(
+  projectId: number,
+  expenseId: number,
+  file: File,
+  onProgress?: (progress: number) => void,
+) {
+  const response = await expenseAttachmentsApi.createUploadUrl(projectId, expenseId, {
+    original_name: file.name,
+    mime_type: file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'application/pdf',
+    size_bytes: file.size,
+  });
+  await uploadToPresignedUrl(response.upload_url, file, onProgress);
+  return expenseAttachmentsApi.confirmUpload(projectId, expenseId, response.attachment.id, { size_bytes: file.size });
+}
+
 export function useUploadExpenseAttachment(projectId: number, expenseId: number, onProgress?: (progress: number) => void) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
-      const response = await expenseAttachmentsApi.createUploadUrl(projectId, expenseId, {
-        original_name: file.name,
-        mime_type: file.type as 'image/jpeg' | 'image/png' | 'image/webp' | 'application/pdf',
-        size_bytes: file.size,
-      });
-      await uploadToPresignedUrl(response.upload_url, file, onProgress);
-      return expenseAttachmentsApi.confirmUpload(projectId, expenseId, response.attachment.id, { size_bytes: file.size });
-    },
+    mutationFn: (file: File) => uploadExpenseAttachment(projectId, expenseId, file, onProgress),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: financeKeys.attachments(projectId, expenseId) });
       await invalidateFinance(queryClient, projectId);
