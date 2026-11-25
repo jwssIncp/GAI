@@ -167,9 +167,10 @@ function formatFrom(
   const shifted: XLSX.WorkSheet = {};
   for (let r = 0; r < rows; r++)
     for (let c = 0; c < (formats?.length ?? 0); c++) {
-      const from = XLSX.utils.encode_cell({ r: firstDataRow + r, c });
-      if (sheet[from])
-        shifted[XLSX.utils.encode_cell({ r: r + 1, c })] = sheet[from];
+      const cell = sheet[XLSX.utils.encode_cell({ r: firstDataRow + r, c })] as
+        | XLSX.CellObject
+        | undefined;
+      if (cell) shifted[XLSX.utils.encode_cell({ r: r + 1, c })] = cell;
     }
   applyFormats(shifted, rows, formats);
 }
