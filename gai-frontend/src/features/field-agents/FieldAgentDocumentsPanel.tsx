@@ -7,29 +7,130 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { PermissionGate } from "@/features/auth/PermissionGate";
 import { formatDateTime } from "@/utils/format";
-import type { FieldAgentDocument } from "@/types/api";
+import type { FieldAgentDocument, FieldAgentDocumentCategory } from "@/types/api";
+import {
+  ACCEPTED_DOCUMENTS,
+  DOCUMENT_CATEGORIES,
+  documentCategoryLabel,
+  formatBytes,
+} from "./fieldAgentDocuments";
 import {
   useFieldAgentDocuments,
   useRemoveFieldAgentDocument,
   useUploadFieldAgentDocument,
 } from "./fieldAgentsQueries";
 
-const ACCEPTED = "image/jpeg,image/png,image/webp,application/pdf";
-
-function formatBytes(value: number) {
-  if (!value) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const index = Math.min(
-    Math.floor(Math.log(value) / Math.log(1024)),
-    units.length - 1,
+function CategorySelect({
+  value,
+  onChange,
+  label,
+  disabled,
+}: {
+  value: FieldAgentDocumentCategory;
+  onChange: (value: FieldAgentDocumentCategory) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <select
+      aria-label={label}
+      disabled={disabled}
+      className="h-9 rounded-md border bg-background px-2 text-sm"
+      value={value}
+      onChange={(event) => onChange(event.target.value as FieldAgentDocumentCategory)}
+    >
+      {DOCUMENT_CATEGORIES.map((item) => (
+        <option key={item.value} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+    </select>
   );
-  return `${(value / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+}
+
+export type PendingDocument = { key: number; file: File; category: FieldAgentDocumentCategory };
+
+/**
+ * Cadastro novo: os documentos escolhidos ficam aqui até o inventariante ser salvo e então
+ * são enviados (o arquivo precisa do cadastro para ter onde ficar).
+ */
+export function PendingDocumentsPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: PendingDocument[];
+  onChange: (value: PendingDocument[]) => void;
+  disabled?: boolean;
+}) {
+  const [category, setCategory] = useState<FieldAgentDocumentCategory>("registration_form");
+  return (
+    <section className="grid gap-3" aria-labelledby="field-agent-pending-documents-title">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 id="field-agent-pending-documents-title" className="font-semibold">
+            Documentos anexados
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Ficha cadastral, CNH, exames, certificados etc. PDF ou imagem; o envio acontece ao salvar.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <CategorySelect label="Tipo do documento" value={category} onChange={setCategory} disabled={disabled} />
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium hover:bg-muted">
+            <FileUp size={16} /> Anexar documento
+            <FileUpload
+              aria-label="Anexar documento"
+              accept={ACCEPTED_DOCUMENTS}
+              className="sr-only"
+              disabled={disabled}
+              onFile={(file) => onChange([...value, { key: Date.now() + Math.random(), file, category }])}
+            />
+          </label>
+        </div>
+      </div>
+      {value.length ? (
+        <ul className="grid gap-2">
+          {value.map((item) => (
+            <li key={item.key} className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{item.file.name}</p>
+                <p className="text-xs text-muted-foreground">{formatBytes(item.file.size)} · a enviar</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <CategorySelect
+                  label={`Tipo de ${item.file.name}`}
+                  value={item.category}
+                  disabled={disabled}
+                  onChange={(next) =>
+                    onChange(value.map((other) => (other.key === item.key ? { ...other, category: next } : other)))
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={disabled}
+                  aria-label={`Tirar ${item.file.name}`}
+                  onClick={() => onChange(value.filter((other) => other.key !== item.key))}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">Nenhum documento escolhido.</p>
+      )}
+    </section>
+  );
 }
 
 /** Documentos anexados ao cadastro do inventariante (vários arquivos; baixar e remover). */
 export function FieldAgentDocumentsPanel({ fieldAgentId }: { fieldAgentId: number }) {
   const [feedback, setFeedback] = useState<{ error?: boolean; message: string } | null>(null);
   const [removing, setRemoving] = useState<FieldAgentDocument | null>(null);
+  const [category, setCategory] = useState<FieldAgentDocumentCategory>("registration_form");
   const documents = useFieldAgentDocuments(fieldAgentId);
   const upload = useUploadFieldAgentDocument(fieldAgentId);
   const remove = useRemoveFieldAgentDocument(fieldAgentId);
@@ -37,7 +138,7 @@ export function FieldAgentDocumentsPanel({ fieldAgentId }: { fieldAgentId: numbe
   async function handleFile(file: File) {
     setFeedback(null);
     try {
-      await upload.mutateAsync(file);
+      await upload.mutateAsync({ file, category });
       setFeedback({ message: `${file.name} anexado.` });
     } catch (error) {
       setFeedback({
@@ -68,20 +169,29 @@ export function FieldAgentDocumentsPanel({ fieldAgentId }: { fieldAgentId: numbe
             Documentos anexados
           </h3>
           <p className="text-sm text-muted-foreground">
-            PDF ou imagem. O limite por arquivo vem dos parâmetros financeiros.
+            Ficha cadastral, CNH, exames, certificados etc. PDF ou imagem; o limite por arquivo
+            vem dos parâmetros financeiros.
           </p>
         </div>
         <PermissionGate permissions={["field-agent-documents:upload"]}>
+          <div className="flex flex-wrap items-center gap-2">
+          <CategorySelect
+            label="Tipo do documento"
+            value={category}
+            onChange={setCategory}
+            disabled={upload.isPending}
+          />
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm font-medium hover:bg-muted">
             <FileUp size={16} /> {upload.isPending ? "Enviando..." : "Anexar documento"}
             <FileUpload
               aria-label="Anexar documento"
-              accept={ACCEPTED}
+              accept={ACCEPTED_DOCUMENTS}
               className="sr-only"
               onFile={handleFile}
               disabled={upload.isPending}
             />
           </label>
+          </div>
         </PermissionGate>
       </div>
       {feedback ? (
@@ -109,7 +219,8 @@ export function FieldAgentDocumentsPanel({ fieldAgentId }: { fieldAgentId: numbe
               <div className="min-w-0">
                 <p className="truncate font-medium">{document.original_name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {formatBytes(document.size_bytes)} · {formatDateTime(document.created_at)}
+                  {documentCategoryLabel(document.category)} · {formatBytes(document.size_bytes)} ·{" "}
+                  {formatDateTime(document.created_at)}
                 </p>
               </div>
               <div className="flex shrink-0 gap-1">

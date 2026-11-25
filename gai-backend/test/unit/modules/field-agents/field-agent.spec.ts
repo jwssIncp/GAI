@@ -48,6 +48,21 @@ describe('FieldAgent domain', () => {
     ).toThrow('O nome deve ter pelo menos 2 caracteres.');
   });
 
+  it('cidade e indicação: opcionais, registram a mudança só quando mudam', () => {
+    const agent = makeFieldAgent();
+    expect(agent.city).toBeNull();
+    expect(agent.referral).toBeNull();
+    expect(agent.updateFields({ city: null, referral: null })).toEqual({});
+    expect(
+      agent.updateFields({ city: 'Campinas', referral: 'João Silva' }),
+    ).toEqual({
+      city: { before: null, after: 'Campinas' },
+      referral: { before: null, after: 'João Silva' },
+    });
+    expect(agent.city).toBe('Campinas');
+    expect(agent.toProps().referral).toBe('João Silva');
+  });
+
   it('deactivates without deleting project history', () => {
     const fieldAgent = makeFieldAgent();
 

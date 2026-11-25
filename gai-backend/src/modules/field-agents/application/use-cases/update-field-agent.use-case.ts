@@ -57,6 +57,8 @@ export class UpdateFieldAgentUseCase {
         phone: dto.phone,
         document: dto.document,
         state: dto.state,
+        city: dto.city,
+        referral: dto.referral,
         metadata: dto.metadata,
       });
     } catch (error) {

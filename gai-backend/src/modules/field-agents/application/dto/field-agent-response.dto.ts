@@ -49,6 +49,12 @@ export class FieldAgentResponseDto {
   @ApiPropertyOptional({ nullable: true, description: 'UF (sigla)' })
   state!: string | null;
 
+  @ApiPropertyOptional({ nullable: true, description: 'Cidade de residência' })
+  city!: string | null;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Indicação' })
+  referral!: string | null;
+
   @ApiProperty({ enum: FieldAgentStatus })
   status!: FieldAgentStatus;
 
@@ -84,6 +90,8 @@ export class FieldAgentResponseDto {
       phone: fieldAgent.phone,
       document: fieldAgent.document,
       state: fieldAgent.state,
+      city: fieldAgent.city,
+      referral: fieldAgent.referral,
       status: fieldAgent.status,
       metadata: fieldAgent.metadata,
       created_at: fieldAgent.createdAt.toISOString(),

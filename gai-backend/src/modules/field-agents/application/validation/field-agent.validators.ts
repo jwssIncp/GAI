@@ -55,3 +55,10 @@ export function IsBrazilianPhone(options?: ValidationOptions) {
     });
   };
 }
+
+/** Texto livre opcional: apara espaços, junta espaços repetidos; vazio vira null. */
+export function normalizeOptionalText(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.replace(/\s+/g, ' ').trim();
+  return trimmed || null;
+}

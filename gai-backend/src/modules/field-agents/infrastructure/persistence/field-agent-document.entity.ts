@@ -20,6 +20,17 @@ export const FIELD_AGENT_DOCUMENT_STATUSES = [
 export type FieldAgentDocumentStatus =
   (typeof FIELD_AGENT_DOCUMENT_STATUSES)[number];
 
+/** Tipo do documento do inventariante. */
+export const FIELD_AGENT_DOCUMENT_CATEGORIES = [
+  'registration_form',
+  'driver_license',
+  'medical_exam',
+  'certificate',
+  'other',
+] as const;
+export type FieldAgentDocumentCategory =
+  (typeof FIELD_AGENT_DOCUMENT_CATEGORIES)[number];
+
 /** Documento anexado ao cadastro do inventariante (mesmo fluxo dos comprovantes). */
 @Entity('field_agent_documents')
 @Index('idx_field_agent_documents_agent_status', ['fieldAgentId', 'status'])
@@ -39,6 +50,9 @@ export class FieldAgentDocumentEntity {
   mimeType!: string;
   @Column({ name: 'size_bytes', type: 'bigint', unsigned: true })
   sizeBytes!: number;
+  /** Ficha cadastral, CNH, exame, certificado ou outro. */
+  @Column({ type: 'varchar', length: 30, default: 'other' })
+  category!: FieldAgentDocumentCategory;
   @Column({ type: 'varchar', length: 128, nullable: true })
   checksum!: string | null;
   @Column({ type: 'varchar', length: 20, default: 'pending_upload' })

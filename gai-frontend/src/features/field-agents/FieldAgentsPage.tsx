@@ -488,10 +488,14 @@ export function FieldAgentsPage() {
         <FieldAgentForm
           mode="create"
           busy={create.isPending}
-          onSubmit={async (payload) => {
-            await create.mutateAsync(payload);
+          onSubmit={(payload) => create.mutateAsync(payload)}
+          onCreated={(warning) => {
             setCreateOpen(false);
-            setFeedback({ message: "Inventariante cadastrado com sucesso." });
+            setFeedback(
+              warning
+                ? { error: true, message: warning }
+                : { message: "Inventariante cadastrado com sucesso." },
+            );
           }}
         />
       </DrawerForm>

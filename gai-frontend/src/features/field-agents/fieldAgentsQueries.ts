@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { uploadToPresignedUrl } from '@/api/http';
 import { fieldAgentsApi, projectFieldAgentsApi } from '@/api/endpoints';
 import { projectKeys } from '@/features/projects/projectQueries';
-import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, FieldAgentListParams, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
+import type { AssignProjectFieldAgentRequest, CreateFieldAgentRequest, FieldAgentDocumentCategory, FieldAgentListParams, PageParams, UpdateFieldAgentRequest, UpdateProjectFieldAgentRequest } from '@/types/api';
 
 export const fieldAgentKeys = {
   all: ['field-agents'] as const,
@@ -112,18 +112,23 @@ export function useFieldAgentDocuments(id: number, enabled = true) {
   return useQuery({ queryKey: fieldAgentDocumentKeys.list(id), queryFn: () => fieldAgentsApi.documents(id), enabled });
 }
 
+/** Envia um documento: pede a URL assinada, sobe o arquivo e confirma no servidor. */
+export async function uploadFieldAgentDocument(id: number, file: File, category: FieldAgentDocumentCategory) {
+  const response = await fieldAgentsApi.documentUploadUrl(id, {
+    original_name: file.name,
+    mime_type: file.type || 'application/octet-stream',
+    size_bytes: file.size,
+    category,
+  });
+  await uploadToPresignedUrl(response.upload_url, file);
+  return fieldAgentsApi.confirmDocument(id, response.document.id, { size_bytes: file.size });
+}
+
 export function useUploadFieldAgentDocument(id: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
-      const response = await fieldAgentsApi.documentUploadUrl(id, {
-        original_name: file.name,
-        mime_type: file.type || 'application/octet-stream',
-        size_bytes: file.size,
-      });
-      await uploadToPresignedUrl(response.upload_url, file);
-      return fieldAgentsApi.confirmDocument(id, response.document.id, { size_bytes: file.size });
-    },
+    mutationFn: ({ file, category }: { file: File; category: FieldAgentDocumentCategory }) =>
+      uploadFieldAgentDocument(id, file, category),
     onSuccess: async () => queryClient.invalidateQueries({ queryKey: fieldAgentDocumentKeys.list(id) }),
   });
 }

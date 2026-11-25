@@ -660,6 +660,10 @@ export type FieldAgent = {
   document?: string | null;
   /** UF (sigla). */
   state?: string | null;
+  /** Cidade de residência. */
+  city?: string | null;
+  /** Quem indicou o inventariante. */
+  referral?: string | null;
   status: FieldAgentStatus;
   metadata?: Record<string, unknown> | null;
   created_at: string;
@@ -674,6 +678,8 @@ export type CreateFieldAgentRequest = {
   phone?: string | null;
   document?: string | null;
   state?: string | null;
+  city?: string | null;
+  referral?: string | null;
   metadata?: Record<string, unknown> | null;
   /** Projetos vinculados já no cadastro (mesma transação). */
   project_ids?: number[];
@@ -692,12 +698,19 @@ export type FieldAgentBatchDeleteResult = {
   failed: number;
   results: Array<{ id: number; deleted: boolean; message?: string }>;
 };
+export type FieldAgentDocumentCategory =
+  | 'registration_form'
+  | 'driver_license'
+  | 'medical_exam'
+  | 'certificate'
+  | 'other';
 export type FieldAgentDocument = {
   id: number;
   field_agent_id: number;
   original_name: string;
   mime_type: string;
   size_bytes: number;
+  category: FieldAgentDocumentCategory;
   status: 'pending_upload' | 'uploaded' | 'removed';
   uploaded_by_id: number | null;
   created_at: string;
