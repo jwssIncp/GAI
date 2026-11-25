@@ -192,8 +192,9 @@ describe("Remuneração do projeto (Tela B)", () => {
     expect(form.getByLabelText("Inventariante")).toHaveValue("12");
     expect(form.getByLabelText("UF")).toHaveValue("MG");
     expect(form.getByLabelText("Diária (R$)")).toHaveValue("185,00");
-    await u.type(form.getByLabelText("Data inicial"), "2026-11-03");
-    await u.type(form.getByLabelText("Data final"), "2026-11-07");
+    // 02/11 (segunda) a 06/11 (sexta): 5 dias úteis
+    await u.type(form.getByLabelText("Data inicial"), "2026-11-02");
+    await u.type(form.getByLabelText("Data final"), "2026-11-06");
     const additional = form.getByLabelText("Valor adicional (R$)");
     await u.clear(additional);
     await u.type(additional, "120");
@@ -202,7 +203,7 @@ describe("Remuneração do projeto (Tela B)", () => {
     expect(calc.getByText("R$ 925,00")).toBeInTheDocument(); // dias × diária
     const end = form.getByLabelText("Data final");
     await u.clear(end);
-    await u.type(end, "2026-11-09");
+    await u.type(end, "2026-11-10"); // até terça seguinte: 7 dias úteis (fim de semana fora)
     expect(calc.getAllByText("R$ 1.415,00")).toHaveLength(2); // 7 × 185 + 120 (total e final)
     // Sem data prevista não envia nada.
     await u.click(form.getByRole("button", { name: "Lançar" }));
@@ -217,6 +218,22 @@ describe("Remuneração do projeto (Tela B)", () => {
     expect(mocks.create.mock.calls[0][1]).toEqual(
       expect.objectContaining({ field_agent_id: 12, state: "MG", total_manual: true, total_amount: "1415.00", expected_payment_date: "2026-11-20" }),
     );
+  });
+
+  it("agrupa por inventariante; 'Novo pagamento' começa no dia útil seguinte ao último período", async () => {
+    const u = userEvent.setup();
+    mount(<ProjectRemunerationPage />, user(all));
+    const toggle = await screen.findByRole("button", { name: "Recolher pagamentos de Ana Souza" });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByText(/Último pagamento:/).length).toBeGreaterThan(0);
+    await u.click(screen.getByRole("button", { name: "Novo pagamento de Ana Souza" }));
+    const form = within(screen.getByRole("form", { name: "Lançamento de remuneração" }));
+    expect(form.getByLabelText("Inventariante")).toHaveValue("10");
+    expect(form.getByLabelText("Data inicial")).toHaveValue("2026-11-09"); // 07/11 é sábado
+    expect(form.getByLabelText("Diária (R$)")).toHaveValue("185,00");
+    await u.click(form.getByRole("button", { name: "Cancelar" }));
+    await u.click(toggle);
+    expect(screen.getByRole("button", { name: "Mostrar pagamentos de Ana Souza" })).toHaveAttribute("aria-expanded", "false");
   });
 
   it("diária colada no padrão brasileiro ('50.000,00') vai à API como '50000.00'", async () => {

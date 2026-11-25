@@ -22,14 +22,22 @@ import { usePermissions } from "@/features/auth/usePermissions";
 import { fieldAgentsApi, projectFieldAgentsApi } from "@/api/endpoints";
 import { BRAZILIAN_STATES } from "./brazilianStates";
 import { FieldAgentProjectsPicker } from "./FieldAgentProjectsPicker";
-import { FieldAgentDocumentsPanel } from "./FieldAgentDocumentsPanel";
+import {
+  FieldAgentDocumentsPanel,
+  PendingDocumentsPicker,
+  type PendingDocument,
+} from "./FieldAgentDocumentsPanel";
+import { uploadFieldAgentDocument } from "./fieldAgentsQueries";
 import { invitationDeliveryMessage } from "@/features/users/invitationDelivery";
 
 type Props =
   | {
       mode: "create";
       busy: boolean;
-      onSubmit: (payload: CreateFieldAgentRequest) => Promise<void>;
+      /** Cria e devolve o inventariante (os documentos escolhidos são enviados em seguida). */
+      onSubmit: (payload: CreateFieldAgentRequest) => Promise<FieldAgent>;
+      /** Fim do cadastro; `warning` diz quais documentos não foram enviados. */
+      onCreated: (warning: string | null) => void;
       initial?: never;
     }
   | {
@@ -49,6 +57,28 @@ export function FieldAgentForm(props: Props) {
   const createdId = useRef<number | null>(null);
   const [invited, setInvited] = useState(false);
   const [projectIds, setProjectIds] = useState<number[]>([]);
+  const [pendingDocuments, setPendingDocuments] = useState<PendingDocument[]>([]);
+  const canAttachOnCreate =
+    props.mode === "create" &&
+    hasPermission("field-agent-documents:read") &&
+    hasPermission("field-agent-documents:upload");
+  /** Cadastro novo: envia os documentos escolhidos; devolve o aviso das falhas (ou null). */
+  async function uploadPending(fieldAgentId: number): Promise<string | null> {
+    if (!canAttachOnCreate || !pendingDocuments.length) return null;
+    const failures: string[] = [];
+    for (const item of pendingDocuments) {
+      try {
+        await uploadFieldAgentDocument(fieldAgentId, item.file, item.category);
+      } catch (error) {
+        failures.push(`${item.file.name}: ${(error as Error).message}`);
+      }
+    }
+    setPendingDocuments([]);
+    await queryClient.invalidateQueries({ queryKey: ["field-agents"] });
+    return failures.length
+      ? `Inventariante cadastrado, mas ${failures.length} documento(s) não foram anexados (${failures.join("; ")}). Anexe-os pela edição do cadastro.`
+      : null;
+  }
   const canLinkProjects =
     hasPermission("project-field-agents:assign") && hasPermission("projects:read");
   /** Na edição, vincula os projetos marcados (mesma regra do vínculo pelo projeto). */
@@ -79,6 +109,8 @@ export function FieldAgentForm(props: Props) {
       phone: initial?.phone ?? "",
       document: initial?.document ?? "",
       state: initial?.state ?? "",
+      city: initial?.city ?? "",
+      referral: initial?.referral ?? "",
       user_id: initial?.user_id ? String(initial.user_id) : "",
       access: initial?.user_id ? "existing" : "none",
       login: "",
@@ -105,10 +137,12 @@ export function FieldAgentForm(props: Props) {
           fields.user_id = mode === "existing" ? fields.user_id : null;
           if (props.mode === "create" && canLinkProjects && projectIds.length)
             fields.project_ids = projectIds;
+          let documentsWarning: string | null = null;
           if (mode === "invite") {
             if (props.mode === "create" && !createdId.current) {
               const saved = await fieldAgentsApi.create(fields);
               createdId.current = saved.id;
+              documentsWarning = await uploadPending(saved.id);
             } else if (props.mode === "edit") {
               await fieldAgentsApi.update(
                 initial!.id,
@@ -124,9 +158,10 @@ export function FieldAgentForm(props: Props) {
             setInvited(true);
             form.setError("root", {
               message:
-                result.invitation_delivery === "SENT"
+                (result.invitation_delivery === "SENT"
                   ? "Conta criada e convite enviado. Você pode fechar este formulário."
-                  : `Conta criada e associada. ${invitationDeliveryMessage(result.invitation_delivery)}`,
+                  : `Conta criada e associada. ${invitationDeliveryMessage(result.invitation_delivery)}`) +
+                (documentsWarning ? ` ${documentsWarning}` : ""),
             });
             return;
           }
@@ -139,12 +174,17 @@ export function FieldAgentForm(props: Props) {
                     : {}),
                 })
               : fields;
+          if (props.mode === "create") {
+            const saved = await props.onSubmit(payload as CreateFieldAgentRequest);
+            props.onCreated(await uploadPending(saved.id));
+            return;
+          }
           await props.onSubmit(payload as never);
-          if (props.mode === "edit") await linkNewProjects(initial!.id);
+          await linkNewProjects(initial!.id);
         } catch (error) {
           const apiError = error as ApiError;
           const detail = apiError.details?.find(({ field }) =>
-            ["email", "document", "phone", "state", "user_id", "login"].includes(field),
+            ["email", "document", "phone", "state", "city", "referral", "user_id", "login"].includes(field),
           );
           if (detail)
             form.setError(detail.field as "email", { message: detail.message });
@@ -238,6 +278,21 @@ export function FieldAgentForm(props: Props) {
             ))}
           </select>
         </FormField>
+        <FormField
+          label="Cidade de residência"
+          optional
+          error={form.formState.errors.city?.message}
+        >
+          <Input maxLength={120} autoComplete="address-level2" {...form.register("city")} />
+        </FormField>
+        <FormField
+          label="Indicação"
+          optional
+          help="Quem indicou o inventariante."
+          error={form.formState.errors.referral?.message}
+        >
+          <Input maxLength={255} autoComplete="off" {...form.register("referral")} />
+        </FormField>
       </fieldset>
       {canLinkProjects ? (
         <section className="grid gap-2">
@@ -252,6 +307,13 @@ export function FieldAgentForm(props: Props) {
       ) : null}
       {initial && hasPermission("field-agent-documents:read") ? (
         <FieldAgentDocumentsPanel fieldAgentId={initial.id} />
+      ) : null}
+      {canAttachOnCreate ? (
+        <PendingDocumentsPicker
+          value={pendingDocuments}
+          onChange={setPendingDocuments}
+          disabled={busy || invited || Boolean(createdId.current)}
+        />
       ) : null}
       <fieldset className="grid gap-4" disabled={busy || invited}>
         <legend className="mb-3 font-semibold">Acesso ao sistema</legend>

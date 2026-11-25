@@ -37,6 +37,15 @@ const mocks = vi.hoisted(() => ({
   invite: vi.fn(),
   resendInvitation: vi.fn(),
   summary: vi.fn(),
+  documentUploadUrl: vi.fn(),
+  confirmDocument: vi.fn(),
+  documents: vi.fn(),
+  presignedUpload: vi.fn(),
+}));
+
+vi.mock("@/api/http", async (original) => ({
+  ...(await original<typeof import("@/api/http")>()),
+  uploadToPresignedUrl: mocks.presignedUpload,
 }));
 
 vi.mock("@/api/endpoints", () => ({
@@ -58,6 +67,9 @@ vi.mock("@/api/endpoints", () => ({
     block: mocks.block,
     unblock: mocks.unblock,
     delete: mocks.delete,
+    documentUploadUrl: mocks.documentUploadUrl,
+    confirmDocument: mocks.confirmDocument,
+    documents: mocks.documents,
   },
   projectFieldAgentsApi: {
     list: mocks.projectList,
@@ -479,6 +491,44 @@ describe("FieldAgentsPage", () => {
       ),
     );
     expect(mocks.list.mock.calls.length).toBe(before + 1);
+  });
+
+  it("cadastro novo: cidade, indicação e documento com tipo, enviado depois de salvar", async () => {
+    mocks.documentUploadUrl.mockResolvedValue({
+      document: { id: 91 },
+      upload_url: "https://storage.invalid/put",
+      expires_in_seconds: 300,
+    });
+    mocks.confirmDocument.mockResolvedValue({ id: 91 });
+    mocks.presignedUpload.mockResolvedValue(undefined);
+    renderWithProviders(<FieldAgentsPage />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: /novo inventariante/i }),
+    );
+    await userEvent.type(screen.getByLabelText("Nome"), "Carla Campo");
+    await userEvent.type(screen.getByRole("textbox", { name: /^Cidade de residência/ }), "Campinas");
+    await userEvent.type(screen.getByRole("textbox", { name: /^Indicação/ }), "Pedro Souza");
+    await userEvent.selectOptions(screen.getByLabelText("Tipo do documento"), "driver_license");
+    const file = new File(["%PDF-1.4"], "cnh.pdf", { type: "application/pdf" });
+    await userEvent.upload(screen.getByLabelText("Anexar documento"), file);
+    expect(screen.getByText("cnh.pdf")).toBeInTheDocument();
+    expect(mocks.documentUploadUrl).not.toHaveBeenCalled();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Salvar inventariante" }),
+    );
+    await waitFor(() =>
+      expect(mocks.create).toHaveBeenCalledWith(
+        expect.objectContaining({ city: "Campinas", referral: "Pedro Souza" }),
+      ),
+    );
+    await waitFor(() =>
+      expect(mocks.documentUploadUrl).toHaveBeenCalledWith(
+        agent.id,
+        expect.objectContaining({ original_name: "cnh.pdf", category: "driver_license" }),
+      ),
+    );
+    expect(mocks.confirmDocument).toHaveBeenCalledWith(agent.id, 91, { size_bytes: file.size });
+    expect(await screen.findByText("Inventariante cadastrado com sucesso.")).toBeInTheDocument();
   });
 
   it("permite escolher conta por nome e situação, sem ID manual", async () => {

@@ -25,6 +25,7 @@ import {
   NormalizeOptionalDocument,
   NormalizeOptionalEmail,
   NormalizeOptionalPhone,
+  normalizeOptionalText,
 } from '../validation/field-agent.validators';
 
 export class CreateFieldAgentDto {
@@ -69,6 +70,20 @@ export class CreateFieldAgentDto {
   @IsOptional()
   @IsIn(BRAZILIAN_STATES, { message: 'UF inválida.' })
   state?: string | null;
+
+  @ApiPropertyOptional({ maxLength: 120, nullable: true })
+  @Transform(({ value }) => normalizeOptionalText(value))
+  @IsOptional()
+  @IsString()
+  @MaxLength(120, { message: 'A cidade deve ter no máximo 120 caracteres.' })
+  city?: string | null;
+
+  @ApiPropertyOptional({ maxLength: 255, nullable: true })
+  @Transform(({ value }) => normalizeOptionalText(value))
+  @IsOptional()
+  @IsString()
+  @MaxLength(255, { message: 'A indicação deve ter no máximo 255 caracteres.' })
+  referral?: string | null;
 
   @ApiPropertyOptional({
     type: 'object',

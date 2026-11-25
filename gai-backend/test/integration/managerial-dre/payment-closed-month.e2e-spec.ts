@@ -67,12 +67,14 @@ describe('Pagamento de inventariantes × competência fechada da DRE (e2e)', () 
       role: 'collector',
     }).expect(201);
     const prefix = `/projects/${project}/payments`;
-    const create = async () => {
+    // Períodos distintos: o mesmo inventariante não pode ter dois que se cruzam no projeto.
+    // 5 dias úteis (segunda a sexta) × 100 = 500, o valor do lançamento da DRE.
+    const create = async (start = '2026-10-05', end = '2026-10-09') => {
       const p = (
         await post(prefix, {
           field_agent_id: agent,
-          start_date: '2026-10-01',
-          end_date: '2026-10-05',
+          start_date: start,
+          end_date: end,
           expected_payment_date: '2026-10-20',
           daily_rate: '100.00',
         }).expect(201)
@@ -94,7 +96,7 @@ describe('Pagamento de inventariantes × competência fechada da DRE (e2e)', () 
       return p.id;
     };
     const open = await create(); // aprovado, em aberto
-    const paid = await create();
+    const paid = await create('2026-10-12', '2026-10-16');
     expect(
       (
         await post('/field-agent-payments/pay', {

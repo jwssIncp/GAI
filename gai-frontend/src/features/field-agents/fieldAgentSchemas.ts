@@ -65,6 +65,18 @@ export function makeFieldAgentSchema(legacyDocument?: string | null) {
           "UF inválida",
         )
         .transform((value) => value || null),
+      city: z
+        .string()
+        .trim()
+        .max(120, "Use no máximo 120 caracteres")
+        .default("")
+        .transform((value) => value.replace(/\s+/g, " ") || null),
+      referral: z
+        .string()
+        .trim()
+        .max(255, "Use no máximo 255 caracteres")
+        .default("")
+        .transform((value) => value.replace(/\s+/g, " ") || null),
       user_id: z
         .string()
         .transform((value) => (value ? Number(value) : null))

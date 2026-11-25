@@ -11,6 +11,10 @@ export interface FieldAgentProps {
   phone: string | null;
   document: string | null;
   state: string | null;
+  /** Cidade de residência (texto livre). */
+  city?: string | null;
+  /** Quem indicou o inventariante (texto livre). */
+  referral?: string | null;
   status: FieldAgentStatus;
   metadata: JsonRecord | null;
   createdAt: Date;
@@ -57,6 +61,14 @@ export class FieldAgent {
     return this.props.state;
   }
 
+  get city(): string | null {
+    return this.props.city ?? null;
+  }
+
+  get referral(): string | null {
+    return this.props.referral ?? null;
+  }
+
   get status(): FieldAgentStatus {
     return this.props.status;
   }
@@ -88,6 +100,8 @@ export class FieldAgent {
     phone?: string | null;
     document?: string | null;
     state?: string | null;
+    city?: string | null;
+    referral?: string | null;
     metadata?: JsonRecord | null;
   }): Record<string, { before: unknown; after: unknown }> {
     const changes: Record<string, { before: unknown; after: unknown }> = {};
@@ -112,6 +126,12 @@ export class FieldAgent {
     });
     this.applyChange(changes, 'state', fields.state, (value) => {
       this.props.state = value;
+    });
+    this.applyChange(changes, 'city', fields.city, (value) => {
+      this.props.city = value;
+    });
+    this.applyChange(changes, 'referral', fields.referral, (value) => {
+      this.props.referral = value;
     });
     this.applyChange(changes, 'metadata', fields.metadata, (value) => {
       this.props.metadata = value;
@@ -177,7 +197,7 @@ export class FieldAgent {
     if (value === undefined) {
       return;
     }
-    const current = this.props[this.toPropKey(key)];
+    const current = this.props[this.toPropKey(key)] ?? null;
     if (JSON.stringify(current) === JSON.stringify(value)) {
       return;
     }
@@ -193,6 +213,8 @@ export class FieldAgent {
       phone: 'phone',
       document: 'document',
       state: 'state',
+      city: 'city',
+      referral: 'referral',
       metadata: 'metadata',
     };
     return map[key] ?? 'name';

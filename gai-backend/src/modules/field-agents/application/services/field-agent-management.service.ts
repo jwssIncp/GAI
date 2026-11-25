@@ -120,6 +120,8 @@ export class FieldAgentManagementService {
       phone: row.phone,
       document: row.document,
       state: row.state ?? null,
+      city: row.city ?? null,
+      referral: row.referral ?? null,
       status: row.status,
       metadata: row.metadata,
       created_at: row.createdAt.toISOString(),

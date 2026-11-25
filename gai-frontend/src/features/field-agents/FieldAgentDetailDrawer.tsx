@@ -9,6 +9,8 @@ import { useFieldAgent } from "./fieldAgentsQueries";
 import { formatDate, formatDateTime } from "@/utils/format";
 import { FieldAgentAccessPanel } from "./FieldAgentAccessPanel";
 import { usePermissions } from "@/features/auth/usePermissions";
+import { documentCategoryLabel } from "./fieldAgentDocuments";
+import type { FieldAgentDocumentCategory } from "@/types/api";
 
 const operationNames: Record<string, string> = {
   CREATE: "Cadastro criado",
@@ -32,6 +34,10 @@ const fieldNames: Record<string, string> = {
   email: "E-mail",
   phone: "Telefone",
   document: "CPF/CNPJ",
+  state: "UF",
+  city: "Cidade de residência",
+  referral: "Indicação",
+  document_category: "Tipo do documento",
   user_id: "Conta associada",
   status: "Situação",
   deleted_at: "Exclusão",
@@ -106,6 +112,9 @@ export function FieldAgentDetailDrawer({
           <Info label="E-mail" value={item.email} />
           <Info label="Telefone" value={item.phone} />
           <Info label="CPF/CNPJ" value={item.document} />
+          <Info label="UF" value={item.state} />
+          <Info label="Cidade de residência" value={item.city} />
+          <Info label="Indicação" value={item.referral} />
           <FieldAgentAccessPanel agent={item} />
           <p className="text-muted-foreground">
             O bloqueio operacional não desativa a conta de acesso. Vínculos
@@ -188,8 +197,8 @@ export function FieldAgentDetailDrawer({
                               <dt className="font-medium">
                                 {fieldNames[field] || "Informação cadastral"}
                               </dt>
-                              <dd>Anterior: {historyValue(change.before)}</dd>
-                              <dd>Atual: {historyValue(change.after)}</dd>
+                              <dd>Anterior: {field === "document_category" && change.before ? documentCategoryLabel(change.before as FieldAgentDocumentCategory) : historyValue(change.before)}</dd>
+                              <dd>Atual: {field === "document_category" && change.after ? documentCategoryLabel(change.after as FieldAgentDocumentCategory) : historyValue(change.after)}</dd>
                             </div>
                           ),
                         )}

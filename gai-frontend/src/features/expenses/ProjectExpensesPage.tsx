@@ -423,7 +423,7 @@ export function ProjectExpensesPage({ projectId, description }: { projectId: num
       </DataPanel>
 
       {dialog?.kind === "form" ? (
-        <ExpenseFormDialog projectId={projectId} board={data} initial={dialog.item} onClose={() => setDialog(null)} onSaved={() => void finish(dialog.item ? "Despesa atualizada." : "Despesa lançada.")} />
+        <ExpenseFormDialog projectId={projectId} board={data} initial={dialog.item} onClose={() => setDialog(null)} onSaved={(warning) => void finish(warning ?? (dialog.item ? "Despesa atualizada." : "Despesa lançada."), Boolean(warning))} />
       ) : null}
       <DrawerForm open={dialog?.kind === "attachments"} onOpenChange={(o) => { if (!o) { setDialog(null); void refresh(); } }} title="Comprovantes da despesa">
         {dialog?.kind === "attachments" ? (

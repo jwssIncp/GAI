@@ -22,7 +22,10 @@ import {
   type FieldAgentRepository,
 } from '../../domain/ports/field-agent.repository.port';
 import { FieldAgentAuditLogEntity } from '../../infrastructure/persistence/field-agent-audit-log.entity';
-import { FieldAgentDocumentEntity } from '../../infrastructure/persistence/field-agent-document.entity';
+import {
+  FieldAgentDocumentCategory,
+  FieldAgentDocumentEntity,
+} from '../../infrastructure/persistence/field-agent-document.entity';
 import { FieldAgentEntity } from '../../infrastructure/persistence/field-agent.entity';
 import { ListFieldAgentsQueryDto } from '../dto/list-field-agents-query.dto';
 import { DeleteFieldAgentUseCase } from '../use-cases/delete-field-agent.use-case';
@@ -38,6 +41,7 @@ export interface FieldAgentDocumentResponse {
   original_name: string;
   mime_type: string;
   size_bytes: number;
+  category: FieldAgentDocumentCategory;
   status: string;
   uploaded_by_id: number | null;
   created_at: string;
@@ -48,6 +52,8 @@ export interface FieldAgentExportRow {
   'E-mail': string;
   Telefone: string;
   UF: string;
+  Cidade: string;
+  Indicação: string;
   'CPF/CNPJ': string;
   Status: string;
   'Acesso ao app': string;
@@ -79,6 +85,7 @@ function documentResponse(
     original_name: row.originalName,
     mime_type: row.mimeType,
     size_bytes: Number(row.sizeBytes),
+    category: row.category ?? 'other',
     status: row.status,
     uploaded_by_id: row.uploadedById == null ? null : Number(row.uploadedById),
     created_at: row.createdAt.toISOString(),
@@ -157,6 +164,8 @@ export class FieldAgentRecordsService {
           'E-mail': agent.email ?? '',
           Telefone: agent.phone ?? '',
           UF: agent.state ?? '',
+          Cidade: agent.city ?? '',
+          Indicação: agent.referral ?? '',
           'CPF/CNPJ': agent.document ?? '',
           Status: STATUS_LABELS[agent.status] ?? agent.status,
           'Acesso ao app':
@@ -299,6 +308,7 @@ export class FieldAgentRecordsService {
       changes: fieldAgentAuditChanges({
         document_id: { before: null, after: Number(row.id) },
         document_name: { before: null, after: row.originalName },
+        document_category: { before: null, after: row.category },
       }),
     });
   }
@@ -330,6 +340,7 @@ export class FieldAgentRecordsService {
       mime_type: string;
       size_bytes: number;
       checksum?: string | null;
+      category?: FieldAgentDocumentCategory;
     },
     actor: FieldAgentActorContext,
   ) {
@@ -362,6 +373,7 @@ export class FieldAgentRecordsService {
       mimeType: dto.mime_type.toLowerCase(),
       sizeBytes: dto.size_bytes,
       checksum: dto.checksum ?? null,
+      category: dto.category ?? 'other',
       status: 'pending_upload',
       uploadedById: actor.id,
     });

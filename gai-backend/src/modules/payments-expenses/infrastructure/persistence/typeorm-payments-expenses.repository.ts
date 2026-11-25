@@ -19,6 +19,9 @@ import { ExpenseEntity } from './expense.entity';
 import { ExpenseInstallmentEntity } from '../../../expense-accountabilities/expense-accountability.entity';
 import { FieldAgentPaymentEntity } from './field-agent-payment.entity';
 import { PaymentExpenseAuditLogEntity } from './payment-expense-audit-log.entity';
+import { PaymentStatus } from '../../domain/enums/payment-status.enum';
+import { PaymentExpenseAuditOperation } from '../../domain/enums/payment-expense-audit-operation.enum';
+import { PaymentPeriodOverlap } from '../../domain/entities/payment-state-conflict';
 
 @Injectable()
 export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesRepository {
@@ -157,6 +160,11 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
     payment: FieldAgentPayment,
     audit: PaymentExpenseAuditEntry,
   ): Promise<FieldAgentPayment> {
+    if (
+      audit.operation === PaymentExpenseAuditOperation.CREATE_PAYMENT ||
+      audit.operation === PaymentExpenseAuditOperation.UPDATE_PAYMENT
+    )
+      await this.assertNoPeriodOverlap(manager, payment);
     const saved = await manager
       .getRepository(FieldAgentPaymentEntity)
       .save(this.toPaymentEntity(payment));
@@ -174,6 +182,54 @@ export class TypeOrmPaymentsExpensesRepository implements PaymentsExpensesReposi
       paymentId: saved.id,
     });
     return this.toPayment(saved);
+  }
+  /**
+   * Um inventariante não pode ter dois lançamentos (não cancelados) com períodos que se
+   * cruzam no mesmo projeto. A linha do inventariante é travada antes da consulta, assim
+   * dois lançamentos simultâneos não passam juntos pela verificação.
+   */
+  private async assertNoPeriodOverlap(
+    manager: EntityManager,
+    payment: FieldAgentPayment,
+  ): Promise<void> {
+    const props = payment.toProps();
+    if (props.status === PaymentStatus.CANCELLED || props.deletedAt) return;
+    if (manager.connection.options.type !== 'sqlite')
+      await manager.query(
+        'SELECT id FROM field_agents WHERE id = ? AND organization_id = ? FOR UPDATE',
+        [props.fieldAgentId, props.organizationId],
+      );
+    // a entidade lê a data civil como texto (AAAA-MM-DD); o domínio usa Date em UTC
+    const civil = (value: Date | string) =>
+      typeof value === 'string'
+        ? value.slice(0, 10)
+        : value.toISOString().slice(0, 10);
+    const qb = manager
+      .getRepository(FieldAgentPaymentEntity)
+      .createQueryBuilder('payment')
+      .where('payment.organizationId = :organizationId', {
+        organizationId: props.organizationId,
+      })
+      .andWhere('payment.projectId = :projectId', {
+        projectId: props.projectId,
+      })
+      .andWhere('payment.fieldAgentId = :fieldAgentId', {
+        fieldAgentId: props.fieldAgentId,
+      })
+      .andWhere('payment.status <> :cancelled', {
+        cancelled: PaymentStatus.CANCELLED,
+      })
+      .andWhere('payment.startDate <= :end', { end: civil(props.endDate) })
+      .andWhere('payment.endDate >= :start', { start: civil(props.startDate) })
+      .orderBy('payment.startDate', 'ASC');
+    if (props.id > 0) qb.andWhere('payment.id <> :id', { id: props.id });
+    const other = await qb.getOne();
+    if (other)
+      throw new PaymentPeriodOverlap({
+        id: Number(other.id),
+        startDate: civil(other.startDate),
+        endDate: civil(other.endDate),
+      });
   }
   async findExpenseById(id: number): Promise<Expense | null> {
     const entity = await this.expenseRepo

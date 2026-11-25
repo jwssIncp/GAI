@@ -6,6 +6,11 @@ import { ModalForm } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/base/MoneyInput";
 import { formatMoney } from "@/utils/format";
+import { usePermissions } from "@/features/auth/usePermissions";
+import { ExpenseAttachmentsPanel } from "@/features/finance/ExpenseAttachmentsPanel";
+import { uploadExpenseAttachment } from "@/features/finance/financeQueries";
+import type { Expense } from "@/types/api";
+import { PendingReceipts, type PendingReceipt } from "./PendingReceipts";
 import {
   EXPENSE_TYPE_LABEL,
   PAYMENT_METHOD_LABEL,
@@ -38,8 +43,12 @@ export function ExpenseFormDialog({
   board: ExpenseBoard;
   initial: ExpenseBoardItem | null;
   onClose: () => void;
-  onSaved: () => void;
+  /** `warning`: a despesa foi salva, mas algum comprovante não foi enviado. */
+  onSaved: (warning?: string) => void;
 }) {
+  const { hasPermission } = usePermissions();
+  const canAttach = hasPermission("expenses:upload-attachment");
+  const [receipts, setReceipts] = useState<PendingReceipt[]>([]);
   const reasons = board.parameters.reasons;
   const [date, setDate] = useState(initial?.expense_date ?? board.today);
   const [agent, setAgent] = useState(initial?.field_agent_id ? String(initial.field_agent_id) : "");
@@ -68,9 +77,26 @@ export function ExpenseFormDialog({
   const agents = board.agents.filter((a) => a.linked || a.id === initial?.field_agent_id);
 
   const save = useMutation({
-    mutationFn: (payload: ExpensePayload) =>
-      initial ? expensesApi.update(projectId, initial.id, payload) : expensesApi.create(projectId, payload),
-    onSuccess: onSaved,
+    mutationFn: async (payload: ExpensePayload) => {
+      if (initial) {
+        await expensesApi.update(projectId, initial.id, payload);
+        return undefined;
+      }
+      const created = await expensesApi.create(projectId, payload);
+      // despesa nova: envia os comprovantes escolhidos; falha num arquivo não desfaz a despesa
+      const failures: string[] = [];
+      for (const item of canAttach ? receipts : []) {
+        try {
+          await uploadExpenseAttachment(projectId, created.id, item.file);
+        } catch (error) {
+          failures.push(`${item.file.name}: ${(error as Error).message}`);
+        }
+      }
+      return failures.length
+        ? `Despesa lançada, mas ${failures.length} comprovante(s) não foram enviados (${failures.join("; ")}). Envie-os pela edição da despesa.`
+        : undefined;
+    },
+    onSuccess: (warning) => onSaved(warning),
   });
 
   function submit() {
@@ -232,6 +258,22 @@ export function ExpenseFormDialog({
             </div>
           ) : null}
         </fieldset>
+        {initial ? (
+          <ExpenseAttachmentsPanel
+            projectId={projectId}
+            expense={{ id: initial.id } as Expense}
+            maxBytes={board.parameters.attachment_max_bytes ?? undefined}
+            maxFiles={board.parameters.attachment_max_files ?? undefined}
+          />
+        ) : canAttach ? (
+          <PendingReceipts
+            value={receipts}
+            onChange={setReceipts}
+            maxBytes={board.parameters.attachment_max_bytes}
+            maxFiles={board.parameters.attachment_max_files}
+            disabled={save.isPending}
+          />
+        ) : null}
         {save.isError ? <p role="alert" className="text-sm text-destructive">{(save.error as Error).message}</p> : null}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={save.isPending}>Cancelar</Button>

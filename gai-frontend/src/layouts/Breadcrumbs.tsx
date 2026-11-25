@@ -62,7 +62,7 @@ const breadcrumbLabels: Record<string, string> = {
   receivables:'Recebíveis',
   'cash-flow':'Fluxo de caixa',
   parameters: 'Parâmetros financeiros',
-  remuneration: 'Remuneração',
+  remuneration: 'Remuneração por projeto',
   'field-agent-payments': 'Pagamento de inventariantes',
   expenses: 'Despesas',
   'asset-tags': 'Placas de patrimônio',

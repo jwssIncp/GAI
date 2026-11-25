@@ -56,10 +56,24 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
     });
     return { status: r.status, body: await r.json() };
   };
-  const input = (agent: number, rate = '1.00') => ({
+  // Cada lançamento do mesmo inventariante ganha um dia útil próprio, recuando a partir de
+  // 28/10/2026 (períodos não podem se cruzar e a baixa com a data de hoje não pode ser
+  // anterior ao início); o primeiro continua em 28/10.
+  const usedDays = new Map<number, number>();
+  const nextDay = (agent: number) => {
+    const n = usedDays.get(agent) ?? 0;
+    usedDays.set(agent, n + 1);
+    const day = new Date('2026-10-28T00:00:00Z');
+    for (let left = n; left > 0; ) {
+      day.setUTCDate(day.getUTCDate() - 1);
+      if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) left -= 1;
+    }
+    return day.toISOString().slice(0, 10);
+  };
+  const input = (agent: number, rate = '1.00', day = nextDay(agent)) => ({
     field_agent_id: agent,
-    start_date: '2026-10-28',
-    end_date: '2026-10-28',
+    start_date: day,
+    end_date: day,
     expected_payment_date: '2026-11-05',
     daily_rate: rate,
   });
@@ -295,7 +309,7 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
         const paid = () => call('POST', u + '/mark-as-paid', {}, 0);
         const mutation = () =>
           action === 'update'
-            ? call('PATCH', u, input(f.agent, '2.35'), 1)
+            ? call('PATCH', u, input(f.agent, '2.35', p.start_date), 1)
             : call('POST', u + '/cancel', {}, 1);
         const r = await race(
           p.id,
@@ -387,7 +401,9 @@ mysqlSuite('Payment integrity: real HTTP, two Nest instances, MySQL 8', () => {
     const before = await snapshot(p.id);
     for (const action of ['approve', 'mark-as-paid', 'cancel'])
       expect((await call('POST', u + '/' + action, {})).status).toBe(409);
-    expect((await call('PATCH', u, input(f.agent))).status).toBe(409);
+    expect(
+      (await call('PATCH', u, input(f.agent, '1.00', p.start_date))).status,
+    ).toBe(409);
     expect((await call('GET', u)).status).toBe(200);
     expect(await snapshot(p.id)).toEqual(before);
   });

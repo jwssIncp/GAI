@@ -8,13 +8,21 @@ import { formatMoney } from "@/utils/format";
 import { BRAZILIAN_STATES } from "@/features/field-agents/brazilianStates";
 import {
   computeRemuneration,
-  daysInclusive,
+  weekdaysInclusive,
   normalizeMoney,
   type ProjectRemuneration,
   type RemunerationInput,
   type RemunerationItem,
 } from "./remunerationApi";
 import { validateDraft, type Draft } from "./remunerationDraft";
+
+/** Novo lançamento já preenchido (inventariante sem lançamento ou próximo pagamento do mesmo). */
+export type RemunerationPreset = {
+  field_agent_id: number;
+  state: string | null;
+  start_date?: string | null;
+  daily_rate?: string | null;
+};
 
 type MoneyKey = "daily_rate" | "additional_amount" | "discount_amount" | "total_amount";
 
@@ -29,7 +37,7 @@ export function RemunerationForm({
 }: {
   data: ProjectRemuneration;
   initial?: RemunerationItem;
-  preset?: { field_agent_id: number; state: string | null };
+  preset?: RemunerationPreset;
   busy: boolean;
   serverError?: string | null;
   onSubmit: (payload: RemunerationInput) => void;
@@ -39,11 +47,11 @@ export function RemunerationForm({
   const [draft, setDraft] = useState<Draft>(() => ({
     field_agent_id: String(initial?.field_agent_id ?? preset?.field_agent_id ?? ""),
     state: initial?.state ?? preset?.state ?? "",
-    start_date: initial?.start_date ?? "",
+    start_date: initial?.start_date ?? preset?.start_date ?? "",
     end_date: initial?.end_date ?? "",
     expected_payment_date: initial?.expected_payment_date ?? "",
     // valores em R$ no formato da API ("185.00"); o MoneyInput mostra "185,00"
-    daily_rate: initial?.daily_rate ?? data.parameters.default_daily_rate ?? "",
+    daily_rate: initial?.daily_rate ?? preset?.daily_rate ?? data.parameters.default_daily_rate ?? "",
     additional_amount: initial?.additional_amount ?? "0.00",
     total_manual: initial?.total_manual ?? false,
     total_amount: initial?.total_manual ? initial.total_amount : "",
@@ -52,7 +60,7 @@ export function RemunerationForm({
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (key: keyof Draft, value: string | boolean) => setDraft((d) => ({ ...d, [key]: value }));
-  const days = daysInclusive(draft.start_date, draft.end_date);
+  const days = weekdaysInclusive(draft.start_date, draft.end_date);
   const preview = useMemo(() => {
     const rate = normalizeMoney(draft.daily_rate);
     const additional = normalizeMoney(draft.additional_amount);
@@ -133,10 +141,10 @@ export function RemunerationForm({
             ))}
           </select>
         </FormField>
-        {field("expected_payment_date", "Data prevista de pagamento", { type: "date", required: true })}
         {field("start_date", "Data inicial", { type: "date" })}
         {field("end_date", "Data final", { type: "date" })}
-        <FormField label="Dias">
+        {field("expected_payment_date", "Data prevista de pagamento", { type: "date", required: true })}
+        <FormField label="Dias" help="Segunda a sexta entre a data inicial e a final, contando as duas.">
           <Input value={String(days)} readOnly aria-readonly="true" />
         </FormField>
         {money("daily_rate", "Diária (R$)")}

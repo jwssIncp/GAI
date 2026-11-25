@@ -38,6 +38,12 @@ export class ConsolidatedPaymentsQueryDto {
   no_expected?: boolean;
 }
 
+export class PaymentDaySummaryQueryDto {
+  @IsString()
+  @Matches(DATE, { message: 'Informe a data no formato AAAA-MM-DD.' })
+  date!: string;
+}
+
 export class PaymentIdsDto {
   @IsArray()
   @ArrayMinSize(1)

@@ -79,6 +79,14 @@ export class FieldAgentEntity {
   @Column({ type: 'varchar', length: 2, nullable: true })
   state!: string | null;
 
+  /** Cidade de residência. */
+  @Column({ type: 'varchar', length: 120, nullable: true })
+  city!: string | null;
+
+  /** Quem indicou o inventariante. */
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  referral!: string | null;
+
   @Column({ type: 'varchar', length: 20, default: FieldAgentStatus.ACTIVE })
   status!: FieldAgentStatus;
 

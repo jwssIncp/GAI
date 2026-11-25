@@ -3,6 +3,7 @@ import {
   percentOf,
   remunerationTotals,
   RemunerationRuleError,
+  weekdaysInclusive,
 } from '../../../../src/modules/payments-expenses/domain/remuneration.formulas';
 
 const d = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
@@ -13,6 +14,20 @@ describe('Remuneração: fórmulas (doc 06 §2.3)', () => {
     expect(daysInclusive(d('2026-11-03'), d('2026-11-03'))).toBe(1);
     expect(daysInclusive(d('2026-02-27'), d('2026-03-02'))).toBe(4); // virada de mês
     expect(() => daysInclusive(d('2026-11-07'), d('2026-11-03'))).toThrow(
+      RemunerationRuleError,
+    );
+  });
+
+  it('dias úteis: só de segunda a sexta, contando os dois extremos', () => {
+    // 03/11/2026 é terça
+    expect(weekdaysInclusive(d('2026-11-03'), d('2026-11-07'))).toBe(4); // ter–sáb
+    expect(weekdaysInclusive(d('2026-11-02'), d('2026-11-08'))).toBe(5); // semana cheia
+    expect(weekdaysInclusive(d('2026-11-07'), d('2026-11-08'))).toBe(0); // sáb–dom
+    expect(weekdaysInclusive(d('2026-11-06'), d('2026-11-09'))).toBe(2); // sex–seg
+    expect(weekdaysInclusive(d('2026-05-25'), d('2026-06-05'))).toBe(10); // caso do Netlify
+    expect(weekdaysInclusive(d('2026-11-04'), d('2026-11-04'))).toBe(1);
+    expect(weekdaysInclusive(d('2026-11-01'), d('2026-11-30'))).toBe(21);
+    expect(() => weekdaysInclusive(d('2026-11-07'), d('2026-11-03'))).toThrow(
       RemunerationRuleError,
     );
   });

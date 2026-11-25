@@ -90,7 +90,9 @@ describe('Civil dates and UTC instants (real MySQL)', () => {
       expect(await counts()).toEqual(before);
     },
   );
-  it.each(['1000-01-01', '2024-02-29', '9999-12-31'])(
+  // Outro dia 29/02 (2028) para não cruzar o lançamento do teste seguinte: o mesmo
+  // inventariante não pode ter dois períodos que se cruzam no projeto.
+  it.each(['1000-01-01', '2028-02-29', '9999-12-31'])(
     'keeps civil date %s as YYYY-MM-DD',
     async (day) => {
       const p = (

@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, CreditCard, Download, Pencil, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, CreditCard, Download, Pencil, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { PageContainer } from "@/components/base/PageContainer";
 import { SectionTitle } from "@/components/base/SectionTitle";
 import { DataPanel } from "@/components/base/DataPanel";
@@ -18,7 +18,8 @@ import { projectKeys } from "@/features/projects/projectQueries";
 import { useProjectLabel } from "@/features/projects/useProjectLabel";
 import { BRAZILIAN_STATES } from "@/features/field-agents/brazilianStates";
 import { formatMoney } from "@/utils/format";
-import { RemunerationForm } from "./RemunerationForm";
+import { RemunerationForm, type RemunerationPreset } from "./RemunerationForm";
+import { groupByAgent } from "./remunerationGroups";
 import {
   remunerationApi,
   remunerationKeys,
@@ -48,8 +49,17 @@ export function ProjectRemunerationPage() {
   const cache = useQueryClient();
   const [filters, setFilters] = useState<RemunerationFilters>({ status_group: "all" });
   const [listHidden, setListHidden] = useState(false);
+  /** Inventariantes com os pagamentos recolhidos (por padrão, tudo aberto). */
+  const [collapsed, setCollapsed] = useState<Set<number>>(() => new Set());
+  const toggleGroup = (id: number) =>
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   const [form, setForm] = useState<
-    { mode: "create"; preset?: { field_agent_id: number; state: string | null } } | { mode: "edit"; item: RemunerationItem } | null
+    { mode: "create"; preset?: RemunerationPreset } | { mode: "edit"; item: RemunerationItem } | null
   >(null);
   const [action, setAction] = useState<{ kind: "approve" | "pay" | "cancel" | "reopen" | "delete"; item: RemunerationItem } | null>(null);
   const [payDate, setPayDate] = useState("");
@@ -103,6 +113,7 @@ export function ProjectRemunerationPage() {
 
   const data = query.data;
   const requireApproval = data?.parameters.require_approval ?? true;
+  const groups = useMemo(() => groupByAgent(data?.items ?? []), [data]);
   const canPay = (item: RemunerationItem) =>
     item.status === "approved" || (!requireApproval && item.status === "pending");
   const states = useMemo(
@@ -124,6 +135,65 @@ export function ProjectRemunerationPage() {
     }
   }
 
+  /** Linha de um lançamento (dentro do grupo do inventariante). */
+  const itemRow = (item: RemunerationItem) => (
+      <tr key={item.id} className="hover:bg-primary/[0.05]">
+        <td className="max-w-[10rem] border-b px-2 py-2.5 font-medium">
+          {item.field_agent_name}
+          <span className="block text-xs font-normal text-muted-foreground">UF {item.state ?? "—"}</span>
+        </td>
+        <td className="whitespace-nowrap border-b px-2 py-2.5">
+          <span className="flex flex-col leading-tight">
+            <span>{civil(item.start_date)}</span>
+            <span className="text-xs text-muted-foreground">a {civil(item.end_date)} · {item.days} {item.days === 1 ? "dia" : "dias"}</span>
+          </span>
+        </td>
+        <td className="whitespace-nowrap border-b px-2 py-2.5">
+          {item.expected_payment_date ? (
+            civil(item.expected_payment_date)
+          ) : item.status === "paid" || item.status === "cancelled" ? (
+            "—"
+          ) : (
+            <span className="rounded bg-destructive/10 px-2 py-0.5 font-semibold text-destructive-text">Informar</span>
+          )}
+        </td>
+        <td className="whitespace-nowrap border-b px-2 py-2.5" title={item.payment_date ? "Data real de pagamento" : undefined}>
+          {item.status === "paid" ? civil(item.payment_date) : ""}
+        </td>
+        <td className={moneyCell}>{formatMoney(item.daily_rate)}</td>
+        <td className={moneyCell}>{formatMoney(item.additional_amount)}</td>
+        <td className={moneyCell}>
+          {formatMoney(item.total_amount)}
+          {item.total_manual ? <span className="ml-auto mt-0.5 block w-fit rounded bg-warning-subtle px-1.5 text-xs font-semibold text-warning-text" title="Valor informado manualmente">manual</span> : null}
+        </td>
+        <td className={moneyCell}>{formatMoney(item.discount_amount)}</td>
+        <td className={`${moneyCell} font-semibold`}>{formatMoney(item.final_amount)}</td>
+        <td className="border-b px-2 py-2.5"><StatusBadge finance={item.status} label={statusLabel[item.status]} /></td>
+        <td className="whitespace-nowrap border-b px-2 py-2.5 md:sticky md:right-0 md:bg-card">
+          <div className="flex gap-0.5">
+            {hasPermission("payments:update") && item.status === "pending" ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Editar lançamento de ${item.field_agent_name}`} aria-label={`Editar lançamento de ${item.field_agent_name}`} onClick={() => { save.reset(); setForm({ mode: "edit", item }); }}><Pencil size={16} /></Button>
+            ) : null}
+            {requireApproval && hasPermission("payments:approve") && item.status === "pending" ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Aprovar lançamento de ${item.field_agent_name}`} aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
+            ) : null}
+            {hasPermission("payments:mark-as-paid") && canPay(item) ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Registrar pagamento de ${item.field_agent_name}`} aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); openAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
+            ) : null}
+            {hasPermission("payments:reopen") && item.status === "approved" ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Reabrir para edição o lançamento de ${item.field_agent_name}`} aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); openAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
+            ) : null}
+            {hasPermission("payments:cancel") && (item.status === "pending" || item.status === "approved") ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Cancelar lançamento de ${item.field_agent_name}`} aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
+            ) : null}
+            {hasPermission("payments:delete") && (item.status === "pending" || item.status === "cancelled") ? (
+              <Button type="button" variant="ghost" className="size-8" title={`Excluir lançamento de ${item.field_agent_name}`} aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
+            ) : null}
+          </div>
+        </td>
+      </tr>
+  );
+
   const actionText = {
     approve: ["Aprovar lançamento", "Aprovar o lançamento de"],
     pay: ["Registrar pagamento", "Registrar o pagamento de"],
@@ -138,7 +208,7 @@ export function ProjectRemunerationPage() {
       {/* Padrão do sistema anterior: título com linha fina; a explicação fica no "?". */}
       <SectionTitle
         as="h1"
-        title="Remuneração"
+        title="Remuneração por projeto"
         help={`Diárias dos inventariantes${label ? ` · ${label}` : ""}. Total = dias × diária + adicional; final = total − descontos.`}
         actions={
           <>
@@ -228,63 +298,67 @@ export function ProjectRemunerationPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((item) => (
-                  <tr key={item.id} className="hover:bg-primary/[0.05]">
-                    <td className="max-w-[10rem] border-b px-2 py-2.5 font-medium">
-                      {item.field_agent_name}
-                      <span className="block text-xs font-normal text-muted-foreground">UF {item.state ?? "—"}</span>
-                    </td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5">
-                      <span className="flex flex-col leading-tight">
-                        <span>{civil(item.start_date)}</span>
-                        <span className="text-xs text-muted-foreground">a {civil(item.end_date)} · {item.days} {item.days === 1 ? "dia" : "dias"}</span>
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5">
-                      {item.expected_payment_date ? (
-                        civil(item.expected_payment_date)
-                      ) : item.status === "paid" || item.status === "cancelled" ? (
-                        "—"
-                      ) : (
-                        <span className="rounded bg-destructive/10 px-2 py-0.5 font-semibold text-destructive-text">Informar</span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5" title={item.payment_date ? "Data real de pagamento" : undefined}>
-                      {item.status === "paid" ? civil(item.payment_date) : ""}
-                    </td>
-                    <td className={moneyCell}>{formatMoney(item.daily_rate)}</td>
-                    <td className={moneyCell}>{formatMoney(item.additional_amount)}</td>
-                    <td className={moneyCell}>
-                      {formatMoney(item.total_amount)}
-                      {item.total_manual ? <span className="ml-auto mt-0.5 block w-fit rounded bg-warning-subtle px-1.5 text-xs font-semibold text-warning-text" title="Valor informado manualmente">manual</span> : null}
-                    </td>
-                    <td className={moneyCell}>{formatMoney(item.discount_amount)}</td>
-                    <td className={`${moneyCell} font-semibold`}>{formatMoney(item.final_amount)}</td>
-                    <td className="border-b px-2 py-2.5"><StatusBadge finance={item.status} label={statusLabel[item.status]} /></td>
-                    <td className="whitespace-nowrap border-b px-2 py-2.5 md:sticky md:right-0 md:bg-card">
-                      <div className="flex gap-0.5">
-                        {hasPermission("payments:update") && item.status === "pending" ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Editar lançamento de ${item.field_agent_name}`} aria-label={`Editar lançamento de ${item.field_agent_name}`} onClick={() => { save.reset(); setForm({ mode: "edit", item }); }}><Pencil size={16} /></Button>
-                        ) : null}
-                        {requireApproval && hasPermission("payments:approve") && item.status === "pending" ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Aprovar lançamento de ${item.field_agent_name}`} aria-label={`Aprovar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "approve", item })}><CheckCircle2 size={16} /></Button>
-                        ) : null}
-                        {hasPermission("payments:mark-as-paid") && canPay(item) ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Registrar pagamento de ${item.field_agent_name}`} aria-label={`Registrar pagamento de ${item.field_agent_name}`} onClick={() => { setPayDate(""); openAction({ kind: "pay", item }); }}><CreditCard size={16} /></Button>
-                        ) : null}
-                        {hasPermission("payments:reopen") && item.status === "approved" ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Reabrir para edição o lançamento de ${item.field_agent_name}`} aria-label={`Reabrir para edição o lançamento de ${item.field_agent_name}`} onClick={() => { setReason(""); openAction({ kind: "reopen", item }); }}><RotateCcw size={16} /></Button>
-                        ) : null}
-                        {hasPermission("payments:cancel") && (item.status === "pending" || item.status === "approved") ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Cancelar lançamento de ${item.field_agent_name}`} aria-label={`Cancelar lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "cancel", item })}><XCircle size={16} /></Button>
-                        ) : null}
-                        {hasPermission("payments:delete") && (item.status === "pending" || item.status === "cancelled") ? (
-                          <Button type="button" variant="ghost" className="size-8" title={`Excluir lançamento de ${item.field_agent_name}`} aria-label={`Excluir lançamento de ${item.field_agent_name}`} onClick={() => openAction({ kind: "delete", item })}><Trash2 size={16} /></Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {groups.map((group) => {
+                  const open = !collapsed.has(group.field_agent_id);
+                  return (
+                    <Fragment key={`grupo-${group.field_agent_id}`}>
+                      <tr className="bg-muted/40">
+                        <th scope="rowgroup" className="max-w-[12rem] border-b px-2 py-2.5 text-left font-semibold">
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 text-left"
+                            aria-expanded={open}
+                            aria-label={`${open ? "Recolher" : "Mostrar"} pagamentos de ${group.name}`}
+                            onClick={() => toggleGroup(group.field_agent_id)}
+                          >
+                            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            <span>
+                              {group.name}
+                              <span className="block text-xs font-normal text-muted-foreground">
+                                UF {group.state ?? "—"} · {group.active} {group.active === 1 ? "pagamento" : "pagamentos"}
+                              </span>
+                            </span>
+                          </button>
+                        </th>
+                        <td colSpan={3} className="border-b px-2 py-2.5 text-xs">
+                          <span className="block">Início do trabalho: <strong>{civil(group.first_start) ?? "—"}</strong></span>
+                          <span className="block">Último período até: <strong>{civil(group.last_end) ?? "—"}</strong></span>
+                          <span className="block">Último pagamento: <strong>{civil(group.last_payment) ?? "—"}</strong></span>
+                        </td>
+                        <td colSpan={4} className="border-b px-2 py-2.5 text-right text-xs">
+                          <span className="block">Pago: <strong className="numeric">{formatMoney(group.paid_amount)}</strong></span>
+                          <span className="block">Em aberto: <strong className="numeric">{formatMoney(group.open_amount)}</strong></span>
+                        </td>
+                        <td className={`${moneyCell} font-semibold`}>{formatMoney(group.final_amount)}</td>
+                        <td className="border-b px-2 py-2.5" />
+                        <td className="whitespace-nowrap border-b px-2 py-2.5 md:sticky md:right-0 md:bg-muted">
+                          {hasPermission("payments:create") ? (
+                            <Button
+                              type="button"
+                              variant="soft"
+                              aria-label={`Novo pagamento de ${group.name}`}
+                              onClick={() => {
+                                save.reset();
+                                setForm({
+                                  mode: "create",
+                                  preset: {
+                                    field_agent_id: group.field_agent_id,
+                                    state: group.state,
+                                    start_date: group.next_start,
+                                    daily_rate: group.last_daily_rate,
+                                  },
+                                });
+                              }}
+                            >
+                              <Plus size={15} /> Novo pagamento
+                            </Button>
+                          ) : null}
+                        </td>
+                      </tr>
+                      {open ? group.items.map((item) => itemRow(item)) : null}
+                    </Fragment>
+                  );
+                })}
                 {data.to_launch.map((agent) => (
                   <tr key={`a-lancar-${agent.field_agent_id}`} className="text-muted-foreground">
                     <td className="max-w-[10rem] border-b px-2 py-2.5 font-medium">

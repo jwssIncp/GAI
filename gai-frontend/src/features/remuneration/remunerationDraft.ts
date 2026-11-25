@@ -1,6 +1,6 @@
 import {
   computeRemuneration,
-  daysInclusive,
+  weekdaysInclusive,
   normalizeMoney,
   type RemunerationInput,
 } from "./remunerationApi";
@@ -41,7 +41,7 @@ export function validateDraft(draft: Draft): { payload?: RemunerationInput; erro
     errors.total_amount = "Informe o total manual.";
   if (Object.keys(errors).length) return { errors };
   const result = computeRemuneration({
-    days: daysInclusive(draft.start_date, draft.end_date),
+    days: weekdaysInclusive(draft.start_date, draft.end_date),
     dailyRate: rate!,
     additional: additional!,
     discount: discount!,

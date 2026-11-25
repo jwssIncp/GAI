@@ -47,7 +47,7 @@ export const navigation: NavigationItem[] = [
   {label:'Recebíveis',to:'/app/finance/receivables',icon:Wallet,permissions:['receivables:read'],section:'finance'},
   {label:'DRE gerencial',to:'/app/finance/dre',icon:FileSpreadsheet,permissions:['dre:read'],section:'finance'},
   { label: 'Inventariantes', to: '/app/field-agents', icon: ContactRound, permissions: ['field-agents:read'], section: 'finance' },
-  { label: 'Remuneração', to: '/app/finance/remuneration', icon: BadgeDollarSign, permissions: ['payments:read'], section: 'finance' },
+  { label: 'Remuneração por projeto', to: '/app/finance/remuneration', icon: BadgeDollarSign, permissions: ['payments:read'], section: 'finance' },
   { label: 'Pagamento de inventariantes', to: '/app/finance/field-agent-payments', icon: HandCoins, permissions: ['payments:read'], section: 'finance' },
   { label: 'Despesas', to: '/app/finance/expenses', icon: ReceiptText, permissions: ['expenses:read'], section: 'finance' },
   { label: 'Placas de patrimônio', to: '/app/finance/asset-tags', icon: Tags, permissions: ['asset-tag-orders:read'], section: 'finance' },

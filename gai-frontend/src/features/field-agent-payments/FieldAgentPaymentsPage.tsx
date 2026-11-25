@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Download, RefreshCw, RotateCcw, Wallet } from "lucide-react";
+import { CalendarClock, Download, FileSpreadsheet, RefreshCw, RotateCcw, Wallet } from "lucide-react";
 import { Kpi, KpiGrid } from "@/components/base/Cards";
 import { DataPanel } from "@/components/base/DataPanel";
 import { FilterPanel } from "@/components/base/FilterPanel";
@@ -81,6 +81,7 @@ export function FieldAgentPaymentsPage() {
   const [hidden, setHidden] = useState<OptionalColumn[]>(loadHidden);
   const [expanded, setExpanded] = useState(false);
   const [listHidden, setListHidden] = useState(false);
+  const [daySummaryOpen, setDaySummaryOpen] = useState(false);
   /** Falhas e resultados parciais ficam na tela; sucesso completo vai para o toast. */
   const [feedback, setFeedback] = useState<string | null>(null);
   const query = useQuery({
@@ -136,11 +137,15 @@ export function FieldAgentPaymentsPage() {
     <div className="grid gap-4">
       {hasPermission("payments:export") ? (
         <FinanceHeaderActions>
+          <Button type="button" variant="secondary" onClick={() => setDaySummaryOpen(true)}>
+            <FileSpreadsheet size={16} /> Resumo do dia
+          </Button>
           <Button type="button" variant="secondary" onClick={() => void exportList()}>
             <Download size={16} /> Exportar Excel
           </Button>
         </FinanceHeaderActions>
       ) : null}
+      {daySummaryOpen ? <DaySummaryDialog onClose={() => setDaySummaryOpen(false)} /> : null}
       {data ? (
         <section aria-label="Indicadores do pagamento de inventariantes">
           <KpiGrid>
@@ -567,6 +572,57 @@ function DateDialog({ row, onClose, onDone }: { row: ConsolidatedRow; onClose: (
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={save.isPending}>Voltar</Button>
           <Button type="submit" loading={save.isPending}>Salvar data</Button>
+        </div>
+      </form>
+    </ModalForm>
+  );
+}
+
+/** Próximo dia de segunda a sexta a partir de amanhã (data local, AAAA-MM-DD). */
+function nextBusinessDay(from = new Date()) {
+  const next = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  do next.setDate(next.getDate() + 1);
+  while (next.getDay() === 0 || next.getDay() === 6);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`;
+}
+
+/** Planilha dos pagamentos em aberto previstos para um dia (vai ao financeiro na véspera). */
+function DaySummaryDialog({ onClose }: { onClose: () => void }) {
+  const [date, setDate] = useState(nextBusinessDay);
+  const download = useMutation({
+    mutationFn: () => fieldAgentPaymentsApi.daySummaryFile(date),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pagamentos-previstos-${date}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      onClose();
+    },
+  });
+  return (
+    <ModalForm open onOpenChange={(open) => !open && onClose()} title="Resumo do dia">
+      <form
+        className="grid gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          download.mutate();
+        }}
+      >
+        <p className="text-sm text-muted-foreground">
+          Planilha com os pagamentos em aberto (pendentes e aprovados) previstos para a data: total por
+          inventariante, somando todos os projetos, e a lista dos lançamentos.
+        </p>
+        <label className="grid gap-1 text-sm font-semibold">
+          Data prevista de pagamento
+          <Input type="date" value={date} required onChange={(e) => setDate(e.target.value)} />
+        </label>
+        {download.isError ? <p role="alert" className="text-sm text-destructive">{(download.error as Error).message}</p> : null}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={download.isPending}>Voltar</Button>
+          <Button type="submit" loading={download.isPending}><FileSpreadsheet size={16} /> Gerar planilha</Button>
         </div>
       </form>
     </ModalForm>

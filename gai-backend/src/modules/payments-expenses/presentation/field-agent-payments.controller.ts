@@ -25,8 +25,13 @@ import {
   BatchPayDto,
   ChangePaymentDateDto,
   ConsolidatedPaymentsQueryDto,
+  PaymentDaySummaryQueryDto,
   RevertPaymentsDto,
 } from '../application/dto/field-agent-payments.dto';
+import {
+  daySummary,
+  daySummaryWorkbook,
+} from '../application/services/payment-day-summary';
 import { FieldAgentPaymentsService } from '../application/services/field-agent-payments.service';
 import type { PaymentsExpensesActorContext } from '../application/services/payments-expenses-scope.service';
 
@@ -134,6 +139,28 @@ export class FieldAgentPaymentsController {
     return res
       .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       .send(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+  }
+
+  /** Resumo do dia: pagamentos em aberto previstos para a data (planilha para o financeiro). */
+  @Get('day-summary')
+  @RequirePermissions('payments:read', 'payments:export')
+  async daySummary(
+    @Query() query: PaymentDaySummaryQueryDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    const data = await this.service.list(
+      { expected_date: query.date },
+      this.actor(req),
+    );
+    const summary = daySummary(query.date, data.items);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="pagamentos-previstos-${query.date}.xlsx"`,
+    );
+    return res
+      .type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .send(daySummaryWorkbook(summary));
   }
 
   @Post('pay')

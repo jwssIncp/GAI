@@ -57,6 +57,54 @@ describe('Field Agents API (e2e)', () => {
     await app.close();
   });
 
+  it('cidade de residência e indicação: gravadas, limpas, validadas e no histórico', async () => {
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/field-agents')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Carla Campo',
+        city: '  São   José dos Campos ',
+        referral: 'Indicada por  Pedro',
+      })
+      .expect(201);
+    const body = created.body as FieldAgentBody & {
+      city: string | null;
+      referral: string | null;
+    };
+    expect(body.city).toBe('São José dos Campos');
+    expect(body.referral).toBe('Indicada por Pedro');
+
+    await request(app.getHttpServer())
+      .patch(`/api/v1/field-agents/${body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ city: 'Taubaté', referral: '   ' })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toMatchObject({ city: 'Taubaté', referral: null });
+      });
+    await request(app.getHttpServer())
+      .patch(`/api/v1/field-agents/${body.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ city: 'x'.repeat(121) })
+      .expect(400);
+
+    const history = await request(app.getHttpServer())
+      .get(`/api/v1/field-agents/${body.id}/history`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const changes = (
+      history.body as { items: Array<{ changes: Record<string, unknown> }> }
+    ).items[0].changes;
+    expect(changes.city).toEqual({
+      before: 'São José dos Campos',
+      after: 'Taubaté',
+    });
+    expect(changes.referral).toEqual({
+      before: 'Indicada por Pedro',
+      after: null,
+    });
+  });
+
   it('creates, lists and audits field agents', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/v1/field-agents')

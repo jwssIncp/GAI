@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -10,6 +11,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { FIELD_AGENT_DOCUMENT_CATEGORIES } from '../../infrastructure/persistence/field-agent-document.entity';
 import { BATCH_DELETE_LIMIT } from '../services/field-agent-records.service';
 
 export class FieldAgentBatchDeleteDto {
@@ -45,6 +47,11 @@ export class CreateFieldAgentDocumentUploadDto {
   @IsString() @MinLength(3) @MaxLength(100) mime_type!: string;
   @Type(() => Number) @IsInt() @Min(1) size_bytes!: number;
   @IsOptional() @IsString() @MaxLength(128) checksum?: string | null;
+  @IsOptional()
+  @IsIn(FIELD_AGENT_DOCUMENT_CATEGORIES, {
+    message: 'Tipo de documento inválido.',
+  })
+  category?: (typeof FIELD_AGENT_DOCUMENT_CATEGORIES)[number];
 }
 
 export class ConfirmFieldAgentDocumentUploadDto {
